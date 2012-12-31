@@ -11,6 +11,8 @@ from rh.models import SolicitacaoDeLicenca
 from rh.models import ExperienciasProfissionaisFuncionario
 from rh.models import IdiomaFuncionario
 from rh.models import CursoFuncionario
+from rh.models import FolhaDePonto
+from rh.models import EntradaFolhaDePonto
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -46,6 +48,18 @@ class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
 class PromocaoCargoAdmin(admin.ModelAdmin):
     list_display = ('beneficiario', 'data_solicitacao', 'cargo_antigo', 'cargo_novo', 'aprovado', 'avaliado', 'criado')
 
+
+class EntradaFolhaDePontoInline(admin.TabularInline):
+    model = EntradaFolhaDePonto
+    ordering = ['hora_entrada']
+    extra= 1
+
+class FolhaDePontoAdmin(admin.ModelAdmin):
+    list_display = ('data_referencia', 'funcionario', 'autorizado', 'funcionario_autorizador')
+    date_hierarchy = 'data_referencia'
+    list_filter = 'data_referencia', 'funcionario'
+    inlines = [EntradaFolhaDePontoInline]
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
@@ -56,3 +70,4 @@ admin.site.register(PeriodoTrabalhado)
 admin.site.register(PromocaoSalario)
 admin.site.register(PromocaoCargo, PromocaoCargoAdmin)
 admin.site.register(SolicitacaoDeLicenca, SolicitacaoDeLicencaAdmin)
+admin.site.register(FolhaDePonto, FolhaDePontoAdmin)

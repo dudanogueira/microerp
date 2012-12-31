@@ -1,3 +1,5 @@
 *.db
 *.pyc
 microerp/settings.py
+microerp/media
+microerp/static

@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+"""This file is part of the microerp project.
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
+__author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
+__copyright__ = 'Copyright (c) 2012 Duda Nogueira'
+__version__ = '0.0.1'
+
 import os, datetime
 from django.db import models
 
@@ -79,34 +99,43 @@ class Funcionario(models.Model):
     
     def clean(self):
         # check telefones
-        BRPhoneNumberField().clean(self.telefone_fixo)
-        BRPhoneNumberField().clean(self.telefone_celular)
+        if self.telefone_fixo:
+            BRPhoneNumberField().clean(self.telefone_fixo)
+        if self.telefone_celular:
+            BRPhoneNumberField().clean(self.telefone_celular)
         # cpf check
         try:
-            self.cpf = BRCPFField().clean(self.cpf)
+            if self.cpf:
+                self.cpf = BRCPFField().clean(self.cpf)
         except:
             raise ValidationError(u"Número do CPF Inválido!")
         # se possui filhos, precisa informar a quantidade
         if self.possui_filhos:
             if not self.quantidade_filhos:
-                raise ValidationError(u"Se possuir filhos, é obrigatório informar a quantidade.")
+                raise ValidationError(
+                    u"Se possuir filhos, é obrigatório informar a quantidade."
+                )
             else:
                 # ja que filhos, conferir os nascimentos
                 if self.nascimento_dos_filhos:
                     nascimentos = self.nascimento_dos_filhos.split(",")
                     if len(nascimentos) != self.quantidade_filhos:
-                        raise ValidationError(u"Quantidade de nascimentos informado não confere com quantidade de filhos")             
+                        raise ValidationError(
+                            u"Quantidade de nascimentos informado não confere com quantidade de filhos"
+                        )
                 else:
-                    raise ValidationError(u"Se possuir filhos, é obrigatório informar os anos de nascimento.")
+                    raise ValidationError(
+                        u"Se possuir filhos, é obrigatório informar os anos de nascimento."
+                    )
     
     def salario(self):
-        if self.promocaosalario_set.count():
-            return self.promocaosalario_set.all().order_by('data')[0].valor
+        if self.promocaosalario_set.filter(aprovado=True).count():
+            return self.promocaosalario_set.filter(aprovado=True).order_by('data')[0].valor
         else:
             return self.salario_inicial
     
     def cargo(self, update=False):
-        if self.promocaocargo_set.count():
+        if self.promocaocargo_set.filter(aprovado=True).count():
             return self.promocaocargo_set.all().order_by('data')[0].cargo_novo
         else:
             return self.cargo_inicial
@@ -116,7 +145,8 @@ class Funcionario(models.Model):
             dpto = Departamento.objects.get(pk=settings.DEPARTAMENTO_COMERCIAL_ID)
             if dpto.grupo_responsavel.user_set.filter(funcionario__id=self.pk):
                 return True
-            else: return False
+            else: 
+                return False
         except:
             return False
 
@@ -132,7 +162,7 @@ class Funcionario(models.Model):
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
     user = models.OneToOneField(User, verbose_name="Usuário do Sistema", blank=True, null=True)
-    nome = models.CharField(blank=True, null=True, max_length=300, verbose_name=u"Nome do Funcionário")
+    nome = models.CharField(blank=False, null=False, max_length=300, verbose_name=u"Nome do Funcionário")
     # geral / documentos / pessoal
     residencia = models.CharField(blank=True, null=True, max_length=100, choices=FUNCIONARIO_RESIDENCIA_CHOICES)
     valor_aluguel = models.FloatField(blank=True, null=True)
@@ -172,8 +202,7 @@ class Funcionario(models.Model):
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)
     telefone_recado = models.TextField(blank=True, null=True, help_text="Número do telefone e contato para recados.")
     # endereco
-    cidade = models.ForeignKey('cadastro.Cidade', blank=False, null=False)
-    bairro = models.ForeignKey('cadastro.Bairro')
+    bairro = models.ForeignKey('cadastro.Bairro', verbose_name="Bairro, Cidade e Estado")
     cep = models.CharField(blank=True, null=True,max_length=100, verbose_name=u"CEP")
     rua = models.CharField(blank=True, null=True,max_length=500, verbose_name=u"Rua")
     numero = models.CharField(blank=True, null=True,max_length=100, verbose_name=u"Número")
@@ -181,6 +210,7 @@ class Funcionario(models.Model):
     # salario
     salario_inicial = models.FloatField(blank=False, null=False)
     salario_atual = models.FloatField(blank=True, null=True)
+    valor_hora = models.FloatField(blank=False, null=False, help_text=u"Valor usado para calcular serviços e projetos")
     # cargo
     cargo_inicial = models.ForeignKey("Cargo", related_name="cargo_inicial")
     cargo_atual = models.ForeignKey("Cargo", related_name="cargo_promovido", blank=True, null=True)
@@ -415,20 +445,39 @@ class SolicitacaoDeLicenca(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
-# FUNCIONARIO SIGNALS
-## SIGNALS
+class FolhaDePonto(models.Model):
+    funcionario = models.ForeignKey(Funcionario)
+    data_referencia = models.DateField(u"Mês e Ano de Referência",default=datetime.datetime.today)
+    encerrado = models.BooleanField(default=False)
+    autorizado = models.BooleanField(default=False)
+    funcionario_autorizador = models.ForeignKey(Funcionario, related_name="folhadeponto_autorizado_set", blank=True, null=True)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
+class EntradaFolhaDePonto(models.Model):
+    folha = models.ForeignKey(FolhaDePonto)
+    hora_entrada = models.DateTimeField(blank=False)
+    hora_saida = models.DateTimeField(blank=False)
+
+
+# SIGNALS
+## FUNCIONARIO SIGNALS
 def funcionario_post_save(signal, instance, sender, **kwargs):
       ''' Atualiza os campos cargo atual e salario atual sempre 
             que houver promocoes de salario ou cargo
       '''
-      # atualizacao de cargo: caso haja alguma promocao e o cargo for diferente do atual...
+      # atualizacao de cargo:
+      #caso haja alguma promocao e o cargo for diferente do atual...
       promo_cargos = instance.promocao_cargo_set.filter(aprovado=True)
       if promo_cargos.count():
             ultimo_cargo = promo_cargos.order_by('-criado')[0].cargo_novo
             if ultimo_cargo != instance.cargo_atual:
                   instance.cargo_atual = ultimo_cargo
                   instance.save()
-      # atualizacao de salario: caso haja alguma promocao de salario diferente do atual...
+
+      # atualizacao de salario:
+      #caso haja alguma promocao de salario diferente do atual...
       promo_salarios = instance.promocao_salarial_set.filter(aprovado=True)
       if promo_salarios.count():
             ultimo_salario = promo_salarios.order_by('-criado')[0].valor
@@ -438,13 +487,13 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
 
 def atualizador_promocao_post_save(signal, instance, sender, **kwargs):
     '''Signal da promoção de Cargo.
+     salva o beneficiario apos criar uma promocao para atualizar
+     o cargo
     '''
-    # salva o beneficiario apos criar uma promocao para atualizar
-    # o cargo
+
     instance.beneficiario.save()
 
-
+# SIGNALS CONNECTION
 signals.post_save.connect(funcionario_post_save, sender=Funcionario)
-#
 signals.post_save.connect(atualizador_promocao_post_save, sender=PromocaoCargo)
 signals.post_save.connect(atualizador_promocao_post_save, sender=PromocaoSalario)

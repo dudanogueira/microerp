@@ -1,0 +1,6 @@
+Django==1.4.3
+South==0.7.6
+Werkzeug==0.8.3
+django-extensions==1.0.2
+sorl-thumbnail==11.12
+wsgiref==0.1.2

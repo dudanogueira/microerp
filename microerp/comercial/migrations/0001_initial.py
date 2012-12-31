@@ -13,13 +13,14 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('cliente', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Cliente'])),
             ('follow_up', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('data_finalizado', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
+            ('data_convertido', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
             ('observacao', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
             ('status', self.gf('django.db.models.fields.CharField')(default='aberta', max_length=100)),
             ('tipo', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['comercial.TipoSolicitacaoComercial'])),
             ('valor', self.gf('django.db.models.fields.FloatField')(null=True, blank=True)),
             ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
             ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-            ('data_convertido', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2012, 11, 4, 0, 0))),
         ))
         db.send_create_signal('comercial', ['SolicitacaoComercial'])
 
@@ -33,17 +34,27 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('comercial', ['TipoSolicitacaoComercial'])
 
+        # Adding model 'TipoContatoComercial'
+        db.create_table('comercial_tipocontatocomercial', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('cor', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
+            ('cor_do_texto', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
+        ))
+        db.send_create_signal('comercial', ['TipoContatoComercial'])
+
         # Adding model 'ContatoComercial'
         db.create_table('comercial_contatocomercial', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('nome', self.gf('django.db.models.fields.CharField')(max_length=255, blank=True)),
             ('cliente', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Cliente'])),
-            ('observacao', self.gf('django.db.models.fields.TextField')()),
+            ('observacao', self.gf('django.db.models.fields.TextField')(blank=True)),
+            ('o_dia_todo', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('inicio', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
             ('fim', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
             ('status', self.gf('django.db.models.fields.CharField')(default='programado', max_length=100)),
-            ('tipo', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
+            ('tipo', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['comercial.TipoContatoComercial'])),
+            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'], null=True, blank=True)),
         ))
         db.send_create_signal('comercial', ['ContatoComercial'])
 
@@ -62,6 +73,9 @@ class Migration(SchemaMigration):
 
         # Deleting model 'TipoSolicitacaoComercial'
         db.delete_table('comercial_tiposolicitacaocomercial')
+
+        # Deleting model 'TipoContatoComercial'
+        db.delete_table('comercial_tipocontatocomercial')
 
         # Deleting model 'ContatoComercial'
         db.delete_table('comercial_contatocomercial')
@@ -124,6 +138,7 @@ class Migration(SchemaMigration):
             'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
             'fax': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'funcionario_responsavel': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rh.Funcionario']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nascimento': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'nome': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
@@ -153,27 +168,36 @@ class Migration(SchemaMigration):
             'Meta': {'object_name': 'ContatoComercial'},
             'cliente': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cadastro.Cliente']"}),
             'fim': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rh.Funcionario']"}),
+            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rh.Funcionario']", 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'inicio': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
             'nome': ('django.db.models.fields.CharField', [], {'max_length': '255', 'blank': 'True'}),
-            'observacao': ('django.db.models.fields.TextField', [], {}),
+            'o_dia_todo': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'observacao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'solicitacao_comercial_convertida': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'to': "orm['comercial.SolicitacaoComercial']", 'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.CharField', [], {'default': "'programado'", 'max_length': '100'}),
-            'tipo': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+            'tipo': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['comercial.TipoContatoComercial']"})
         },
         'comercial.solicitacaocomercial': {
             'Meta': {'object_name': 'SolicitacaoComercial'},
             'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
             'cliente': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cadastro.Cliente']"}),
             'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data_convertido': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 11, 4, 0, 0)'}),
+            'data_convertido': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'data_finalizado': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'follow_up': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'observacao': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.CharField', [], {'default': "'aberta'", 'max_length': '100'}),
             'tipo': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['comercial.TipoSolicitacaoComercial']"}),
             'valor': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'})
+        },
+        'comercial.tipocontatocomercial': {
+            'Meta': {'object_name': 'TipoContatoComercial'},
+            'cor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'cor_do_texto': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'comercial.tiposolicitacaocomercial': {
             'Meta': {'object_name': 'TipoSolicitacaoComercial'},
@@ -192,9 +216,10 @@ class Migration(SchemaMigration):
         },
         'rh.cargo': {
             'Meta': {'object_name': 'Cargo'},
+            'departmento': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rh.Departamento']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'salario_referencia': ('django.db.models.fields.FloatField', [], {'blank': 'True'})
+            'salario_referencia': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'})
         },
         'rh.departamento': {
             'Meta': {'object_name': 'Departamento'},
@@ -207,27 +232,58 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "['nome']", 'object_name': 'Funcionario'},
             'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
             'bairro': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cadastro.Bairro']"}),
-            'cargo_atual': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cargo_atual'", 'to': "orm['rh.Cargo']"}),
+            'cargo_atual': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'cargo_promovido'", 'null': 'True', 'to': "orm['rh.Cargo']"}),
             'cargo_inicial': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cargo_inicial'", 'to': "orm['rh.Cargo']"}),
-            'cep': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'cidade': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['cadastro.Cidade']"}),
-            'complemento': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
+            'carteira_habilitacao_categoria': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'carteira_habilitacao_expedicao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'carteira_habilitacao_numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'carteira_habilitacao_vencimento': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'carteira_profissional_numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'carteira_profissional_serie': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'cep': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'certificado_reservista': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'complemento': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
+            'cpf': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
             'departamento': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rh.Departamento']"}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
+            'escolaridade_conclusao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 12, 30, 0, 0)'}),
+            'escolaridade_cursos': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'escolaridade_nivel': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'escolaridade_serie_inconclusa': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'estado_civil': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'foto': ('sorl.thumbnail.fields.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'funcionario_superior': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['rh.Funcionario']", 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nascimento': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2012, 11, 4, 0, 0)'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '300', 'blank': 'True'}),
-            'numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'observacao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'rua': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
+            'nacionalidade': ('django.db.models.fields.CharField', [], {'default': "'Brasil'", 'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'nascimento': ('django.db.models.fields.DateField', [], {}),
+            'nascimento_dos_filhos': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'naturalidade': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'nome': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
+            'nome_companheiro': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
+            'nome_mae': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
+            'nome_pai': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
+            'numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'observacao': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'pis': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'possui_filhos': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'quantidade_filhos': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'residencia': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'rg': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'rg_data': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'rg_expeditor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'rua': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'}),
+            'salario_atual': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
             'salario_inicial': ('django.db.models.fields.FloatField', [], {}),
-            'telefone_celular': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'telefone_fixo': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'sexo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'telefone_celular': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'telefone_fixo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'telefone_recado': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'titulo_eleitor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'})
+            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'}),
+            'valor_aluguel': ('django.db.models.fields.FloatField', [], {'null': 'True', 'blank': 'True'}),
+            'valor_hora': ('django.db.models.fields.FloatField', [], {})
         }
     }
 
