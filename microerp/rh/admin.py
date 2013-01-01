@@ -51,13 +51,13 @@ class PromocaoCargoAdmin(admin.ModelAdmin):
 
 class EntradaFolhaDePontoInline(admin.TabularInline):
     model = EntradaFolhaDePonto
-    ordering = ['hora_entrada']
-    extra= 1
+    ordering = ['hora']
+    extra= 0
 
 class FolhaDePontoAdmin(admin.ModelAdmin):
-    list_display = ('data_referencia', 'funcionario', 'autorizado', 'funcionario_autorizador')
+    list_display = ('funcionario_mes_ano', 'funcionario', 'autorizado', 'encerrado', 'funcionario_autorizador')
     date_hierarchy = 'data_referencia'
-    list_filter = 'data_referencia', 'funcionario'
+    list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',
     inlines = [EntradaFolhaDePontoInline]
 
 admin.site.register(Funcionario, FuncionarioAdmin)

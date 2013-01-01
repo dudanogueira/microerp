@@ -77,15 +77,22 @@ IDIOMA_FUNCIONARIO_NIVEL_CHOICES = (
     ('3', 'Fluente'),
 )
 
-FUNCIONARIO_ESCOLARIDADE_NIVEL = (
+FUNCIONARIO_ESCOLARIDADE_NIVEL_CHOICES = (
     ('0', '2º Grau Incompleto'),
-    ('0', '2º Grau Completo'),
-    ('0', 'Ensino Superior Incompleto'),
-    ('0', 'Ensino Superior Completo'),
-    ('0', 'Ensino Superior Completo + Pós Graduação'),
-    ('0', 'Ensino Superior Completo + Mestrado'),
-    ('0', 'Ensino Superior Completo + Doutorado'),
+    ('1', '2º Grau Completo'),
+    ('2', 'Ensino Superior Incompleto'),
+    ('3', 'Ensino Superior Completo'),
+    ('4', 'Ensino Superior Completo + Pós Graduação'),
+    ('5', 'Ensino Superior Completo + Mestrado'),
+    ('6', 'Ensino Superior Completo + Doutorado'),
 )
+
+ENTRADA_FOLHA_DE_PONTO_CHOICES = (
+    ('entrada', 'Entrada do Funcionário'),
+    ('saida', 'Saída do Funcionário'),
+)
+
+
 
 class Funcionario(models.Model):
     
@@ -192,7 +199,7 @@ class Funcionario(models.Model):
     carteira_habilitacao_vencimento = models.DateField(blank=True, null=True,)
     carteira_habilitacao_expedicao = models.DateField(blank=True, null=True,)
     # escolaridade
-    escolaridade_nivel = models.CharField(blank=True, null=True,max_length=100, choices=FUNCIONARIO_ESCOLARIDADE_NIVEL)
+    escolaridade_nivel = models.CharField(blank=True, null=True,max_length=100, choices=FUNCIONARIO_ESCOLARIDADE_NIVEL_CHOICES)
     escolaridade_cursos = models.TextField("Cursos e Instituições",blank=True, null=True,)
     escolaridade_serie_inconclusa = models.CharField("Série máxima estudada", blank=True, null=True, max_length=100)
     escolaridade_conclusao = models.DateField("Ano de Conclusão dos estudos", default=datetime.datetime.today)
@@ -446,6 +453,37 @@ class SolicitacaoDeLicenca(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class FolhaDePonto(models.Model):
+    
+    def __unicode__(self):
+        return u"Folha de ponto (#%d) para funcionário %s referente ao mês %d de %d" % (self.id, self.funcionario, self.data_referencia.month, self.data_referencia.year)
+
+    def funcionario_mes_ano(self):
+        return "%s: %s/%s" % (self.funcionario, self.data_referencia.month, self.data_referencia.year)
+
+    def entradas_validas(self):
+        entradas_validas = self.entradafolhadeponto_set.filter(
+            hora__year=self.data_referencia.year,
+            hora__month=self.data_referencia.month
+        ).order_by('hora')
+        return self.entradafolhadeponto_set.all()
+    
+    def calcular_tipo_entrada(self):
+        '''Define as Entradas relacionadas como Registro de Entrada ou Registro de saída'''
+        entradas_validas = self.entradas_validas()
+        ref = 1
+        for entrada in entradas_validas:
+            if ref % 2 == 1:
+                entrada.tipo = 'entrada'
+            else:
+                entrada.tipo = 'saida'
+            entrada.save()
+            ref += 1
+    
+    def calcular_acumulado(self):
+        '''Calcula o acumulado de horas da folha de ponto com base nos registros de entrada e saída'''
+        entradas_validas = self.entradas_validas()
+        #TODO
+    
     funcionario = models.ForeignKey(Funcionario)
     data_referencia = models.DateField(u"Mês e Ano de Referência",default=datetime.datetime.today)
     encerrado = models.BooleanField(default=False)
@@ -456,11 +494,30 @@ class FolhaDePonto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
 class EntradaFolhaDePonto(models.Model):
+    
+    def __unicode__(self):
+        if self.tipo:
+            return "%s às %s" % (self.tipo, self.hora)
+        else:
+            return u"Funcionário %s. Registro às %s" % (self.folha.funcionario, self.hora)
+    
+    def clean(self):
+        if self.hora.year == self.folha.data_referencia.year:
+            if self.hora.month == self.folha.data_referencia.month:
+                pass
+            else:
+                raise ValidationError("Erro! A entrada na folha de ponto deve ser no mês e ano que a data de referência da Folha")
+        else:            
+            raise ValidationError("Erro! A entrada na folha de ponto deve ser no mesmo ano que a data de referência da Folha")
+        
+    
     folha = models.ForeignKey(FolhaDePonto)
-    hora_entrada = models.DateTimeField(blank=False)
-    hora_saida = models.DateTimeField(blank=False)
-
-
+    hora = models.DateTimeField(blank=False, default=datetime.datetime.now)
+    tipo = models.CharField(blank=True, null=True, max_length=100, choices=ENTRADA_FOLHA_DE_PONTO_CHOICES)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
 # SIGNALS
 ## FUNCIONARIO SIGNALS
 def funcionario_post_save(signal, instance, sender, **kwargs):
@@ -490,7 +547,6 @@ def atualizador_promocao_post_save(signal, instance, sender, **kwargs):
      salva o beneficiario apos criar uma promocao para atualizar
      o cargo
     '''
-
     instance.beneficiario.save()
 
 # SIGNALS CONNECTION
