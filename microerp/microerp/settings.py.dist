@@ -24,6 +24,16 @@ DATABASES = {
     }
 }
 
+
+# CUSTOM SETTINGS
+
+# CUSTOMS / deprecated in Django 1.5
+AUTH_PROFILE_MODULE = 'rh.Funcionario'
+
+# DEFININDO DEPARTAMENTOS
+DEPARTAMENTO_COMERCIAL_ID = 2
+
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -112,6 +122,15 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.debug',
+    'django.core.context_processors.media',
+    'django.core.context_processors.static',
+    'django.contrib.messages.context_processors.messages',
+    'sekizai.context_processors.sekizai',
+)
+
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -124,12 +143,15 @@ INSTALLED_APPS = (
     # apps terceiros
     'south',
     'django_extensions',
-    'sorl',
+    'sorl.thumbnail',
     # apps do projeto
     'cadastro',
     'rh',
     'almoxarifado',
     'comercial',
+    # customizado
+    'sekizai',
+    'frontend_seltec',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -160,3 +182,4 @@ LOGGING = {
         },
     }
 }
+    

@@ -27,8 +27,19 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^$', 'frontend_seltec.views.home', name='home'),
+    url(r'^demo/$', 'frontend_seltec.views.demo', name='demo'),
+    # admin
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    # comercial
+    (r'^comercial/', include('comercial.urls', namespace="comercial")),
+)
+
+# auth system
+urlpatterns += patterns('django.contrib.auth',
+    url(r'^sair/$', 'views.logout', {}, 'logout'),
+    url(r'^entrar/$', 'views.login', {}, 'login'),
 )
 
 # DEBUGG
@@ -43,4 +54,3 @@ if settings.DEBUG:
             {'document_root': settings.STATIC_ROOT }
         ),
     )
-

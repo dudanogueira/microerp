@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 import datetime
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 
@@ -25,17 +27,35 @@ from django.http import HttpResponse
 # forms
 from forms import ContatoComercialAdd
 
+from django.contrib.auth.decorators import user_passes_test
+
+# COMERCIAL DECORATORS
+def user_comercial_analista(user):
+    if user:
+        departamento = Departamento.objects.get(pk=getattr(settings, 'DEPARTAMENTO_COMERCIAL_ID', None))
+        try:
+            return user == departamento.grupo_analista.user_set.get(id=user.id)
+        except:
+            return False
+
+# HOME
 @login_required
+@user_passes_test(user_comercial_analista, login_url='/')
 def home(request):
-      departamento = Departamento.objects.get(pk=settings.DEPARTAMENTO_COMERCIAL_ID)
-      sc_aberta_total = SolicitacaoComercial.objects.filter(status="aberta").count()
-      sc_perdida_total = SolicitacaoComercial.objects.filter(status="perdida").count()
-      sc_convertida_total = SolicitacaoComercial.objects.filter(status="convertida").count()
-      contatos_programados = ContatoComercial.objects.filter(status="programado")
-      contatos_programados_total = contatos_programados.count()
-      contatos_programados_stats_tipo = contatos_programados.values('tipo',).annotate(Count('tipo'))
-      contatos_realizados_total = ContatoComercial.objects.filter(status="programado").count()
-      return render_to_response('comercial/index.html', locals(), context_instance=RequestContext(request),)
+    ID_COMERCIAL = getattr(settings, 'DEPARTAMENTO_COMERCIAL_ID', None)
+    if not ID_COMERCIAL:
+        messages.error(request, u'<b>Erro!</b> Não foi configurado o ID do Dpto Comercial. Deve Adicionar o Departamento e Definir seu ID no settings.py como. DEPARTAMENTO_COMERCIAL_ID')
+        return redirect(reverse("home"))
+    else:
+        departamento = Departamento.objects.get(pk=settings.DEPARTAMENTO_COMERCIAL_ID)
+        sc_aberta_total = SolicitacaoComercial.objects.filter(status="aberta").count()
+        sc_perdida_total = SolicitacaoComercial.objects.filter(status="perdida").count()
+        sc_convertida_total = SolicitacaoComercial.objects.filter(status="convertida").count()
+        contatos_programados = ContatoComercial.objects.filter(status="programado")
+        contatos_programados_total = contatos_programados.count()
+        contatos_programados_stats_tipo = contatos_programados.values('tipo',).annotate(Count('tipo'))
+        contatos_realizados_total = ContatoComercial.objects.filter(status="programado").count()
+        return render_to_response('comercial/index.html', locals(), context_instance=RequestContext(request),)
 
 @login_required
 def contato_comercial_list(request):

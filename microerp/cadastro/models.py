@@ -83,6 +83,7 @@ class Cliente(models.Model):
         return self.solicitacaocomercial_set.count()
         
     uuid = UUIDField()
+    id_referencia = models.IntegerField(blank=True, null=True)
     nome = models.CharField(u"Nome do Cliente", blank=False, null=False, max_length=300)
     tipo = models.CharField(u"Tipo de Cliente", blank=False, null=False, max_length=10, choices=TIPO_CLIENTE_CHOICES)
     cnpj = models.CharField(u"CNPJ", blank=True, max_length=255)
