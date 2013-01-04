@@ -44,7 +44,7 @@ def home(request):
     ID_COMERCIAL = getattr(settings, 'DEPARTAMENTO_COMERCIAL_ID', None)
     if not ID_COMERCIAL:
         messages.error(request, u'<b>Erro!</b> Não foi configurado o ID do Dpto Comercial. Deve Adicionar o Departamento e Definir seu ID no settings.py como. DEPARTAMENTO_COMERCIAL_ID')
-        return redirect(reverse("home"))
+        return redirect(reverse("frontend:home"))
     else:
         departamento = Departamento.objects.get(pk=settings.DEPARTAMENTO_COMERCIAL_ID)
         sc_aberta_total = SolicitacaoComercial.objects.filter(status="aberta").count()
@@ -103,7 +103,7 @@ def contato_comercial_adicionar(request):
             contato = form.save(commit=False)
             contato.funcionario = request.user.get_profile()
             contato.save()
-            return redirect(reverse("comercial:contato-comercial-list"))
+            return redirect(reverse("frontend:contato-comercial-list"))
     else:
         form = ContatoComercialAdd()
     return render_to_response('comercial/contato-comercial-adicionar.html', locals(), context_instance=RequestContext(request),)

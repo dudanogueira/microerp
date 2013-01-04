@@ -19,21 +19,17 @@ __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2012 Duda Nogueira'
 __version__ = '0.0.1'
 
-# extenda o seu frontend aqui
-
 from django.conf.urls import patterns, include, url
+
+from django.conf import settings
 
 from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$', 'frontend_seltec.views.home', name='home'),
-    url(r'^demo/$', 'frontend_seltec.views.demo', name='demo'),
     # admin
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    # comercial
-    (r'^comercial/', include('comercial.urls', namespace="comercial")),
 )
 
 # auth system
@@ -46,6 +42,14 @@ urlpatterns += patterns('django.contrib.auth',
 urlpatterns += patterns('georefs',
     url(r'^geo/clientes/$', 'views.kml_clientes', {}, 'kml_clientes'),
 )
+
+# urls do frontend
+app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")
+urlpatterns += patterns('',
+    url(r'^$', '%s.views.home' % app_frontend, name='home'),
+    url(r'^frontend/', include('%s.urls' % app_frontend, namespace="frontend"))
+)
+
 
 # DEBUGG
 from django.conf import settings
