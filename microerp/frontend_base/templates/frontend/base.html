@@ -1,1 +1,21 @@
-base!
+{% load sekizai_tags %}
+<!DOCTYPE html>
+<html lang="pt_BR">
+    <head>
+        <title>{% block title %}SELTEC ERP{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="{{STATIC_URL}}frontend/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="{{STATIC_URL}}frontend/css/bootstrap-responsive.min.css" />
+		{% render_block "css" %}
+    	<script src="{{STATIC_URL}}frontend/js/jquery.min.js"></script>
+    </head>
+    <body>
+		{% block content %}
+		
+		{% endblock %}
+		
+		{% render_block "js" %}
+        {% render_block "extrajs" %}
+        
+    </body>
+</html>
