@@ -31,9 +31,11 @@ from django_extensions.db.fields import UUIDField
 
 from django.contrib.localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
+from django.contrib.gis.geos import Point, fromstr
+
 TIPO_CLIENTE_CHOICES = (
     ('pf', u'Pessoa Física'),
-    ('pj', u'Pessoa Jurírica'),
+    ('pj', u'Pessoa Jurídica'),
 )
 
 class Cliente(models.Model):
@@ -70,8 +72,12 @@ class Cliente(models.Model):
                     self.cpf = BRCPFField().clean(self.cpf)
                 except:
                     raise ValidationError(u"Número do CPF Inválido!")
-        BRPhoneNumberField().clean(self.telefone_fixo)
-        BRPhoneNumberField().clean(self.telefone_celular)
+        if self.telefone_fixo:
+            BRPhoneNumberField().clean(self.telefone_fixo)
+        if self.telefone_celular:
+            BRPhoneNumberField().clean(self.telefone_celular)
+        if not self.telefone_fixo and not self.telefone_celular:
+            raise ValidationError(u"É obrigatório um contato telefônico!!")
         
     def documento(self):
         if self.tipo == "pj":
@@ -79,23 +85,67 @@ class Cliente(models.Model):
         else:
             return "CPF: %s" % self.cpf
     
+    def nome_curto(self):
+        if self.nome:
+            nome_parts = self.nome.split(" ")
+            if len(nome_parts) >= 2:
+                nome_curto = u"%s %s" % (nome_parts[0], nome_parts[-1])
+            else:
+                nome_curto = u"%s" % self.nome
+            return nome_curto
+    
     def quantidade_de_solicitacoes(self):
         return self.solicitacaocomercial_set.count()
+    
+    def logradouro_completo(self):
+        string = u"%s, %s, %s - %s, CEP: %s" % (self.rua, self.numero, self.cidade.nome, self.cidade.estado, self.cep)
+        return string
+    
+    def logradouro_completo_busca(self):
+        string = u"%s+%s+%s+%s+%s" % (self.rua, self.numero, self.cidade.nome, self.cidade.estado, self.cep)
+        return string
         
+    def buscar_geoponto(self, endereco):
+        from georefs import google_latlng
+        latlng = google_latlng.LatLng()
+        latlng.requestLatLngJSON(endereco)
+        if latlng.lat and latlng.lng:
+            return latlng.lat, latlng.lng
+        else:
+            return False, False
+
+    def criar_geoponto(self):
+        lat, lng = self.buscar_geoponto()
+        if lat and lng:
+            # geoponto ok, criando referencia cliente
+            # TODO melhorar aqui, nem todos os projetos precisam de GEOREF
+            try:
+                if self.referenciageograficacliente_set.count() == 0:
+                    ponto = fromstr("POINT(%s %s)" % (lng, lat))
+                    self.referenciageograficacliente_set.create(ponto=ponto)
+            except:
+                raise
+                print "ERRO AO CRIAR O GEOPONTO PARA %s" % self
+                pass
+    
     uuid = UUIDField()
     id_referencia = models.IntegerField(blank=True, null=True)
     nome = models.CharField(u"Nome do Cliente", blank=False, null=False, max_length=300)
+    fantasia = models.CharField(u"Nome de Fantasia", blank=True, null=True, max_length=500)
     tipo = models.CharField(u"Tipo de Cliente", blank=False, null=False, max_length=10, choices=TIPO_CLIENTE_CHOICES)
-    cnpj = models.CharField(u"CNPJ", blank=True, max_length=255)
-    cpf = models.CharField(u"CPF", blank=True, max_length=255)
+    cnpj = models.CharField(u"CNPJ", blank=True, null=True, max_length=255)
+    inscricao_estadual = models.CharField(blank=True, null=True, max_length=100)
+    cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
+    rg = models.CharField(blank=True, null=True,  max_length=100)
     nascimento = models.DateField(u"Data de Nascimento/Criação", blank=True, null=True)
-    ramo = models.ForeignKey("Ramo")
+    ramo = models.ForeignKey("Ramo", blank=True, null=True)
     observacao = models.TextField(u"Observações Gerais", blank=True, null=True)
-    origem = models.ForeignKey("ClienteOrigem", blank=False, null=False, verbose_name="Origem do Cliente")
+    origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # contatos
+    contato = models.CharField("Nome do Contato", blank=True, max_length=300)
     email = models.EmailField(blank=True, null=True)
-    telefone_fixo = models.CharField(blank=False, max_length=100, null=False, help_text="Formato: XX-XXXX-XXXX")
-    telefone_celular = models.CharField(blank=True, max_length=100)
+    telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
+    telefone_celular = models.CharField(blank=True, null=True, max_length=100)
     fax = models.CharField(blank=True, max_length=100)
     # endereço
     cidade = models.ForeignKey("Cidade", blank=False, null=False)
@@ -107,7 +157,9 @@ class Cliente(models.Model):
     # comercial
     # TODO: filtrar o grupo pela info no settings
     #
-    funcionario_responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável")
+    funcionario_responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
+    # financeiro
+    solicitar_consulta_credito = models.BooleanField("Solicitar Consulta de Crédito", default=False, help_text="Marque esta opção para solicitar uma consulta de crédito")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -130,7 +182,7 @@ class Cidade(models.Model):
     '''Cidade do Cliente'''
     
     def __unicode__(self):
-        return "%s - %s" % (self.nome, self.estado)
+        return u"%s - %s" % (unicode(self.nome), self.estado)
     
     nome = models.CharField("Nome da Cidade", blank=False, null=False, max_length=100)
     estado = models.CharField(blank=False, null=False, max_length=2, choices=STATE_CHOICES)
@@ -139,7 +191,7 @@ class Bairro(models.Model):
     '''Bairro do Cliente'''
     
     def __unicode__(self):
-        return "%s - %s" % (self.nome, self.cidade)
+        return u"%s - %s" % (self.nome, self.cidade)
     
     nome = models.CharField("Nome do Bairro", blank=False, null=False, max_length=100)
     cidade = models.ForeignKey("Cidade")
@@ -147,7 +199,7 @@ class Bairro(models.Model):
 class ClienteOrigem(models.Model):
     
     def __unicode__(self):
-        return self.nome
+        return u"%s" % self.nome
     
     class Meta:
         verbose_name = "Origem do Cliente"
@@ -155,6 +207,38 @@ class ClienteOrigem(models.Model):
     
     nome = models.CharField(blank=False, null=False, max_length=100)
     observacao = models.TextField(u"Observações Gerais", blank=True, null=True)
+
+
+class TipoDeConsultaDeCredito(models.Model):
+    nome = models.CharField(blank=True, max_length=100)
+    codigo = models.CharField(blank=False, max_length=100, help_text="Código de Identificação: cpf, cnpj, cheque, etc")
+    
+class ConsultaDeCredito(models.Model):
+    
+    
+    class Meta:
+        verbose_name = u"Consulta de Crédito"
+        verbose_name_plural = u"Consultas de Crédito"
+    
+    
+    realizada = models.BooleanField(default=False)
+    cliente = models.ForeignKey(Cliente)
+    funcionario_solicitante = models.ForeignKey('rh.Funcionario', related_name="solicitacoes_consulta_credito_set")
+    funcionario_executor = models.ForeignKey('rh.Funcionario', related_name="realizacoes_consulta_credito_set")
+    data_solicitacao = models.DateTimeField("Data de Solicitação",blank=False, default=datetime.datetime.now)
+    data_realizacao = models.DateTimeField("Data de Realização", blank=True, null=True)
+    tipo = models.ForeignKey(TipoDeConsultaDeCredito, verbose_name="Tipo da Consulta")
+    # resultado final
+    regular = models.BooleanField("Situação Regular", default=True)
+    # dados de requisicao da consulta
+    requisicao = models.CharField("Requisição", blank=False, max_length=400)
+    # dados de retorno da consulta
+    observacoes = models.TextField(u"Observações", blank=True, null=True)
+    dados_originais = models.TextField("Dados Originais", blank=True, null=True, help_text="Este campo deve ser usado para armazenar o retorno de um webservice em seu formato original")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
 
 # OAUTH - FOR GOOGLE
 #from oauth2client.django_orm import FlowField, CredentialsField

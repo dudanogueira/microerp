@@ -15,8 +15,7 @@ from django.template import RequestContext, loader, Context
 from django.db.models import Count
 
 from rh.models import Departamento
-from comercial.models import SolicitacaoComercial, ContatoComercial, TipoContatoComercial
-from cadastro.models import Cliente
+from comercial.models import SolicitacaoComercial, ContatoComercial, TipoContatoComercial, FonteDeAgendaComercial
 
 from django.conf import settings
 
@@ -53,7 +52,7 @@ def home(request):
         sc_convertida_total = SolicitacaoComercial.objects.filter(status="convertida").count()
         contatos_programados = ContatoComercial.objects.filter(status="programado")
         contatos_programados_total = contatos_programados.count()
-        contatos_programados_stats_tipo = contatos_programados.values('tipo',).annotate(Count('tipo'))
+        #contatos_programados_stats_tipo = contatos_programados.values('tipo',).annotate(Count('tipo'))
         contatos_realizados_total = ContatoComercial.objects.filter(status="programado").count()
         return render_to_response('comercial/index.html', locals(), context_instance=RequestContext(request),)
 
@@ -74,17 +73,18 @@ def contato_comercial_list(request):
         weekview.append((weekview_text, objs))
 
     # para a agenda
-    tipo_contatos_comerciais = TipoContatoComercial.objects.all()
+    fontes_de_agenda = FonteDeAgendaComercial.objects.filter(funcionario=request.user.get_profile())
     return render_to_response('comercial/contato-comercial-list.html', locals(), context_instance=RequestContext(request),)
 
 @login_required
-def contato_comercial_agenda_api(request, tipo):
+def contato_comercial_agenda_api(request, agenda_id):
+    agenda = FonteDeAgendaComercial.objects.get(id=agenda_id, funcionario=request.user.get_profile())
     start = request.GET.get('start', None)
     end = request.GET.get('end', None)
     start_date = datetime.datetime.fromtimestamp(int(start))+datetime.timedelta(1)
     end_date = datetime.datetime.fromtimestamp(int(end))+datetime.timedelta(1)
-    tipo_contato = TipoContatoComercial.objects.get(pk=tipo)
-    contatos = tipo_contato.get_from_range(start_date, end_date)
+    tipo_contato = agenda.tipo
+    contatos = agenda.filtra_intervalo(start_date, end_date)
     out_items = [i.json_event_object() for i in contatos]
     return HttpResponse("[%s]" % ",".join(out_items), mimetype="application/json")
 
@@ -110,7 +110,7 @@ def contato_comercial_adicionar(request):
 
 @login_required
 def cadastro_clientes_list(request):
-    clientes = Cliente.objects.filter(funcionario_responsavel=request.user.get_profile())
+    clientes = Cliente.objects.all()
     return render_to_response('comercial/cadastro-clientes-list.html', locals(), context_instance=RequestContext(request),)
 
 @login_required

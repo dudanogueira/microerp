@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+<Document>
+    {% for georef_cliente in georef_clientes %}
+  <Placemark>
+    <name>#ID{{georef_cliente.cliente.id}}  {{georef_cliente.cliente.nome_curto}}</name>
+    <description>
+        <h1>{{georef_cliente.cliente}}</h1>
+        {% if georef_cliente.cliente.telefone_fixo %}
+        <p>
+            <b>Telefone:</b> {{georef_cliente.cliente.telefone_fixo}}
+        </p>
+        {% endif %}
+        
+        <p><b>Endereço</b>: {{georef_cliente.cliente.logradouro_completo}}</p>
+    </description>
+    <Point><coordinates>{{georef_cliente.ponto.0}},{{georef_cliente.ponto.1}}</coordinates></Point>
+  </Placemark>
+  {% endfor %}
+</Document>
+</kml>

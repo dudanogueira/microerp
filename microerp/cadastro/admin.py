@@ -21,20 +21,29 @@ __version__ = '0.0.1'
 
 from django.contrib import admin
 
-from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem
+from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem, ConsultaDeCredito, TipoDeConsultaDeCredito
 
 from comercial.models import SolicitacaoComercial
 
+from georefs.models import ReferenciaGeograficaCliente
+
 from django import forms
+
+from olwidget.admin import GeoModelAdmin
 
 class SolicitacaoComercialInline(admin.TabularInline):
     model = SolicitacaoComercial
     ordering = ['criado']
     extra = 0
 
+class ConsultaDeCreditoInline(admin.TabularInline):
+    model = ConsultaDeCredito
+    ordering = ['criado']
+    extra = 0
+
 class ClienteAdmin(admin.ModelAdmin):
-    list_filter = ('tipo', 'cidade')
-    search_fields = ('nome', 'cpf', 'cnpj')
+    list_filter = ('tipo', 'cidade', 'bairro')
+    search_fields = ('nome', 'cpf', 'cnpj', 'rua', 'bairro__nome')
     list_display = ('nome', 'documento')
     list_display_links = list_display
     date_hierarchy = "criado"
@@ -42,11 +51,15 @@ class ClienteAdmin(admin.ModelAdmin):
     fieldsets = (
             (u"Informações Gerais", {
                 'classes': ('wide', 'extrapretty'),
-                'fields': ('nome', 'tipo', 'ramo', 'cnpj', 'cpf', 'nascimento', 'observacao')
+                'fields': ('nome', 'tipo', 'ramo', 'nascimento', 'observacao')
+            }),
+            (u"Documentos", {
+                'classes': ('wide', 'extrapretty'),
+                'fields': ('cnpj', 'cpf', 'inscricao_estadual', 'rg',)
             }),
             (u'Contato', {
                 'classes': ('wide', 'extrapretty'),
-                'fields': ('email', 'telefone_fixo', 'telefone_celular', 'fax')
+                'fields': ('contato', 'email', 'telefone_fixo', 'telefone_celular', 'fax')
             }),
             (u'Sistema', {
                 'classes': ('wide', 'extrapretty'),
@@ -65,10 +78,16 @@ class ClienteAdmin(admin.ModelAdmin):
                 'fields': ('criado', 'atualizado', 'uuid')
             }),
         )
-    inlines = [SolicitacaoComercialInline]
+    inlines = [ConsultaDeCreditoInline, SolicitacaoComercialInline]
+
+
+class ReferenciaGeograficaClienteAdmin(GeoModelAdmin):
+    list_filter= 'cliente__tipo', 'cliente__cidade', 'cliente__cidade__estado'
 
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Cidade)
 admin.site.register(Bairro)
 admin.site.register(Ramo)
 admin.site.register(ClienteOrigem)
+admin.site.register(TipoDeConsultaDeCredito)
+admin.site.register(ReferenciaGeograficaCliente, ReferenciaGeograficaClienteAdmin)

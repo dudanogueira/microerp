@@ -27,6 +27,10 @@ from django.core.exceptions import ValidationError
 from cadastro.models import Cliente
 from rh.models import Funcionario
 
+import urllib2
+
+from icalendar import Calendar, Event
+
 SOLICITACAO_COMERCIAL_STATUS_CHOICES = (
     ('aberta', 'Aberta'),
     ('convertida', 'Convertida'),
@@ -100,13 +104,7 @@ class TipoContatoComercial(models.Model):
     def __unicode__(self):
         return self.nome
     
-    def get_from_range(self, start_date, end_date):
-        return self.contatocomercial_set.filter(
-        (models.Q(inicio__gt=start_date) & models.Q(inicio__lt=end_date)) |
-        (models.Q(fim__lt=end_date) & models.Q(fim__gt=start_date)) |
-        (models.Q(inicio__lt=start_date) & models.Q(fim__gt=end_date))
-    )
-    
+
     nome = models.CharField(blank=False, max_length=100)
     cor = models.CharField(blank=True, max_length=100, help_text="Exemplo: #0cf603")
     cor_do_texto = models.CharField(blank=True, max_length=100, help_text="Exemplo: #FFF")
@@ -114,7 +112,7 @@ class TipoContatoComercial(models.Model):
 class ContatoComercial(models.Model):
     
     def __unicode__(self):
-        return u"%s: %s. de %s à %s. %s no cliente %s" % (self.tipo, self.nome, self.inicio.strftime("%d/%m/%y %H:%m"), self.fim.strftime("%d/%m/%y %H:%m"), self.get_status_display(), self.cliente) 
+        return u"%s. de %s à %s. %s no cliente %s" % (self.nome, self.inicio.strftime("%d/%m/%y %H:%m"), self.fim.strftime("%d/%m/%y %H:%m"), self.get_status_display(), self.cliente)
 
     class Meta:
         verbose_name = u"Contato Comercial"
@@ -122,16 +120,62 @@ class ContatoComercial(models.Model):
     
     def json_event_object(self):
         output = '{"id":"%s","title":"%s: %s","start":"%s","end":"%s","allDay":%s}' % \
-                (self.pk, self.tipo.nome, self.nome, self.inicio.strftime("%s"), self.fim.strftime("%s"), str(self.o_dia_todo).lower())
+                (self.pk, self.agenda_fonte.tipo.nome, self.nome, self.inicio.strftime("%s"), self.fim.strftime("%s"), str(self.o_dia_todo).lower())
         return output
     
+    def tipo(self):
+        return self.agenda_fonte.tipo
+    
     nome = models.CharField(blank=True, max_length=255)
-    cliente = models.ForeignKey(Cliente)
+    cliente = models.ForeignKey(Cliente, blank=True, null=True)
     observacao = models.TextField(blank=True, null=False)
     o_dia_todo = models.BooleanField(default=False)
     inicio = models.DateTimeField(u"Início", blank=True, default=datetime.datetime.now)
     fim = models.DateTimeField(u"Fim", blank=True, default=datetime.datetime.now)
     status = models.CharField(blank=False, null=False, max_length=100, choices=CONTATO_COMERCIAL_STATUS_CHOICES, default="programado") 
-    tipo = models.ForeignKey(TipoContatoComercial)
     solicitacao_comercial_convertida = models.ManyToManyField(SolicitacaoComercial, blank=True, null=True, verbose_name="Solicitação Comercial Gerada pelo Contato")
+    funcionario = models.ForeignKey(Funcionario, blank=True, null=True)
+    # fonte de agenda
+    agenda_fonte = models.ForeignKey('FonteDeAgendaComercial', blank=True, null=True)
+    # controle da agenda
+    id_referencia = models.CharField(blank=True, max_length=255)
+    ultima_alteracao = models.DateTimeField(blank=True, null=True)
+
+class FonteDeAgendaComercial(models.Model):
+    
+    
+    def filtra_intervalo(self, start_date, end_date):
+        return self.contatocomercial_set.filter(
+        (models.Q(inicio__gt=start_date) & models.Q(inicio__lt=end_date)) |
+        (models.Q(fim__lt=end_date) & models.Q(fim__gt=start_date)) |
+        (models.Q(inicio__lt=start_date) & models.Q(fim__gt=end_date))
+    )
+    
+    def __unicode__(self):
+        return "Fonte de Agenda de %s em %s" % (self.funcionario, self.url)
+    
+    def atualiza_agenda(self, return_array=False):
+        '''Baixa os envetos do URL de ICAL'''
+        req = urllib2.urlopen(self.url)
+        response = req.read()
+        gcal = Calendar.from_ical(response)
+        store = []
+        for vevent in gcal.walk():
+            if vevent.name == "VEVENT":
+                store.append(vevent)
+                uid = vevent.get('UID')
+                titulo = vevent.get('SUMMARY')
+                contato,created = ContatoComercial.objects.get_or_create(id_referencia=uid, agenda_fonte=self)
+                contato.nome = titulo
+                contato.inicio = vevent.get('DTSTART').dt
+                contato.fim = vevent.get('DTEND').dt
+                contato.save()
+        if return_array == True:
+            return store
+                
+        
+    descricao = models.CharField("Descrição da Agenda", blank=True, max_length=100)
+    url = models.URLField(blank=False, verify_exists=False)
+    tipo = models.ForeignKey(TipoContatoComercial)
+    # Funcionário responsável
     funcionario = models.ForeignKey(Funcionario, blank=True, null=True)

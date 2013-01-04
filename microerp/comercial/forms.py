@@ -6,4 +6,4 @@ class ContatoComercialAdd(forms.ModelForm):
     
     class Meta:
         model = ContatoComercial
-        fields = ('nome', 'cliente', 'o_dia_todo','inicio', 'fim', 'tipo')
+        #fields = ('nome', 'cliente', 'o_dia_todo','inicio', 'fim',)

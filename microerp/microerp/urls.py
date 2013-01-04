@@ -19,10 +19,10 @@ __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2012 Duda Nogueira'
 __version__ = '0.0.1'
 
+# extenda o seu frontend aqui
 
 from django.conf.urls import patterns, include, url
 
-# Uncomment the next two lines to enable the admin:
 from django.contrib import admin
 admin.autodiscover()
 
@@ -40,6 +40,11 @@ urlpatterns = patterns('',
 urlpatterns += patterns('django.contrib.auth',
     url(r'^sair/$', 'views.logout', {}, 'logout'),
     url(r'^entrar/$', 'views.login', {}, 'login'),
+)
+
+# georefs
+urlpatterns += patterns('georefs',
+    url(r'^geo/clientes/$', 'views.kml_clientes', {}, 'kml_clientes'),
 )
 
 # DEBUGG

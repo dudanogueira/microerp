@@ -21,7 +21,7 @@ __version__ = '0.0.1'
 
 from django.contrib import admin
 
-from comercial.models import SolicitacaoComercial, TipoSolicitacaoComercial, ContatoComercial, TipoContatoComercial
+from comercial.models import SolicitacaoComercial, TipoSolicitacaoComercial, ContatoComercial, TipoContatoComercial, FonteDeAgendaComercial
 
 class SolicitacaoComercialAdmin(admin.ModelAdmin):
     list_filter = ('status', 'tipo__mao_de_obra_inclusa', 'cliente__bairro__nome',  'cliente__cidade__nome', 'cliente__cidade__estado',)
@@ -34,12 +34,13 @@ class TipoSolicitacaoComercialAdmin(admin.ModelAdmin):
 
 class ContatoComercialAdmin(admin.ModelAdmin):
     date_hierarchy = "inicio"
-    list_display = ('nome', 'tipo', 'status', 'inicio', 'fim', 'cliente')
+    list_display = ('nome', 'status', 'inicio', 'fim', 'cliente')
     search_fields = ['id', 'cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__telefone_fixo', 'cliente__telefone_celular', 'cliente__rua', 'cliente__bairro__nome']
-    list_filter = ('tipo', 'funcionario', 'inicio', 'status', 'cliente__cidade__nome', 'cliente__bairro__nome')
+    list_filter = ('funcionario', 'inicio', 'status', 'cliente__cidade__nome', 'cliente__bairro__nome')
     list_display_links = list_display
 
 admin.site.register(SolicitacaoComercial, SolicitacaoComercialAdmin)
 admin.site.register(TipoSolicitacaoComercial, TipoSolicitacaoComercialAdmin)
 admin.site.register(ContatoComercial, ContatoComercialAdmin)
 admin.site.register(TipoContatoComercial)
+admin.site.register(FonteDeAgendaComercial)
