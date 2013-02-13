@@ -14,7 +14,7 @@
         
         <p><b>Endereço</b>: {{georef_cliente.cliente.logradouro_completo}}</p>
     </description>
-    <Point><coordinates>{{georef_cliente.ponto.0}},{{georef_cliente.ponto.1}}</coordinates></Point>
+    <Point><coordinates>{{georef_cliente.ponto.x|safe}},{{georef_cliente.ponto.y|safe}}</coordinates></Point>
   </Placemark>
   {% endfor %}
 </Document>

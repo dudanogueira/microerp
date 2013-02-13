@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
-__copyright__ = 'Copyright (c) 2012 Duda Nogueira'
+__copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
 import os, datetime

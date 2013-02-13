@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
-__copyright__ = 'Copyright (c) 2012 Duda Nogueira'
+__copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
 import datetime
@@ -32,6 +32,8 @@ from django_extensions.db.fields import UUIDField
 from django.contrib.localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
 from django.contrib.gis.geos import Point, fromstr
+
+from georefs import google_latlng
 
 TIPO_CLIENTE_CHOICES = (
     ('pf', u'Pessoa Física'),
@@ -106,7 +108,6 @@ class Cliente(models.Model):
         return string
         
     def buscar_geoponto(self, endereco):
-        from georefs import google_latlng
         latlng = google_latlng.LatLng()
         latlng.requestLatLngJSON(endereco)
         if latlng.lat and latlng.lng:
@@ -115,7 +116,7 @@ class Cliente(models.Model):
             return False, False
 
     def criar_geoponto(self):
-        lat, lng = self.buscar_geoponto()
+        lat, lng = self.buscar_geoponto(self.logradouro_completo_busca())
         if lat and lng:
             # geoponto ok, criando referencia cliente
             # TODO melhorar aqui, nem todos os projetos precisam de GEOREF

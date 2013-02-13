@@ -3,4 +3,3 @@ from django.template import RequestContext, loader, Context
 
 def home(request):
     return render_to_response('frontend/main-home.html', locals(), context_instance=RequestContext(request),)
-    
