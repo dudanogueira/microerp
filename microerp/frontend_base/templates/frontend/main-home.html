@@ -1,5 +1,15 @@
 {% extends "frontend/frontend-base.html" %}
 
 {% block content %}
+{% if request.user.is_authenticated %}
+<h1>Olá {{request.user}}</h1>
+{% else %}
+<form action="{% url "login" %}" method="post">{% csrf_token %}
+{{form.as_p}}
+<input type="submit" class="btn btn-success" value="Login">
+</form>
+
+
+{% endif %}
 
 {% endblock %}

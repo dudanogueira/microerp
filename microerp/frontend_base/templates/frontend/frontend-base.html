@@ -58,8 +58,9 @@
               {% if request.user.perfilacessorh %}
               <li id="top-menu-rh"><a href="{% url "rh:home" %}">RH</a></li>
               {% endif %}
-              
-              <li><a href="#" class="navbar-link">Sair</a></li>
+              {% if request.user.is_authenticated %}
+              <li><a href="{% url "logout" %}?next=/" class="navbar-link">Sair</a></li>
+              {% endif %}
             </ul>
           </div><!--/.nav-collapse -->
         </div>
