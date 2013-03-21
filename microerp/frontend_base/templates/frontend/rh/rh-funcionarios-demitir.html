@@ -1,0 +1,41 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+{% block content %}
+<h1>Demitir Funcionário: {{funcionario}}</h1>
+<h4>{{funcionario.cargo_atual}} - {{funcionario.cargo_atual.departamento}}</h4>
+
+<div class="well alert alert-info" >
+    <h5>Ações tomadas pelo sistema ao Demitir 1 funcionário:</h5>
+    <ul>
+        <li>Será <strong>ENCERRADO</strong> o {{funcionario.periodo_trabalhado_corrente}}, <strong>ID#{{funcionario.periodo_trabalhado_corrente.id}}</strong></li>
+        <li>Será removido como Período de Trabalho Corrente do Funcionário: <strong>ID#{{funcionario.periodo_trabalhado_corrente.id}}</strong></li>
+        <li>Será <strong>Agendado um Exame Médico do Tipo Demissional</strong> com os tipos de exame padrão para o <strong>Cargo {{funcionario.cargo_atual}}</strong>, sendo eles: {% for exame in funcionario.cargo_atual.exame_medico_padrao.all %}Exame: {{exame.nome}} (R${{exame.valor}}){% endfor %} </li>
+        <li>Será Criado uma Entrada no Registro de Demissões</li>
+    </ul>
+    
+</div>
+
+<div class="well">
+    <form action="" method="post">
+        <h6>Data do Exame Demissional</h6>
+            {% csrf_token %}
+            {{form.as_p}}
+            <input class="btn btn-danger" type="submit" value="Iniciar processo de demissão">
+    </form>
+
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-funcionarios, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

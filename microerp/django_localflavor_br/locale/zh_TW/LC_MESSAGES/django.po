@@ -1,0 +1,54 @@
+# This file is distributed under the same license as the Django package.
+# 
+# Translators:
+# Jannis Leidel <jannis@leidel.info>, 2011.
+# ming hsien tzang <tzangms@gmail.com>, 2011.
+# quantum9876 <quantum9876@gmail.com>, 2011.
+# tcc <tcchou@tcchou.org>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: django-localflavor-br\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-12-20 16:39-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: tcc <tcchou@tcchou.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+#: forms.py:22
+msgid "Enter a zip code in the format XXXXX-XXX."
+msgstr "用 XXXXX-XXX 的格式輸入郵遞區號。"
+
+#: forms.py:31
+msgid "Phone numbers must be in XX-XXXX-XXXX format."
+msgstr "電話號碼必須是 XX-XXXX-XXXX 格式。"
+
+#: forms.py:58
+msgid ""
+"Select a valid brazilian state. That state is not one of the available "
+"states."
+msgstr "您輸入的不是正確的州。請選擇一個位於巴西的管轄州。"
+
+#: forms.py:93
+msgid "Invalid CPF number."
+msgstr "無效的 CPF 號碼。"
+
+#: forms.py:94
+msgid "This field requires at most 11 digits or 14 characters."
+msgstr "此欄必須輸入 11 位數的數字，或 14 個字母。"
+
+#: forms.py:95 forms.py:134
+msgid "This field requires only numbers."
+msgstr "此欄位只允許輸入數字"
+
+#: forms.py:133
+msgid "Invalid CNPJ number."
+msgstr "無效的 CNPJ 號碼。"
+
+#: forms.py:135
+msgid "This field requires at least 14 digits"
+msgstr "此欄必須至少有 14 位數。"

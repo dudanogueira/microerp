@@ -1,3 +1,5 @@
+{% load sekizai_tags %}
+{% load thumbnail %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -44,15 +46,20 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="#">MicroERP</a>
+          <a class="brand" href="{% url "home" %}">MicroERP</a>
           <div class="nav-collapse collapse">
             <p class="navbar-text pull-right">
-              Logged in as <a href="#" class="navbar-link">Username</a>
+               {% thumbnail request.user.funcionario.foto "30x30" crop="center" as im %}
+                  {{request.user.funcionario}} <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+              {% endthumbnail %}
             </p>
             <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>
+              <li id="top-menu-home"><a href="{% url "home" %}">Home</a></li>
+              {% if request.user.perfilacessorh %}
+              <li id="top-menu-rh"><a href="{% url "rh:home" %}">RH</a></li>
+              {% endif %}
+              
+              <li><a href="#" class="navbar-link">Sair</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div>
@@ -62,35 +69,45 @@
     <div class="container-fluid">
       <div class="row-fluid">
         <div class="span3">
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Sidebar</li>
-              <li class="active"><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li class="nav-header">Sidebar</li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li class="nav-header">Sidebar</li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-            </ul>
-          </div><!--/.well -->
+            
+            <div class="well sidebar-nav">
+              <ul class="nav nav-list">
+                <li class="nav-header">Principal</li>
+                <li id="main-home"><a href="{% url "home" %}">Painel</a></li>
+              </ul>              
+            </div><!--/.well -->
+            
+            
+            {% block auxiliar-menu %}
+            {% addtoblock "js" %}
+            <script>
+            $(document).ready(function() {
+            	$("#main-home, #top-menu-home").addClass("active");
+            });
+            </script>
+            {% endaddtoblock %}
+            
+            
+            {% endblock %}
+            
+            
         </div><!--/span-->
         <div class="span9">
-          <div class="hero-unit">
-            <h1>Hello, world!</h1>
-            <p>This is a template for a simple marketing or informational website. It includes a large callout called the hero unit and three supporting pieces of content. Use it as a starting point to create something more unique.</p>
-            <p><a class="btn btn-primary btn-large">Learn more &raquo;</a></p>
-          </div>
+    		{% if messages %}
+    		<div id="alertas">
+    		    {% for message in messages %}
+    				<div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">
+    				  <a class="close" data-dismiss="alert">×</a>
+    				  {{ message|safe }}
+    				</div>
+    		    {% endfor %}
+    		</div>
+    		{% endif %}
+            
+            {% block content %}
           <div class="row-fluid">
             <div class="span4">
+
               <h2>Heading</h2>
               <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
               <p><a class="btn" href="#">View details &raquo;</a></p>
@@ -123,6 +140,7 @@
               <p><a class="btn" href="#">View details &raquo;</a></p>
             </div><!--/span-->
           </div><!--/row-->
+          {% endblock %}
         </div><!--/span-->
       </div><!--/row-->
 
@@ -150,6 +168,6 @@
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-collapse.js"></script>
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-carousel.js"></script>
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-typeahead.js"></script>
-
+    {% render_block "js" %}
   </body>
 </html>

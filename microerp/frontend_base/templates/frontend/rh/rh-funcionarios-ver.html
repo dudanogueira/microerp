@@ -1,0 +1,225 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+{% block content %}
+<h1>Funcionário: {{funcionario}}</h1>
+<h4>{{funcionario.cargo_atual}} - {{funcionario.cargo_atual.departamento}}</h4>
+
+
+{% if funcionario.periodo_trabalhado_corrente %}
+<div class="btn-group open">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">Ações <span class="caret"></span></button>
+    <ul class="dropdown-menu">
+        <li><a href="" class=""><i class="icon-bookmark"></i> Promover Cargo</a></li>
+        <li><a href="#"><i class="icon-gift"></i> Promover Salário</a></a></li>
+        <li><a href="#"><i class="icon-home"></i> Solicitar Licença</a></li>
+                  
+        <li class="divider"></li>
+        <li><a href="{% url "rh:demitir_funcionario" funcionario.id %}"><i class="icon-minus"></i> Demitir</a></li>
+    </ul>
+</div>
+{% endif %}
+
+<div class="row-fluid">
+    
+    <div class="span6">
+        <div class="span12 pagination-right well">
+            {% thumbnail funcionario.foto "150x150" crop="center" as im %}
+                  <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+           {% endthumbnail %}
+        
+        </div>
+    </div>
+    <div class="span6">
+        
+        <h3>Período Trabalhado</h3>
+            {% for periodo in funcionario.periodotrabalhado_set.all %}
+            {% if not periodo.fim %}
+            <div class="alert alert-success">
+                <strong>Período Ativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}
+            </div>
+            {% else %}
+            <div class="alert alert-danger">
+                <strong>Período Inativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}. Fim: {{periodo.fim}}
+            </div>
+            {% endif %}
+
+            {% endfor %}
+            <div class="alert alert-info">
+            <b>Observação:</b>
+            {{funcionario.observacao}}
+            </div>
+    </div>
+</div>
+
+<div class="row-fluid">
+    
+    <div class="span6">
+        <h3>Contatos</h3>
+        <div class="well well-small">
+            <p><span class="label label-info">Email</span>  <strong>{{funcionario.email}}</strong></p>
+            <p><span class="label label-info">Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
+            <p><span class="label label-info">Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
+            <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
+        </div>
+    </div>
+    
+    <div class="span6">
+        <h3>Endereço</h3>
+        <div class="well well-small">
+            <p><span class="label label-info">Rua</span>  <strong>{{funcionario.rua}}</strong></p>
+            <p><span class="label label-info">Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
+            <p><span class="label label-info">CEP</span>  <strong>{{funcionario.cep}}</strong></p>
+            <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
+    
+        </div>
+    </div>
+
+</div>
+
+
+<div class="row-fluid">
+    <div class="span6">
+        <h3>Folhas de Ponto</h3>
+        <div class="well well-small">
+            <ul>
+            {% for folha in funcionario.folhadeponto_set.all %}
+                <li>FOLHA DE PONTO <strong>ID#{{folha.id}}</strong> {{folha.data_referencia.year}}/{{folha.data_referencia.month}} (<a href="{{folha.arquivo.url}}">arquivo</a>)</li>
+            {% empty %}
+                <li>Nenhuma Folha de Ponto Vinculada</li>
+            {% endfor %}
+            </ul>
+            {% if funcionario.periodo_trabalhado_corrente %}
+                <div class="well well-small">
+                    <h6>Adicionar para:</h6>
+                    <form action="{% url "rh:folha_de_ponto_add" funcionario.id %}" method="post"
+                        {% if adicionar_folhaponto_form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+                        {% csrf_token %}
+                    {{adicionar_folhaponto_form.as_p}}
+                    <input type="submit" class="btn btn-info" value="Enviar Folha de Ponto">
+                </form>
+                </div>
+                {% endif %}
+            
+        </div>
+    </div>
+    <div class="span6">
+        
+        <h3>Dependentes</h3>
+        <div class="well well-small">
+            <ul>
+                {% for dependente in funcionario.dependentedefuncionario_set.all %}
+                <li>{{dependente}} - {{dependente.nascimento|timesince}}</li>
+                {% empty %}
+                <li>Nenhum Dependente</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        
+        <h3>Solicitações de Licenças</h3>
+        <div class="well well-small">
+            
+            <ul>
+            {% for solicitacao_licenca in funcionario.solicitacaodelicenca_set.all %}
+            
+            {% if solicitacao_licenca.status == "aberta" %}
+                <li class="alert alert-warning">{{solicitacao_licenca.get_tipo_display}} de {{solicitacao_licenca.inicio|date:"SHORT_DATE_FORMAT"}} a {{solicitacao_licenca.fim|date:"SHORT_DATE_FORMAT"}} <strong>ABERTA</strong></li>
+            {% endif %}
+            
+            {% if solicitacao_licenca.status == "autorizada" %}
+                <li class="alert alert-success">{{solicitacao_licenca.get_tipo_display}} de {{solicitacao_licenca.inicio|date:"SHORT_DATE_FORMAT"}} a {{solicitacao_licenca.fim|date:"SHORT_DATE_FORMAT"}} <strong>AUTORIZADA</strong></li>
+            {% endif %}
+            
+            {% empty %}
+                <li>Nenhuma Solicitação de Licença Vinculada</li>
+            {% endfor %}
+            </ul>
+            {% if funcionario.periodo_trabalhado_corrente %}
+            <hr />
+            <h2>Adicionar</h2>
+            
+            
+            <form action="{% url "rh:solicitacao_licenca_add" funcionario.id %}" method="post">{% csrf_token %}
+            
+            {{adicionar_solicitacaolicenca_form.as_p}}
+            <input type="submit" name="solicitacao_licenca_add" value="Solicitar Licença" class="btn btn-info">
+            </form>
+            {% endif %}
+            
+        </div>
+        
+    </div>
+</div>
+
+    <h3>Exames Médicos</h3>
+<div class="row-fluid well">
+    <div class="span6">
+        <h3>Agendados</h3>
+        <div class="well well-small">
+            
+            <ul>
+            {% for exame_medico in funcionario.exames_agendados.all %}
+            {% if exame_medico.realizado %}
+            <li><span class="label label-success">Realizado <strong>ID#{{exame_medico.id}}</strong></span> {{exame_medico.get_tipo_display}} em {{exame_medico.data|date:"SHORT_DATE_FORMAT"}} - R${{exame_medico.valor_total}}</p></li>
+            {% else %}
+                <li><span class="label label-important">Pendente</span> {{exame_medico.get_tipo_display}} em {{exame_medico.data|date:"SHORT_DATE_FORMAT"}} - R${{exame_medico.valor_total}}</p></li>
+            {% endif %}
+            {% empty %}
+                <li>Nenhum Exame Médico Agendado</li>
+            {% endfor %}
+            </ul>
+            
+            {% if funcionario.exames_data_indefinida.count %}
+            <h4>Pendentes</h4>
+            
+            {% for exame_pendente in funcionario.exames_data_indefinida %}
+            <p class="alert alert-danger"><strong>ID#{{exame_pendente.id}}</strong> <a href="{% url "rh:exames_medicos_ver" exame_pendente.id %}">{{exame_pendente}}</a></p>
+            {% endfor %}
+            {% endif %}
+            
+        </div>
+    </div>
+    
+    
+    
+    <div class="span6">
+        <h3>Passados</h3>
+        <div class="well well-small">
+
+            <ul>
+            {% for exame_medico in funcionario.exames_passados.all %}
+            {% if exame_medico.realizado %}
+            <li><span class="label label-success">Realizado <strong>ID#{{exame_medico.id}}</strong></span> {{exame_medico.get_tipo_display}} em {{exame_medico.data|date:"SHORT_DATE_FORMAT"}} - R${{exame_medico.valor_total}}</p></li>
+            {% else %}
+            
+                <li><span class="label label-important">Pendente <strong>ID#{{exame_medico.id}}</strong></span> {{exame_medico.get_tipo_display}} em {{exame_medico.data|date:"SHORT_DATE_FORMAT"}} - R${{exame_medico.valor_total}}</p></li>
+            {% endif %}
+            {% empty %}
+                <li>Nenhum Exame Médico Agendado</li>
+            {% endfor %}
+            </ul>
+            
+
+            
+        </div>
+    </div>
+    
+    
+    
+</div>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-funcionarios, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

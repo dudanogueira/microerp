@@ -21,7 +21,7 @@ __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
 import datetime
-from django.contrib.localflavor.br.br_states import STATE_CHOICES
+from django_localflavor_br.br_states import STATE_CHOICES
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -29,11 +29,8 @@ from south.modelsinspector import add_introspection_rules
 
 from django_extensions.db.fields import UUIDField
 
-from django.contrib.localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
+from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
-from django.contrib.gis.geos import Point, fromstr
-
-from georefs import google_latlng
 
 TIPO_CLIENTE_CHOICES = (
     ('pf', u'Pessoa Física'),
@@ -155,9 +152,6 @@ class Cliente(models.Model):
     rua = models.CharField(blank=True, max_length=500, verbose_name=u"Rua")
     numero = models.CharField(blank=True, max_length=100, verbose_name=u"Número")
     complemento = models.CharField(blank=True, max_length=200, verbose_name=u"Complemento")
-    # comercial
-    # TODO: filtrar o grupo pela info no settings
-    #
     funcionario_responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
     # financeiro
     solicitar_consulta_credito = models.BooleanField("Solicitar Consulta de Crédito", default=False, help_text="Marque esta opção para solicitar uma consulta de crédito")
@@ -221,7 +215,6 @@ class ConsultaDeCredito(models.Model):
         verbose_name = u"Consulta de Crédito"
         verbose_name_plural = u"Consultas de Crédito"
     
-    
     realizada = models.BooleanField(default=False)
     cliente = models.ForeignKey(Cliente)
     funcionario_solicitante = models.ForeignKey('rh.Funcionario', related_name="solicitacoes_consulta_credito_set")
@@ -240,17 +233,3 @@ class ConsultaDeCredito(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
-
-# OAUTH - FOR GOOGLE
-#from oauth2client.django_orm import FlowField, CredentialsField
-#from django.contrib.auth.models import User
-#class FlowModel(models.Model):
-#    id = models.ForeignKey(User, primary_key=True)
-#    flow = FlowField()
-#
-#class CredentialsModel(models.Model):
-#  id = models.ForeignKey(User, primary_key=True)
-#  credential = CredentialsField()
-# 
-#add_introspection_rules([], ["^oauth2client\.django_orm\.CredentialsField"])
-#add_introspection_rules([], ["^oauth2client\.django_orm\.FlowField"])

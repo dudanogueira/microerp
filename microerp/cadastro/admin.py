@@ -25,11 +25,7 @@ from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem, Consul
 
 from comercial.models import SolicitacaoComercial
 
-from georefs.models import ReferenciaGeograficaCliente
-
 from django import forms
-
-from olwidget.admin import GeoModelAdmin
 
 class SolicitacaoComercialInline(admin.TabularInline):
     model = SolicitacaoComercial
@@ -81,13 +77,9 @@ class ClienteAdmin(admin.ModelAdmin):
     inlines = [ConsultaDeCreditoInline, SolicitacaoComercialInline]
 
 
-class ReferenciaGeograficaClienteAdmin(GeoModelAdmin):
-    list_filter= 'cliente__tipo', 'cliente__cidade', 'cliente__cidade__estado'
-
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Cidade)
 admin.site.register(Bairro)
 admin.site.register(Ramo)
 admin.site.register(ClienteOrigem)
 admin.site.register(TipoDeConsultaDeCredito)
-admin.site.register(ReferenciaGeograficaCliente, ReferenciaGeograficaClienteAdmin)

@@ -13,6 +13,13 @@ from rh.models import IdiomaFuncionario
 from rh.models import CursoFuncionario
 from rh.models import FolhaDePonto
 from rh.models import EntradaFolhaDePonto
+from rh.models import DependenteDeFuncionario
+from rh.models import TipoDeExameMedico
+from rh.models import RotinaExameMedico
+from rh.models import PerfilAcessoRH
+from rh.models import Demissao
+from rh.models import DependenteDeFuncionario
+
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -21,26 +28,35 @@ class ExperienciasProfissionaisFuncionarioInline(admin.StackedInline):
     ordering = ['data_admissao']
     extra = 0
     
-class IdiomaFuncionarioInline(admin.TabularInline):
+class IdiomaFuncionarioInline(admin.StackedInline):
     ordering = ['nivel']
     model = IdiomaFuncionario
-    extra = 1
+    extra = 0
 
-class CursoFuncionarioInline(admin.TabularInline):
+class CursoFuncionarioInline(admin.StackedInline):
     ordering = ['data']
     model = CursoFuncionario
-    extra = 1
+    extra = 0
+
+class DependenteDeFuncionarioInline(admin.StackedInline):
+    model = DependenteDeFuncionario
+    extra = 0
 
 class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
-    list_display = ('nome', 'email', 'departamento', 'cargo_atual')
+    list_display = ('nome', 'email', 'cargo_atual')
     list_display_links = list_display
-    list_filter = ('departamento', 'cargo_atual')
-    inlines = [IdiomaFuncionarioInline, CursoFuncionarioInline, ExperienciasProfissionaisFuncionarioInline]
+    list_filter = ('cargo_atual',)
+    inlines = [
+        IdiomaFuncionarioInline,
+        CursoFuncionarioInline,
+        ExperienciasProfissionaisFuncionarioInline,
+        DependenteDeFuncionarioInline,
+    ]
 
 
 class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
     search_fields = ['funcionario__nome',]
-    list_filter = ('status', 'tipo', 'funcionario__departamento__nome', 'funcionario__cargo_atual__nome', 'inicio')
+    list_filter = ('status', 'tipo', 'funcionario__cargo_atual__nome', 'inicio')
     list_display = ('funcionario', 'data_criado', 'tipo', 'inicio', 'fim', 'status')
     list_display_links = list_display
     date_hierarchy = 'data_criado'
@@ -49,7 +65,7 @@ class PromocaoCargoAdmin(admin.ModelAdmin):
     list_display = ('beneficiario', 'data_solicitacao', 'cargo_antigo', 'cargo_novo', 'aprovado', 'avaliado', 'criado')
 
 
-class EntradaFolhaDePontoInline(admin.TabularInline):
+class EntradaFolhaDePontoInline(admin.StackedInline):
     model = EntradaFolhaDePonto
     ordering = ['hora']
     extra= 0
@@ -71,3 +87,8 @@ admin.site.register(PromocaoSalario)
 admin.site.register(PromocaoCargo, PromocaoCargoAdmin)
 admin.site.register(SolicitacaoDeLicenca, SolicitacaoDeLicencaAdmin)
 admin.site.register(FolhaDePonto, FolhaDePontoAdmin)
+admin.site.register(PerfilAcessoRH)
+admin.site.register(TipoDeExameMedico)
+admin.site.register(RotinaExameMedico)
+admin.site.register(Demissao)
+admin.site.register(DependenteDeFuncionario)

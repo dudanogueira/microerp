@@ -38,18 +38,13 @@ urlpatterns += patterns('django.contrib.auth',
     url(r'^entrar/$', 'views.login', {}, 'login'),
 )
 
-# georefs
-urlpatterns += patterns('georefs',
-    url(r'^geo/clientes/$', 'views.kml_clientes', {}, 'kml_clientes'),
-)
 
 # urls do frontend
 app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")
 urlpatterns += patterns('',
     url(r'^$', '%s.views.home' % app_frontend, name='home'),
-    url(r'^frontend/', include('%s.urls' % app_frontend, namespace="frontend"))
+    url(r'^rh/', include('rh.urls', namespace="rh"))
 )
-
 
 # DEBUGG
 from django.conf import settings

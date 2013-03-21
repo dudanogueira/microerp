@@ -169,7 +169,6 @@ INSTALLED_APPS = (
     'rh',
     'almoxarifado',
     'comercial',
-    'georefs',
     # customizado
     'frontend_base',
 )

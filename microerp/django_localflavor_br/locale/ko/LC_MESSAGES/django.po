@@ -1,0 +1,52 @@
+# This file is distributed under the same license as the Django package.
+# 
+# Translators:
+# Jaehong Kim <mixe@korea.com>, 2011.
+# Jannis Leidel <jannis@leidel.info>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: django-localflavor-br\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-12-20 16:39-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Jaehong Kim <mixe@korea.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=1; plural=0\n"
+
+#: forms.py:22
+msgid "Enter a zip code in the format XXXXX-XXX."
+msgstr "우편번호는 XXXXX-XXX 형식으로 입력하세요."
+
+#: forms.py:31
+msgid "Phone numbers must be in XX-XXXX-XXXX format."
+msgstr "전화번호는 XX-XXXX-XXXX 형식으로 입력하세요."
+
+#: forms.py:58
+msgid ""
+"Select a valid brazilian state. That state is not one of the available "
+"states."
+msgstr "올바르게 선택해 주세요. 선택하신 것이 선택가능항목에 없습니다."
+
+#: forms.py:93
+msgid "Invalid CPF number."
+msgstr "CPF 값이 올바르지 않습니다."
+
+#: forms.py:94
+msgid "This field requires at most 11 digits or 14 characters."
+msgstr "최대 11자 또는 14자 이하로 입력해 주세요."
+
+#: forms.py:95 forms.py:134
+msgid "This field requires only numbers."
+msgstr "숫자만 입력해야 합니다."
+
+#: forms.py:133
+msgid "Invalid CNPJ number."
+msgstr "올바른 CNPJ 번호를 입력하세요."
+
+#: forms.py:135
+msgid "This field requires at least 14 digits"
+msgstr "이 항목은 최소한 14개의 숫자를 입력해야 합니다."

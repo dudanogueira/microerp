@@ -1,0 +1,43 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+{% block content %}
+<h1>Funcionários Ativos</h1>
+<div class="well well-small">
+
+    {% for departamento in departamentos %}
+        {% for cargo in departamento.cargo_set.all %}
+        <h3>{{departamento}} - {{cargo}}</h3>
+            <ul>
+            {% for funcionario in cargo.funcionario_cargo_atual_set.all %}
+            {% if funcionario.periodo_trabalhado_corrente %}
+                <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}}</a></li>
+            {% endif %}
+            {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+<h1>Funcionários Inativos</h1>
+<div class="well well-small">
+    <ul>
+    {% for funcionario in funcionarios_inativos %}
+        <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}}</a></li>
+    {% endfor %}
+    </ul>
+    
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-funcionarios, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

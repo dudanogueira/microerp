@@ -1,0 +1,50 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% block content %}
+<h1>Exames Médicos</h1>
+<h2>Data Indefinida</h2>
+<ul>
+{% for exame in exames_data_pendente %}
+<li><a href="{% url "rh:exames_medicos_ver" exame.id %}"><strong>#ID{{exame.id}}</strong> {{exame}}. CRIADO EM: {{exame.criado|date:"SHORT_DATETIME_FORMAT"}}</a></li>
+{% empty %}
+<li>Nenhum Exame com data indefinida</li>
+{% endfor %}
+</ul>
+
+<h2>Exames Não Realizados e com Data pendente</h2>
+<ul>
+{% for exame in exames_remarcacao %}
+    <li><a href="{% url "rh:exames_medicos_ver" exame.id %}"><strong>#ID{{exame.id}}</strong> {{exame}}</a></li>
+{% endfor %}
+</ul>
+
+<h2>Exames Agendados e Não Realizados</h2>
+<ul>
+{% for exame in exames_agendados %}
+    <li><a href="{% url "rh:exames_medicos_ver" exame.id %}"><strong>#ID{{exame.id}}</strong> {{exame}}</a></li>
+{% endfor %}
+</ul>
+
+
+<h2>Exames Realizados</h2>
+<ul>
+{% for exame in exames_realizados %}
+    <li><a href="{% url "rh:exames_medicos_ver" exame.id %}"><strong>#ID{{exame.id}}</strong> {{exame}}</a></li>
+{% endfor %}
+</ul>
+
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-exames-medicos, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

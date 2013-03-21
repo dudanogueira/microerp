@@ -1,0 +1,54 @@
+# This file is distributed under the same license as the Django package.
+# 
+# Translators:
+# Antti Kaihola <akaihol+transifex@ambitone.com>, 2011.
+# Jannis Leidel <jannis@leidel.info>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: django-localflavor-br\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-12-20 16:39-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Antti Kaihola <akaihol+transifex@ambitone.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:22
+msgid "Enter a zip code in the format XXXXX-XXX."
+msgstr "Syötä postinumero muodossa XXXXX-XXX."
+
+#: forms.py:31
+msgid "Phone numbers must be in XX-XXXX-XXXX format."
+msgstr "Puhelinnumeron tulee olla muodossa XX-XXXX-XXXX."
+
+#: forms.py:58
+msgid ""
+"Select a valid brazilian state. That state is not one of the available "
+"states."
+msgstr ""
+"Valitse oikea brasilialainen osavaltio. Valitsemasi osavaltio ei ole yksi "
+"sallituista osavaltiosta."
+
+#: forms.py:93
+msgid "Invalid CPF number."
+msgstr "Virheellinen CPF-numero."
+
+#: forms.py:94
+msgid "This field requires at most 11 digits or 14 characters."
+msgstr "Tämä kenttä vaatii vähintään 11 ja enintään 14 merkkiä."
+
+#: forms.py:95 forms.py:134
+msgid "This field requires only numbers."
+msgstr "Tähän kenttään kelpaavat vain numerot."
+
+#: forms.py:133
+msgid "Invalid CNPJ number."
+msgstr "Virheellinen CNPJ-numero."
+
+#: forms.py:135
+msgid "This field requires at least 14 digits"
+msgstr "Tähän kenttään vaaditaan ainakin 14 numeroa."

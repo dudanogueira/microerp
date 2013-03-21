@@ -1,0 +1,62 @@
+# This file is distributed under the same license as the Django package.
+# 
+# Translators:
+# badka <badral214@gmail.com>, 2011.
+# Jannis Leidel <jannis@leidel.info>, 2011.
+#   <jargalanch@gmail.com>, 2012.
+# miigaa ... <b.myagmardorj@gmail.com>, 2012.
+#   <mnts26@gmail.com>, 2011.
+# Tsolmon <mnts26@gmail.com>, 2011.
+#   <zolzaya.erdenebaatar@gmail.com>, 2011.
+# Анхбаяр Анхаа <l.ankhbayar@gmail.com>, 2011, 2012.
+# Баясгалан Цэвлээ <bayasaa_7672@yahoo.com>, 2011, 2012.
+# Ганзориг БП <ganzo.bp@gmail.com>, 2011.
+msgid ""
+msgstr ""
+"Project-Id-Version: django-localflavor-br\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-12-20 16:39-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Анхбаяр Анхаа <l.ankhbayar@gmail.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:22
+msgid "Enter a zip code in the format XXXXX-XXX."
+msgstr "Шуудангийн индексээ XXXXX-XXX хэлбэрээр оруулна уу. "
+
+#: forms.py:31
+msgid "Phone numbers must be in XX-XXXX-XXXX format."
+msgstr "Утасны дугаараа XX-XXXX-XXXX хэлбэрээр оруулна уу."
+
+#: forms.py:58
+msgid ""
+"Select a valid brazilian state. That state is not one of the available "
+"states."
+msgstr "Бразилийн мужаа сонгоно уу. Энэ нь байгаа муж биш байна."
+
+#: forms.py:93
+msgid "Invalid CPF number."
+msgstr "CPF дугаар хүчингүй байна."
+
+#: forms.py:94
+msgid "This field requires at most 11 digits or 14 characters."
+msgstr ""
+"Энэ хэсэгт 11-ээс илүүгүй оронтой тоо буюу 14-өөс илүүгүй тэмдэгт оруулна "
+"уу."
+
+#: forms.py:95 forms.py:134
+msgid "This field requires only numbers."
+msgstr "Энэ хэсэгт зөвхөн тоо оруулна."
+
+#: forms.py:133
+msgid "Invalid CNPJ number."
+msgstr "CNPJ дугаар хүчингүй байна."
+
+#: forms.py:135
+msgid "This field requires at least 14 digits"
+msgstr "Энэ хэсэгт наад зах нь 14 оронтой тоо оруулна уу."

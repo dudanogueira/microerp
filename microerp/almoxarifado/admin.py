@@ -55,7 +55,7 @@ class LinhaControleDeEquipamentoInLine(admin.TabularInline):
 class LinhaControleDeEquipamentoAdmin(admin.ModelAdmin):
     list_display = ('status', 'pendente', 'equipamento', 'data_devolucao_programada', 'data_devolucao_efetiva')
     list_display_links = list_display
-    list_filter = ('status', 'controle__funcionario__departamento__nome', 'controle__funcionario', 'controle__autorizador')
+    list_filter = ('status', 'controle__funcionario', 'controle__autorizador')
     search_fields = ['equipamento__produto__nome']
     date_hierarchy = 'criado'
 
@@ -63,7 +63,7 @@ class ControleDeEquipamentoAdmin(admin.ModelAdmin):
     search_fields = ['linhacontroledeequipamento__equipamento__id', 'linhacontroledeequipamento__equipamento__produto__nome']
     list_display = ('id', 'funcionario', 'status')
     list_display_links = list_display
-    list_filter = ('status', 'funcionario__departamento__nome', 'funcionario')
+    list_filter = ('status', 'funcionario')
     inlines = [LinhaControleDeEquipamentoInLine]
 
 class EquipamentoAdmin(admin.ModelAdmin):

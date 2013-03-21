@@ -175,7 +175,7 @@ class FonteDeAgendaComercial(models.Model):
                 
         
     descricao = models.CharField("Descrição da Agenda", blank=True, max_length=100)
-    url = models.URLField(blank=False, verify_exists=False)
+    url = models.URLField(blank=False)
     tipo = models.ForeignKey(TipoContatoComercial)
     # Funcionário responsável
     funcionario = models.ForeignKey(Funcionario, blank=True, null=True)
