@@ -22,7 +22,15 @@
         {% else %}
         <h6>Agendado para: {{exame.data}}</h6>
         <p>
-            <a href="{% url "rh:exame_realizado_hoje" exame.id %}" class="btn btn-success"><i class="icon icon-white icon-check"></i> Marcar como Realizado</a>
+            
+            <form method="POST" name="exame_arquivo_form" {% if exame_arquivo_form.is_multipart %}enctype="multipart/form-data"{% endif %} action="{% url "rh:exame_realizado_hoje" exame.id %}">{% csrf_token %}
+            {{exame_arquivo_form.as_p}}
+            <input type="submit" class="btn btn-info" name="agendar" value="Enviar Arquivo Digital de Retorno do Exame">
+            </form>
+            
+            
+            
+            
             <hr />
             <form method="POST" name="agendar">{% csrf_token %}
             {{form_agendar.as_p}}

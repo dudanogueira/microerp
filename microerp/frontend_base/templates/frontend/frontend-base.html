@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Bootstrap, from Twitter</title>
+    <title>{%block title %}MICROERP{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -54,13 +54,17 @@
               {% endthumbnail %}
             </p>
             <ul class="nav">
-              <li id="top-menu-home"><a href="{% url "home" %}">Home</a></li>
+              <li id="top-menu-home"><a href="{% url "home" %}"><i class="icon-white icon icon-home"></i> Home</a></li>
               {% if request.user.perfilacessorh %}
-              <li id="top-menu-rh"><a href="{% url "rh:home" %}">RH</a></li>
+              <li id="top-menu-rh"><a href="{% url "rh:home" %}"><i class="icon-white icon icon-user"></i> RH</a></li>
+              {% endif %}
+              {% if request.user.is_staff %}
+              <li><a href="{% url "admin:index" %}" class="navbar-link"><i class="icon-white icon icon-plus"></i> ADM</a></li>
               {% endif %}
               {% if request.user.is_authenticated %}
-              <li><a href="{% url "logout" %}?next=/" class="navbar-link">Sair</a></li>
+              <li><a href="{% url "logout" %}?next=/" class="navbar-link"><i class="icon-white icon icon-arrow-left"></i> Sair</a></li>
               {% endif %}
+              
             </ul>
           </div><!--/.nav-collapse -->
         </div>

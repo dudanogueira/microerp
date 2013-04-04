@@ -6,6 +6,8 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
+from django.core.exceptions import ValidationError
+
 from django.db.models import Q
 
 from rh.models import Departamento, Funcionario, Demissao
@@ -31,6 +33,19 @@ class AdicionarFolhaDePontoForm(forms.ModelForm):
     class Meta:
         model = FolhaDePonto
         fields = ('arquivo', 'data_referencia',)
+
+
+class AdicionarArquivoRotinaExameForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(AdicionarArquivoRotinaExameForm, self).__init__(*args, **kwargs)
+
+        for key in self.fields:
+            self.fields[key].required = True
+
+    class Meta:
+        model = RotinaExameMedico
+        fields = ('arquivo',)
+
 
 class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
     class Meta:
@@ -118,32 +133,65 @@ def exames_medicos_ver(request, exame_id):
             messages.info(request, u"Agendado para %s" % exame.data.strftime("%d/%m/%Y %H:%M"))
     else:
         form_agendar = AgendarExameMedicoForm(instance=exame)
-
+    exame_arquivo_form = AdicionarArquivoRotinaExameForm(instance=exame)
     
     return render_to_response('frontend/rh/rh-exames-medicos-ver.html', locals(), context_instance=RequestContext(request),)
 
+
 def exames_medicos_exame_realizado_hoje(request, exame_id):
     '''marca exame como Realizado Hoje'''
-    exame = get_object_or_404(RotinaExameMedico, id=exame_id)
-    if not exame.data:
-        exame.data = datetime.datetime.now()
-    exame.realizado = True
-    exame.save()
-    messages.success(request, u"Exame marcado como Realizado!")
-    # Se é exame admissional, ou atualização
-    # marcar para daqui a 1 ano, do tipo atualização
-    if exame.tipo == "a" or exame.tipo == "u":
-        data_novo_exame = datetime.date.today() + relativedelta( months = +12 )
-        novo_exame = exame.funcionario.rotinaexamemedico_set.create(
-            tipo="u",
-            data=data_novo_exame,
-            periodo_trabalhado=exame.periodo_trabalhado,
-        )
-        messages.info(request, u"Um Novo Exame do Tipo Atualização foi Criado: #ID%s" % novo_exame.id)
-        for exame_padrao in exame.funcionario.cargo_atual.exame_medico_padrao.all():
-            novo_exame.exames.add(exame_padrao)
-        novo_exame.save()
+    exame = get_object_or_404(RotinaExameMedico, pk=exame_id)
+    if request.POST:
+        form = AdicionarArquivoRotinaExameForm(request.POST, request.FILES, instance=exame)
+        if form.is_valid():            
+            try:
+                exame_alterado = form.save(commit=False)
+                exame_alterado.realizado = True
+                exame_alterado.save()
+                messages.info(request, "Salvo")
+            except ValidationError, e:
+                messages.error(request, "%" '; '.join(e.messages))        
+            except:
+                raise
+        else:
+            errors = ["%s: %s" % (item[0], str(item[1])) for item in form.errors.items()]
+            messages.error(request, "%" '; '.join(errors))
+
     return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
+
+
+def exames_medicos_exame_realizado_hoje_old(request, exame_id):
+    '''marca exame como Realizado Hoje'''
+    if request.POST:
+        form = AdicionarArquivoRotinaExameForm(request.POST, request.FILES)
+        try:
+            if form.is_valid():
+                exame = form.save()
+                if not exame.data:
+                    exame.data = datetime.datetime.now()
+                exame.realizado = True
+                exame.clean()
+                exame.save()
+                messages.success(request, u"Exame marcado como Realizado!")
+                # Se é exame admissional, ou atualização
+                # marcar para daqui a 1 ano, do tipo atualização
+                if exame.tipo == "a" or exame.tipo == "u":
+                    data_novo_exame = datetime.date.today() + relativedelta( months = +12 )
+                    novo_exame = exame.funcionario.rotinaexamemedico_set.create(
+                        tipo="u",
+                        data=data_novo_exame,
+                        periodo_trabalhado=exame.periodo_trabalhado,
+                    )
+                    messages.info(request, u"Um Novo Exame do Tipo Atualização foi Criado: #ID%s" % novo_exame.id)
+                    for exame_padrao in exame.funcionario.cargo_atual.exame_medico_padrao.all():
+                        novo_exame.exames.add(exame_padrao)
+                    novo_exame.save()
+            else:
+                messages.error(request, "ERROR")        
+        except ValidationError, e:
+            messages.error(request, "%" '; '.join(e.messages))        
+
+        return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
 
 def processos_demissao(request):
     return render_to_response('frontend/rh/rh-processos-demissao.html', locals(), context_instance=RequestContext(request),)

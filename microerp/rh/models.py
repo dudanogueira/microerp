@@ -44,6 +44,11 @@ def funcionario_folha_ponto_assinada(instance, filename):
         'funcionarios/', instance.funcionario.uuid, 'folha_de_ponto', str(instance.data_referencia.year), str(instance.data_referencia.month), filename
     )
 
+def funcionario_rotina_exame_medico(instance, filename):
+    return os.path.join(
+        'funcionarios/', instance.funcionario.uuid, 'exames_medicos', str(instance.id), "ID-%s-%s" % (instance.id, filename)
+    )
+
 SOLICITACAO_LICENCA_STATUS_CHOICES = (
     ('aberta', u"Aberta"),
     ('autorizada', u"Autorizada"),
@@ -459,7 +464,7 @@ class FolhaDePonto(models.Model):
     
     class Meta:
         verbose_name = u"Folha de Ponto"
-        verbose_name_plural = u"Folhas d Ponto"
+        verbose_name_plural = u"Folhas de Ponto"
         ordering = ['-data_referencia',]
     
     def __unicode__(self):
@@ -499,7 +504,7 @@ class FolhaDePonto(models.Model):
     autorizado = models.BooleanField(default=False)
     funcionario_autorizador = models.ForeignKey(Funcionario, related_name="folhadeponto_autorizado_set", blank=True, null=True)
     # arquivo impresso
-    arquivo = models.FileField(upload_to=funcionario_folha_ponto_assinada, blank=True, null=True)
+    arquivo = models.FileField(upload_to=funcionario_folha_ponto_assinada, blank=True, null=True, max_length=300)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -581,12 +586,17 @@ class RotinaExameMedico(models.Model):
         else:
             return False
     
+    def clean(self):
+        if self.realizado and not self.arquivo:
+            raise ValidationError(u"Para marcar um exame como realizado, é preciso anexar o Arquivo Digital do retorno do Exame.")
+    
     data = models.DateTimeField(blank=True, null=True, default=datetime.datetime.now, help_text="Formato: dd/mm/yy hh:mm")
     tipo = models.CharField(blank=True, max_length=100, choices=ROTINA_EXAME_MEDICO_CHOICES)
     funcionario = models.ForeignKey('Funcionario')
     exames = models.ManyToManyField('TipoDeExameMedico', blank=True, null=True)
     realizado = models.BooleanField(default=False)
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
+    arquivo = models.FileField(upload_to=funcionario_rotina_exame_medico, blank=True, null=True, max_length=300)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
