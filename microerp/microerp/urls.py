@@ -43,7 +43,8 @@ urlpatterns += patterns('django.contrib.auth',
 app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")
 urlpatterns += patterns('',
     url(r'^$', '%s.views.home' % app_frontend, name='home'),
-    url(r'^rh/', include('rh.urls', namespace="rh"))
+    url(r'^rh/', include('rh.urls', namespace="rh")),
+    url(r'^recepcao/', include('cadastro.urls', namespace="cadastro")),
 )
 
 # DEBUGG

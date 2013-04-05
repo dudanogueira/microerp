@@ -25,6 +25,8 @@ from django_localflavor_br.br_states import STATE_CHOICES
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from django.conf import settings
+
 from south.modelsinspector import add_introspection_rules
 
 from django_extensions.db.fields import UUIDField
@@ -36,6 +38,17 @@ TIPO_CLIENTE_CHOICES = (
     ('pf', u'Pessoa Física'),
     ('pj', u'Pessoa Jurídica'),
 )
+
+
+class PreCliente(models.Model):
+    '''
+    Um Pre cliente é convertido depois em Cliente
+    '''
+    cliente_convertido = models.ForeignKey('Cliente', blank=True, null=True)
+    nome = models.CharField(blank=False, max_length=300)
+    contato = models.CharField(blank=False, max_length=100)
+    dados = models.TextField(blank=True)
+    
 
 class Cliente(models.Model):
     u'''
@@ -232,4 +245,12 @@ class ConsultaDeCredito(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
+
+class PerfilAcessoRecepcao(models.Model):
+    '''Perfil de Acesso à Recepção'''
+    gerente = models.BooleanField(default=False)
+    analista = models.BooleanField(default=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        

@@ -1,0 +1,164 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid">
+    <div class="span6">
+        <div class="well well-small">
+            <h2>Buscar Funcionário</h2>
+            <form class="form-search" action="{% url "cadastro:home" %}">
+                <input type="text" class="input-medium search-query" name="funcionario" value="{% if funcionario_q %}{{funcionario_q}}{%endif%}">
+                <button type="submit" class="btn btn-info">Buscar</button>
+                {% if funcionario_q %}
+                <a href="."><i class="icon icon-remove"></i>Limpar</a>
+                {% endif %}
+            </form>
+            {% if funcionario_q %}
+
+            <table class="table table-hover table-striped table-condensed">
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+            
+                    {% for funcionario in funcionarios %}
+          
+                    <tr>
+                        <td>{{funcionario.nome}}</td>
+                        <td>
+                            <a class="btn" href="{% url "cadastro:ver_contatos_funcionario" funcionario.id %}">ver</a>
+                            <a class="btn" href="">+ recado</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+            
+                    <tr>
+                        <td>Nenhum Funcionário Encontrado</td>
+                        <td>            {% if funcionario_q %}
+                            <a href="."><i class="icon icon-remove"></i>Limpar Busca</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+            
+            
+                </tbody>
+            </table>
+
+            {% endif %}
+        </div>
+    </div>
+
+
+    <div class="span6">
+        <div class="well well-small">
+            <h2>Buscar Cliente / Pré Cliente</h2>
+            <form class="form-search" action="{% url "cadastro:home" %}">
+                <input type="text" class="input-medium search-query" name="cliente" value="{% if funcionario_q %}{{cliente_q}}{%endif%}">
+                <button type="submit" class="btn btn-info">Buscar</button>
+                {% if cliente_q %}
+                <a href="."><i class="icon icon-remove"></i>Limpar</a>
+                {% endif %}
+            </form>
+
+            {% if cliente_q %}
+            
+            <table class="table table-hover table-striped table-condensed">
+                <thead>
+                    <caption><h4>Pré Clientes</h4></caption>
+                    <tr>
+                        <th>Pré Cliente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                
+                    {% for cliente in preclientes %}
+              
+                    <tr>
+                        <td>{{cliente.nome}}</td>
+                        <td>
+                            <a class="btn" href="">ver</a>
+                            <a class="btn" href="">+ recado</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                
+                    <tr>
+                        <td>Nenhum Cliente Encontrado</td>
+                        <td>            {% if cliente_q %}
+                            <a href="."><i class="icon icon-remove"></i>Limpar Busca</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                
+                
+                </tbody>
+            </table>
+            
+            
+
+            <table class="table table-hover table-striped table-condensed">
+                <thead>
+                    <caption><h4>Clientes</h4></caption>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                
+                    {% for cliente in clientes %}
+              
+                    <tr>
+                        <td>{{cliente.nome}}</td>
+                        <td>
+                            <a class="btn" href="">ver</a>
+                            <a class="btn" href="">+ recado</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                
+                    <tr>
+                        <td>Nenhum Cliente Encontrado</td>
+                        <td>            {% if cliente_q %}
+                            <a href="."><i class="icon icon-remove"></i>Limpar Busca</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+                
+                
+                </tbody>
+            </table>
+            
+            
+
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-cadastro-home, #top-menu-cadastro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
+{% endblock%}

@@ -22,6 +22,8 @@ __version__ = '0.0.1'
 from django.contrib import admin
 
 from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem, ConsultaDeCredito, TipoDeConsultaDeCredito
+from cadastro.models import PerfilAcessoRecepcao
+from cadastro.models import PreCliente
 
 from comercial.models import SolicitacaoComercial
 
@@ -83,3 +85,5 @@ admin.site.register(Bairro)
 admin.site.register(Ramo)
 admin.site.register(ClienteOrigem)
 admin.site.register(TipoDeConsultaDeCredito)
+admin.site.register(PerfilAcessoRecepcao)
+admin.site.register(PreCliente)
