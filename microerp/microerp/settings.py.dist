@@ -3,7 +3,6 @@
 import os
 INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
 
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -15,40 +14,24 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'microerp',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'microerp.db',
+        'USER': '',
+        'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
     }
 }
 
 
-# CUSTOM SETTINGS
-
-OLWIDGET_DEFAULT_OPTIONS = {
-    'layers': [
-        've.shaded',
-        'google.streets',
-        'google.physical',
-        'google.satellite',
-        'google.hybrid',
-        've.road',
-        've.aerial',
-        've.hybrid'
-    ],
-}
-
 
 # CUSTOMS / deprecated in Django 1.5
-AUTH_PROFILE_MODULE = 'rh.Funcionario'
+AUTH_USER_MODEL = 'account.User'
+
+LOGIN_REDIRECT_URL = '/'
 
 # APLICATIVO DE FRONTEND
 APP_DE_FRONTEND = 'frontend_base'
-
-# DEFININDO DEPARTAMENTOS
-DEPARTAMENTO_COMERCIAL_ID = 2 # IT = 1
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -154,21 +137,21 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # admin
+    'django_admin_bootstrapped',
     'django.contrib.admin',
     'django.contrib.admindocs',
-    'django.contrib.gis',
     # apps terceiros
     'south',
     'django_extensions',
     'sorl.thumbnail',
-    'bootstrap_toolkit',
-    'olwidget',
     'sekizai',
     # apps do projeto
     'cadastro',
     'rh',
     'almoxarifado',
     'comercial',
+    'account',
     # customizado
     'frontend_base',
 )
