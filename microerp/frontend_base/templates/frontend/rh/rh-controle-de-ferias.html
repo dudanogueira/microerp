@@ -1,0 +1,41 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH{% endblock %}</title>
+
+{% block content %}
+
+<h2>Controle de Férias</h2>
+
+{% for funcionario in funcionarios %}
+<div class="well well-small alert alert-{{funcionario.ferias_situacao}}">
+    {% if funcionario.ferias_situacao == "error" %}
+    <div class="alert alert-error">
+        <b>Atenção!</b> Funcionário em <strong>Situação Irregular</strong>.
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <h4>{{funcionario}}</h4>
+    
+    <p><strong>Admissão</strong>: {{funcionario.periodo_trabalhado_corrente.inicio}} ({{funcionario.periodo_trabalhado_corrente.inicio|timesince}})</p>
+    <p><strong>Dias de Direito</strong>: {{funcionario.ferias_dias_de_direito}} dias</p>
+    <hr />
+    <p><strong>Dias Agendados</strong>: {{funcionario.ferias_dias_agendados}}</p>
+    <p><strong>Dias Gozados</strong>: {{funcionario.ferias_dias_gozados}}</p>
+    <p><strong>Total</strong>: {{funcionario.ferias_dias_agendados_e_gozados}}</p>
+    
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-controle-de-ferias, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

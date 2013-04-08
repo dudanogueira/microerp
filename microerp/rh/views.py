@@ -106,7 +106,8 @@ def solicitacao_licenca_add(request, funcionario_id):
             solicitacao.save()
             messages.success(request, u'Solicitação Adicionada')
         else:
-            messages.error(request, u'Erro')
+            errors = ["%s: %s" % (item[0], str(item[1])) for item in form.errors.items()]
+            messages.error(request, "%s" % ' '.join(errors))
     return redirect(reverse('rh:ver_funcionario', args=[funcionario.id,]))
 
 def solicitacao_licencas_autorizar(request, solicitacao_id):
@@ -240,3 +241,9 @@ def demitir_funcionario(request, funcionario_id):
     else:
         form = DemitirFuncionarioForm()
     return render_to_response('frontend/rh/rh-funcionarios-demitir.html', locals(), context_instance=RequestContext(request),)
+
+# controle_de_ferias
+def controle_de_ferias(request):
+    funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
+    return render_to_response('frontend/rh/rh-controle-de-ferias.html', locals(), context_instance=RequestContext(request),)
+    

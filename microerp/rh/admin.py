@@ -76,13 +76,17 @@ class FolhaDePontoAdmin(admin.ModelAdmin):
     list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',
     inlines = [EntradaFolhaDePontoInline]
 
+
+class PeriodoTrabalhadoAdmin(admin.ModelAdmin):
+    list_filter = 'inicio', 'fim', 'funcionario'
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
 admin.site.register(Cargo)
 admin.site.register(Departamento)
 admin.site.register(CursoFuncionario)
-admin.site.register(PeriodoTrabalhado)
+admin.site.register(PeriodoTrabalhado, PeriodoTrabalhadoAdmin)
 admin.site.register(PromocaoSalario)
 admin.site.register(PromocaoCargo, PromocaoCargoAdmin)
 admin.site.register(SolicitacaoDeLicenca, SolicitacaoDeLicencaAdmin)

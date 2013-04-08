@@ -166,8 +166,78 @@ class Funcionario(models.Model):
 
     def exames_data_indefinida(self):
         return self.rotinaexamemedico_set.filter(data=None)
+    
+    #
+    # ferias
+    #
+
+    def ferias_situacao(self):
+        dias_trabalhados = self.dias_trabalhados()
+        ferias_direito = self.ferias_dias_de_direito()
+        delta = int(ferias_direito) - self.ferias_dias_agendados_e_gozados()
+        # padrao, AMARELO "warning"
+        # precisa
+        #
+        # VERDE "success" - nao possui férias
+        # periodo trabalhado menor que 1 ano
+        if int(ferias_direito) == 0:
+            return "success"
+        # verde porque a quantidade de ferias gozadas e agendadas está
+        # igual à quantidade de ferias de direito.
+        elif int(ferias_direito) == self.ferias_dias_agendados_e_gozados():
+            return "success"
+        
+        # VERMELHO "error" - alerta
+        # diferença de ferias de direito com dias é maior do que 30 dias        
+        elif delta > 30:
+            return "error"
+         
+    
+    def dias_trabalhados(self):
+        dias_trabalhados = datetime.date.today() - self.periodo_trabalhado_corrente.inicio
+        return dias_trabalhados.days
+    
+    def ferias_dias_de_direito(self):
+        dias_trabalhados = self.dias_trabalhados()
+        if dias_trabalhados > 365:
+            # 30 dias para cada ano trabalhado
+            return dias_trabalhados / 365 * 30
+        else:
+            return 0
 
 
+    def ferias_dias(self, status):
+        solicitacoes = self.solicitacaodelicenca_set.filter(tipo="ferias", status=status)
+        dias = []
+        if solicitacoes:
+            for solicitacao in solicitacoes:
+                delta = solicitacao.fim - solicitacao.inicio
+                dias.append(delta.days)
+        else:
+            dias.append(0)
+        return dias
+
+    def ferias_dias_gozados(self, status='autorizada'):
+        return self.ferias_dias(status)
+
+    def ferias_dias_agendados(self, status='aberta'):
+        return self.ferias_dias(status)
+    
+    def ferias_dias_agendados_e_gozados(self):
+        solicitacoes = self.solicitacaodelicenca_set.filter(tipo="ferias")
+        dias = []
+        if solicitacoes:
+            for solicitacao in solicitacoes:
+                delta = solicitacao.fim - solicitacao.inicio
+                dias.append(delta.days)
+        else:
+            dias.append(0)
+        import operator
+        return reduce(operator.add, dias)
+        
+
+
+            
 
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
@@ -441,6 +511,7 @@ class SolicitacaoDeLicenca(models.Model):
     class Meta:
         verbose_name = u"Solicitação de Licença"
         verbose_name_plural = u"Solicitações de Licenças"
+        ordering = ['inicio']
     
     def clean(self):
         if self.status == "autorizada" or self.status == "declinada":

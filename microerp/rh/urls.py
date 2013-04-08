@@ -21,6 +21,9 @@ urlpatterns = patterns('',
     # solicitações de licença
     url(r'^solicitacao_licencas/$', 'rh.views.solicitacao_licencas', name='solicitacao_licencas'),
     url(r'^solicitacao_licencas/(?P<solicitacao_id>[0-9]+)/autorizar/$', 'rh.views.solicitacao_licencas_autorizar', name='solicitacao_licencas_autorizar'),
+
+    # controle de ferias
+    url(r'^controle_de_ferias/$', 'rh.views.controle_de_ferias', name='controle_de_ferias'),    
     
     # demissoes
     url(r'^processos_demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
