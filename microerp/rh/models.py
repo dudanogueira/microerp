@@ -243,7 +243,7 @@ class Funcionario(models.Model):
     def banco_de_horas_trabalhadas(self):
         horas = 0
         for hora in self.folhadeponto_set.all().values('horas_trabalhadas'):
-            horas += Decimal(hora['horas_trabalhadas'])
+            horas += hora['horas_trabalhadas']
         return horas
     
     def banco_de_horas_esperada(self):
@@ -251,12 +251,14 @@ class Funcionario(models.Model):
         feriados = Feriado.objects.filter(ativo=True).values('data')
         feriados_list = [feriado['data'] for feriado in feriados]
         dias = networkdays(inicio, datetime.date.today(), feriados_list)
-        horas =  dias * Decimal(horas_por_dia)
-        return Decimal(horas)
+        horas =  dias * horas_por_dia
+        return horas
     
     def banco_de_horas_saldo(self):
-        saldo = "%1.f" % self.banco_de_horas_trabalhadas() - "%1.f" % self.banco_de_horas_esperada()
-        return Decimal(saldo)
+        f1 = self.banco_de_horas_trabalhadas()
+        f2 = self.banco_de_horas_esperada()
+        saldo = f1 - f2
+        return saldo
     
     def banco_de_horas_situacao(self):
         saldo = Decimal(self.banco_de_horas_saldo())
