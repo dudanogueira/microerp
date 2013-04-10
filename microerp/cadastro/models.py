@@ -223,7 +223,6 @@ class TipoDeConsultaDeCredito(models.Model):
     
 class ConsultaDeCredito(models.Model):
     
-    
     class Meta:
         verbose_name = u"Consulta de Crédito"
         verbose_name_plural = u"Consultas de Crédito"
@@ -242,6 +241,18 @@ class ConsultaDeCredito(models.Model):
     # dados de retorno da consulta
     observacoes = models.TextField(u"Observações", blank=True, null=True)
     dados_originais = models.TextField("Dados Originais", blank=True, null=True, help_text="Este campo deve ser usado para armazenar o retorno de um webservice em seu formato original")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+class Recado(models.Model):
+    remetente = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_enviado_set")
+    destinatario = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_recebido_set")
+    texto = models.TextField(blank=False)
+    cliente = models.ForeignKey(Cliente, blank=True, null=True)
+    lida = models.BooleanField(default=False)
+    encaminhado = models.BooleanField(default=False)
+    encaminhado_data = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        

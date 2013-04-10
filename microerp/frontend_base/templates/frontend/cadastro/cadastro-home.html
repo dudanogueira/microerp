@@ -30,10 +30,18 @@
                     {% for funcionario in funcionarios %}
           
                     <tr>
-                        <td>{{funcionario.nome}}</td>
+                        <td><strong>{{funcionario.nome}}</strong><br />
+                            {% if funcionario.telefone_fixo %}
+                                <small class="label label-info">{{funcionario.telefone_fixo}}</small>
+                            {% endif %}
+                            {% if funcionario.telefone_celular %}
+<small class="label label-info">{{funcionario.telefone_celular}}</small>
+{% endif %}
+                        </td>
                         <td>
-                            <a class="btn" href="{% url "cadastro:ver_contatos_funcionario" funcionario.id %}">ver</a>
-                            <a class="btn" href="">+ recado</a>
+                            <a class="btn" href="{% url "cadastro:funcionarios_ver_recados" funcionario.id %}"><i class="icon icon-inbox"></i> recados</a>
+                            <a class="btn" href=""><i class="icon icon-plus"></i></a>
+
                         </td>
                     </tr>
                     {% empty %}
@@ -55,13 +63,11 @@
             {% endif %}
         </div>
     </div>
-
-
     <div class="span6">
         <div class="well well-small">
             <h2>Buscar Cliente / Pré Cliente</h2>
             <form class="form-search" action="{% url "cadastro:home" %}">
-                <input type="text" class="input-medium search-query" name="cliente" value="{% if funcionario_q %}{{cliente_q}}{%endif%}">
+                <input type="text" class="input-medium search-query" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
                 <button type="submit" class="btn btn-info">Buscar</button>
                 {% if cliente_q %}
                 <a href="."><i class="icon icon-remove"></i>Limpar</a>

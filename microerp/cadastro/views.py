@@ -22,6 +22,15 @@ def home(request):
     return render_to_response('frontend/cadastro/cadastro-home.html', locals(), context_instance=RequestContext(request),)
 
 
-def ver_contatos_funcionario(request, funcionario_id):
-    return render_to_response('frontend/cadastro/cadastro-home.html', locals(), context_instance=RequestContext(request),)
+def funcionarios_contatos_ver(request, funcionario_id):
+    return render_to_response('frontend/cadastro/cadastro-funcionario-ver-contatos.html', locals(), context_instance=RequestContext(request),)
+    
+def funcionarios_list(request):
+    funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
+    return render_to_response('frontend/cadastro/cadastro-funcionario-list.html', locals(), context_instance=RequestContext(request),)
+
+def funcionarios_ver_recados(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionario, pk=funcionario_id)
+    return render_to_response('frontend/cadastro/cadastro-funcionario-recados.html', locals(), context_instance=RequestContext(request),)
+    
     

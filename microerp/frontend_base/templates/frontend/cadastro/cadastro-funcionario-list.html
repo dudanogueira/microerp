@@ -1,0 +1,24 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+
+{% block content %}
+<h2>Contatos dos Funcionários</h2>
+{% for funcionario in funcionarios %}
+    <div id="funcionario-{{funcionario.id}}" class="departamento-{{funcionario.departamento.id}} well well-small">
+        {% include "frontend/cadastro/cadastro-funcionario-item.html" %}
+    </div>
+{% endfor %}
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-cadastro-funcionarios-list, #top-menu-cadastro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
+{% endblock%}
