@@ -255,7 +255,7 @@ class Funcionario(models.Model):
         return Decimal(horas)
     
     def banco_de_horas_saldo(self):
-        saldo = self.banco_de_horas_trabalhadas() - self.banco_de_horas_esperada()
+        saldo = "%1.f" % self.banco_de_horas_trabalhadas() - "%1.f" % self.banco_de_horas_esperada()
         return Decimal(saldo)
     
     def banco_de_horas_situacao(self):
