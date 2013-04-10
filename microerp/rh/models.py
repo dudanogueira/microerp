@@ -36,6 +36,8 @@ from django.conf import settings
 
 from workdays import networkdays
 
+from decimal import Decimal
+
 horas_por_dia = getattr(settings, 'HORAS_TRABALHADAS_POR_DIA', 8.4)
 
 def funcionario_avatar_img_path(instance, filename):
@@ -252,10 +254,11 @@ class Funcionario(models.Model):
         return dias * horas_por_dia
     
     def banco_de_horas_saldo(self):
-        return self.banco_de_horas_trabalhadas() - self.banco_de_horas_esperada()
+        saldo = self.banco_de_horas_trabalhadas() - self.banco_de_horas_esperada()
+        return str(saldo)
     
     def banco_de_horas_situacao(self):
-        saldo = self.banco_de_horas_saldo()
+        saldo = Decimal(self.banco_de_horas_saldo())
         if saldo > 0:
             return "success"
         else:
