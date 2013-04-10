@@ -1,4 +1,5 @@
-import datetime, calendar
+import datetime, urllib2
+from icalendar import Calendar
 
 def get_weeks_old(now=datetime.date.today(), weeks=5):
     numweeks = weeks
@@ -73,3 +74,5 @@ def get_last_whole_week(today=None, epoch=False):
         prev_sunday_str = prev_sunday.strftime('%Y-%m-%d')
         last_week = (prev_sunday_str, saturday_str)
     return last_week
+
+

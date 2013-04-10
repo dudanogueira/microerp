@@ -85,7 +85,11 @@
         <div class="well well-small">
             <ul>
             {% for folha in funcionario.folhadeponto_set.all %}
-                <li>FOLHA DE PONTO <strong>ID#{{folha.id}}</strong> {{folha.data_referencia.year}}/{{folha.data_referencia.month}} (<a href="{{folha.arquivo.url}}">arquivo</a>)</li>
+                <li><strong>ID#{{folha.id}}</strong> {{folha.horas_trabalhadas}} horas em {{folha.data_referencia.month}}/{{folha.data_referencia.year}}
+                    {% if folha.arquivo %}
+                    <a href="{{folha.arquivo.url}}">ARQUIVO DIGITAL</a>
+                    {% endif %}
+                </li>
             {% empty %}
                 <li>Nenhuma Folha de Ponto Vinculada</li>
             {% endfor %}
@@ -93,7 +97,7 @@
             {% if funcionario.periodo_trabalhado_corrente %}
                 <div class="well well-small">
                     <h6>Adicionar para:</h6>
-                    <form action="{% url "rh:folha_de_ponto_add" funcionario.id %}" method="post"
+                    <form action="" method="post"
                         {% if adicionar_folhaponto_form.is_multipart %}enctype="multipart/form-data"{% endif %}>
                         {% csrf_token %}
                     {{adicionar_folhaponto_form.as_p}}

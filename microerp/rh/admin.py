@@ -19,6 +19,7 @@ from rh.models import RotinaExameMedico
 from rh.models import PerfilAcessoRH
 from rh.models import Demissao
 from rh.models import DependenteDeFuncionario
+from rh.models import Feriado
 
 
 from sorl.thumbnail.admin import AdminImageMixin
@@ -76,9 +77,12 @@ class FolhaDePontoAdmin(admin.ModelAdmin):
     list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',
     inlines = [EntradaFolhaDePontoInline]
 
-
 class PeriodoTrabalhadoAdmin(admin.ModelAdmin):
     list_filter = 'inicio', 'fim', 'funcionario'
+
+class FeriadoAdmin(admin.ModelAdmin):
+    list_filter = 'importado_por_sync',
+    list_display = 'data', 'nome', 'importado_por_sync'
 
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
@@ -96,3 +100,4 @@ admin.site.register(TipoDeExameMedico)
 admin.site.register(RotinaExameMedico)
 admin.site.register(Demissao)
 admin.site.register(DependenteDeFuncionario)
+admin.site.register(Feriado, FeriadoAdmin)

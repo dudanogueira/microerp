@@ -32,7 +32,7 @@ class AgendarExameMedicoForm(forms.ModelForm):
 class AdicionarFolhaDePontoForm(forms.ModelForm):
     class Meta:
         model = FolhaDePonto
-        fields = ('arquivo', 'data_referencia',)
+        fields = ('arquivo', 'data_referencia', 'horas_trabalhadas')
 
 
 class AdicionarArquivoRotinaExameForm(forms.ModelForm):
@@ -68,17 +68,12 @@ def funcionarios(request):
     return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
 
 def ver_funcionario(request, funcionario_id):
-    adicionar_folhaponto_form = AdicionarFolhaDePontoForm()
-    adicionar_solicitacaolicenca_form = AdicionarSolicitacaoLicencaForm()
-    funcionario = get_object_or_404(Funcionario, id=funcionario_id)
-    return render_to_response('frontend/rh/rh-funcionarios-ver.html', locals(), context_instance=RequestContext(request),)
-
-def folha_de_ponto_add(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
     if request.POST:
-        form = AdicionarFolhaDePontoForm(request.POST, request.FILES)
-        if form.is_valid():
-            folha = form.save(commit=False)
+        # folha de ponto
+        adicionar_folhaponto_form = AdicionarFolhaDePontoForm(request.POST, request.FILES)
+        if adicionar_folhaponto_form.is_valid():
+            folha = adicionar_folhaponto_form.save(commit=False)
             folha.funcionario = funcionario
             folha.periodo_trabalhado = funcionario.periodo_trabalhado_corrente
             # gerente, já vai autorizado
@@ -88,8 +83,15 @@ def folha_de_ponto_add(request, funcionario_id):
             folha.save()            
             folha.funcionario_autorizador = request.user.funcionario
             folha.save()
-    messages.success(request, u'Folha de Ponto Adicionada')  
-    return redirect(reverse('rh:ver_funcionario', args=[funcionario.id,]))
+            messages.success(request, u'Folha de Ponto Adicionada')
+        else:
+            messages.error(request, u'Formulário para Adicionar Ponto Inválido')
+
+    else:    
+        adicionar_folhaponto_form = AdicionarFolhaDePontoForm()
+        adicionar_solicitacaolicenca_form = AdicionarSolicitacaoLicencaForm()
+        
+    return render_to_response('frontend/rh/rh-funcionarios-ver.html', locals(), context_instance=RequestContext(request),)
 
 def solicitacao_licencas(request,):
     solicitacoes_abertas = SolicitacaoDeLicenca.objects.filter(status="aberta")
@@ -246,4 +248,8 @@ def demitir_funcionario(request, funcionario_id):
 def controle_de_ferias(request):
     funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-controle-de-ferias.html', locals(), context_instance=RequestContext(request),)
-    
+
+# controle_de_banco_de_horas
+def controle_de_banco_de_horas(request):
+    funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
+    return render_to_response('frontend/rh/rh-controle-de-banco-de-horas.html', locals(), context_instance=RequestContext(request),)

@@ -34,6 +34,10 @@ from django.conf.global_settings import LANGUAGES
 from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 from django.conf import settings
 
+from workdays import networkdays
+
+horas_por_dia = getattr(settings, 'HORAS_TRABALHADAS_POR_DIA', 8.4)
+
 def funcionario_avatar_img_path(instance, filename):
     return os.path.join(
         'funcionarios/', instance.uuid, 'avatar/', filename
@@ -174,7 +178,7 @@ class Funcionario(models.Model):
     def ferias_situacao(self):
         dias_trabalhados = self.dias_trabalhados()
         ferias_direito = self.ferias_dias_de_direito()
-        delta = int(ferias_direito) - self.ferias_dias_agendados_e_gozados()
+        delta = int(ferias_direito) - self.ferias_dias_total_soma()
         # padrao, AMARELO "warning"
         # precisa
         #
@@ -184,7 +188,7 @@ class Funcionario(models.Model):
             return "success"
         # verde porque a quantidade de ferias gozadas e agendadas está
         # igual à quantidade de ferias de direito.
-        elif int(ferias_direito) == self.ferias_dias_agendados_e_gozados():
+        elif int(ferias_direito) == self.ferias_dias_total_soma():
             return "success"
         
         # VERMELHO "error" - alerta
@@ -206,24 +210,19 @@ class Funcionario(models.Model):
             return 0
 
 
-    def ferias_dias(self, status):
-        solicitacoes = self.solicitacaodelicenca_set.filter(tipo="ferias", status=status)
-        dias = []
-        if solicitacoes:
-            for solicitacao in solicitacoes:
-                delta = solicitacao.fim - solicitacao.inicio
-                dias.append(delta.days)
-        else:
-            dias.append(0)
-        return dias
+    def ferias_dias_gozados(self):
+        return self.solicitacaodelicenca_set.filter(tipo="ferias", status="autorizada", realizada=True)
+        
+    def ferias_dias_nao_gozados(self):
+        return self.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False)
 
-    def ferias_dias_gozados(self, status='autorizada'):
-        return self.ferias_dias(status)
+    def ferias_dias_autorizados(self):
+        return self.solicitacaodelicenca_set.filter(tipo="ferias", status='autorizada', realizada=False)
 
-    def ferias_dias_agendados(self, status='aberta'):
-        return self.ferias_dias(status)
+    def ferias_dias_agendados(self):
+        return self.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False, status="aberta")
     
-    def ferias_dias_agendados_e_gozados(self):
+    def ferias_dias_total_soma(self):
         solicitacoes = self.solicitacaodelicenca_set.filter(tipo="ferias")
         dias = []
         if solicitacoes:
@@ -234,10 +233,33 @@ class Funcionario(models.Model):
             dias.append(0)
         import operator
         return reduce(operator.add, dias)
-        
+    
+    def ferias_dias_disponiveis(self):
+        return self.ferias_dias_de_direito() - self.ferias_dias_total_soma()
 
-
-            
+    # BANCO DE HORAS
+    def banco_de_horas_trabalhadas(self):
+        horas = 0
+        for hora in self.folhadeponto_set.all().values('horas_trabalhadas'):
+            horas += hora['horas_trabalhadas']
+        return horas
+    
+    def banco_de_horas_esperada(self):
+        inicio = self.periodo_trabalhado_corrente.inicio
+        feriados = Feriado.objects.filter(ativo=True).values('data')
+        feriados_list = [feriado['data'] for feriado in feriados]
+        dias = networkdays(inicio, datetime.date.today(), feriados_list)
+        return dias * horas_por_dia
+    
+    def banco_de_horas_saldo(self):
+        return self.banco_de_horas_trabalhadas() - self.banco_de_horas_esperada()
+    
+    def banco_de_horas_situacao(self):
+        saldo = self.banco_de_horas_saldo()
+        if saldo > 0:
+            return "success"
+        else:
+            return "error"
 
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
@@ -518,8 +540,14 @@ class SolicitacaoDeLicenca(models.Model):
             if not self.processado_por:
                 raise ValidationError(u"Se a Solicitação de Licença for autorizada ou declinada, é previso informar o Funcionário que a processou.")
     
+    def delta(self):
+        delta = self.fim - self.inicio
+        return delta        
+    
+    
     funcionario = models.ForeignKey(Funcionario)
     motivo = models.TextField(blank=False)
+    realizada = models.BooleanField(default=False)
     inicio = models.DateField(u"Início da Licença", default=datetime.datetime.today)
     fim = models.DateField(u"Término da Licença", default=datetime.datetime.today()+datetime.timedelta(days=4))
     status = models.CharField(u"Situação da Solicitação", blank=False, null=False, max_length=100, choices=SOLICITACAO_LICENCA_STATUS_CHOICES, default="aberta")
@@ -536,7 +564,7 @@ class FolhaDePonto(models.Model):
     class Meta:
         verbose_name = u"Folha de Ponto"
         verbose_name_plural = u"Folhas de Ponto"
-        ordering = ['-data_referencia',]
+        ordering = ['data_referencia',]
     
     def __unicode__(self):
         return u"Folha de ponto (#%d) para funcionário %s referente ao mês %d de %d" % (self.id, self.funcionario, self.data_referencia.month, self.data_referencia.year)
@@ -544,33 +572,10 @@ class FolhaDePonto(models.Model):
     def funcionario_mes_ano(self):
         return "%s: %s/%s" % (self.funcionario, self.data_referencia.month, self.data_referencia.year)
 
-    def entradas_validas(self):
-        entradas_validas = self.entradafolhadeponto_set.filter(
-            hora__year=self.data_referencia.year,
-            hora__month=self.data_referencia.month
-        ).order_by('hora')
-        return self.entradafolhadeponto_set.all()
-    
-    def calcular_tipo_entrada(self):
-        '''Define as Entradas relacionadas como Registro de Entrada ou Registro de saída'''
-        entradas_validas = self.entradas_validas()
-        ref = 1
-        for entrada in entradas_validas:
-            if ref % 2 == 1:
-                entrada.tipo = 'entrada'
-            else:
-                entrada.tipo = 'saida'
-            entrada.save()
-            ref += 1
-    
-    def calcular_acumulado(self):
-        '''Calcula o acumulado de horas da folha de ponto com base nos registros de entrada e saída'''
-        entradas_validas = self.entradas_validas()
-        #TODO
-    
     funcionario = models.ForeignKey(Funcionario)
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     data_referencia = models.DateField(u"Mês e Ano de Referência",default=datetime.datetime.today)
+    horas_trabalhadas = models.FloatField(help_text="exemplo: 44 ou 44.5 para quarenta e quatro horas e meia")
     encerrado = models.BooleanField(default=False)
     autorizado = models.BooleanField(default=False)
     funcionario_autorizador = models.ForeignKey(Funcionario, related_name="folhadeponto_autorizado_set", blank=True, null=True)
@@ -631,7 +636,6 @@ class TipoDeExameMedico(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
-
 class RotinaExameMedico(models.Model):
     
     def __unicode__(self):
@@ -690,7 +694,21 @@ class PerfilAcessoRH(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+
+class Feriado(models.Model):
     
+    class Meta:
+        ordering = ['data']
+
+    ativo = models.BooleanField(default=True)
+    nome = models.CharField(blank=True, max_length=100)
+    data = models.DateField()
+    importado_por_sync = models.BooleanField(default=False)
+    uid = models.CharField(blank=True, max_length=100) # caso tenha sido importado
+    
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 # SIGNALS
 

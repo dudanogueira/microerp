@@ -8,8 +8,6 @@ urlpatterns = patterns('',
     url(r'^funcionarios$', 'rh.views.funcionarios', name='funcionarios'),
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/$', 'rh.views.ver_funcionario', name='ver_funcionario'),
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/demitir/$', 'rh.views.demitir_funcionario', name='demitir_funcionario'),
-    # funcionario > folha de ponto
-    url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/folha_de_ponto/add/$', 'rh.views.folha_de_ponto_add', name='folha_de_ponto_add'),
     # funcionario > solicitacao licenca
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/licenca/add/$', 'rh.views.solicitacao_licenca_add', name='solicitacao_licenca_add'),
     
@@ -22,8 +20,12 @@ urlpatterns = patterns('',
     url(r'^solicitacao_licencas/$', 'rh.views.solicitacao_licencas', name='solicitacao_licencas'),
     url(r'^solicitacao_licencas/(?P<solicitacao_id>[0-9]+)/autorizar/$', 'rh.views.solicitacao_licencas_autorizar', name='solicitacao_licencas_autorizar'),
 
-    # controle de ferias
-    url(r'^controle_de_ferias/$', 'rh.views.controle_de_ferias', name='controle_de_ferias'),    
+    # CONTROLES
+    url(r'^controle/ferias/$', 'rh.views.controle_de_ferias', name='controle_de_ferias'),    
+
+    # controle de banco de horas
+    url(r'^controle/banco_de_horas/$', 'rh.views.controle_de_banco_de_horas', name='controle_de_banco_de_horas'),    
+
     
     # demissoes
     url(r'^processos_demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
