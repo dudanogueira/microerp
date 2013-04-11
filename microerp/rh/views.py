@@ -68,7 +68,7 @@ def funcionarios(request):
     return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
 
 def funcionarios_relatorios_listar_ativos(request):
-    funcionarios_ativos = funcionarios_inativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('-periodo_trabalhado_corrente__inicio')
+    funcionarios_ativos = funcionarios_inativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
     return render_to_response('frontend/rh/rh-funcionarios-listar-ativos.html', locals(), context_instance=RequestContext(request),)
 
 def ver_funcionario(request, funcionario_id):
