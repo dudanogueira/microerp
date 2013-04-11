@@ -5,11 +5,13 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     url(r'^$', 'rh.views.home', name='home'),
     # funcionario
-    url(r'^funcionarios$', 'rh.views.funcionarios', name='funcionarios'),
+    url(r'^funcionarios/$', 'rh.views.funcionarios', name='funcionarios'),
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/$', 'rh.views.ver_funcionario', name='ver_funcionario'),
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/demitir/$', 'rh.views.demitir_funcionario', name='demitir_funcionario'),
     # funcionario > solicitacao licenca
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/licenca/add/$', 'rh.views.solicitacao_licenca_add', name='solicitacao_licenca_add'),
+    # funcionario > relatorios
+    url(r'^funcionarios/relatorios/ativos/$', 'rh.views.funcionarios_relatorios_listar_ativos', name='funcionarios_listar_ativos'),
     
     # exames medicos
     url(r'^exames_medicos/$', 'rh.views.exames_medicos', name='exames_medicos'),

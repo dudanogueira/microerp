@@ -4,6 +4,11 @@
 <title>{%block title %}{{block.super}} - RH>Funcionários{% endblock %}</title>
 
 {% block content %}
+
+<p class="text-right">
+{% include "frontend/rh/rh-funcionarios-relatorios-botao.html" %}
+</p>
+
 <h1>Funcionários Ativos</h1>
 <div class="well well-small">
 

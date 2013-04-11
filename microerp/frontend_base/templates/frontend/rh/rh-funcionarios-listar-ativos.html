@@ -1,0 +1,33 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH>Funcionários{% endblock %}</title>
+
+{% block content %}
+
+<p class="text-right">
+{% include "frontend/rh/rh-funcionarios-relatorios-botao.html" %}
+</p>
+<h1>Funcionários Ativos</h1>
+<div class="well well-small">
+
+    <ul>
+    {% for funcionario in funcionarios_ativos %}
+        <li>{{funcionario}} Admissão: {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}. <strong>{{funcionario.banco_de_horas_trabalhadas}} Horas Trabalhadas</strong></li>
+    {% endfor %}
+    </ul>
+
+</div>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-funcionarios, #top-menu-rh", "#funcionario-relatorios-listar-ativos").addClass("active");
+    $("#funcionarios-relatorios-botao").addClass("open")
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

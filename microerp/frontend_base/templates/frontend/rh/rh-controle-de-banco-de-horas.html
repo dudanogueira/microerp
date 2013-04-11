@@ -5,11 +5,12 @@
 
 {% block content %}
 
-<h2>Controle de Banco de Horas</h2>
+<h1>Controle de Banco de Horas</h1>
 
 {% for funcionario in funcionarios %}
 <div class="well well-small alert alert-{{funcionario.banco_de_horas_situacao}}">
-    <h3>{{funcionario}}</h3>
+    <h2>{{funcionario}}</h2>
+    <h3>Admissão: {{funcionario.periodo_trabalhado_corrente.inicio}}</h3>
         <strong>Horas Trabalhadas Esperadas</strong>: {{funcionario.banco_de_horas_esperada}} horas<br />    
         <strong>Horas Trabalhadas Registrada</strong>: {{funcionario.banco_de_horas_trabalhadas}} horas<br />
         <hr />
