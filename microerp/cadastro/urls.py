@@ -9,5 +9,4 @@ urlpatterns = patterns('',
     # recados
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/recados/adicionar/$', 'cadastro.views.funcionarios_recados_adicionar', name='funcionarios_recados_adicionar'),
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/recados/$', 'cadastro.views.funcionarios_recados_listar', name='funcionarios_recados_listar'),
-    
 )

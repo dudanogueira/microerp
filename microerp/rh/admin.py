@@ -84,6 +84,10 @@ class FeriadoAdmin(admin.ModelAdmin):
     list_filter = 'importado_por_sync',
     list_display = 'data', 'nome', 'importado_por_sync'
 
+class PerfilAcessoRHAdmin(admin.ModelAdmin):
+    list_filter = 'user', 'analista', 'gerente',
+    list_display = 'user',  'analista', 'gerente',
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
@@ -95,7 +99,7 @@ admin.site.register(PromocaoSalario)
 admin.site.register(PromocaoCargo, PromocaoCargoAdmin)
 admin.site.register(SolicitacaoDeLicenca, SolicitacaoDeLicencaAdmin)
 admin.site.register(FolhaDePonto, FolhaDePontoAdmin)
-admin.site.register(PerfilAcessoRH)
+admin.site.register(PerfilAcessoRH, PerfilAcessoRHAdmin)
 admin.site.register(TipoDeExameMedico)
 admin.site.register(RotinaExameMedico)
 admin.site.register(Demissao)

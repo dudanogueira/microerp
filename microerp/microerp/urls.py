@@ -35,9 +35,8 @@ urlpatterns = patterns('',
 # auth system
 urlpatterns += patterns('django.contrib.auth',
     url(r'^sair/$', 'views.logout', {}, 'logout'),
-    url(r'^entrar/$', 'views.login', {}, 'login'),
+    url(r'^accounts/login/$', 'views.login', {}, 'login'),
 )
-
 
 # urls do frontend
 app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")

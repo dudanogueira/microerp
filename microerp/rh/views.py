@@ -7,6 +7,7 @@ from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
 from django.core.exceptions import ValidationError
+from django.contrib.auth.decorators import user_passes_test
 
 from django.db.models import Q
 
@@ -52,25 +53,38 @@ class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
         model = SolicitacaoDeLicenca
         fields = ('tipo', 'motivo', 'inicio', 'fim')
 
+#
+# DECORATORS
+#
+
+def possui_perfil_acesso_rh(user, login_url="/"):
+    try:
+        return user.perfilacessorh
+    except:
+        return False
 
 #
 # VIEWS
 #
 
+@user_passes_test(possui_perfil_acesso_rh)
 def home(request):
     demissoes_andamento = Demissao.objects.filter(status="andamento")
     exames_futuros = RotinaExameMedico.objects.filter(data__gt=datetime.date.today()) | RotinaExameMedico.objects.filter(realizado=False)
     return render_to_response('frontend/rh/rh-home.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def funcionarios(request):
     departamentos = Departamento.objects.exclude(cargo__funcionario_cargo_atual_set__periodo_trabalhado_corrente=None)
     funcionarios_inativos = Funcionario.objects.filter(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos(request):
     funcionarios_ativos = funcionarios_inativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
     return render_to_response('frontend/rh/rh-funcionarios-listar-ativos.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def ver_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
     if request.POST:
@@ -97,11 +111,13 @@ def ver_funcionario(request, funcionario_id):
         
     return render_to_response('frontend/rh/rh-funcionarios-ver.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licencas(request,):
     solicitacoes_abertas = SolicitacaoDeLicenca.objects.filter(status="aberta")
     solicitacoes_autorizada = SolicitacaoDeLicenca.objects.filter(status="autorizada")
     return render_to_response('frontend/rh/rh-solicitacao-licencas.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licenca_add(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
     if request.POST:
@@ -116,6 +132,7 @@ def solicitacao_licenca_add(request, funcionario_id):
             messages.error(request, "%s" % ' '.join(errors))
     return redirect(reverse('rh:ver_funcionario', args=[funcionario.id,]))
 
+@user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licencas_autorizar(request, solicitacao_id):
     solicitacao = get_object_or_404(SolicitacaoDeLicenca, pk=solicitacao_id)
     solicitacao.status = "autorizada"
@@ -124,6 +141,7 @@ def solicitacao_licencas_autorizar(request, solicitacao_id):
     solicitacao.save()
     return redirect(reverse('rh:solicitacao_licencas'))
 
+@user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos(request):
     exames_data_pendente = RotinaExameMedico.objects.filter(data=None)
     exames_remarcacao = RotinaExameMedico.objects.filter(data__lt=datetime.date.today(), realizado=False)
@@ -131,6 +149,7 @@ def exames_medicos(request):
     exames_realizados = RotinaExameMedico.objects.filter(realizado=True)
     return render_to_response('frontend/rh/rh-exames-medicos.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos_ver(request, exame_id):
     exame = get_object_or_404(RotinaExameMedico, id=exame_id)
     if 'agendar' in request.POST:
@@ -145,6 +164,7 @@ def exames_medicos_ver(request, exame_id):
     return render_to_response('frontend/rh/rh-exames-medicos-ver.html', locals(), context_instance=RequestContext(request),)
 
 
+@user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos_exame_realizado_hoje(request, exame_id):
     '''marca exame como Realizado Hoje'''
     exame = get_object_or_404(RotinaExameMedico, pk=exame_id)
@@ -166,7 +186,7 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
 
     return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
 
-
+@user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos_exame_realizado_hoje_old(request, exame_id):
     '''marca exame como Realizado Hoje'''
     if request.POST:
@@ -200,9 +220,11 @@ def exames_medicos_exame_realizado_hoje_old(request, exame_id):
 
         return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
 
+@user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao(request):
     return render_to_response('frontend/rh/rh-processos-demissao.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def demitir_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
     # Se não possuir periodo corrente, não pode ser demitido
@@ -249,11 +271,13 @@ def demitir_funcionario(request, funcionario_id):
     return render_to_response('frontend/rh/rh-funcionarios-demitir.html', locals(), context_instance=RequestContext(request),)
 
 # controle_de_ferias
+@user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferias(request):
     funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-controle-de-ferias.html', locals(), context_instance=RequestContext(request),)
 
 # controle_de_banco_de_horas
+@user_passes_test(possui_perfil_acesso_rh)
 def controle_de_banco_de_horas(request):
     funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-controle-de-banco-de-horas.html', locals(), context_instance=RequestContext(request),)
