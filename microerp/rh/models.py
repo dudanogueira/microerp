@@ -694,6 +694,12 @@ class Demissao(models.Model):
 
 class PerfilAcessoRH(models.Model):
     '''Perfil de Acesso ao RH'''
+    
+    class Meta:
+        verbose_name = u"Perfil de Acesso ao RH"
+        verbose_name_plural = u"Perfis de Acesso ao RH"
+    
+    
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)

@@ -259,6 +259,12 @@ class Recado(models.Model):
 
 class PerfilAcessoRecepcao(models.Model):
     '''Perfil de Acesso à Recepção'''
+    
+    class Meta:
+        verbose_name = u"Perfil de Acesso à Recepção"
+        verbose_name_plural = u"Perfis de Acesso à Recepção"
+    
+    
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)

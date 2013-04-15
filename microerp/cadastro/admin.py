@@ -79,6 +79,11 @@ class ClienteAdmin(admin.ModelAdmin):
         )
     inlines = [ConsultaDeCreditoInline, SolicitacaoComercialInline]
 
+class PerfilAcessoRecepcaoAdmin(admin.ModelAdmin):
+    list_filter = 'user', 'analista', 'gerente',
+    list_display = 'user',  'analista', 'gerente',
+
+
 
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Cidade)
@@ -86,6 +91,6 @@ admin.site.register(Bairro)
 admin.site.register(Ramo)
 admin.site.register(ClienteOrigem)
 admin.site.register(TipoDeConsultaDeCredito)
-admin.site.register(PerfilAcessoRecepcao)
+admin.site.register(PerfilAcessoRecepcao, PerfilAcessoRecepcaoAdmin)
 admin.site.register(PreCliente)
 admin.site.register(Recado)
