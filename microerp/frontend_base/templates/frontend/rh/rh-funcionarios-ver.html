@@ -14,11 +14,21 @@
         <li><a href="" class=""><i class="icon-bookmark"></i> Promover Cargo</a></li>
         <li><a href="#"><i class="icon-gift"></i> Promover Salário</a></a></li>
         <li><a href="#"><i class="icon-home"></i> Solicitar Licença</a></li>
-                  
+
         <li class="divider"></li>
         <li><a href="{% url "rh:demitir_funcionario" funcionario.id %}"><i class="icon-minus"></i> Demitir</a></li>
     </ul>
 </div>
+
+<div class="btn-group pull-right" id="funcionarios-relatorios-botao">
+    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="icon icon-list-alt icon-white"></i> Relatórios <span class="caret"></span></button>
+    <ul class="dropdown-menu">
+        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:relatorio_banco_de_horas_do_funcionario" funcionario.id %}" class=""><i class="icon-time"></i> Relatório de Banco de Hora</a></li>
+    </ul>
+</div>
+
+
+
 {% endif %}
 
 <div class="row-fluid">
@@ -37,17 +47,17 @@
             {% for periodo in funcionario.periodotrabalhado_set.all %}
             {% if not periodo.fim %}
             <div class="alert alert-success">
-                <strong>Período Ativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}
+                <strong><i class="icon icon-thumbs-up"></i> Período Ativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}
             </div>
             {% else %}
             <div class="alert alert-danger">
-                <strong>Período Inativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}. Fim: {{periodo.fim}}
+                <strong><i class="icon icon-ban-circle"></i>  Período Inativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}. Fim: {{periodo.fim}}
             </div>
             {% endif %}
 
             {% endfor %}
             <div class="alert alert-info">
-            <b>Observação:</b>
+            <b><i class="icon-certificate"></i> Observação:</b>
             {{funcionario.observacao}}
             </div>
     </div>
@@ -82,29 +92,9 @@
 <div class="row-fluid">
     <div class="span6">
         <h3>Folhas de Ponto</h3>
-        <div class="well well-small">
-            <ul>
-            {% for folha in funcionario.folhadeponto_set.all %}
-                <li><strong>ID#{{folha.id}}</strong> {{folha.horas_trabalhadas}} horas em {{folha.data_referencia.month}}/{{folha.data_referencia.year}}
-                    {% if folha.arquivo %}
-                    <a href="{{folha.arquivo.url}}">ARQUIVO DIGITAL</a>
-                    {% endif %}
-                </li>
-            {% empty %}
-                <li>Nenhuma Folha de Ponto Vinculada</li>
-            {% endfor %}
-            </ul>
-            {% if funcionario.periodo_trabalhado_corrente %}
-                <div class="well well-small">
-                    <h6>Adicionar para:</h6>
-                    <form action="" method="post"
-                        {% if adicionar_folhaponto_form.is_multipart %}enctype="multipart/form-data"{% endif %}>
-                        {% csrf_token %}
-                    {{adicionar_folhaponto_form.as_p}}
-                    <input type="submit" class="btn btn-info" value="Enviar Folha de Ponto">
-                </form>
-                </div>
-                {% endif %}
+        <div class="well">
+            <h2 class="alert alert-{{funcionario.banco_de_horas_situacao}}">Saldo: {% if funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
+            <a href="{% url "rh:relatorio_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="icon icon-time icon-white"></i> Gerenciar Folhas</a>
             
         </div>
     </div>

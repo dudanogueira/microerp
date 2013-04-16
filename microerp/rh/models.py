@@ -23,6 +23,7 @@ import os, datetime
 from django.db import models
 
 from django.db.models import signals
+from django.db.models import Sum
 
 from django.core.exceptions import ValidationError
 
@@ -45,9 +46,14 @@ def funcionario_avatar_img_path(instance, filename):
         'funcionarios/', instance.uuid, 'avatar/', filename
       )
 
+def funcionario_entrada_folha_ponto_assinada(instance, filename):
+    return os.path.join(
+        'funcionarios/', instance.folha.funcionario.uuid, 'folha_de_ponto', str(instance.folha.data_referencia.year), str(instance.folha.data_referencia.month), 'ID-ENTRADA-%d' % instance.id, filename
+    )
+
 def funcionario_folha_ponto_assinada(instance, filename):
     return os.path.join(
-        'funcionarios/', instance.funcionario.uuid, 'folha_de_ponto', str(instance.data_referencia.year), str(instance.data_referencia.month), filename
+        'funcionarios/', instance.folha.funcionario.uuid, 'folha_de_ponto', str(instance.folha.data_referencia.year), str(instance.folha.data_referencia.month), 'ID-FOLHA-%d' % instance.id, filename
     )
 
 def funcionario_rotina_exame_medico(instance, filename):
@@ -235,16 +241,22 @@ class Funcionario(models.Model):
             dias.append(0)
         import operator
         return reduce(operator.add, dias)
-    
+
     def ferias_dias_disponiveis(self):
         return self.ferias_dias_de_direito() - self.ferias_dias_total_soma()
 
     # BANCO DE HORAS
+    
+    def banco_de_horas_ultimo_lancamento(self):
+        ultimo = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).order_by('criado').all()
+        if ultimo:
+            return ultimo[0]
+        else:
+            return None
+    
     def banco_de_horas_trabalhadas(self):
-        horas = 0
-        for hora in self.folhadeponto_set.all().values('horas_trabalhadas'):
-            horas += hora['horas_trabalhadas']
-        return horas
+        retorno = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).aggregate(total_trabalhado=Sum('total'))['total_trabalhado']
+        return retorno or 0
     
     def banco_de_horas_esperada(self):
         inicio = self.periodo_trabalhado_corrente.inicio
@@ -252,13 +264,12 @@ class Funcionario(models.Model):
         feriados_list = [feriado['data'] for feriado in feriados]
         dias = networkdays(inicio, datetime.date.today(), feriados_list)
         horas =  dias * horas_por_dia
-        return horas
+        return horas or 0
     
     def banco_de_horas_saldo(self):
         f1 = self.banco_de_horas_trabalhadas()
         f2 = self.banco_de_horas_esperada()
-        saldo = f1 - f2
-        return saldo
+        return Decimal(f1) - Decimal(f2)
     
     def banco_de_horas_situacao(self):
         saldo = Decimal(self.banco_de_horas_saldo())
@@ -433,7 +444,6 @@ class PeriodoTrabalhado(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
 
 class PromocaoSalario(models.Model):
     
@@ -548,8 +558,7 @@ class SolicitacaoDeLicenca(models.Model):
     
     def delta(self):
         delta = self.fim - self.inicio
-        return delta        
-    
+        return delta
     
     funcionario = models.ForeignKey(Funcionario)
     motivo = models.TextField(blank=False)
@@ -578,49 +587,53 @@ class FolhaDePonto(models.Model):
     def funcionario_mes_ano(self):
         return "%s: %s/%s" % (self.funcionario, self.data_referencia.month, self.data_referencia.year)
 
+    def total_horas(self):
+        return self.entradafolhadeponto_set.all().aggregate(total_trabalhado=Sum('total'))['total_trabalhado'] or 0
+
     funcionario = models.ForeignKey(Funcionario)
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     data_referencia = models.DateField(u"Mês e Ano de Referência",default=datetime.datetime.today)
-    horas_trabalhadas = models.FloatField(help_text="exemplo: 44 ou 44.5 para quarenta e quatro horas e meia")
     encerrado = models.BooleanField(default=False)
     autorizado = models.BooleanField(default=False)
+    arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, help_text="Arquivo a ser anexado no fechamento do mês da data de referência")
     funcionario_autorizador = models.ForeignKey(Funcionario, related_name="folhadeponto_autorizado_set", blank=True, null=True)
-    # arquivo impresso
-    arquivo = models.FileField(upload_to=funcionario_folha_ponto_assinada, blank=True, null=True, max_length=300)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
+
 class EntradaFolhaDePonto(models.Model):
-    
+
     def __unicode__(self):
-        if self.tipo:
-            return "%s às %s" % (self.tipo, self.hora)
-        else:
-            return u"Funcionário %s. Registro às %s" % (self.folha.funcionario, self.hora)
+        return u"Funcionário %s. de %s a %s: %s" % (self.folha.funcionario, self.inicio, self.fim, self.total)
     
-    def clean(self):
-        if self.hora.year == self.folha.data_referencia.year:
-            if self.hora.month == self.folha.data_referencia.month:
-                pass
-            else:
-                raise ValidationError("Erro! A entrada na folha de ponto deve ser no mês e ano que a data de referência da Folha")
-        else:            
-            raise ValidationError("Erro! A entrada na folha de ponto deve ser no mesmo ano que a data de referência da Folha")
+    def funcionario():
+        return self.folha.funcionario
+    
+    #def clean(self):
+    #    if self.hora.year == self.folha.data_referencia.year:
+    #        if self.hora.month == self.folha.data_referencia.month:
+    #            pass
+    #        else:
+    #            raise ValidationError("Erro! A entrada na folha de ponto   deve ser no mês e ano que a data de referência da Folha")
+    #    else:            
+    #        raise ValidationError("Erro! A entrada na folha de ponto deve ser no mesmo ano que a data de referência da Folha")
         
-    
     folha = models.ForeignKey(FolhaDePonto)
-    hora = models.DateTimeField(blank=False, default=datetime.datetime.now)
-    tipo = models.CharField(blank=True, null=True, max_length=100, choices=ENTRADA_FOLHA_DE_PONTO_CHOICES)
+    inicio = models.DateField(default=datetime.datetime.today)
+    fim = models.DateField(default=datetime.datetime.today)
+    total = models.DecimalField(max_digits=5, decimal_places=1)
+    # arquivo impresso e digitalizado
+    arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, max_length=300, help_text="Arquivo a ser anexado a cada entrada")
+    adicionado_por = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="entradas_folha_lancada_set")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class DependenteDeFuncionario(models.Model):
-    
+
     def __unicode__(self):
         return "%s (%s de %s)" % (self.nome, self.get_relacao_display(), self.funcionario)
-    
+
     nome = models.CharField(blank=True, max_length=100)
     relacao = models.CharField(blank=True, max_length=100, choices=DEPENDENTE_FUNCIONARIO_CHOICES)
     nascimento = models.DateField(default=datetime.datetime.today)
@@ -629,7 +642,6 @@ class DependenteDeFuncionario(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
-
 class TipoDeExameMedico(models.Model):
     
     def __unicode__(self):
@@ -641,7 +653,7 @@ class TipoDeExameMedico(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
+
 class RotinaExameMedico(models.Model):
     
     def __unicode__(self):
@@ -698,7 +710,6 @@ class PerfilAcessoRH(models.Model):
     class Meta:
         verbose_name = u"Perfil de Acesso ao RH"
         verbose_name_plural = u"Perfis de Acesso ao RH"
-    
     
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)

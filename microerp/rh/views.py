@@ -13,6 +13,7 @@ from django.db.models import Q
 
 from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
+from rh.models import EntradaFolhaDePonto
 from django import forms
 
 #
@@ -33,7 +34,13 @@ class AgendarExameMedicoForm(forms.ModelForm):
 class AdicionarFolhaDePontoForm(forms.ModelForm):
     class Meta:
         model = FolhaDePonto
-        fields = ('arquivo', 'data_referencia', 'horas_trabalhadas')
+        fields = ('data_referencia',)
+
+class AdicionarEntradaFolhaDePontoForm(forms.ModelForm):
+    class Meta:
+        model = EntradaFolhaDePonto
+        fields = ('inicio', 'fim', )
+
 
 
 class AdicionarArquivoRotinaExameForm(forms.ModelForm):
@@ -81,9 +88,23 @@ def funcionarios(request):
 
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos(request):
-    funcionarios_ativos = funcionarios_inativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
+    relatorio = True
+    funcionarios_ativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
     return render_to_response('frontend/rh/rh-funcionarios-listar-ativos.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
+def funcionarios_relatorios_listar_ativos_aniversarios(request):
+    relatorio = True
+    meses = range(1,13)
+    lista = []
+    for mes in meses:
+        funcionarios_ativos = Funcionario.objects.filter(nascimento__month=mes).extra(
+        #select = {'custom_dt': 'date(nascimento)'}).order_by('-custom_dt'
+        select={'birthmonth': 'MONTH(nascimento)'}, order_by=['birthmonth']
+        )
+        lista.append((datetime.date(datetime.date.today().year, mes, 1), funcionarios_ativos,))
+    return render_to_response('frontend/rh/rh-funcionarios-listar-aniversarios.html', locals(), context_instance=RequestContext(request),)
+        
 @user_passes_test(possui_perfil_acesso_rh)
 def ver_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
@@ -281,3 +302,9 @@ def controle_de_ferias(request):
 def controle_de_banco_de_horas(request):
     funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-controle-de-banco-de-horas.html', locals(), context_instance=RequestContext(request),)
+
+# relatorio_banco_de_horas_do_funcionario
+@user_passes_test(possui_perfil_acesso_rh)
+def relatorio_banco_de_horas_do_funcionario(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    return render_to_response('frontend/rh/rh-banco-de-horas-funcionario.html', locals(), context_instance=RequestContext(request),)

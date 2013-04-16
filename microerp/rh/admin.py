@@ -65,14 +65,13 @@ class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
 class PromocaoCargoAdmin(admin.ModelAdmin):
     list_display = ('beneficiario', 'data_solicitacao', 'cargo_antigo', 'cargo_novo', 'aprovado', 'avaliado', 'criado')
 
-
 class EntradaFolhaDePontoInline(admin.StackedInline):
     model = EntradaFolhaDePonto
-    ordering = ['hora']
+    ordering = ['inicio']
     extra= 0
 
 class FolhaDePontoAdmin(admin.ModelAdmin):
-    list_display = ('funcionario_mes_ano', 'funcionario', 'autorizado', 'encerrado', 'funcionario_autorizador')
+    list_display = ('funcionario_mes_ano', 'funcionario', 'autorizado', 'encerrado', 'funcionario_autorizador', 'total_horas')
     date_hierarchy = 'data_referencia'
     list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',
     inlines = [EntradaFolhaDePontoInline]
@@ -87,6 +86,11 @@ class FeriadoAdmin(admin.ModelAdmin):
 class PerfilAcessoRHAdmin(admin.ModelAdmin):
     list_filter = 'user', 'analista', 'gerente',
     list_display = 'user',  'analista', 'gerente',
+
+class EntradaFolhaDePontoAdmin(admin.ModelAdmin):
+    list_filter = 'folha__funcionario', 'adicionado_por'
+    list_display = 'folha', 'adicionado_por'
+    list_display_links = list_display
 
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
@@ -105,3 +109,4 @@ admin.site.register(RotinaExameMedico)
 admin.site.register(Demissao)
 admin.site.register(DependenteDeFuncionario)
 admin.site.register(Feriado, FeriadoAdmin)
+admin.site.register(EntradaFolhaDePonto, EntradaFolhaDePontoAdmin)

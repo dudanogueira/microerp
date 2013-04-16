@@ -1,0 +1,92 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+{% block content %}
+<h1>Funcionário: {{funcionario}}</h1>
+
+<h2>Banco de Horas</h2>
+<div class="alert alert-info">
+    {% thumbnail funcionario.foto "50x50" crop="center" as im %}
+          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+   {% endthumbnail %}
+    
+    <strong>Admissão</strong>:  {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}
+    ||     <strong>Saldo</strong>:  {{funcionario.banco_de_horas_saldo|floatformat:1}}
+    ||
+        <strong>Horas Esperadas</strong>:  {{funcionario.banco_de_horas_esperada|floatformat:1}}
+    ||
+        <strong>Horas Trabalhadas</strong>:  {{funcionario.banco_de_horas_trabalhadas|floatformat:1}}
+
+</div>
+{% for folha in funcionario.folhadeponto_set.all %}
+<div class="well">
+<h2 class="alert alert-{% if folha.encerrado%}success{%else%}error{%endif%}">Folha #{{folha.id}} - Referência: {{folha.data_referencia.month}}/{{folha.data_referencia.year}}</h2>
+<p><strong>Situação da folha:</strong>
+{% if folha.encerrado%}
+    <span class="label label-success">folha encerrada</span>
+{%else%}
+    <span class="label label-important">folha aberta</span>
+{%endif%}
+
+{% if folha.autorizado %}
+    <span class="label label-info">folha autorizada</span>
+{%else%}
+    <span class="label label-important">folha não revisada</span>
+{%endif%}
+</p>
+<p>
+{% if request.user.perfilacessorh.gerente and not folha.encerrado and folha.entradafolhadeponto_set.count %}
+ <a class="btn btn-large btn-success"><i class="icon-thumbs-up icon-white"></i> Fechar e Autorizar</a>
+{% endif %}
+</p>
+
+    <ul>
+        {% for entrada in folha.entradafolhadeponto_set.all %}
+        <li><span class="label label-info">{{entrada.total}} Horas</span> <strong>Início</strong>: {{entrada.inicio|date:"SHORT_DATE_FORMAT"}}, <strong>Fim</strong>: {{entrada.fim|date:"SHORT_DATE_FORMAT"}}</li>
+        {% empty %}
+        <li>Nenhuma Folha ainda</li>
+        {% endfor %}
+    </ul>
+    <span class="label label-warning">Total: {{folha.total_horas}}</span>
+    
+    {% if request.user.perfilacessorh.gerente and not folha.encerrado %}
+    {# ADICIONAR OUTRA ENTRADA DE FOLHA DE PONTO #}
+    <hr />
+    <div class="accordion" id="accordion2">
+      <div class="accordion-group">
+        <div class="accordion-heading">
+          <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
+<i class="icon icon-plus"></i> Adicionar Nova Entrada
+          </a>
+        </div>
+        <div id="collapseTwo" class="accordion-body collapse">
+          <div class="accordion-inner">
+            Anim pariatur cliche...
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    
+    
+</div>
+
+
+
+
+{% endfor %}
+
+{% endblock %}
+
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-funcionarios, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

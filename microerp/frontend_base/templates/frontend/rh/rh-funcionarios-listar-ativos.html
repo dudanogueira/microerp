@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load thumbnail %}
 
 <title>{%block title %}{{block.super}} - RH>Funcionários{% endblock %}</title>
 
@@ -9,22 +10,26 @@
 {% include "frontend/rh/rh-funcionarios-relatorios-botao.html" %}
 </p>
 <h1>Funcionários Ativos</h1>
-<div class="well well-small">
 
-    <ul>
     {% for funcionario in funcionarios_ativos %}
-        <li>{{funcionario}} Admissão: {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}. <strong>{{funcionario.banco_de_horas_trabalhadas}} Horas Trabalhadas</strong></li>
+    <div class="well">    {% thumbnail funcionario.foto "80x80" crop="center" as im %}
+          <img src="{{ im.url }}" class="pull-left" width="{{ im.width }}" height="{{ im.height }}" style="padding:10px">
+   {% endthumbnail %}
+ <h4>{{funcionario}}</h4>
+ <p><strong>Admissão</strong>: {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}. 
+     <br />
+     <strong>{{funcionario.banco_de_horas_trabalhadas}} Horas Trabalhadas</strong>
+ </p>
+    </div>
     {% endfor %}
-    </ul>
 
-</div>
-{% endblock %}
+    {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-	$("#menu-rh-funcionarios, #top-menu-rh", "#funcionario-relatorios-listar-ativos").addClass("active");
+	$("#menu-rh-funcionarios, #top-menu-rh, #funcionario-relatorios-listar-ativos").addClass("active");
     $("#funcionarios-relatorios-botao").addClass("open")
 });
 </script>

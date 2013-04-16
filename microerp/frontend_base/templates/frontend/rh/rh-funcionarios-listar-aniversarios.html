@@ -1,0 +1,36 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - RH>Funcionários{% endblock %}</title>
+
+{% block content %}
+<p class="text-right">
+{% include "frontend/rh/rh-funcionarios-relatorios-botao.html" %}
+</p>
+<h1>Lista de Aniversariantes</h1>
+
+    {% for mes in lista %}
+    <h1>{{mes.0|date:"F \d\e Y"}}</h1>
+    <div class="well well-small">
+        <ul>
+        {% for funcionario in mes.1 %}
+            <li>{{funcionario.nascimento.day}}/{{funcionario.nascimento.month}} - {{funcionario}}</li>
+        {% endfor %}
+    </ul>
+    </div>
+    {% endfor %}
+
+    {% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-funcionarios, #top-menu-rh, #funcionario-relatorios-listar-aniversarios").addClass("active");
+    $("#funcionarios-relatorios-botao").addClass("open")
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}
