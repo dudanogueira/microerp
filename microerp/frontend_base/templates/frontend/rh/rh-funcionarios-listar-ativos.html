@@ -10,15 +10,18 @@
 {% include "frontend/rh/rh-funcionarios-relatorios-botao.html" %}
 </p>
 <h1>Funcionários Ativos</h1>
-
     {% for funcionario in funcionarios_ativos %}
-    <div class="well">    {% thumbnail funcionario.foto "80x80" crop="center" as im %}
+    <div class="well">    
+        {% thumbnail funcionario.foto "100x100" crop="center" as im %}
           <img src="{{ im.url }}" class="pull-left" width="{{ im.width }}" height="{{ im.height }}" style="padding:10px">
-   {% endthumbnail %}
+          {% endthumbnail %}
  <h4>{{funcionario}}</h4>
  <p><strong>Admissão</strong>: {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}. 
      <br />
      <strong>{{funcionario.banco_de_horas_trabalhadas}} Horas Trabalhadas</strong>
+     <br />
+     <strong>Cargo / Departamento</strong>: {{funcionario.cargo_atual}} / {{funcionario.cargo_atual.departamento}}
+     
  </p>
     </div>
     {% endfor %}

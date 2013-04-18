@@ -21,9 +21,9 @@
 </div>
 
 <div class="btn-group pull-right" id="funcionarios-relatorios-botao">
-    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="icon icon-list-alt icon-white"></i> Relatórios <span class="caret"></span></button>
+    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="icon icon-list-alt icon-white"></i> Controles e Relatórios <span class="caret"></span></button>
     <ul class="dropdown-menu">
-        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:relatorio_banco_de_horas_do_funcionario" funcionario.id %}" class=""><i class="icon-time"></i> Relatório de Banco de Hora</a></li>
+        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class=""><i class="icon-time"></i> Controle de Banco de Hora</a></li>
     </ul>
 </div>
 
@@ -38,6 +38,8 @@
             {% thumbnail funcionario.foto "150x150" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
            {% endthumbnail %}
+           <br />
+           <strong>Idade</strong>: {{funcionario.nascimento|timesince}}
         
         </div>
     </div>
@@ -93,8 +95,11 @@
     <div class="span6">
         <h3>Folhas de Ponto</h3>
         <div class="well">
-            <h2 class="alert alert-{{funcionario.banco_de_horas_situacao}}">Saldo: {% if funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
-            <a href="{% url "rh:relatorio_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="icon icon-time icon-white"></i> Gerenciar Folhas</a>
+            <div class="alert alert-{{funcionario.banco_de_horas_situacao}}">
+                <h2>Saldo: {% if funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
+            <p><i>no Banco de Horas</i></p>
+            </div>
+            <a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="icon icon-time icon-white"></i> Gerenciar Folhas de Ponto</a>
             
         </div>
     </div>

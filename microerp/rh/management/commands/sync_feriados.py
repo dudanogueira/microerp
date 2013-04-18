@@ -8,7 +8,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         '''Populate Brazilian holidays'''
-        url="https://www.google.com/calendar/ical/pt_br.brazilian%23holiday%40group.v.calendar.google.com/public/basic.ics"
         url = "https://www.google.com/calendar/ical/pt_br.brazilian%23holiday%40group.v.calendar.google.com/public/basic.ics"
         u = urllib2.urlopen(url)
         r = u.read()

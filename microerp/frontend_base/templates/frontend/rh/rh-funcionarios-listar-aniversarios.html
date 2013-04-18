@@ -11,14 +11,29 @@
 <h1>Lista de Aniversariantes</h1>
 
     {% for mes in lista %}
-    <h1>{{mes.0|date:"F \d\e Y"}}</h1>
-    <div class="well well-small">
-        <ul>
-        {% for funcionario in mes.1 %}
-            <li>{{funcionario.nascimento.day}}/{{funcionario.nascimento.month}} - {{funcionario}}</li>
+    {% if mes.1.count %}
+        <h1>{{mes.0|date:"F \d\e Y"}}</h1>
+        <div class="well well-small">
+        {% for funcionario in mes.1 %}        
+        {% if forloop.first %}
+        <hr />
+        {%endif%}
+        {% if funcionario.foto %}
+        <p style="height: 100px">
+
+            {% thumbnail funcionario.foto "80x80" crop="center" as im %}
+              <img src="{{ im.url }}" class="pull-left" width="{{ im.width }}" height="{{ im.height }}" style="padding:10px">
+              {% endthumbnail %}
+          {% else %}
+          <p>
+          {% endif %}
+ <h5>{{funcionario.nascimento.day}}/{{funcionario.nascimento.month}} - {{funcionario}}</h5>
+    </p>
+ <hr />
         {% endfor %}
-    </ul>
-    </div>
+        </div>
+        <hr />
+    {% endif %}
     {% endfor %}
 
     {% endblock %}

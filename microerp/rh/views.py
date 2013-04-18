@@ -14,12 +14,13 @@ from django.db.models import Q
 from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
 from rh.models import EntradaFolhaDePonto
+from rh.utils import get_weeks
+
 from django import forms
 
 #
 # FORMULARIOS
 #
-
 class DemitirFuncionarioForm(forms.Form):
     exame_demissional = forms.DateTimeField(
         initial=datetime.datetime.now(),
@@ -39,7 +40,7 @@ class AdicionarFolhaDePontoForm(forms.ModelForm):
 class AdicionarEntradaFolhaDePontoForm(forms.ModelForm):
     class Meta:
         model = EntradaFolhaDePonto
-        fields = ('inicio', 'fim', )
+        fields = ('inicio', 'fim', 'total')
 
 
 
@@ -76,8 +77,18 @@ def possui_perfil_acesso_rh(user, login_url="/"):
 
 @user_passes_test(possui_perfil_acesso_rh)
 def home(request):
+    # demissoes
     demissoes_andamento = Demissao.objects.filter(status="andamento")
+    # exames por vir
     exames_futuros = RotinaExameMedico.objects.filter(data__gt=datetime.date.today()) | RotinaExameMedico.objects.filter(realizado=False)
+    # aniversarios
+    this_week = get_weeks()[0]
+    days = [day.day for day in this_week]
+    today = datetime.date.today()
+    aniversarios_mes = Funcionario.objects.filter(nascimento__month=today.month).extra(
+        select={'birthmonth': 'MONTH(nascimento)'}, order_by=['birthmonth']
+        )
+    aniversarios_hoje = Funcionario.objects.filter(nascimento__month=today.month, nascimento__day=today.day)
     return render_to_response('frontend/rh/rh-home.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_rh)
@@ -303,8 +314,32 @@ def controle_de_banco_de_horas(request):
     funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-controle-de-banco-de-horas.html', locals(), context_instance=RequestContext(request),)
 
-# relatorio_banco_de_horas_do_funcionario
+# controle_banco_de_horas_do_funcionario
 @user_passes_test(possui_perfil_acesso_rh)
-def relatorio_banco_de_horas_do_funcionario(request, funcionario_id):
+def controle_banco_de_horas_do_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    folhas_abertas = funcionario.folhadeponto_set.filter(encerrado=False)
+    folhas_fechadas = funcionario.folhadeponto_set.filter(encerrado=True)
+    # processo adicionar entrada folha
+    if request.POST:
+        form_add_entrada_folha_ponto = AdicionarEntradaFolhaDePontoForm(request.POST)
+        if form_add_entrada_folha_ponto.is_valid():
+            entrada = form_add_entrada_folha_ponto.save(commit=False)
+            folha_id = int(form_add_entrada_folha_ponto.data['folha'])
+            folha = get_object_or_404(FolhaDePonto, id=folha_id)
+            entrada.folha = folha
+            entrada.adicionado_por = request.user
+            entrada.save()
+            messages.success(request, u'Sucesso: Lançamento de %s horas realizado!' % entrada.total )
+        else:
+            messages.error(request, u'Formulário Não Validado')
+            
+    else:
+        form_add_entrada_folha_ponto = AdicionarEntradaFolhaDePontoForm()
     return render_to_response('frontend/rh/rh-banco-de-horas-funcionario.html', locals(), context_instance=RequestContext(request),)
+
+def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, folha_id):
+    folha = get_object_or_404(FolhaDePonto, funcionario__id=funcionario_id, id=folha_id)
+    folha.encerrado = True
+    folha.save()
+    return redirect(reverse('rh:controle_banco_de_horas_do_funcionario', args=[folha.funcionario.id,]))

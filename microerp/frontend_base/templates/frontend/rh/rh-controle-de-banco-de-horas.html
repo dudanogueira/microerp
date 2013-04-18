@@ -11,12 +11,14 @@
 <div class="well well-small alert alert-{{funcionario.banco_de_horas_situacao}}">
     <h2>{{funcionario}}</h2>
     
-    <a class="btn btn-info" href="{% url "rh:relatorio_banco_de_horas_do_funcionario" funcionario.id %}"><i class="icon-time icon-white"></i> Relatório Detalhado para {{funcionario}}</a>
+    <a class="btn btn-info" href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}"><i class="icon-time icon-white"></i> Relatório Detalhado para {{funcionario}}</a>
     <h3>Admissão: {{funcionario.periodo_trabalhado_corrente.inicio}}</h3>
         <strong>Horas Trabalhadas Esperadas</strong>: {{funcionario.banco_de_horas_esperada}} horas<br />    
         <strong>Horas Trabalhadas Registrada</strong>: {{funcionario.banco_de_horas_trabalhadas|floatformat:1}} horas<br />
         <hr />
-        <strong>Saldo</strong>: {{funcionario.banco_de_horas_saldo|floatformat:1}} horas {% if funcionario.banco_de_horas_situacao == "success" %}Positivas{% else %}Negativas{% endif %}
+        <strong>Saldo</strong>:  <span class="badge badge-{% if funcionario.banco_de_horas_saldo > 0 %}success{%else%}important{%endif%}">{{funcionario.banco_de_horas_saldo|floatformat:1}}</span>
+        
+        
         <br />
         {% if funcionario.banco_de_horas_ultimo_lancamento %}
         <strong>Último Lançamento</strong>: De {{funcionario.banco_de_horas_ultimo_lancamento.inicio|date:"SHORT_DATE_FORMAT"}} a {{funcionario.banco_de_horas_ultimo_lancamento.fim|date:"SHORT_DATE_FORMAT"}}, Total: {{funcionario.banco_de_horas_ultimo_lancamento.total}}

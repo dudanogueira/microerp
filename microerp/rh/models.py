@@ -48,7 +48,7 @@ def funcionario_avatar_img_path(instance, filename):
 
 def funcionario_entrada_folha_ponto_assinada(instance, filename):
     return os.path.join(
-        'funcionarios/', instance.folha.funcionario.uuid, 'folha_de_ponto', str(instance.folha.data_referencia.year), str(instance.folha.data_referencia.month), 'ID-ENTRADA-%d' % instance.id, filename
+        'funcionarios/', instance.funcionario.uuid, 'folha_de_ponto', str(instance.data_referencia.year), str(instance.data_referencia.month), 'ID-ENTRADA-%d' % instance.id, filename
     )
 
 def funcionario_folha_ponto_assinada(instance, filename):
@@ -584,6 +584,9 @@ class FolhaDePonto(models.Model):
     def __unicode__(self):
         return u"Folha de ponto (#%d) para funcionário %s referente ao mês %d de %d" % (self.id, self.funcionario, self.data_referencia.month, self.data_referencia.year)
 
+    def filename(self):
+            return os.path.basename(self.arquivo.name)
+
     def funcionario_mes_ano(self):
         return "%s: %s/%s" % (self.funcionario, self.data_referencia.month, self.data_referencia.year)
 
@@ -595,7 +598,7 @@ class FolhaDePonto(models.Model):
     data_referencia = models.DateField(u"Mês e Ano de Referência",default=datetime.datetime.today)
     encerrado = models.BooleanField(default=False)
     autorizado = models.BooleanField(default=False)
-    arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, help_text="Arquivo a ser anexado no fechamento do mês da data de referência")
+    arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, help_text="Arquivo a ser anexado no fechamento do mês da data de referência", max_length=300)
     funcionario_autorizador = models.ForeignKey(Funcionario, related_name="folhadeponto_autorizado_set", blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -617,14 +620,13 @@ class EntradaFolhaDePonto(models.Model):
     #            raise ValidationError("Erro! A entrada na folha de ponto   deve ser no mês e ano que a data de referência da Folha")
     #    else:            
     #        raise ValidationError("Erro! A entrada na folha de ponto deve ser no mesmo ano que a data de referência da Folha")
-        
     folha = models.ForeignKey(FolhaDePonto)
     inicio = models.DateField(default=datetime.datetime.today)
-    fim = models.DateField(default=datetime.datetime.today)
+    fim = models.DateField(default=datetime.date.today()+datetime.timedelta(days=7))
     total = models.DecimalField(max_digits=5, decimal_places=1)
     # arquivo impresso e digitalizado
     arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, max_length=300, help_text="Arquivo a ser anexado a cada entrada")
-    adicionado_por = models.OneToOneField(settings.AUTH_USER_MODEL, related_name="entradas_folha_lancada_set")
+    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="entradas_folha_lancada_set")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        

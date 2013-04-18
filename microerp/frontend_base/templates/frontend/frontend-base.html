@@ -100,7 +100,20 @@
     		    {% for message in messages %}
     				<div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">
     				  <a class="close" data-dismiss="alert">×</a>
-    				  {{ message|safe }}
+                      {% if message.tags == "error" %}
+    				  <i class="icon-warning-sign"></i>
+                      {% endif %}
+                      {% if message.tags == "info" %}
+    				  <i class="icon-comment"></i>
+                      {% endif %}
+                      {% if message.tags == "success" %}
+    				  <i class="icon-ok-sign"></i>
+                      {% endif %}
+                      {% if message.tags == "warning" %}
+    				  <i class="icon-warning-sign"></i>
+                      {% endif %}
+                      
+                       {{ message|safe }}
     				</div>
     		    {% endfor %}
     		</div>
