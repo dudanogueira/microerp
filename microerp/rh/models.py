@@ -259,6 +259,8 @@ class Funcionario(models.Model):
         return retorno or 0
     
     def banco_de_horas_esperada(self):
+        if not self.periodo_trabalhado_corrente:
+            return 0
         inicio = self.periodo_trabalhado_corrente.inicio
         feriados = Feriado.objects.filter(ativo=True).values('data')
         feriados_list = [feriado['data'] for feriado in feriados]

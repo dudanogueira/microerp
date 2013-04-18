@@ -93,7 +93,7 @@ def home(request):
 
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios(request):
-    departamentos = Departamento.objects.exclude(cargo__funcionario_cargo_atual_set__periodo_trabalhado_corrente=None)
+    departamentos = Departamento.objects.all()
     funcionarios_inativos = Funcionario.objects.filter(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
 

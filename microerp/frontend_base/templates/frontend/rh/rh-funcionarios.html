@@ -10,21 +10,25 @@
 </p>
 
 <h1>Funcionários Ativos</h1>
-<div class="well well-small">
+
 
     {% for departamento in departamentos %}
+    <div class="well well-large">
+        <h2 class="alert alert-info">Departamento: {{departamento}}</h2>
         {% for cargo in departamento.cargo_set.all %}
-        <h3>{{departamento}} - {{cargo}}</h3>
-            <ul>
-            {% for funcionario in cargo.funcionario_cargo_atual_set.all %}
-            {% if funcionario.periodo_trabalhado_corrente %}
-                <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}}</a></li>
-            {% endif %}
-            {% endfor %}
-            </ul>
+        <div class="well">
+        <h3>{{cargo}}</h3>
+        <ul>
+        {% for funcionario in cargo.funcionario_cargo_atual_set.all %}
+        {% if funcionario.periodo_trabalhado_corrente %}
+            <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}}</a></li>
+        {% endif %}
         {% endfor %}
+        </ul>
+        </div>
+        {% endfor %}
+    </div>
     {% endfor %}
-</div>
 
 <h1>Funcionários Inativos</h1>
 <div class="well well-small">
