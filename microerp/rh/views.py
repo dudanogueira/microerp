@@ -235,41 +235,9 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
     return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
 
 @user_passes_test(possui_perfil_acesso_rh)
-def exames_medicos_exame_realizado_hoje_old(request, exame_id):
-    '''marca exame como Realizado Hoje'''
-    if request.POST:
-        form = AdicionarArquivoRotinaExameForm(request.POST, request.FILES)
-        try:
-            if form.is_valid():
-                exame = form.save()
-                if not exame.data:
-                    exame.data = datetime.datetime.now()
-                exame.realizado = True
-                exame.clean()
-                exame.save()
-                messages.success(request, u"Exame marcado como Realizado!")
-                # Se é exame admissional, ou atualização
-                # marcar para daqui a 1 ano, do tipo atualização
-                if exame.tipo == "a" or exame.tipo == "u":
-                    data_novo_exame = datetime.date.today() + relativedelta( months = +12 )
-                    novo_exame = exame.funcionario.rotinaexamemedico_set.create(
-                        tipo="u",
-                        data=data_novo_exame,
-                        periodo_trabalhado=exame.periodo_trabalhado,
-                    )
-                    messages.info(request, u"Um Novo Exame do Tipo Atualização foi Criado: #ID%s" % novo_exame.id)
-                    for exame_padrao in exame.funcionario.cargo_atual.exame_medico_padrao.all():
-                        novo_exame.exames.add(exame_padrao)
-                    novo_exame.save()
-            else:
-                messages.error(request, "ERROR")        
-        except ValidationError, e:
-            messages.error(request, "%" '; '.join(e.messages))        
-
-        return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
-
-@user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao(request):
+    processos_abertos = Demissao.objects.filter(status="andamento")
+    processos_fechados = Demissao.objects.filter(status="finalizado")
     return render_to_response('frontend/rh/rh-processos-demissao.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_rh)
@@ -304,7 +272,7 @@ def demitir_funcionario(request, funcionario_id):
             demissao = funcionario.demissao_set.create(
                 data=datetime.date.today(),
                 periodo_trabalhado_finalizado=periodo_trabalhado_finalizado,
-                demissor=request.user.funcionario,
+                demissor=request.user,
             )
             messages.info(request, u'Entrada de Demissão Criada: ID#%s' % demissao.id)
             # sucesso no processo

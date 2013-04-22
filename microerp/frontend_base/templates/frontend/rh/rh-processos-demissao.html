@@ -1,0 +1,39 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH>Processos de Demissão{% endblock %}</title>
+
+{% block content %}
+
+<h1>Processos de Demissão</h1>
+{% if processos_abertos %}
+    <h2>Processos em Aberto</h2>
+    <div class="well">
+        {% for processo in processos_abertos %}
+            {{processo}}
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if processos_fechados %}
+    <h2>Processos Fechados</h2>
+    <div class="well">
+        {% for processo in processos_fechados %}
+            {{processo}}
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-processos-de-demissao, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

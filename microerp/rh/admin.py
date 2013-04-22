@@ -102,6 +102,11 @@ class EntradaFolhaDePontoAdmin(admin.ModelAdmin):
     list_display = 'folha', 'adicionado_por'
     list_display_links = list_display
 
+class DemissaoAdmin(admin.ModelAdmin):
+    list_filter = 'status', 'demitido', 'demissor'
+    list_display = 'id', 'demitido', 'status', 'demissor'
+    list_display_links = list_display
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
@@ -116,7 +121,7 @@ admin.site.register(FolhaDePonto, FolhaDePontoAdmin)
 admin.site.register(PerfilAcessoRH, PerfilAcessoRHAdmin)
 admin.site.register(TipoDeExameMedico)
 admin.site.register(RotinaExameMedico)
-admin.site.register(Demissao)
+admin.site.register(Demissao, DemissaoAdmin)
 admin.site.register(DependenteDeFuncionario)
 admin.site.register(Feriado, FeriadoAdmin)
 admin.site.register(EntradaFolhaDePonto, EntradaFolhaDePontoAdmin)

@@ -47,6 +47,12 @@ class PreCliente(models.Model):
     def __unicode__(self):
         return self.nome
     
+    
+    class Meta:
+        verbose_name = "Pré Cliente"
+        verbose_name_plural = "Pré Clientes"
+    
+    
     cliente_convertido = models.ForeignKey('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
@@ -178,6 +184,11 @@ class EnderecoCliente(models.Model):
     
     def __unicode__(self):
         return u"Endereço ID#%d do Cliente %s" % (self.id, self.cliente.nome)
+
+    class Meta:
+        verbose_name = "Endereço de Cliente"
+        verbose_name_plural = "Endereços de Clientes"
+    
 
     def save(self, *args, **kwargs):
             if self.principal is False:

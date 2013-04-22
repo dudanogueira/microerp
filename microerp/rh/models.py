@@ -620,15 +620,12 @@ class EntradaFolhaDePonto(models.Model):
     
     def funcionario():
         return self.folha.funcionario
+        
+    class Meta:
+        verbose_name = "Entrada de Folha de Ponto"
+        verbose_name_plural = "Entradas de Folha de Ponto"
     
-    #def clean(self):
-    #    if self.hora.year == self.folha.data_referencia.year:
-    #        if self.hora.month == self.folha.data_referencia.month:
-    #            pass
-    #        else:
-    #            raise ValidationError("Erro! A entrada na folha de ponto   deve ser no mês e ano que a data de referência da Folha")
-    #    else:            
-    #        raise ValidationError("Erro! A entrada na folha de ponto deve ser no mesmo ano que a data de referência da Folha")
+    
     folha = models.ForeignKey(FolhaDePonto)
     inicio = models.DateField(default=datetime.datetime.today)
     fim = models.DateField(default=datetime.date.today()+datetime.timedelta(days=7))
@@ -641,6 +638,11 @@ class EntradaFolhaDePonto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class DependenteDeFuncionario(models.Model):
+    
+    class Meta:
+        verbose_name = "Dependente de Funcionário"
+        verbose_name_plural = "Dependentes de Funcionários"
+    
 
     def __unicode__(self):
         return "%s (%s de %s)" % (self.nome, self.get_relacao_display(), self.funcionario)
@@ -657,6 +659,11 @@ class TipoDeExameMedico(models.Model):
     
     def __unicode__(self):
         return self.nome
+        
+    class Meta:
+        verbose_name = "Tipo de Exame Médico"
+        verbose_name_plural = "Tipos de Exames Médicos"
+        
     
     nome = models.CharField(blank=True, max_length=100)
     descricao = models.TextField(blank=True)
@@ -666,6 +673,11 @@ class TipoDeExameMedico(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class RotinaExameMedico(models.Model):
+    
+    class Meta:
+        verbose_name = "Rotina de Exame Médico"
+        verbose_name_plural = "Rotinas de Exames Médicos"
+    
     
     def __unicode__(self):
         if self.data:
@@ -706,10 +718,22 @@ class RotinaExameMedico(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
 class Demissao(models.Model):
-    funcionario = models.ForeignKey('Funcionario', related_name="demissao_set")
+    
+    def __unicode__(self):
+        return u"Processo de demissão para %s (%s -> %s) iniciado em %s" % (self.demitido, self.periodo_trabalhado_finalizado.inicio, self.periodo_trabalhado_finalizado.fim, self.criado)
+    
+    class Meta:
+        verbose_name = "Processo de Demissão"
+        verbose_name_plural = "Processos de Demissão"
+        
+    # ATENCAO
+    # O demitido é um Funcionário, não precisa ter user
+    # O demissor é um user, com acesso ao sistema
+    
+    demitido = models.ForeignKey('Funcionario', related_name="demissao_set")
     data = models.DateField(default=datetime.datetime.today)
     periodo_trabalhado_finalizado = models.ForeignKey('PeriodoTrabalhado')
-    demissor = models.ForeignKey('Funcionario', related_name="demissor_set")
+    demissor = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="demissor_set")
     status = models.CharField(blank=True, max_length=100, choices=DEMISSAO_FUNCIONARIO_CHOICES, default="andamento")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
