@@ -64,8 +64,8 @@ def home(request):
     # widget cliente
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
-        clientes = Cliente.objects.filter(nome__contains=cliente_q)
-        preclientes = PreCliente.objects.filter(nome__contains=cliente_q, cliente_convertido=None) 
+        clientes = Cliente.objects.filter(nome__icontains=cliente_q)
+        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     return render_to_response('frontend/cadastro/cadastro-home.html', locals(), context_instance=RequestContext(request),)
 
 
