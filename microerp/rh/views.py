@@ -207,7 +207,23 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
                 exame_alterado = form.save(commit=False)
                 exame_alterado.realizado = True
                 exame_alterado.save()
-                messages.info(request, "Salvo")
+                messages.success(request, u"Exame marcado como Realizado!")
+                # Se é exame admissional, ou atualização
+                # marcar para daqui a X dias o exame de atualização
+                if exame_alterado.tipo == "a" or exame_alterado.tipo == "u":
+                    dias_proximo_exame = exame_alterado.funcionario.cargo_atual.dias_renovacao_exames
+                    data_novo_exame = datetime.date.today() + relativedelta( days = dias_proximo_exame )
+                    novo_exame = exame.funcionario.rotinaexamemedico_set.create(
+                        tipo="u",
+                        data=data_novo_exame,
+                        periodo_trabalhado=exame.periodo_trabalhado,
+                    )
+                    messages.info(request, u"Um Novo Exame do Tipo Atualização foi Criado: #ID%s" % novo_exame.id)
+                    # adiciona os exames padrao para o cargo do funcionario
+                    for exame_padrao in exame.funcionario.cargo_atual.exame_medico_padrao.all():
+                        novo_exame.exames.add(exame_padrao)
+                    novo_exame.save()
+
             except ValidationError, e:
                 messages.error(request, "%" '; '.join(e.messages))        
             except:

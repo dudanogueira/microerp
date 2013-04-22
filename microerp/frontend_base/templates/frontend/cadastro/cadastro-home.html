@@ -137,7 +137,13 @@
                     {% for cliente in clientes %}
               
                     <tr>
-                        <td>{{cliente.nome}}</td>
+                        <td>{% if cliente.tipo == "pf" %}
+                                <span class="label">{{cliente.tipo|upper}}</span>
+                            {% else %}
+                                <span class="label label-success">{{cliente.tipo|upper}}</span> 
+                            {% endif %}
+                            {{cliente.nome}}
+                        </td>
                         <td>
                             <a class="btn" href="">ver</a>
                             <a class="btn" href="">+ recado</a>

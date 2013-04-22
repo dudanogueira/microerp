@@ -425,7 +425,7 @@ class Cargo(models.Model):
     gratificacao = models.DecimalField(u"Gratificação", max_digits=10, decimal_places=2)
     # exames padrao deste cargo
     exame_medico_padrao = models.ManyToManyField('TipoDeExameMedico')
-    dias_renovacao_exames = models.IntegerField(blank=False, null=False)
+    dias_renovacao_exames = models.IntegerField(blank=False, null=False, default=365)
 
 class Departamento(models.Model):
     
