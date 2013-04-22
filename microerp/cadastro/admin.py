@@ -25,6 +25,7 @@ from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem, Consul
 from cadastro.models import PerfilAcessoRecepcao
 from cadastro.models import PreCliente
 from cadastro.models import Recado
+from cadastro.models import EnderecoCliente
 
 from comercial.models import SolicitacaoComercial
 
@@ -40,9 +41,15 @@ class ConsultaDeCreditoInline(admin.TabularInline):
     ordering = ['criado']
     extra = 0
 
+class EnderecoClienteInline(admin.StackedInline):
+    model = EnderecoCliente
+    ordering = ['criado']
+    extra = 0
+
 class ClienteAdmin(admin.ModelAdmin):
-    list_filter = ('tipo', 'cidade', 'bairro')
-    search_fields = ('nome', 'cpf', 'cnpj', 'rua', 'bairro__nome')
+    save_on_top = True
+    list_filter = ('tipo',)
+    search_fields = ('nome', 'cpf', 'cnpj',)
     list_display = ('nome', 'documento')
     list_display_links = list_display
     date_hierarchy = "criado"
@@ -68,21 +75,29 @@ class ClienteAdmin(admin.ModelAdmin):
                 'classes': ('wide', 'extrapretty'),
                 'fields': ('origem',)
             }),
-            (u'Endereço', {
-                'classes': ('wide', 'extrapretty'),
-                'fields': ('cidade', 'bairro', 'cep', 'rua', 'numero', 'complemento')
-            }),
             (u'Meta Informações', {
                 'classes': ('wide', 'extrapretty', 'collapse'),
                 'fields': ('criado', 'atualizado', 'uuid')
             }),
         )
-    inlines = [ConsultaDeCreditoInline, SolicitacaoComercialInline]
+    inlines = [EnderecoClienteInline, ConsultaDeCreditoInline, SolicitacaoComercialInline]
 
 class PerfilAcessoRecepcaoAdmin(admin.ModelAdmin):
     list_filter = 'user', 'analista', 'gerente',
     list_display = 'user',  'analista', 'gerente',
 
+class PreClienteAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = 'id', 'nome', 'contato', 'dados'
+    list_display_links = list_display
+    date_hierarchy = "criado"
+
+class RecadoAdmin(admin.ModelAdmin):
+    save_on_top = True
+    list_display = 'id', 'destinatario', 'remetente', 'adicionado_por', 'criado'
+    list_display_links = list_display
+    date_hierarchy = "criado"
+    list_filter = 'destinatario', 'remetente', 'adicionado_por'
 
 
 admin.site.register(Cliente, ClienteAdmin)
@@ -92,5 +107,5 @@ admin.site.register(Ramo)
 admin.site.register(ClienteOrigem)
 admin.site.register(TipoDeConsultaDeCredito)
 admin.site.register(PerfilAcessoRecepcao, PerfilAcessoRecepcaoAdmin)
-admin.site.register(PreCliente)
-admin.site.register(Recado)
+admin.site.register(PreCliente, PreClienteAdmin)
+admin.site.register(Recado, RecadoAdmin)

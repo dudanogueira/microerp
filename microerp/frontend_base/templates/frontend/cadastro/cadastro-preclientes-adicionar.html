@@ -1,0 +1,19 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+
+{% block content %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-cadastro-cliente-pre-cliente, #top-menu-cadastro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
+{% endblock%}

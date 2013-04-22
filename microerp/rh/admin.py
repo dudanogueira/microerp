@@ -26,7 +26,7 @@ from sorl.thumbnail.admin import AdminImageMixin
 
 class ExperienciasProfissionaisFuncionarioInline(admin.StackedInline):
     model = ExperienciasProfissionaisFuncionario
-    ordering = ['data_admissao']
+    ordering = ['data_admissao',]
     extra = 0
     
 class IdiomaFuncionarioInline(admin.StackedInline):
@@ -44,6 +44,7 @@ class DependenteDeFuncionarioInline(admin.StackedInline):
     extra = 0
 
 class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
+    save_on_top = True
     list_display = ('nome', 'email', 'cargo_atual')
     list_display_links = list_display
     list_filter = ('cargo_atual',)
@@ -56,6 +57,7 @@ class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
 
 
 class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
+    save_on_top = True
     search_fields = ['funcionario__nome',]
     list_filter = ('status', 'tipo', 'funcionario__cargo_atual__nome', 'inicio')
     list_display = ('funcionario', 'data_criado', 'tipo', 'inicio', 'fim', 'status')
@@ -63,6 +65,7 @@ class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
     date_hierarchy = 'data_criado'
 
 class PromocaoCargoAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = ('beneficiario', 'data_solicitacao', 'cargo_antigo', 'cargo_novo', 'aprovado', 'avaliado', 'criado')
 
 class EntradaFolhaDePontoInline(admin.StackedInline):
@@ -71,6 +74,7 @@ class EntradaFolhaDePontoInline(admin.StackedInline):
     extra= 0
 
 class FolhaDePontoAdmin(admin.ModelAdmin):
+    save_on_top = True
     list_display = ('funcionario_mes_ano', 'funcionario', 'autorizado', 'encerrado', 'funcionario_autorizador', 'total_horas')
     date_hierarchy = 'data_referencia'
     list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',

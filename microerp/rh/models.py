@@ -25,6 +25,8 @@ from django.db import models
 from django.db.models import signals
 from django.db.models import Sum
 
+from django.contrib.sites.models import Site
+
 from django.core.exceptions import ValidationError
 
 from sorl.thumbnail import ImageField
@@ -204,7 +206,6 @@ class Funcionario(models.Model):
         elif delta > 30:
             return "error"
          
-    
     def dias_trabalhados(self):
         dias_trabalhados = datetime.date.today() - self.periodo_trabalhado_corrente.inicio
         return dias_trabalhados.days
@@ -216,7 +217,6 @@ class Funcionario(models.Model):
             return dias_trabalhados / 365 * 30
         else:
             return 0
-
 
     def ferias_dias_gozados(self):
         return self.solicitacaodelicenca_set.filter(tipo="ferias", status="autorizada", realizada=True)
@@ -246,7 +246,6 @@ class Funcionario(models.Model):
         return self.ferias_dias_de_direito() - self.ferias_dias_total_soma()
 
     # BANCO DE HORAS
-    
     def banco_de_horas_ultimo_lancamento(self):
         ultimo = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).order_by('criado').all()
         if ultimo:
@@ -279,6 +278,14 @@ class Funcionario(models.Model):
             return "success"
         else:
             return "error"
+    
+    # CONTATOS
+    def destino_recado_formatado(self):
+        if self.email:
+            return email
+        else:
+            current_site = Site.objects.get()
+            return "ME:%s@%s" % (self.user.username, current_site.domain)
 
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)

@@ -44,10 +44,19 @@ class PreCliente(models.Model):
     '''
     Um Pre cliente é convertido depois em Cliente
     '''
+    
+    def __unicode__(self):
+        return self.nome
+    
     cliente_convertido = models.ForeignKey('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
     dados = models.TextField(blank=True)
+    # metadata
+    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="precliente_lancado_set")
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
     
 
 class Cliente(models.Model):
@@ -62,6 +71,7 @@ class Cliente(models.Model):
     def __unicode__(self):
         return "%s: %s" % (self.get_tipo_display(), self.nome)
         
+    
     def clean(self):
         '''Define as regras de preenchimento e validação da Entidade Cliente.        
         e as regras de validação de CPF ou CNPJ
@@ -158,6 +168,28 @@ class Cliente(models.Model):
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)
     fax = models.CharField(blank=True, max_length=100)
+    funcionario_responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
+    # financeiro
+    solicitar_consulta_credito = models.BooleanField("Solicitar Consulta de Crédito", default=False, help_text="Marque esta opção para solicitar uma consulta de crédito")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+class EnderecoCliente(models.Model):
+    
+    def __unicode__(self):
+        return u"Endereço ID#%d do Cliente %s" % (self.id, self.cliente)
+
+    def save(self, *args, **kwargs):
+            if self.principal is False:
+                self.principal = None
+            super(EnderecoCliente, self).save(*args, **kwargs)
+
+    # cliente
+    cliente = models.ForeignKey(Cliente)
+    principal = models.NullBooleanField(default=None, unique=True, help_text="Endereço Principal")
+    # telefone
+    telefone = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX", verbose_name="Telefone Associado")
     # endereço
     cidade = models.ForeignKey("Cidade", blank=False, null=False)
     bairro = models.ForeignKey("Bairro")
@@ -165,12 +197,10 @@ class Cliente(models.Model):
     rua = models.CharField(blank=True, max_length=500, verbose_name=u"Rua")
     numero = models.CharField(blank=True, max_length=100, verbose_name=u"Número")
     complemento = models.CharField(blank=True, max_length=200, verbose_name=u"Complemento")
-    funcionario_responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
-    # financeiro
-    solicitar_consulta_credito = models.BooleanField("Solicitar Consulta de Crédito", default=False, help_text="Marque esta opção para solicitar uma consulta de crédito")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
 
 class Ramo(models.Model):
 
@@ -216,7 +246,6 @@ class ClienteOrigem(models.Model):
     nome = models.CharField(blank=False, null=False, max_length=100)
     observacao = models.TextField(u"Observações Gerais", blank=True, null=True)
 
-
 class TipoDeConsultaDeCredito(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     codigo = models.CharField(blank=False, max_length=100, help_text="Código de Identificação: cpf, cnpj, cheque, etc")
@@ -246,14 +275,19 @@ class ConsultaDeCredito(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class Recado(models.Model):
+    
+    class Meta:
+        ordering = ['-criado',]
+    
     remetente = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_enviado_set")
     destinatario = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_recebido_set")
-    texto = models.TextField(blank=False)
-    cliente = models.ForeignKey(Cliente, blank=True, null=True)
+    texto = models.TextField(blank=False, verbose_name="Texto do Recado")
+    cliente = models.ForeignKey(Cliente, blank=True, null=True, verbose_name="Cliente Associado (opcional)")
     lida = models.BooleanField(default=False)
     encaminhado = models.BooleanField(default=False)
     encaminhado_data = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # metadata
+    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_criado_set")
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 

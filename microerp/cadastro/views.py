@@ -6,10 +6,43 @@ from django.core.urlresolvers import reverse
 
 from django.contrib.auth.decorators import user_passes_test
 
+# SITES
+from django.contrib.sites.models import Site
+from account.models import User
 # RH
 from rh.models import Funcionario
-
+# Cadastro
 from cadastro.models import Cliente, PreCliente
+from cadastro.models import Recado
+
+from django import forms
+#
+# FORMS
+#
+
+class AdicionarRecadoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        destinatario = kwargs.pop('destinatario')
+        remetente = kwargs.pop('remetente')
+        super(AdicionarRecadoForm, self).__init__(*args, **kwargs)
+        self.fields['cliente'].empty_label = 'Nenhum Cliente'
+        self.fields['remetente'].empty_label = 'Escolha um Remetente'
+        self.fields['remetente'].required = True
+        self.fields['remetente'].initial = remetente
+        self.fields['destinatario'].empty_label = 'Escolha um Destinatario'
+        self.fields['destinatario'].required = True
+        self.fields['destinatario'].initial = destinatario
+    
+    class Meta:
+        model = Recado
+        fields = ('texto', 'cliente', 'remetente', 'destinatario')
+    
+
+class PreClienteAdicionarForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        sugestao = kwargs.pop('sugestao')
+        super(PreClienteAdicionarForm, self).__init__(*args, **kwargs)
 
 #
 # DECORATORS
@@ -53,4 +86,24 @@ def funcionarios_recados_listar(request, funcionario_id):
 @user_passes_test(possui_perfil_acesso_recepcao)   
 def funcionarios_recados_adicionar(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, pk=funcionario_id)
+    if request.POST:
+        form = AdicionarRecadoForm(request.POST, destinatario=funcionario.id, remetente=request.user.funcionario.id)
+        if form.is_valid():
+            recado = form.save(commit=False)
+            recado.adicionado_por = request.user
+            recado.save()
+            messages.success(request, u'Recado Adicionado com sucesso!')
+            return redirect(reverse('cadastro:funcionarios_recados_listar', args=[funcionario_id]))
+
+    else:    
+        form = AdicionarRecadoForm(destinatario=funcionario.id, remetente=request.user.funcionario.id)
     return render_to_response('frontend/cadastro/cadastro-funcionario-recados-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_recepcao)
+def preclientes_adicionar(request):
+        return render_to_response('frontend/cadastro/cadastro-preclientes-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_recepcao)
+def preclientes_listar(request):
+        return render_to_response('frontend/cadastro/cadastro-preclientes-listar.html', locals(), context_instance=RequestContext(request),)

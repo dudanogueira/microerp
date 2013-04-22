@@ -5,9 +5,50 @@
 
 {% block content %}
 <h1>Adicionar Recado</h1>
-<h5>De: {{request.user.funcionario}} <{{request.user.funcionario}}><h5>
-<h5>Para: {{funcionario}} <{{funcionario.email}}></h5>
+<h2>Para {{funcionario}}</h2>
 
+<div class="row-fluid">
+  <form method="post">
+  <div class="span4">
+      {% for field in form %}{% csrf_token %}
+      
+          {% ifequal field.name "texto" %}
+          <div class="fieldWrapper">
+                  {{ field.errors }}
+                  <label for="id_{{field.name}}">{{field.label}}:</label>
+                  {{ field }}
+                  <small>{{field.help_text}}</small>
+          </div>
+          {% endifequal %}
+          
+      {% endfor %}
+      
+      
+  </div>
+  <div class="span8">
+      
+      {% for field in form %}
+      {% ifnotequal field.name "texto" %}
+      <div class="fieldWrapper">
+              {{ field.errors }}
+              <label for="id_{{field.name}}">{{field.label}}:</label>
+              {{ field }}
+              <small>{{field.help_text}}</small>
+      </div>
+      {% endifnotequal %}
+      {%endfor%}
+        <hr />
+        <p>
+            <span class="label label-warning"><i class="icon icon-plus icon-white"></i> Adicionado por: {{request.user.funcionario}}</span>
+            <button type="submit" class="btn btn-large btn-primary pull-right">Adicionar Recado</button>
+        </p>
+
+  
+  
+  
+  </div>
+</div>
+ </form>
 {% endblock %}
 
 {% block auxiliar-menu %}

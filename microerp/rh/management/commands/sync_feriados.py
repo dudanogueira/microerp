@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand
 import urllib2
 from icalendar import Calendar
@@ -8,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         '''Populate Brazilian holidays'''
-        url = "https://www.google.com/calendar/ical/pt_br.brazilian%23holiday%40group.v.calendar.google.com/public/basic.ics"
+        url = u"https://www.google.com/calendar/ical/pt_br.brazilian%23holiday%40group.v.calendar.google.com/public/basic.ics"
         u = urllib2.urlopen(url)
         r = u.read()
         u.close()
@@ -20,6 +21,6 @@ class Command(BaseCommand):
                 nome = component.get('summary')
                 data = component.get('dtstart').dt
                 if data:
-                    f,created = Feriado.objects.get_or_create(uid=uid, data=data, nome=nome, importado_por_sync=True)
+                    f,created = Feriado.objects.get_or_create(uid=uid, data=data, nome=unicode(nome), importado_por_sync=True)
                     f.save()
         

@@ -1,11 +1,10 @@
-{% extends "frontend/frontend-base.html" %}
+="{% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
 
 {% block content %}
 <h1>Funcionário: {{funcionario}}</h1>
 <h4>{{funcionario.cargo_atual}} - {{funcionario.cargo_atual.departamento}}</h4>
-
 
 {% if funcionario.periodo_trabalhado_corrente %}
 <div class="btn-group open">

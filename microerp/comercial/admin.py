@@ -21,10 +21,14 @@ __version__ = '0.0.1'
 
 from django.contrib import admin
 
-from comercial.models import SolicitacaoComercial, TipoSolicitacaoComercial, ContatoComercial, TipoContatoComercial, FonteDeAgendaComercial
+from comercial.models import SolicitacaoComercial
+from comercial.models import TipoSolicitacaoComercial
+from comercial.models import ContatoComercial
+from comercial.models import TipoContatoComercial
+from comercial.models import FonteDeAgendaComercial
 
 class SolicitacaoComercialAdmin(admin.ModelAdmin):
-    list_filter = ('status', 'tipo__mao_de_obra_inclusa', 'cliente__bairro__nome',  'cliente__cidade__nome', 'cliente__cidade__estado',)
+    list_filter = ('status', 'tipo__mao_de_obra_inclusa',)
     list_display = ('identificador', 'cliente', 'tipo', 'valor_calculado', 'status')
     list_display_links = list_display
     search_fields = ['id', 'cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__telefone_fixo', 'cliente__telefone_celular',]
@@ -35,8 +39,8 @@ class TipoSolicitacaoComercialAdmin(admin.ModelAdmin):
 class ContatoComercialAdmin(admin.ModelAdmin):
     date_hierarchy = "inicio"
     list_display = ('nome', 'status', 'inicio', 'fim', 'cliente')
-    search_fields = ['id', 'cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__telefone_fixo', 'cliente__telefone_celular', 'cliente__rua', 'cliente__bairro__nome']
-    list_filter = ('funcionario', 'inicio', 'status', 'cliente__cidade__nome', 'cliente__bairro__nome')
+    search_fields = ['id', 'cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__telefone_fixo', 'cliente__telefone_celular',]
+    list_filter = ('funcionario', 'inicio', 'status', )
     list_display_links = list_display
 
 admin.site.register(SolicitacaoComercial, SolicitacaoComercialAdmin)

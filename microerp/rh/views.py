@@ -85,7 +85,7 @@ def home(request):
     this_week = get_weeks()[0]
     days = [day.day for day in this_week]
     today = datetime.date.today()
-    aniversarios_mes = Funcionario.objects.filter(nascimento__month=today.month).extra(
+    aniversarios_mes = Funcionario.objects.filter(nascimento__month=today.month).exclude(periodo_trabalhado_corrente=None).extra(
         select={'birthmonth': 'MONTH(nascimento)'}, order_by=['birthmonth']
         )
     aniversarios_hoje = Funcionario.objects.filter(nascimento__month=today.month, nascimento__day=today.day)
