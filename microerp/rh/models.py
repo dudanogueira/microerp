@@ -806,7 +806,19 @@ def atualizador_promocao_post_save(signal, instance, sender, **kwargs):
     '''
     instance.beneficiario.save()
 
+def cria_folha_ponto_funcionario_criado(signal, instance, sender, **kwargs):
+    '''Após criar o funcionário, este sinal garante também a criação da folha de ponto
+    '''
+    if instance.periodo_trabalhado_corrente:
+        today = datetime.date.today()
+        folha,created = instance.folhadeponto_set.get_or_create(
+            data_referencia__month=today.month,
+            data_referencia__year=today.year,
+            periodo_trabalhado=instance.periodo_trabalhado_corrente
+        )
+
 # SIGNALS CONNECTION
+signals.post_save.connect(cria_folha_ponto_funcionario_criado, sender=Funcionario)
 signals.post_save.connect(funcionario_post_save, sender=Funcionario)
 signals.post_save.connect(atualizador_promocao_post_save, sender=PromocaoCargo)
 signals.post_save.connect(atualizador_promocao_post_save, sender=PromocaoSalario)

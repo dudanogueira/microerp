@@ -43,12 +43,18 @@ class DependenteDeFuncionarioInline(admin.StackedInline):
     model = DependenteDeFuncionario
     extra = 0
 
+
+class PeriodoTrabalhadoInline(admin.StackedInline):
+    model = PeriodoTrabalhado
+    extra = 0
+
 class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
     save_on_top = True
     list_display = ('nome', 'email', 'cargo_atual')
     list_display_links = list_display
     list_filter = ('cargo_atual',)
     inlines = [
+        PeriodoTrabalhadoInline,
         IdiomaFuncionarioInline,
         CursoFuncionarioInline,
         ExperienciasProfissionaisFuncionarioInline,
