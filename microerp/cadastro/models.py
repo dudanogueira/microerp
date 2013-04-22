@@ -39,7 +39,6 @@ TIPO_CLIENTE_CHOICES = (
     ('pj', u'Pessoa Jurídica'),
 )
 
-
 class PreCliente(models.Model):
     '''
     Um Pre cliente é convertido depois em Cliente
@@ -69,7 +68,7 @@ class Cliente(models.Model):
     '''
     
     def __unicode__(self):
-        return "%s: %s" % (self.get_tipo_display(), self.nome)
+        return u"%s: %s" % (self.get_tipo_display(), self.nome)
         
     
     def clean(self):
@@ -178,7 +177,7 @@ class Cliente(models.Model):
 class EnderecoCliente(models.Model):
     
     def __unicode__(self):
-        return u"Endereço ID#%d do Cliente %s" % (self.id, self.cliente)
+        return u"Endereço ID#%d do Cliente %s" % (self.id, self.cliente.nome)
 
     def save(self, *args, **kwargs):
             if self.principal is False:
