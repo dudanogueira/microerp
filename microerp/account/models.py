@@ -67,14 +67,6 @@ class User(AbstractBaseUser, PermissionsMixin):
         # The user is identified by their email address
         return self.first_name
 
-    def __unicode__(self):
-        unicode_attr_field = getattr(settings, "USER_UNICODE_ATTRIBUTE", None)
-        if not unicode_attr_field:
-            return self.first_name or self.username
-        else:
-            unicode_attr = getattr(self, unicode_attr_field, None)
-            return unicode_attr.__unicode__()
-
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
         # Simplest possible answer: Yes, always
