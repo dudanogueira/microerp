@@ -5,12 +5,14 @@
 
 {% block content %}
 
+{% if aniversarios_mes %}
 <h2>Aniversários neste mês</h2>
 <div class="well well-small">
 {% for aniversariante in aniversarios_mes %}
 {{aniversariante}} - {{aniversariante.nascimento.day}}/{{aniversariante.nascimento.month}}<br />
 {% endfor %}
 </div>
+{% endif %}
 
 <h2>Demissões em Andamento</h2>
 <ul>
