@@ -5,6 +5,7 @@ from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
 from django.contrib.auth.decorators import user_passes_test
+from django.core.mail import EmailMessage
 
 # SITES
 from django.contrib.sites.models import Site
@@ -20,10 +21,15 @@ from django import forms
 # FORMS
 #
 
+from django_select2.widgets import Select2Widget
+
+from django_select2 import AutoModelSelect2Field
+
+
 class AdicionarRecadoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
-        destinatario = kwargs.pop('destinatario')
+        destinatario = kwargs.pop('destinatario')    
         remetente = kwargs.pop('remetente')
         super(AdicionarRecadoForm, self).__init__(*args, **kwargs)
         self.fields['cliente'].empty_label = 'Nenhum Cliente'
@@ -36,7 +42,7 @@ class AdicionarRecadoForm(forms.ModelForm):
     
     class Meta:
         model = Recado
-        fields = ('texto', 'cliente', 'remetente', 'destinatario')
+        fields = ('texto', 'remetente', 'cliente', 'destinatario')
     
 
 class PreClienteAdicionarForm(forms.ModelForm):
@@ -86,17 +92,45 @@ def funcionarios_recados_listar(request, funcionario_id):
 @user_passes_test(possui_perfil_acesso_recepcao)   
 def funcionarios_recados_adicionar(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, pk=funcionario_id)
-    if request.POST:
-        form = AdicionarRecadoForm(request.POST, destinatario=funcionario.id, remetente=request.user.funcionario.id)
+    try:
+        remetente_id = request.user.funcionario.id
+    except:
+        remetente_id = None
+    if request.POST:            
+        form = AdicionarRecadoForm(request.POST, destinatario=funcionario.id, remetente=remetente_id)
         if form.is_valid():
             recado = form.save(commit=False)
             recado.adicionado_por = request.user
             recado.save()
             messages.success(request, u'Recado Adicionado com sucesso!')
+            # MANDA EMAIL, SE POSSÍVEL
+            dest = []
+            if funcionario.email or funcionario.user.email:
+                dest.append(funcionario.email or funcionario.user.email)
+                assunto = u'Novo Recado'
+                template = loader.get_template('template_de_email/novo-recado.html')
+                d = locals()
+                c = Context(d)
+                conteudo = template.render(c)
+            
+                email = EmailMessage(
+                        assunto, 
+                        conteudo,
+                        'SISTEMA',
+                        dest,
+                    )
+                try:
+                    email.send(fail_silently=False)
+                    messages.success(request, u'Sucesso! Uma mensagem de email foi enviada para este recado!')
+                except:
+                    messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para este recado!')
+            else:
+                messages.error(request, u'Informação: Não foi enviado um email para este recado.')
+
             return redirect(reverse('cadastro:funcionarios_recados_listar', args=[funcionario_id]))
 
     else:    
-        form = AdicionarRecadoForm(destinatario=funcionario.id, remetente=request.user.funcionario.id)
+        form = AdicionarRecadoForm(destinatario=funcionario.id, remetente=remetente_id)
     return render_to_response('frontend/cadastro/cadastro-funcionario-recados-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_recepcao)

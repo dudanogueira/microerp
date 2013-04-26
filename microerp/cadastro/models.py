@@ -286,14 +286,18 @@ class ConsultaDeCredito(models.Model):
 
 class Recado(models.Model):
     
+    def __unicode__(self):
+        return "Recado de: %s Para: %s em %s" % (self.remetente, self.destinatario, self.criado)
+    
     class Meta:
         ordering = ['-criado',]
-    
-    remetente = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_enviado_set")
-    destinatario = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_recebido_set")
+
+    remetente = models.ForeignKey('rh.Funcionario', related_name="recado_enviado_set")
+    destinatario = models.ForeignKey('rh.Funcionario', related_name="recado_recebido_set")
     texto = models.TextField(blank=False, verbose_name="Texto do Recado")
     cliente = models.ForeignKey(Cliente, blank=True, null=True, verbose_name="Cliente Associado (opcional)")
-    lida = models.BooleanField(default=False)
+    lido = models.BooleanField(default=False)
+    lido_em = models.DateTimeField(blank=True, null=True)
     encaminhado = models.BooleanField(default=False)
     encaminhado_data = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # metadata

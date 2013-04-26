@@ -42,7 +42,6 @@
             <span class="label label-warning"><i class="icon icon-plus icon-white"></i> Adicionado por: {{request.user.funcionario}}</span>
             <button type="submit" class="btn btn-large btn-primary pull-right">Adicionar Recado</button>
         </p>
-
   
   
   
@@ -53,9 +52,12 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="/static/js/select2.js"></script>
+<link href="/static/css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 <script>
 $(document).ready(function() {
     $("#menu-cadastro-funcionarios-list, #top-menu-cadastro").addClass("active");
+    $("#id_remetente, #id_cliente,  #id_destinatario").select2();
 });
 </script>
 {% endaddtoblock %}

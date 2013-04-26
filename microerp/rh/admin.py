@@ -50,7 +50,7 @@ class PeriodoTrabalhadoInline(admin.StackedInline):
 
 class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
     save_on_top = True
-    list_display = ('nome', 'email', 'cargo_atual')
+    list_display = ('nome', 'email', 'cargo_atual', 'user')
     list_display_links = list_display
     list_filter = ('cargo_atual',)
     inlines = [
@@ -107,6 +107,11 @@ class DemissaoAdmin(admin.ModelAdmin):
     list_display = 'id', 'demitido', 'status', 'demissor'
     list_display_links = list_display
 
+class RotinaExameMedicoAdmin(admin.ModelAdmin):
+    list_filter = 'tipo', 'funcionario'
+    list_display = 'id', 'tipo', 'funcionario', 'realizado'
+    date_hierarchy = 'data'
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
@@ -120,7 +125,7 @@ admin.site.register(SolicitacaoDeLicenca, SolicitacaoDeLicencaAdmin)
 admin.site.register(FolhaDePonto, FolhaDePontoAdmin)
 admin.site.register(PerfilAcessoRH, PerfilAcessoRHAdmin)
 admin.site.register(TipoDeExameMedico)
-admin.site.register(RotinaExameMedico)
+admin.site.register(RotinaExameMedico, RotinaExameMedicoAdmin)
 admin.site.register(Demissao, DemissaoAdmin)
 admin.site.register(DependenteDeFuncionario)
 admin.site.register(Feriado, FeriadoAdmin)

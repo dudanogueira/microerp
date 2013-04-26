@@ -54,7 +54,7 @@ class ClienteAdmin(admin.ModelAdmin):
     list_display_links = list_display
     date_hierarchy = "criado"
     readonly_fields = ['criado', 'atualizado', 'uuid']
-    fieldsets = (
+    fieldsets_a = (
             (u"Informações Gerais", {
                 'classes': ('wide', 'extrapretty'),
                 'fields': ('nome', 'tipo', 'ramo', 'nascimento', 'observacao')
@@ -94,15 +94,24 @@ class PreClienteAdmin(admin.ModelAdmin):
 
 class RecadoAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = 'id', 'destinatario', 'remetente', 'adicionado_por', 'criado'
+    list_display = 'id', 'lido', 'destinatario', 'remetente', 'adicionado_por', 'criado', 'cliente'
     list_display_links = list_display
     date_hierarchy = "criado"
     list_filter = 'destinatario', 'remetente', 'adicionado_por'
 
+class CidadeAdmin(admin.ModelAdmin):
+    save_on_top = True
+    search_fields = ('nome', 'estado')
+    list_display = 'id', 'nome', 'estado'
+
+class BairroAdmin(admin.ModelAdmin):
+    save_on_top = True
+    search_fields = ('nome', 'cidade__nome')
+    list_display = 'id', 'nome', 'cidade'
 
 admin.site.register(Cliente, ClienteAdmin)
-admin.site.register(Cidade)
-admin.site.register(Bairro)
+admin.site.register(Cidade, CidadeAdmin)
+admin.site.register(Bairro, BairroAdmin)
 admin.site.register(Ramo)
 admin.site.register(ClienteOrigem)
 admin.site.register(TipoDeConsultaDeCredito)

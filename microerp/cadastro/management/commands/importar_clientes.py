@@ -9,13 +9,18 @@ import os, csv, datetime
 from django.utils.encoding import smart_unicode, smart_str
 
 class Command(BaseCommand):
-    help = "Sincroniza para a base de clientes uma tabela exportada pelo Sistema DIGISAT"
+    help = '''
+        Sincroniza para a base de clientes uma planilha conforme:
+        
+        CODIGO,NOME,FANTASIA,CONTATO,TELEFONE,CELULAR,CNPJ,CPF,IE,RG,ENDERECO,COMPLEMENTO,BAIRRO,NUMERO,CEP,CIDADE,UF,EMAIL,FIS_JUR,TIPO,COD_CONVENIO,CONVENIO,ULTIMA_VENDA,NASCIMENTO,DATA_CADASTRO,A_RECEBER,ATRASADO,RECEBIDO,LIMITE_CREDITO,CONCEDER_CREDITO
+        
+        '''
     args = "--file arquivo.csv,"
     option_list = BaseCommand.option_list + (
     make_option('--file',
             action='store_true',
             dest='arquivo',
-            help='Importa uma lista de Clientes que veio do DIGISAT em CSV Exportado por Excel mais recente',
+            help='Importa uma lista de Clientes em formato CSV',
         ),
     )
 

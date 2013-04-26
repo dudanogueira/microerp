@@ -42,9 +42,19 @@ urlpatterns += patterns('django.contrib.auth',
 app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")
 urlpatterns += patterns('',
     url(r'^$', '%s.views.home' % app_frontend, name='home'),
+    # modulo recados
+    url(r'^meus_recados/$', '%s.views.meus_recados' % app_frontend, name='meus_recados'),
+    url(r'^meus_recados/(?P<recado_id>[0-9]+)/marcar/lido/$', '%s.views.meus_recados_marcar_lido' % app_frontend, name='meus_recados_marcar_lido'),
+    # modulo RH
     url(r'^rh/', include('rh.urls', namespace="rh")),
+    # modulo recepcao
     url(r'^recepcao/', include('cadastro.urls', namespace="cadastro")),
 )
+# django-select2
+urlpatterns += patterns("",
+    url(r"^select2/", include("django_select2.urls")),
+)
+
 
 # DEBUGG
 from django.conf import settings

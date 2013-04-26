@@ -14,3 +14,4 @@ six==1.3.0
 sorl-thumbnail==11.12
 wsgiref==0.1.2
 workdays==1.0
+Django-Select2==4.0.0

@@ -13,6 +13,7 @@
     <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap.css" rel="stylesheet">
     <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
     <link rel="stylesheet" href="{{STATIC_URL}}frontend/css/style.css" />
+    <script src="{{STATIC_URL}}frontend/js/jquery/jquery.js"></script>
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
       <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -58,8 +59,14 @@
               {% if request.user.is_staff %}
               <li><a href="{% url "admin:index" %}" class="navbar-link"><i class="icon-white icon icon-plus"></i> ADM</a></li>
               {% endif %}
+              
+              {% if  request.user.funcionario.recados_nao_lidos.count %}
+              <li class=""><a href="{% url "meus_recados" %}"><span class="badge badge-important">{{request.user.funcionario.recados_nao_lidos.count}} Recado{{request.user.funcionario.recados_nao_lidos.count|pluralize}}</span></a></li>
+              {% endif %}
+              
+              
               {% if request.user.is_authenticated %}
-              <li><a href="{% url "logout" %}?next=/" class="navbar-link"><i class="icon-white icon icon-arrow-left"></i> Sair</a></li>
+              <li><a href="{% url "logout" %}?next=/" class="navbar-link"><i class="icon-white icon icon-arrow-left"></i> Sair ({{request.user}})</a></li>
               {% endif %}
               
             </ul>
@@ -74,8 +81,11 @@
             
             <div class="well sidebar-nav">
               <ul class="nav nav-list">
-                <li class="nav-header">Principal</li>
+                <li class="nav-header"><i class="icon icon-home"></i> Principal</li>
                 <li id="main-home"><a href="{% url "home" %}">Painel</a></li>
+                {% if request.user.funcionario %}
+                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}">Meus Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="label label-important">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
+                {% endif %}
               </ul>              
             </div><!--/.well -->
             
@@ -170,7 +180,6 @@
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="{{STATIC_URL}}frontend/js/jquery/jquery.js"></script>
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-transition.js"></script>
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-alert.js"></script>
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-modal.js"></script>

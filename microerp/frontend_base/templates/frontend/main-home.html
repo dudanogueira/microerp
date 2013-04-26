@@ -1,10 +1,23 @@
 {% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
 
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
 {% block content %}
 {% if request.user.is_authenticated %}
-<h1>Olá {{request.user}}</h1>
+    {% if request.user.funcionario%}
+    <h1>Olá {{request.user.funcionario}}</h1>
+    <h2>Banco de Horas</h2>
+    <div class="alert alert-{{funcionario.banco_de_horas_situacao}}">
+        <h2>Saldo: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
+    <p><i>no Banco de Horas</i></p>
+    </div>
+    
+    {% else %}
+    <h2 class="alert alert-important">Este usuário não possui Funcionário</h2>
+    
+    {% endif %}
+    
 {% else %}
 <form action="{% url "login" %}" method="post">{% csrf_token %}
 {{form.as_p}}
@@ -15,3 +28,13 @@
 {% endif %}
 
 {% endblock %}
+
+
+
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#main-home, #top-menu-home").addClass("active");
+});
+</script>
+{% endaddtoblock %}

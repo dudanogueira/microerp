@@ -286,6 +286,14 @@ class Funcionario(models.Model):
         else:
             current_site = Site.objects.get()
             return "ME:%s@%s" % (self.user.username, current_site.domain)
+    
+    # RECADOS
+    def recados_nao_lidos(self):
+        return self.recado_recebido_set.filter(lido=False)
+    
+    def recados_lidos(self):
+        return self.recado_recebido_set.filter(lido=True)
+    
 
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
@@ -321,7 +329,7 @@ class Funcionario(models.Model):
     escolaridade_nivel = models.CharField(blank=True, null=True,max_length=100, choices=FUNCIONARIO_ESCOLARIDADE_NIVEL_CHOICES)
     escolaridade_cursos = models.TextField("Cursos e Instituições",blank=True, null=True,)
     escolaridade_serie_inconclusa = models.CharField("Série máxima estudada", blank=True, null=True, max_length=100)
-    escolaridade_conclusao = models.DateField("Ano de Conclusão dos estudos", default=datetime.datetime.today)
+    escolaridade_conclusao = models.DateField("Ano de Conclusão dos estudos", blank=True, null=True, default=datetime.datetime.today)
     # contatos
     email = models.EmailField(blank=True, null=True)
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
@@ -334,9 +342,9 @@ class Funcionario(models.Model):
     numero = models.CharField(blank=True, null=True,max_length=100, verbose_name=u"Número")
     complemento = models.CharField(blank=True, null=True, max_length=200, verbose_name=u"Complemento")
     # salario
-    salario_inicial = models.DecimalField(u"Salário Inicial", max_digits=10, decimal_places=2)
+    salario_inicial = models.DecimalField(u"Salário Inicial", max_digits=10, decimal_places=2, blank=True, null=True)
     salario_atual = models.DecimalField(u"Salário Atual", max_digits=10, decimal_places=2, blank=True, null=True)
-    valor_hora = models.DecimalField(u"Valor Hora", max_digits=10, decimal_places=2)
+    valor_hora = models.DecimalField(u"Valor Hora", max_digits=10, decimal_places=2, blank=True, null=True)
     forma_de_pagamento = models.CharField(blank=True, max_length=100, choices=FUNCIONARIO_FORMA_PAGAMENTO_CHOICES)
     gratificacao = models.DecimalField(u"Gratificação", max_digits=10, decimal_places=2, blank=True, null=True)
     numero_lre = models.CharField("Número LRE", blank=True, max_length=100)
@@ -658,7 +666,7 @@ class DependenteDeFuncionario(models.Model):
 class TipoDeExameMedico(models.Model):
     
     def __unicode__(self):
-        return self.nome
+        return "%s - %s" % (self.nome, self.valor)
         
     class Meta:
         verbose_name = "Tipo de Exame Médico"
