@@ -17,6 +17,7 @@ def meus_recados(request):
     funcionario = get_object_or_404(Funcionario, user=request.user)
     nao_lidos = Recado.objects.filter(destinatario=funcionario, lido=False)
     lidos = Recado.objects.filter(destinatario=funcionario, lido=True)
+    enviados = Recado.objects.filter(remetente=funcionario)
     return render_to_response('frontend/main-meus-recados.html', locals(), context_instance=RequestContext(request),)
 
 def meus_recados_marcar_lido(request, recado_id):

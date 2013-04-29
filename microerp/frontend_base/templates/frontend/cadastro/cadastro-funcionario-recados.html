@@ -9,27 +9,7 @@
 <a class="btn" href="{% url "cadastro:funcionarios_recados_adicionar"  funcionario.id %}"><i class="icon icon-plus"></i> Adicionar novo recado</a>
 </p>
 
-<div class="well well-large">
-    {% for recado in funcionario.user.recado_recebido_set.all %}
-    <div class="well well-small">
-        <div class="alert alert-success">
-            <h4>Em: {{recado.criado}}</h4>
-            <small><i class="icon icon-time"></i> Há {{recado.criado|timesince}}</small>
-        </div>
-        {% if recado.cliente %}
-        <div class="alert alert-warning">
-        <strong><i class="icon icon-briefcase"></i> Cliente Relacionado</strong>: {{recado.cliente}}
-        </div>
-        {% endif %}
-
-        <span class="label label-info"><i class="icon icon-white icon-user"></i> De</span>: {{recado.remetente}}<br />
-        <span class=" label label-info"><i class="icon icon-white icon-envelope"></i> Recado</span>
-        {{recado.texto}}
-    </div>
-    {% empty %}
-    <p class="alert alert-info">Nenhum Recado</p>
-    {% endfor %}
-</div>
+{% include "frontend/cadastro/includes/cadastro-listar-recados.html" %}
 
 {% endblock %}
 

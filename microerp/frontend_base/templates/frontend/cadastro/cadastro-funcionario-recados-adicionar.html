@@ -7,6 +7,8 @@
 <h1>Adicionar Recado</h1>
 <h2>Para {{funcionario}}</h2>
 
+{{ form.non_field_errors }}
+
 <div class="row-fluid">
   <form method="post">
   <div class="span4">
@@ -20,7 +22,6 @@
                   <small>{{field.help_text}}</small>
           </div>
           {% endifequal %}
-          
       {% endfor %}
       
       
@@ -33,10 +34,12 @@
               {{ field.errors }}
               <label for="id_{{field.name}}">{{field.label}}:</label>
               {{ field }}
-              <small>{{field.help_text}}</small>
       </div>
       {% endifnotequal %}
       {%endfor%}
+         <label for="id_avisar_departamento">
+             <span class="label label-info">Departamento</span> 
+             <strong>{{funcionario.cargo_atual.departamento}}</strong></label>
         <hr />
         <p>
             <span class="label label-warning"><i class="icon icon-plus icon-white"></i> Adicionado por: {{request.user.funcionario}}</span>
@@ -57,7 +60,24 @@
 <script>
 $(document).ready(function() {
     $("#menu-cadastro-funcionarios-list, #top-menu-cadastro").addClass("active");
+    if ($("#id_tipo")[0].value != "outros"){
+        $("#id_tipo_outros, label[for='id_tipo_outros']").hide();
+    }
+    
     $("#id_remetente, #id_cliente,  #id_destinatario").select2();
+    $('#id_tipo').change(function(){
+
+            var textarea = $("#id_tipo_outros, label[for='id_tipo_outros']");
+            var select   = $(this).val();
+
+            textarea.hide();
+
+            if (select == 'outros'){
+              textarea.show();
+            }else{
+                textarea.hide();
+            }
+    });
 });
 </script>
 {% endaddtoblock %}

@@ -1,29 +1,3 @@
-<h3>{{funcionario}}</h3>
-<h6>{{funcionario.cargo_atual.departamento}} - {{funcionario.cargo_atual}}
-    <p><a class="btn" href="{% url "cadastro:funcionarios_recados_listar" funcionario.id %}"><i class="icon icon-inbox"></i> recados</a>
-    </p>
-<hr />
+<div class="accordion" id="accordion2">
 
-    <div class="row-fluid">
-        
-        <div class="span6">
-            <h3>Contatos</h3>
-            <div class="well well-small">
-                <p><span class="label label-info">Email</span>  <strong>{{funcionario.email}}</strong></p>
-                <p><span class="label label-info">Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
-                <p><span class="label label-info">Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
-                <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
-            </div>
-            
-        </div>
-
-        <div class="span6">
-            <h3>Endereço</h3>
-            <div class="well well-small">
-                <p><span class="label label-info">Rua</span>  <strong>{{funcionario.rua}}, {{funcionario.numero}}</strong></p>
-                <p><span class="label label-info">Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
-                <p><span class="label label-info">Cidade - Estado</span>  <strong>{{funcionario.bairro.cidade}}</strong></p>
-                <p><span class="label label-info">CEP</span>  <strong>{{funcionario.cep}}</strong></p>
-            </div>
-        </div>
-    </div>
+</div>

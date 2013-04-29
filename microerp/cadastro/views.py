@@ -11,7 +11,7 @@ from django.core.mail import EmailMessage
 from django.contrib.sites.models import Site
 from account.models import User
 # RH
-from rh.models import Funcionario
+from rh.models import Funcionario, Departamento
 # Cadastro
 from cadastro.models import Cliente, PreCliente
 from cadastro.models import Recado
@@ -40,9 +40,11 @@ class AdicionarRecadoForm(forms.ModelForm):
         self.fields['destinatario'].required = True
         self.fields['destinatario'].initial = destinatario
     
+    avisar_departamento = forms.BooleanField(label="Avisar à todos", required=False)
+
     class Meta:
         model = Recado
-        fields = ('texto', 'remetente', 'cliente', 'destinatario')
+        fields = ('texto', 'tipo', 'tipo_outros', 'remetente', 'cliente', 'destinatario', 'avisar_departamento')
     
 
 class PreClienteAdicionarForm(forms.ModelForm):
@@ -87,6 +89,8 @@ def funcionarios_listar(request):
 @user_passes_test(possui_perfil_acesso_recepcao)
 def funcionarios_recados_listar(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, pk=funcionario_id)
+    nao_lidos = Recado.objects.filter(destinatario=funcionario, lido=False)
+    lidos = Recado.objects.filter(destinatario=funcionario, lido=True)
     return render_to_response('frontend/cadastro/cadastro-funcionario-recados.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_recepcao)   
@@ -102,31 +106,49 @@ def funcionarios_recados_adicionar(request, funcionario_id):
             recado = form.save(commit=False)
             recado.adicionado_por = request.user
             recado.save()
-            messages.success(request, u'Recado Adicionado com sucesso!')
-            # MANDA EMAIL, SE POSSÍVEL
-            dest = []
-            if funcionario.email or funcionario.user.email:
-                dest.append(funcionario.email or funcionario.user.email)
-                assunto = u'Novo Recado'
-                template = loader.get_template('template_de_email/novo-recado.html')
-                d = locals()
-                c = Context(d)
-                conteudo = template.render(c)
+            messages.success(request, u'Recado Adicionado com sucesso para o Remetente!')
+            recados = []
+            recados.append(recado)
+            # clona e agrega todos os recados
+            if form.cleaned_data['avisar_departamento']:
+                for colega in funcionario.colegas_ativos_mesmo_dpto():
+                    recado.id = None
+                    recado.destinatario = colega
+                    recado.save()
+                    messages.success(request, u'Recado Copiado com sucesso para %s!' % colega)            
+                    recados.append(recado)
+            # MANDA EMAIL, SE POSSÍVEL            
+            for recado in recados:
+                dest = []
+                # se possuir email, envia
+                if recado.destinatario.email or recado.destinatario.user:
+                    dest.append(recado.destinatario.email or recado.destinatario.user.email)
+                    assunto = u'Novo Recado'
+                    template = loader.get_template('template_de_email/novo-recado.html')
+                    d = locals()
+                    c = Context(d)
+                    conteudo = template.render(c)
             
-                email = EmailMessage(
-                        assunto, 
-                        conteudo,
-                        'SISTEMA',
-                        dest,
-                    )
-                try:
-                    email.send(fail_silently=False)
-                    messages.success(request, u'Sucesso! Uma mensagem de email foi enviada para este recado!')
-                except:
-                    messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para este recado!')
-            else:
-                messages.error(request, u'Informação: Não foi enviado um email para este recado.')
-
+                    email = EmailMessage(
+                            assunto, 
+                            conteudo,
+                            'SISTEMA',
+                            dest,
+                        )
+                    try:
+                        email.send(fail_silently=False)
+                        recado.email_enviado = True
+                        recado.save()            
+                        messages.success(request, u'Sucesso! Uma mensagem de email foi enviada para este recado!')
+                    except:
+                        messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para este recado!')
+                        recado.save()            
+                # caso contrario, marca e avisa que nao enviou
+                else:
+                    recado.email_enviado = False
+                    recado.save()
+                    messages.error(request, u'Informação: Não foi enviado um email para este recado.')
+                
             return redirect(reverse('cadastro:funcionarios_recados_listar', args=[funcionario_id]))
 
     else:    

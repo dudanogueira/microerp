@@ -294,6 +294,15 @@ class Funcionario(models.Model):
     def recados_lidos(self):
         return self.recado_recebido_set.filter(lido=True)
     
+    def colegas_ativos_mesmo_dpto(self):
+        colegas_dpto = Funcionario.objects.filter(
+                cargo_atual__departamento=self.cargo_atual.departamento,
+            ).exclude(
+                periodo_trabalhado_corrente=None,
+            ).exclude(
+                id=self.id
+            )
+        return colegas_dpto
 
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)

@@ -4,66 +4,33 @@
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
 {% block content %}
+    {% addtoblock "js" %}
+        <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-tab.js"></script>
+    {% endaddtoblock %}
+
     <h1>Olá {{request.user.funcionario}}</h1>
     <h2>Meus Recados</h2>
-
-    {% if nao_lidos %}
-    <div class="well">
-        <h3 class="alert alert-info">Não lidos</h3>
-        {% for recado in nao_lidos %}
-        <div class="well well-small">
-            
-            
-            <div class="row-fluid">
-              <div class="span7">
-                  <h4>Recado ID#{{recado.id}}</h4>
-                  <p class="alert alert-success"><strong>De:</strong> {{recado.remetente}} || <strong>Para</strong>: {{recado.destinatario}}
-                  </p>
-                  <p>
-                      <strong><i class="icon icon-time"></i> Data:</strong> {{recado.criado}}, há <i>{{recado.criado|timesince}}</i>
-                  </p>
-                      {% if recado.cliente %}
-                      <p class="alert alert-warning">
-                          <i class="icon icon-briefcase"></i> {{recado.cliente}}
-                      </p>
-                      {% endif %}
-                  
-                  
-              </div>
-              <div class="span5">
-                  <p><strong><i class="icon icon-comment"></i>  Texto</strong>: {{recado.texto}}<p>
-                  
-                  <h4>Ações</h4>
-                  <a href="{% url "meus_recados_marcar_lido" recado.id %}" class="btn btn-large"><i class="icon icon-eye-open"></i> Lido</a>
-                  
-                  
-              </div>
-            </div>
-            
-            
-
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
     
-    {% if lidos %}
-    <div class="well">
-        <h3 class="alert alert-danger">Lidos</h3>
-            {% for recado in lidos %}
-            <div class="well well-small">
-                <span class="label">ID#{{recado.id}}</span>
-                <strong>De:</strong> {{recado.remetente}} <strong>Para:</strong> {{recado.destinatario}} <strong>Data</strong>: {{recado.criado}}<br />
-                <i class="icon icon-eye-open"></i> Lido em: {{recado.lido_em}}
-                <p class="alert alert-info"><i class="icon icon-comment"></i> {{recado.texto}}</p>
-                {% if recado.cliente %}
-                <p class="alert alert-warnign"><i class="icon icon-briefcase"></i> {{recado.cliente}}</p>
-                
-                {% endif %}
-            </div>
-            {% endfor %}
+    <ul class="nav nav-tabs" id="myTab">
+      <li class="active"><a href="#recebidos">Recebidos</a></li>
+      <li><a href="#enviados">Enviados</a></li>
+    </ul>
+ 
+    <div class="tab-content">
+      <div class="tab-pane active" id="recebidos">
+          {% include "frontend/cadastro/includes/cadastro-listar-recados.html" %}
+      </div>
+      <div class="tab-pane" id="enviados">
+          <ul>
+          {% for recado in enviados %}
+                <li>{{recado}}</li>
+          {% endfor %}
+          </ul>
+      </div>
     </div>
-    {% endif %}
+    
+    
+
 
 {% endblock %}
 
@@ -72,6 +39,10 @@
 <script>
 $(document).ready(function() {
 	$("#main-home-meus-recados, #top-menu-home").addClass("active");
+    $('#myTab a').click(function (e) {
+      e.preventDefault();
+      $(this).tab('show');
+    })
 });
 </script>
 {% endaddtoblock %}

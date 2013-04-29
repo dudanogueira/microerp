@@ -39,6 +39,12 @@ TIPO_CLIENTE_CHOICES = (
     ('pj', u'Pessoa Jurídica'),
 )
 
+RECADO_TIPO_CHOICES = (
+    ('comercial', 'Comercial'),
+    ('reclamacao', u'Reclamação'),
+    ('outros', 'Outros'),
+)
+
 class PreCliente(models.Model):
     '''
     Um Pre cliente é convertido depois em Cliente
@@ -284,20 +290,28 @@ class ConsultaDeCredito(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
+
 class Recado(models.Model):
     
     def __unicode__(self):
-        return "Recado de: %s Para: %s em %s" % (self.remetente, self.destinatario, self.criado)
+        return u"Recado de: %s Para: %s em %s" % (self.remetente, self.destinatario, self.criado)
     
     class Meta:
         ordering = ['-criado',]
 
+    def clean(self):
+        if self.tipo == "outros" and not self.tipo_outros:
+            raise ValidationError(u"Se Tipo de Recado é 'Outros', descreva-o.")
+
     remetente = models.ForeignKey('rh.Funcionario', related_name="recado_enviado_set")
     destinatario = models.ForeignKey('rh.Funcionario', related_name="recado_recebido_set")
     texto = models.TextField(blank=False, verbose_name="Texto do Recado")
+    tipo = models.CharField("Tipo de Recado", blank=False, max_length=100, choices=RECADO_TIPO_CHOICES, default="comercial")
+    tipo_outros = models.TextField(blank=True)
     cliente = models.ForeignKey(Cliente, blank=True, null=True, verbose_name="Cliente Associado (opcional)")
     lido = models.BooleanField(default=False)
     lido_em = models.DateTimeField(blank=True, null=True)
+    email_enviado = models.BooleanField(default=False) 
     encaminhado = models.BooleanField(default=False)
     encaminhado_data = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # metadata
