@@ -26,6 +26,7 @@ from comercial.models import TipoSolicitacaoComercial
 from comercial.models import ContatoComercial
 from comercial.models import TipoContatoComercial
 from comercial.models import FonteDeAgendaComercial
+from comercial.models import PerfilAcessoComercial
 
 class SolicitacaoComercialAdmin(admin.ModelAdmin):
     list_filter = ('status', 'tipo__mao_de_obra_inclusa',)
@@ -43,8 +44,14 @@ class ContatoComercialAdmin(admin.ModelAdmin):
     list_filter = ('funcionario', 'inicio', 'status', )
     list_display_links = list_display
 
+class PerfilAcessoComercialAdmin(admin.ModelAdmin):
+    list_filter = 'user', 'analista', 'gerente',
+    list_display = 'user',  'analista', 'gerente',
+    
+
 admin.site.register(SolicitacaoComercial, SolicitacaoComercialAdmin)
 admin.site.register(TipoSolicitacaoComercial, TipoSolicitacaoComercialAdmin)
 admin.site.register(ContatoComercial, ContatoComercialAdmin)
+admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
 admin.site.register(TipoContatoComercial)
 admin.site.register(FonteDeAgendaComercial)

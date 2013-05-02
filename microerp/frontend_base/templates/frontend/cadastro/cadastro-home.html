@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load phonenumber_br %}
 
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
@@ -35,14 +36,14 @@
                             {% endif %}
                             <strong>{{funcionario.nome}}</strong><br />
                             {% if funcionario.telefone_fixo %}
-                                <small class="label label-info">{{funcionario.telefone_fixo}}</small>
+                                <small class="label label-info">{{funcionario.telefone_fixo|phonenumber}}</small>
                             {% endif %}
-                            {% if funcionario.telefone_celular %}
-<small class="label label-info">{{funcionario.telefone_celular}}</small>
+                            {% if funcionario.telefone_celular|phonenumber %}
+<small class="label label-info">{{funcionario.telefone_celular|phonenumber}}</small>
 {% endif %}
                         </td>
                         <td>
-                            <a class="btn" href="{% url "cadastro:funcionarios_recados_listar" funcionario.id %}"><i class="icon icon-inbox"></i> recados</a>
+                            <a class="btn" href="{% url "cadastro:funcionarios_recados_listar" funcionario.id %}"><i class="icon icon-inbox"></i></a>
                             <a class="btn" href="{% url "cadastro:funcionarios_recados_adicionar"  funcionario.id %}"><i class="icon icon-plus"></i></a>
 
                         </td>

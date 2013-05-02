@@ -22,6 +22,7 @@ __version__ = '0.0.1'
 import datetime
 
 from django.db import models
+from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from cadastro.models import Cliente
@@ -179,3 +180,18 @@ class FonteDeAgendaComercial(models.Model):
     tipo = models.ForeignKey(TipoContatoComercial)
     # Funcionário responsável
     funcionario = models.ForeignKey(Funcionario, blank=True, null=True)
+
+
+class PerfilAcessoComercial(models.Model):
+    '''Perfil de Acesso ao Comercial'''
+    
+    class Meta:
+        verbose_name = u"Perfil de Acesso ao Comercial"
+        verbose_name_plural = u"Perfis de Acesso ao Comercial"
+    
+    gerente = models.BooleanField(default=False)
+    analista = models.BooleanField(default=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        

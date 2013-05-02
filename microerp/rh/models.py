@@ -303,7 +303,7 @@ class Funcionario(models.Model):
                 id=self.id
             )
         return colegas_dpto
-
+    
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="Usuário do Sistema", blank=True, null=True)

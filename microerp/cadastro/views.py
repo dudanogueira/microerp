@@ -58,7 +58,8 @@ class PreClienteAdicionarForm(forms.ModelForm):
 
 def possui_perfil_acesso_recepcao(user, login_url="/"):
     try:
-        return user.perfilacessorecepcao
+        if user.perfilacessorecepcao:
+            return True
     except:
         return False
 
@@ -68,7 +69,7 @@ def home(request):
     # widget funcionario
     funcionario_q = request.GET.get('funcionario', False)
     if funcionario_q:
-        funcionarios = Funcionario.objects.filter(nome__contains=funcionario_q)
+        funcionarios = Funcionario.objects.filter(nome__icontains=funcionario_q)
     # widget cliente
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:

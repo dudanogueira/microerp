@@ -1,0 +1,32 @@
+<ul class="nav">
+  <li id="top-menu-home"><a href="{% url "home" %}"><i class="icon-white icon icon-home"></i> Home</a></li>
+  
+  {# LINKS DOS MODULOS #}
+  
+  {% if request.user.perfilacessorecepcao %}
+  <li id="top-menu-cadastro"><a href="{% url "cadastro:home" %}"><i class="icon-white icon icon-download-alt"></i> Recepção</a></li>
+  {% endif %}
+  
+  {% if request.user.perfilacessorh %}
+  <li id="top-menu-rh"><a href="{% url "rh:home" %}"><i class="icon-white icon icon-user"></i> RH</a></li>
+  {% endif %}
+
+  {% if request.user.perfilacessocomercial %}
+  <li id="top-menu-comercial"><a href="{% url "comercial:home" %}"><i class="icon-white icon icon-briefcase"></i> Comercial</a></li>
+  {% endif %}
+  
+  {# Outros tipos de Links #}
+  
+  {% if request.user.is_staff %}
+  <li><a href="{% url "admin:index" %}" class="navbar-link"><i class="icon-white icon icon-plus"></i> ADM</a></li>
+  {% endif %}
+  
+  {% if  request.user.funcionario.recados_nao_lidos.count %}
+  <li class=""><a href="{% url "meus_recados" %}"><span class="badge badge-important">{{request.user.funcionario.recados_nao_lidos.count}} Recado{{request.user.funcionario.recados_nao_lidos.count|pluralize}}</span></a></li>
+  {% endif %}
+ 
+  {% if request.user.is_authenticated %}
+  <li><a href="{% url "logout" %}?next=/" class="navbar-link"><i class="icon-white icon icon-arrow-left"></i> Sair ({{request.user}}{% if request.user.funcionario %}:{{request.user.funcionario}}{%endif%})</a></li>
+  {% endif %}
+  
+</ul>

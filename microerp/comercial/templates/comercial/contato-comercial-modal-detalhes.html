@@ -1,5 +1,0 @@
-<h4>{{evento.tipo}}: {{evento.nome}}</h4>
-<strong>Cliente</strong>: <a href="{% url frontend:cadastro-clientes-detalhe evento.cliente.id %}">{{evento.cliente}}</a><br />
-<strong>Início</strong>: {{evento.inicio|date:"SHORT_DATETIME_FORMAT"}}<br />
-<strong>Término</strong>: {{evento.fim|date:"SHORT_DATETIME_FORMAT"}}<br />
-{% if evento.o_dia_todo %}* Evento para o dia inteiro{% endif %}
