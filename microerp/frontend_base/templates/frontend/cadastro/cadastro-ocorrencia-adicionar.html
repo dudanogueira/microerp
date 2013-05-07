@@ -1,11 +1,10 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 
-<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
 {% block content %}
 
-<h1>Comercial</h1>
 
 {% endblock %}
 
@@ -13,9 +12,9 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+    $("#menu-cadastro-ocorrencia-adicionar, #top-menu-cadastro").addClass("active");
 });
 </script>
 {% endaddtoblock %}
-{% include "frontend/comercial/comercial-menu.html" %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
 {% endblock%}

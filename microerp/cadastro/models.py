@@ -40,9 +40,13 @@ TIPO_CLIENTE_CHOICES = (
 )
 
 RECADO_TIPO_CHOICES = (
-    ('comercial', 'Comercial'),
-    ('reclamacao', u'Reclamação'),
-    ('outros', 'Outros'),
+    ('compra', 'Solicitação de Compra'),
+    ('ocorrencia', 'Registro de Ocorrência'),
+    ('comercial', 'Solicitação Comercial'),
+    ('informacao_geral', u'Solicitação de Informação'),
+    ('ofertar_produto', u'Oferta de Produto'),
+    ('agendamento_reuniao', u'Agendamento de Reunião'),
+    ('informacao_projeto', u'Informação sobre Projeto'),
 )
 
 class PreCliente(models.Model):

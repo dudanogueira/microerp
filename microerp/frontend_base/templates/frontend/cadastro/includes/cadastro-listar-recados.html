@@ -28,9 +28,10 @@
                   {% else %}
                   <small><strong><i class="icon icon-envelope"></i> Email enviado</strong></small>
                   {% endif %}
-              
+                  {% if not readonly %}
               <h4>Ações</h4>
               <a href="{% url "meus_recados_marcar_lido" recado.id %}" class="btn btn-large btn-primary"><i class="icon icon-eye-open icon-white"></i> Lido</a>
+              {% endif %}
               
               
           </div>

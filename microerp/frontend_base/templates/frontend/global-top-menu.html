@@ -15,18 +15,23 @@
   <li id="top-menu-comercial"><a href="{% url "comercial:home" %}"><i class="icon-white icon icon-briefcase"></i> Comercial</a></li>
   {% endif %}
   
-  {# Outros tipos de Links #}
-  
-  {% if request.user.is_staff %}
-  <li><a href="{% url "admin:index" %}" class="navbar-link"><i class="icon-white icon icon-plus"></i> ADM</a></li>
+  {% if request.user.perfilacessoocorrencia %}
+  <li id="top-menu-ocorrencia"><a href="{% url "ocorrencia:home" %}"><i class="icon-white icon icon-bell"></i> Ocorrências</a></li>
   {% endif %}
   
+  {# Outros tipos de Links #}
+   
   {% if  request.user.funcionario.recados_nao_lidos.count %}
-  <li class=""><a href="{% url "meus_recados" %}"><span class="badge badge-important">{{request.user.funcionario.recados_nao_lidos.count}} Recado{{request.user.funcionario.recados_nao_lidos.count|pluralize}}</span></a></li>
+  <li class=""><a href="{% url "meus_recados" %}"><span class="badge badge-important"><i class="icon-envelope icon-white"></i> {{request.user.funcionario.recados_nao_lidos.count}} Recado{{request.user.funcionario.recados_nao_lidos.count|pluralize}}</span></a></li>
   {% endif %}
  
   {% if request.user.is_authenticated %}
   <li><a href="{% url "logout" %}?next=/" class="navbar-link"><i class="icon-white icon icon-arrow-left"></i> Sair ({{request.user}}{% if request.user.funcionario %}:{{request.user.funcionario}}{%endif%})</a></li>
   {% endif %}
+  
+  {% if request.user.is_staff %}
+  <li><a href="{% url "admin:index" %}" class="navbar-link">||  <i class="icon-white icon icon-wrench"></i> ADM</a></li>
+  {% endif %}
+  
   
 </ul>

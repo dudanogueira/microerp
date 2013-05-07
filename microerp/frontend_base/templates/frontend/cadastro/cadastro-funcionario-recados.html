@@ -9,7 +9,7 @@
 <a class="btn" href="{% url "cadastro:funcionarios_recados_adicionar"  funcionario.id %}"><i class="icon icon-plus"></i> Adicionar novo recado</a>
 </p>
 
-{% include "frontend/cadastro/includes/cadastro-listar-recados.html" %}
+{% include "frontend/cadastro/includes/cadastro-listar-recados.html" with readonly=True %}
 
 {% endblock %}
 

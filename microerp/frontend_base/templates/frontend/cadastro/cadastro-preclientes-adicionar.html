@@ -4,7 +4,12 @@
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
 {% block content %}
-
+<h1>Adicionar Pré Cliente</h1>
+<form method="post" class="form-horizontal">
+{% csrf_token %}
+{{form_add_precleinte.as_p}}
+<input type="submit" class="btn btn-large btn-primary" value="Adicionar">
+</form>
 {% endblock %}
 
 {% block auxiliar-menu %}

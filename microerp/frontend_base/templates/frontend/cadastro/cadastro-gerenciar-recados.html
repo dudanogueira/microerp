@@ -1,0 +1,27 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+
+{% block content %}
+<h1>Gerenciar Recados</h1>
+
+<h2>Não Lidos</h2>
+<ul>
+{% for recado in nao_lidos %}
+<li>De: <i class="icon-user"></i> {{recado.remetente}}, Para: <i class="icon-user"></i> {{recado.destinatario}}: <span class="label label-info"><i class="icon-comment icon-white"></i> {{recado.texto}}</span> há <i class="icon-time"></i>  {{recado.criado|timesince}} {% if recado.email_enviado %}<i class="icon-envelope"></i>{%endif%}</li>
+{% endfor %}
+</ul>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-cadastro-recados-gerenciar, #top-menu-cadastro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
+{% endblock%}

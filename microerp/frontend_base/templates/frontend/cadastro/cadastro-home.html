@@ -76,13 +76,16 @@
                 {% if cliente_q %}
                 <a href="."><i class="icon icon-remove"></i>Limpar</a>
                 {% else %}
-                <button class="btn btn-large btn-success"><i class="icon icon-plus icon-white"></i> Adicionar</button>
+                <a href="{% url "cadastro:preclientes_adicionar" %}" class="btn btn-large btn-success"><i class="icon icon-plus icon-white"></i> Adicionar</a>
                 {% endif %}
                 
             </form>
 
             {% if cliente_q %}
-            
+            {% if preclientes %}
+                <a href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}" class="btn btn-small btn-primary"><i class="icon-plus icon-white"></i> adicionar pré cliente</a>
+            {% endif %}
+                                
             <table class="table table-hover table-striped table-condensed">
                 <thead>
                     <caption><h4 class="alert">Pré Clientes</h4></caption>
@@ -98,8 +101,7 @@
                     <tr>
                         <td>{{cliente.nome}}</td>
                         <td>
-                            <a class="btn" href="">ver</a>
-                            <a class="btn" href="">+ recado</a>
+                            <a class="btn" href=""><i class="icon-bell"></i> ocorrência</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -114,7 +116,7 @@
                     <tr>
                         <td></td>
                         <td>
-                            <a class="btn btn-large btn-info"><i class="icon icon-plus icon-white"></i> Adicionar Pré Cliente</a>
+                            <a class="btn btn-large btn-info" href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}"><i class="icon icon-plus icon-white"></i> Adicionar Pré Cliente</a>
                         </td>
                     </tr>
 
@@ -146,8 +148,7 @@
                             {{cliente.nome}}
                         </td>
                         <td>
-                            <a class="btn" href="">ver</a>
-                            <a class="btn" href="">+ recado</a>
+                            <a class="btn" href=""><i class="icon-bell"></i> ocorrência</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -161,8 +162,6 @@
                     </tr>
 
                     {% endfor %}
-                
-                
                 </tbody>
             </table>
             

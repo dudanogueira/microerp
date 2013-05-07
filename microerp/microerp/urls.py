@@ -51,7 +51,8 @@ urlpatterns += patterns('',
     url(r'^recepcao/', include('cadastro.urls', namespace="cadastro")),
     # modulo comercial
     url(r'^comercial/', include('comercial.urls', namespace="comercial")),
-    
+    # modulo ocorrencia
+    url(r'^ocorrencia/', include('ocorrencia.urls', namespace="ocorrencia")),   
 )
 # django-select2
 urlpatterns += patterns("",
