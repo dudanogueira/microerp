@@ -11,7 +11,7 @@
     <button class="btn dropdown-toggle" data-toggle="dropdown">Ações <span class="caret"></span></button>
     <ul class="dropdown-menu">
         <li><a href="" class=""><i class="icon-bookmark"></i> Promover Cargo</a></li>
-        <li><a href="#"><i class="icon-gift"></i> Promover Salário</a></a></li>
+        <li><a href="#"><i class="icon-money"></i> Promover Salário</a></a></li>
         <li><a href="#"><i class="icon-home"></i> Solicitar Licença</a></li>
 
         <li class="divider"></li>
@@ -69,20 +69,19 @@
     <div class="span6">
         <h3>Contatos</h3>
         <div class="well well-small">
-            <p><span class="label label-info">Email</span>  <strong>{{funcionario.email}}</strong></p>
-            <p><span class="label label-info">Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
-            <p><span class="label label-info">Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
-            <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
+            <p><span class="label label-info"><i class="icon-envelope"></i> Email</span>  <strong>{{funcionario.email}}</strong></p>
+            <p><span class="label label-info"><i class="icon-phone"></i> Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
+            <p><span class="label label-info"><i class="icon-mobile-phone"></i> Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
+            <p><span class="label label-info"><i class="icon-inbox"></i> Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
         </div>
     </div>
     
     <div class="span6">
         <h3>Endereço</h3>
         <div class="well well-small">
-            <p><span class="label label-info">Rua</span>  <strong>{{funcionario.rua}}</strong></p>
-            <p><span class="label label-info">Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
-            <p><span class="label label-info">CEP</span>  <strong>{{funcionario.cep}}</strong></p>
-            <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
+            <p><span class="label label-info"><i class="icon-road"></i> Rua</span>  <strong>{{funcionario.rua}}</strong></p>
+            <p><span class="label label-info"><i class="icon-building"></i> Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
+            <p><span class="label label-info"><i class="icon-tag"></i> CEP</span>  <strong>{{funcionario.cep}}</strong></p>
     
         </div>
     </div>
@@ -94,7 +93,9 @@
     <div class="span6">
         <h3>Folhas de Ponto</h3>
         <div class="well">
+            
             <div class="alert alert-{{funcionario.banco_de_horas_situacao}}">
+                                <i class="icon icon-time icon-4x pull-left"></i>
                 <h2>Saldo: {% if funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
             <p><i>no Banco de Horas</i></p>
             </div>
@@ -151,8 +152,11 @@
     </div>
 </div>
 
+    <i class="icon-user-md icon-4x pull-left"></i>
     <h3>Exames Médicos</h3>
+
 <div class="row-fluid well">
+    
     <div class="span6">
         <h3>Agendados</h3>
         <div class="well well-small">

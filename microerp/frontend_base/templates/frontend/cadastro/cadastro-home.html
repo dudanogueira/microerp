@@ -9,12 +9,12 @@
 <div class="row-fluid">
     <div class="span6">
         <div class="well well-small">
-            <h2>Buscar Funcionário</h2>
+            <h2><i class="icon-user"></i> Buscar Funcionário</h2>
             <form class="form-search" action="{% url "cadastro:home" %}">
                 <input type="text" class="input-medium search-query" name="funcionario" value="{% if funcionario_q %}{{funcionario_q}}{%endif%}">
                 <button type="submit" class="btn btn-info"><i class="icon icon-white icon-search"></i> Buscar</button>
                 {% if funcionario_q %}
-                <a href="."><i class="icon icon-remove"></i>Limpar</a>
+                <a href="."><i class="icon icon-remove"></i> Limpar</a>
                 {% endif %}
             </form>
             {% if funcionario_q %}
@@ -53,7 +53,7 @@
                     <tr>
                         <td class="alert alert-info"><strong>Nenhum Funcionário Encontrado</strong></td>
                         <td>            {% if funcionario_q %}
-                            <a href="."><i class="icon icon-remove"></i>Limpar Busca</a>
+                            <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -69,12 +69,12 @@
     </div>
     <div class="span6">
         <div class="well well-small">
-            <h2>Buscar Cliente / Pré Cliente</h2>
+            <h2><i class="icon icon-briefcase"></i> Buscar Pré / Cliente</h2>
             <form class="form-search" action="{% url "cadastro:home" %}">
                 <input type="text" class="input-medium search-query" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
                 <button type="submit" class="btn btn-info"><i class="icon icon-white icon-search"></i> Buscar</button>
                 {% if cliente_q %}
-                <a href="."><i class="icon icon-remove"></i>Limpar</a>
+                <a href="."><i class="icon icon-remove"></i> Limpar</a>
                 {% else %}
                 <a href="{% url "cadastro:preclientes_adicionar" %}" class="btn btn-large btn-success"><i class="icon icon-plus icon-white"></i> Adicionar</a>
                 {% endif %}
@@ -101,7 +101,7 @@
                     <tr>
                         <td>{{cliente.nome}}</td>
                         <td>
-                            <a class="btn" href=""><i class="icon-bell"></i> ocorrência</a>
+                            <a class="btn" href=""><i class="icon-bell-alt"></i> ocorrência</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -109,14 +109,14 @@
                     <tr>
                         <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
                         <td>{% if cliente_q %}
-                            <a href="."><i class="icon icon-remove"></i>Limpar Busca</a>
+                            <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
                             {% endif %}
                         </td>
                     </tr>
                     <tr>
                         <td></td>
                         <td>
-                            <a class="btn btn-large btn-info" href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}"><i class="icon icon-plus icon-white"></i> Adicionar Pré Cliente</a>
+                            <a class="btn btn-large btn-info" href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}"><i class="icon icon-plus icon-white "></i> Adicionar Pré Cliente</a>
                         </td>
                     </tr>
 
@@ -148,7 +148,7 @@
                             {{cliente.nome}}
                         </td>
                         <td>
-                            <a class="btn" href=""><i class="icon-bell"></i> ocorrência</a>
+                            <a class="btn" href=""><i class="icon-bell-alt"></i> ocorrência</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -156,7 +156,7 @@
                     <tr>
                                                 <td class="alert alert-info"><strong>Nenhum Encontrado!</strong></td>
                         <td>            {% if cliente_q %}
-                            <a href="."><i class="icon icon-remove"></i>Limpar Busca</a>
+                            <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
                             {% endif %}
                         </td>
                     </tr>

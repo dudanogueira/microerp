@@ -4,16 +4,51 @@
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
 {% block content %}
+
+
 {% if request.user.is_authenticated %}
     {% if request.user.funcionario%}
     <h1>Olá {{request.user.funcionario}}</h1>
-    <h2>Banco de Horas</h2>
-    <div class="alert alert-{{funcionario.banco_de_horas_situacao}}">
-        <h2>Saldo: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
-    <p><i>no Banco de Horas</i></p>
+    
+    {# Bloco de Banco de Horas e Férias#}
+    <div class="row-fluid">
+        
+        <div class="span6">
+            
+            <div class="alert alert-{{request.user.funcionario.banco_de_horas_situacao}}">
+                <i class="icon icon-time icon-4x pull-left"></i>
+                <h2>Banco de Horas</h2>
+        
+                <p>Saldo: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}</p>
+            </div>
+        </div>
+
+        <div class="span6">
+            <div class="alert alert-info">
+                <i class="icon icon-picture icon-4x pull-left"></i>
+                    <h2>Férias</h2>   
+                {% for ferias in request.user.funcionario.ferias_dias_autorizados %}
+                    <p>Autorizado: de <strong>{{ferias.inicio|date:"SHORT_DATE_FORMAT"}}</strong> a <strong>{{ferias.fim|date:"SHORT_DATE_FORMAT"}}</strong></p>
+                    {% empty %}
+                    <p>Nenhum período autorizado</p>
+                {% endfor %}
+            </div>
+            
+        </div>
+                
     </div>
     
+    <div class="alert alert-danger">
+    <i class="icon-user-md icon-4x pull-left"></i>
+    <h2>Exames Médicos</h2>
+        <ul>
+        {% for exame in request.user.funcionario.rotinaexamemedico_set.all %}
+            <li>{{exame.get_tipo_display}} <i class="icon-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>, <em>daqui a {{exame.data|timeuntil}}</em> {% if exame.realizado %}<span class="badge badge-success"><i class="icon-check"></i> realizado</span>{%endif%}</li>
+        {% endfor %}
+        </ul>
+
     {% else %}
+
     <h2 class="alert alert-important">Este usuário não possui Funcionário</h2>
     
     {% endif %}
@@ -27,9 +62,6 @@
 
 {% endif %}
 
-{% endblock %}
-
-
 
 {% addtoblock "js" %}
 <script>
@@ -38,3 +70,9 @@ $(document).ready(function() {
 });
 </script>
 {% endaddtoblock %}
+
+
+{% endblock %}
+
+
+

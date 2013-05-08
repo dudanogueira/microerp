@@ -11,6 +11,8 @@
 
     <!-- Le styles -->
     <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="{{STATIC_URL}}frontend/css/font-awesome.min.css" rel="stylesheet">
+    
     <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
     <link rel="stylesheet" href="{{STATIC_URL}}frontend/css/style.css" />
     <script src="{{STATIC_URL}}frontend/js/jquery/jquery.js"></script>
@@ -57,7 +59,7 @@
             
             <div class="well sidebar-nav">
               <ul class="nav nav-list">
-                <li class="nav-header"><i class="icon icon-home"></i> Principal</li>
+                <li class="nav-header"><i class="icon icon-home icon-3x"></i> Principal</li>
                 <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Painel</a></li>
                 {% if request.user.funcionario %}
                 <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Meus Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="label label-important">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
@@ -67,15 +69,7 @@
             
             
             {% block auxiliar-menu %}
-            {% addtoblock "js" %}
-            <script>
-            $(document).ready(function() {
-            	$("#main-home, #top-menu-home").addClass("active");
-            });
-            </script>
-            {% endaddtoblock %}
-            
-            
+                        
             {% endblock %}
             
             
@@ -169,5 +163,11 @@
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-carousel.js"></script>
     <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-typeahead.js"></script>
     {% render_block "js" %}
+    <script>
+    $(document).ready(function() {
+        $('.tooltip-items').tooltip()
+    });
+    </script>
+    
   </body>
 </html>
