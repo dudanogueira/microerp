@@ -1,5 +1,4 @@
 {% load sekizai_tags %}
-{% load thumbnail %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -42,11 +41,6 @@
           </a>
           <a class="brand" href="{% url "home" %}"><i class="icon-th"></i> MicroERP</a>
           <div class="nav-collapse collapse">
-            <p class="navbar-text pull-right">
-               {% thumbnail request.user.funcionario.foto "30x30" crop="center" as im %}
-                  {{request.user.funcionario}} <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-              {% endthumbnail %}
-            </p>
             {% include "frontend/global-top-menu.html" %}
           </div><!--/.nav-collapse -->
         </div>
@@ -62,7 +56,9 @@
                 <li class="nav-header"><i class="icon icon-home icon-3x"></i> Principal</li>
                 <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Painel Principal</a></li>
                 {% if request.user.funcionario %}
-                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Meus Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="label label-important">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
+                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Meus Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
+                <li id="main-home-minhas-ocorrencias"><a href=""><i class="icon-bell"></i> Minhas Ocorrências <span class="badge badge-important">2</span></a></li>
+                
                 {% endif %}
               </ul>              
             </div><!--/.well -->

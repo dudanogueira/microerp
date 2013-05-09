@@ -1,3 +1,4 @@
+{% load thumbnail %}
 <ul class="nav">
   <li id="top-menu-home"><a href="{% url "home" %}" class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Principal"><i class="icon-white icon icon-home icon-2x"><span class="visible-phone">Principal</span></i></a></li>
   
@@ -20,19 +21,54 @@
   <li id="top-menu-ocorrencia"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Ocorrências" href="{% url "ocorrencia:home" %}"><i class="icon-white icon icon-bell-alt icon-2x"><span class="visible-phone">Ocorrências</span></i></a></li>
   {% endif %}
   
-  {# Outros tipos de Links #}
-   
-  {% if  request.user.funcionario.recados_nao_lidos.count %}
-  <li class=""><a href="{% url "meus_recados" %}"><span class="badge badge-important"><i class="icon-envelope icon-white icon-1x"></i> {{request.user.funcionario.recados_nao_lidos.count}} </span></a></li>
-  {% endif %}
- 
-  {% if request.user.is_authenticated %}
-  <li><a href="{% url "logout" %}?next=/" class="navbar-link"><i class="icon-white icon icon-arrow-left"></i> Sair ({{request.user}}{% if request.user.funcionario %}:{{request.user.funcionario}}{%endif%})</a></li>
-  {% endif %}
-  
-  {% if request.user.is_staff %}
-  <li><a href="{% url "admin:index" %}" class="navbar-link">||  <i class="icon-white icon icon-wrench"></i> ADM</a></li>
-  {% endif %}
-  
-  
 </ul>
+
+  {# Outros tipos de Links #}
+  
+  
+  {% if request.user.is_authenticated %}
+  <ul class="nav ace-nav pull-right">
+
+			<li class="purple">
+				<a href="#">
+					<i class="icon-bell-alt icon-animated-bell icon-only"></i>
+					<span class="badge badge-important">1</span>
+				</a>
+			</li>
+
+
+            {% if  request.user.funcionario.recados_nao_lidos.count %}
+			<li class="green">
+				<a href="{% url "meus_recados" %}">
+					<i class="icon-envelope-alt icon-animated-vertical icon-only"></i>
+					<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>
+				</a>
+			</li>
+            {% endif %}
+
+			<li class="">
+				<a class="user-menu dropdown-toggle" href="#" data-toggle="dropdown">
+                    {% thumbnail request.user.funcionario.foto "30x30" crop="center" as im %}
+                       <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                   {% endthumbnail %}
+					
+					<span id="user_info">
+						<small>{% if request.user.funcionario %}{{request.user.funcionario}}{% endif %} (<em>{{request.user}}</em>)</small>
+					</span>
+					<i class="icon-caret-down"></i>
+				</a>
+				<ul id="user_menu" class="pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer">
+                    {% if request.user.is_staff %}
+					<li><a href="{% url "admin:index" %}"><i class="icon-cog"></i> Administração</a></li>
+					<li class="divider"></li>
+                    {% endif %}
+                    
+                    
+                      <li><a href="{% url "logout" %}?next=/" ><i class="icon-off"></i> Sair </a></li>
+                    
+                    
+				</ul>
+			</li>
+
+    </ul>
+    {% endif %}
