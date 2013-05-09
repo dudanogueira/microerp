@@ -4,7 +4,7 @@
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
 {% block content %}
-<h1>Adicionar Pré Cliente</h1>
+<h1><i class="icon icon-th"></i> <i class="icon icon-briefcase"></i> Adicionar Pré Cliente</h1>
 <form method="post" class="form-horizontal">
 {% csrf_token %}
 {{form_add_precleinte.as_p}}

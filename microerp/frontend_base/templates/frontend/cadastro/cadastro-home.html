@@ -5,7 +5,7 @@
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
 {% block content %}
-
+<h1><i class="icon-th"></i> <i class="icon-download-alt"></i> Recepção</h1>
 <div class="row-fluid">
     <div class="span6">
         <div class="well well-small">
@@ -36,10 +36,10 @@
                             {% endif %}
                             <strong>{{funcionario.nome}}</strong><br />
                             {% if funcionario.telefone_fixo %}
-                                <small class="label label-info">{{funcionario.telefone_fixo|phonenumber}}</small>
+                                <small class="label label-info"><i class="icon-phone"></i> {{funcionario.telefone_fixo|phonenumber}}</small>
                             {% endif %}
                             {% if funcionario.telefone_celular|phonenumber %}
-<small class="label label-info">{{funcionario.telefone_celular|phonenumber}}</small>
+<small class="label label-info"><i class="icon-mobile-phone"></i> {{funcionario.telefone_celular|phonenumber}}</small>
 {% endif %}
                         </td>
                         <td>

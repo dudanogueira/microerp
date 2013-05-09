@@ -1,8 +1,11 @@
-/* Landscape phone to portrait tablet */
 @media (min-width: 480px) {
     #main-content{
       padding-top: 60px;  
     } 
+}
+
+.global-menu{
+    height: 50px;
 }
 
 .sidebar-nav {

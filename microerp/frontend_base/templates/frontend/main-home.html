@@ -8,7 +8,7 @@
 
 {% if request.user.is_authenticated %}
     {% if request.user.funcionario%}
-    <h1>Olá {{request.user.funcionario}}</h1>
+    <h1><i class="icon-th"></i> <i class="icon-home"></i> Olá {{request.user.funcionario}}</h1>
     
     {# Bloco de Banco de Horas e Férias#}
     <div class="row-fluid">

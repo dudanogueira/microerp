@@ -1,23 +1,23 @@
 <ul class="nav">
-  <li id="top-menu-home"><a href="{% url "home" %}" class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Principal"><i class="icon-white icon icon-home icon-2x"></i></a></li>
+  <li id="top-menu-home"><a href="{% url "home" %}" class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Principal"><i class="icon-white icon icon-home icon-2x"><span class="visible-phone">Principal</span></i></a></li>
   
   {# LINKS DOS MODULOS #}
   
 
   {% if request.user.perfilacessorecepcao %}
-  <li id="top-menu-cadastro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recepção" href="{% url "cadastro:home" %}"><i class="icon-white icon icon-download-alt icon-2x"></i></a></li>
+  <li id="top-menu-cadastro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recepção" href="{% url "cadastro:home" %}"><i class="icon-white icon icon-download-alt icon-2x"><span class="visible-phone">Recepção</span></i></a></li>
   {% endif %}
   
   {% if request.user.perfilacessorh %}
-  <li id="top-menu-rh"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recursos Humanos" href="{% url "rh:home" %}"><i class="icon-white icon icon-group icon-2x"></i></a></li>
+  <li id="top-menu-rh"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recursos Humanos" href="{% url "rh:home" %}"><i class="icon-white icon icon-group icon-2x"><span class="visible-phone">RH</span></i></a></li>
   {% endif %}
 
   {% if request.user.perfilacessocomercial %}
-  <li id="top-menu-comercial"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Comercial" href="{% url "comercial:home" %}"><i class="icon-white icon icon-briefcase icon-2x"></i></a></li>
+  <li id="top-menu-comercial"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Comercial" href="{% url "comercial:home" %}"><i class="icon-white icon icon-briefcase icon-2x"><span class="visible-phone">Comercial</span></i></a></li>
   {% endif %}
   
   {% if request.user.perfilacessoocorrencia %}
-  <li id="top-menu-ocorrencia"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Ocorrências" href="{% url "ocorrencia:home" %}"><i class="icon-white icon icon-bell-alt icon-2x"></i></a></li>
+  <li id="top-menu-ocorrencia"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Ocorrências" href="{% url "ocorrencia:home" %}"><i class="icon-white icon icon-bell-alt icon-2x"><span class="visible-phone">Ocorrências</span></i></a></li>
   {% endif %}
   
   {# Outros tipos de Links #}
