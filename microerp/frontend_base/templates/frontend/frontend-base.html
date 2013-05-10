@@ -57,7 +57,7 @@
                 <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Meu Painel</a></li>
                 {% if request.user.funcionario %}
                 <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
-                <li id="main-home-minhas-ocorrencias"><a href="{% url "minhas_ocorrencias" %}"><i class="icon-bell icon-animated-bell"></i> Ocorrências {% if request.user.funcionario.ocorrencias_total %}<span class="badge badge-important">{{request.user.funcionario.ocorrencias_total}}</span>{%endif%}</a></li>
+                <li id="main-home-minhas-ocorrencias"><a href="{% url "minhas_ocorrencias" %}"><i class="icon-bell {% if request.user.funcionario.ocorrencias_total %}icon-animated-bell{% endif %}"></i> Ocorrências {% if request.user.funcionario.ocorrencias_total %}<span class="badge badge-important">{{request.user.funcionario.ocorrencias_total}}</span>{%endif%}</a></li>
                 
                 {% endif %}
               </ul>              

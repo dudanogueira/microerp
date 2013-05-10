@@ -23,16 +23,18 @@ class OcorrenciaResolvidaForm(forms.ModelForm):
         fields = 'resolucao_final',
 
 def home(request):
-    form = AuthenticationForm()
-    if request.user.funcionario:
-        # ocorrencias abertas
-        ## precisnado de visto
-        funcionario = request.user.funcionario
-        ocorrencias_abertas = Ocorrencia.objects.filter(
-            Q(status="aberta") & Q(responsavel_contato=funcionario) | \
-            Q(responsavel_correcao=funcionario) | \
-            Q(responsavel_visto=funcionario)
-        )
+    if request.user.is_authenticated():
+        if request.user.funcionario:
+            # ocorrencias abertas
+            ## precisnado de visto
+            funcionario = request.user.funcionario
+            ocorrencias_abertas = Ocorrencia.objects.filter(
+                Q(status="aberta") & Q(responsavel_contato=funcionario) | \
+                Q(responsavel_correcao=funcionario) | \
+                Q(responsavel_visto=funcionario)
+            )
+    else:
+        form = AuthenticationForm()
     
     return render_to_response('frontend/main-home.html', locals(), context_instance=RequestContext(request),)
 
