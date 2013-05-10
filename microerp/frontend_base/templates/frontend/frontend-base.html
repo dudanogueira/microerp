@@ -51,26 +51,28 @@
       <div class="row-fluid" id="main-content">
         <div class="span3">
             
-            <div class="well sidebar-nav">
+            <div class="well sidebar-nav principal">
               <ul class="nav nav-list">
                 <li class="nav-header"><i class="icon icon-home icon-3x"></i> Principal</li>
-                <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Painel Principal</a></li>
+                <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Meu Painel</a></li>
                 {% if request.user.funcionario %}
-                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Meus Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
-                <li id="main-home-minhas-ocorrencias"><a href=""><i class="icon-bell"></i> Minhas Ocorrências <span class="badge badge-important">2</span></a></li>
+                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
+                <li id="main-home-minhas-ocorrencias"><a href="{% url "minhas_ocorrencias" %}"><i class="icon-bell icon-animated-bell"></i> Ocorrências {% if request.user.funcionario.ocorrencias_total %}<span class="badge badge-important">{{request.user.funcionario.ocorrencias_total}}</span>{%endif%}</a></li>
                 
                 {% endif %}
               </ul>              
             </div><!--/.well -->
             
             
+            <div class="auxiliar-menu">
             {% block auxiliar-menu %}
                         
             {% endblock %}
+            </div>  
             
             
         </div><!--/span-->
-        <div class="span9">
+        <div class="span9" id="content">
     		{% if messages %}
     		<div id="alertas">
     		    {% for message in messages %}
@@ -138,7 +140,7 @@
       <hr>
 
       <footer>
-        <p>&copy; Company 2013</p>
+        <p>Powered by MicroERP</p>
       </footer>
 
     </div><!--/.fluid-container-->
@@ -162,6 +164,8 @@
     <script>
     $(document).ready(function() {
         $('.tooltip-items').tooltip()
+        $('textarea').focus();
+        $(".select2").select2();
     });
     </script>
     

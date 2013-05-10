@@ -16,6 +16,8 @@ from rh.models import Funcionario, Departamento
 from cadastro.models import Cliente, PreCliente
 from cadastro.models import Recado
 
+from ocorrencia.models import Ocorrencia
+
 from django import forms
 #
 # FORMS
@@ -25,6 +27,33 @@ from django_select2.widgets import Select2Widget
 
 from django_select2 import AutoModelSelect2Field
 
+
+class AdicionarOcorrenciaForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        cliente = kwargs.pop('cliente')    
+        precliente = kwargs.pop('precliente')
+        super(AdicionarOcorrenciaForm, self).__init__(*args, **kwargs)
+        self.fields['contato'].label = "Contato / Reclamante"
+        self.fields['cliente'].widget.attrs['class'] = 'select2'
+        self.fields['precliente'].widget.attrs['class'] = 'select2'
+        if cliente:
+            self.fields['cliente'].initial = cliente
+            self.fields['precliente'].widget = forms.HiddenInput()
+            self.fields['contato'].widget = forms.HiddenInput()
+        elif precliente:
+            self.fields['precliente'].initial = precliente
+            self.fields['cliente'].widget = forms.HiddenInput()
+            self.fields['contato'].widget = forms.HiddenInput()
+        else:
+            self.fields['cliente'].widget = forms.HiddenInput()
+            self.fields['precliente'].widget = forms.HiddenInput()
+            
+        
+    
+    class Meta:
+        model = Ocorrencia
+        fields = 'descricao', 'cliente', 'precliente', 'contato', 'tipo',
 
 class AdicionarRecadoForm(forms.ModelForm):
     
@@ -170,7 +199,6 @@ def preclientes_adicionar(request):
                 precliente.save()
                 messages.success(request, u'Pré Cliente %s adicionado com sucesso!' % precliente)
                 return redirect(reverse('cadastro:home'))
-                
         except:
             raise
         
@@ -182,6 +210,16 @@ def preclientes_adicionar(request):
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def ocorrencia_adicionar(request):
+    cliente_id = request.GET.get('cliente', None)
+    precliente_id = request.GET.get('precliente', None)
+    if request.POST:
+        form = AdicionarOcorrenciaForm(request.POST, cliente=cliente_id, precliente=precliente_id)
+        if form.is_valid():
+            ocorrencia = form.save()
+            messages.success(request, 'Ocorrência #%d criada com sucesso!' % ocorrencia.id)
+            return redirect(reverse('cadastro:home'))
+    else:
+        form = AdicionarOcorrenciaForm(cliente=cliente_id, precliente=precliente_id)
     return render_to_response('frontend/cadastro/cadastro-ocorrencia-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_recepcao)

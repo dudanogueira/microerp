@@ -7,6 +7,43 @@
 
 <h1><i class="icon-th"></i> <i class="icon-bell-alt"></i> Ocorrências</h1>
 
+<div class="row-fluid">
+    
+    <div class="span2 alert alert-info">
+        <i class="icon-bullhorn icon-2x pull-left"></i>
+        <h4>Despachar</h4>
+        {{ocorrencias_aberta_count}}
+    </div>
+    
+    <div class="span2 alert alert-success">
+        <i class="icon-beaker icon-2x pull-left"></i>
+        <h4>Em Análise</h4>
+        {{ocorrencias_analise_count}}
+        
+    </div>
+    
+    <div class="span2 alert">
+        <i class="icon-phone icon-2x pull-left"></i>
+        <h4>Em Contato</h4>
+        {{ocorrencias_contato_count}}
+    </div>
+    
+    <div class="span2">
+        <i class="icon-check icon-2x pull-left"></i>
+        <h4>Visto</h4>
+        <span class="badge">{{ocorrencias_visto_count}}</span>
+    </div>
+    
+    <div class="span4 alert alert-danger">
+        <i class="icon-remove icon-2x pull-left"></i>
+        <h4>Fechadas</h4>
+        
+        <span class="label label-success">{{ocorrencias_fechada_procede_count}} Procede</span>
+        <span class="label label-important">{{ocorrencias_fechada_nao_procede_count}} Não Procede</span>
+    </div>
+    
+</div>
+
 {% endblock %}
 
 {% block auxiliar-menu %}

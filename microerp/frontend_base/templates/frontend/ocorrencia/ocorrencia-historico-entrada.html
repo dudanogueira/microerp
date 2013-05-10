@@ -1,0 +1,40 @@
+<div class="adicionado">
+    <i class="icon-plus"></i> {{ocorrencia.criado|date:"SHORT_DATETIME_FORMAT"}}<br /> <small>{{ocorrencia.criado|timesince:ocorrencia.despachado_data}} depois<br /></small>
+</div>
+
+<div class="despachado">
+    {% if ocorrencia.despachado_data %}
+    <i class="icon-bullhorn"></i> {{ocorrencia.despachado_data|date:"SHORT_DATETIME_FORMAT"}}<br />
+
+    {% if ocorrencia.correcao_iniciada %}
+    <small>{{ocorrencia.despachado_data|timesince:ocorrencia.correcao_iniciada}} depois</small><br />
+
+
+    <i class="icon-wrench"></i> {{ocorrencia.correcao_iniciada|date:"SHORT_DATETIME_FORMAT"}}<br />
+    {% endif %}
+    {% endif %}
+</div>
+
+<div class="resolvido">
+    {% if ocorrencia.resolucao_final_data %}
+
+    {% if ocorrencia.procede %}
+        <div>
+        <small>{{ocorrencia.despachado_data|timesince:ocorrencia.resolucao_final_data}} depois</small><br />
+        <i class="icon-thumbs-up"></i> {{ocorrencia.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}}
+    </div>
+    {% else %}
+        <div>
+                <i class="icon-thumbs-down"></i> {{ocorrencia.resolucao_final_data}}
+        {% endif %}
+        {% if not ocorrencia.contato_iniciado %}
+        <p class="label label-info"><i class="icon-phone"></i> Aguardando o seu contato</p>
+        <p>
+        <small><i class="icon-time"></i> Aberta há {{ocorrencia.criado|timesince}}</small>
+        </p>
+    </div>
+    {% endif %}
+</div>
+ 
+{% endif %}
+

@@ -42,9 +42,17 @@ urlpatterns += patterns('django.contrib.auth',
 app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")
 urlpatterns += patterns('',
     url(r'^$', '%s.views.home' % app_frontend, name='home'),
-    # modulo recados
+    # modulo principal>recados
     url(r'^meus_recados/$', '%s.views.meus_recados' % app_frontend, name='meus_recados'),
     url(r'^meus_recados/(?P<recado_id>[0-9]+)/marcar/lido/$', '%s.views.meus_recados_marcar_lido' % app_frontend, name='meus_recados_marcar_lido'),
+    # modulo principal>ocorrencias
+    url(r'^minhas_ocorrencias/$', '%s.views.minhas_ocorrencias' % app_frontend, name='minhas_ocorrencias'),
+    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/resolvido/$', '%s.views.minhas_ocorrencias_resolvido' % app_frontend, name='minhas_ocorrencias_resolvido'),
+    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/abrir/correcao/$', '%s.views.minhas_ocorrencias_abrir_correcao' % app_frontend, name='minhas_ocorrencias_abrir_correcao'),
+    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/fechar/contato/$', '%s.views.minhas_ocorrencias_fechar_contato' % app_frontend, name='minhas_ocorrencias_fechar_contato'),
+    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/fechar/visto/$', '%s.views.minhas_ocorrencias_fechar_visto' % app_frontend, name='minhas_ocorrencias_fechar_visto'),
+    
+    
     # modulo RH
     url(r'^rh/', include('rh.urls', namespace="rh")),
     # modulo recepcao

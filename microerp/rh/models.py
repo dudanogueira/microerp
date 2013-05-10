@@ -41,6 +41,8 @@ from workdays import networkdays
 
 from decimal import Decimal
 
+from ocorrencia.models import Ocorrencia
+
 horas_por_dia = getattr(settings, 'HORAS_TRABALHADAS_POR_DIA', 8.4)
 
 def funcionario_avatar_img_path(instance, filename):
@@ -303,6 +305,20 @@ class Funcionario(models.Model):
                 id=self.id
             )
         return colegas_dpto
+    
+    # OCORRENCIA
+    def ocorrencias_total(self):
+        q = Ocorrencia.objects.filter(
+            models.Q(status="analise", correcao_iniciada=None, responsavel_correcao=self) |
+            models.Q(status="contato", contato_realizado=None, responsavel_contato=self) |
+            models.Q(status="visto", responsavel_visto=self)
+        ).count()
+        return q
+    
+    
+    def ocorrencias_correcao_aberto(self):
+        return self.ocorrencia_correcao_set.filter(status="analise", correcao_iniciada=None)
+        
     
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)

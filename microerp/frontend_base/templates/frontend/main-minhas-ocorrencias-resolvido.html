@@ -1,0 +1,30 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Início - Ocorrências - Resolvido{% endblock %}</title>
+
+{% block content %}
+    <h1><i class="icon-th"></i> <i class="icon icon-bell"></i> Minhas Ocorrências - Resolvido #{{ocorrencia.id}}</h1>
+    
+    <p>Reclamante: {{ocorrencia.reclamante}}<p>
+    <p class="alert alert-info">{{ocorrencia.descricao}}</p>
+    <p><strong>Criado</strong> em: {{ocorrencia.criado|date:"SHORT_DATETIME_FORMAT"}} <em>(há {{ocorrencia.criado|timesince}})</em> por {{ocorrencia.adicionado_por}}</p>
+    <p><strong>Despachado</strong> em: {{ocorrencia.despachado_data|date:"SHORT_DATETIME_FORMAT"}} <em>({{ocorrencia.criado|timesince:ocorrencia.despachado_data}} após criado)</em> por {{ocorrencia.despachado_por.funcionario}}</p>
+    <p><strong>Resolução</strong> com: {{ocorrencia.correcao_iniciada|timesince}}</p>
+    <form method="post">{% csrf_token %}
+    {{form.as_p}}
+    <input type="submit" class="btn btn-primary" value="Corrigir">
+    </form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#main-home-minhas-ocorrencias, #top-menu-home").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+
+
+{% endblock %}

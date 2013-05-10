@@ -11,7 +11,7 @@
         <div class="well well-small">
             <h2><i class="icon-user"></i> Buscar Funcionário</h2>
             <form class="form-search" action="{% url "cadastro:home" %}">
-                <input type="text" class="input-medium search-query" name="funcionario" value="{% if funcionario_q %}{{funcionario_q}}{%endif%}">
+                <input tabindex=1 type="text" class="input-medium search-query" id="funcionario_busca" name="funcionario" value="{% if funcionario_q %}{{funcionario_q}}{%endif%}">
                 <button type="submit" class="btn btn-info"><i class="icon icon-white icon-search"></i> Buscar</button>
                 {% if funcionario_q %}
                 <a href="."><i class="icon icon-remove"></i> Limpar</a>
@@ -71,7 +71,7 @@
         <div class="well well-small">
             <h2><i class="icon icon-briefcase"></i> Buscar Pré / Cliente</h2>
             <form class="form-search" action="{% url "cadastro:home" %}">
-                <input type="text" class="input-medium search-query" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
+                <input tabindex="2" type="text" class="input-medium search-query" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
                 <button type="submit" class="btn btn-info"><i class="icon icon-white icon-search"></i> Buscar</button>
                 {% if cliente_q %}
                 <a href="."><i class="icon icon-remove"></i> Limpar</a>
@@ -101,7 +101,7 @@
                     <tr>
                         <td>{{cliente.nome}}</td>
                         <td>
-                            <a class="btn" href=""><i class="icon-bell-alt"></i> ocorrência</a>
+                            <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i> ocorrência</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -136,7 +136,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                
                     {% for cliente in clientes %}
               
                     <tr>
@@ -148,7 +147,7 @@
                             {{cliente.nome}}
                         </td>
                         <td>
-                            <a class="btn" href=""><i class="icon-bell-alt"></i> ocorrência</a>
+                            <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?cliente={{cliente.id}}"><i class="icon-bell-alt"></i> ocorrência</a>
                         </td>
                     </tr>
                     {% empty %}
@@ -180,6 +179,7 @@
 <script>
 $(document).ready(function() {
     $("#menu-cadastro-home, #top-menu-cadastro").addClass("active");
+    $("#funcionario_busca").focus()
 });
 </script>
 {% endaddtoblock %}

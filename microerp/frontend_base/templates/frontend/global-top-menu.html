@@ -29,12 +29,14 @@
   {% if request.user.is_authenticated %}
   <ul class="nav ace-nav pull-right">
 
+      {% if request.user.funcionario.ocorrencias_total %}
 			<li class="purple">
-				<a href="#">
+				<a href="{% url "minhas_ocorrencias" %}">
 					<i class="icon-bell-alt icon-animated-bell icon-only"></i>
-					<span class="badge badge-important">1</span>
+					<span class="badge badge-important">{{request.user.funcionario.ocorrencias_total}}</span>
 				</a>
 			</li>
+    {% endif %}
 
 
             {% if  request.user.funcionario.recados_nao_lidos.count %}

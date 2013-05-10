@@ -19,7 +19,13 @@
                 <i class="icon icon-time icon-4x pull-left"></i>
                 <h2>Banco de Horas</h2>
         
-                <p>Saldo: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}</p>
+                <p><strong>Saldo</strong>: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}
+                    {% if request.user.funcionario.banco_de_horas_ultimo_lancamento %}
+                     <strong>Último lançamento</strong>: {{request.user.funcionario.banco_de_horas_ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}
+                     {% else %}
+                     Nenhum lançamento
+                     {% endif %}
+                 </p>
             </div>
         </div>
 
@@ -46,7 +52,66 @@
             <li>{{exame.get_tipo_display}} <i class="icon-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>, <em>daqui a {{exame.data|timeuntil}}</em> {% if exame.realizado %}<span class="badge badge-success"><i class="icon-check"></i> realizado</span>{%endif%}</li>
         {% endfor %}
         </ul>
-
+    </div>
+    
+    <div class="">
+    <h2><i class="icon-envelope icon-1x"></i>
+ Recados e <i class="icon-bell icon-1x"></i> Ocorrências</h2>
+ 
+ <div class="row-fluid" id="recado-ocorrencia-principal">
+     
+   <div class="span2 well alert-success">
+       <p>
+           <i class="icon-envelope icon-2x"></i>
+           asdasdas dasd asd asd asd asdasdas dasd<br />
+           <strong>De: Fulano, no dia tal tal</strong>
+       </p>
+   </div>
+   
+   <div class="span2 well alert-error">
+       <p>
+           <i class="icon-bell icon-2x"></i>
+           asdasdas dasd asd asd asd asdasdas dasd<br />
+           <strong>De: Fulano, no dia tal tal</strong>
+       </p>
+   </div>
+     
+   <div class="span2 well alert-success">
+       <p>
+           <i class="icon-envelope icon-2x"></i>
+           asdasdas dasd asd asd asd asdasdas dasd<br />
+           <strong>De: Fulano, no dia tal tal</strong>
+       </p>
+   </div>
+   
+   <div class="span2 well alert-error">
+       <p>
+           <i class="icon-bell icon-2x"></i>
+           asdasdas dasd asd asd asd asdasdas dasd<br />
+           <strong>De: Fulano, no dia tal tal</strong>
+       </p>
+   </div>
+   
+     
+   <div class="span2 well alert-success">
+       <p>
+           <i class="icon-envelope icon-2x"></i>
+           asdasdas dasd asd asd asd asdasdas dasd<br />
+           <strong>De: Fulano, no dia tal tal</strong>
+       </p>
+   </div>
+   
+   <div class="span2 well alert-error">
+       <p>
+           <i class="icon-bell icon-2x"></i>
+           asdasdas dasd asd asd asd asdasdas dasd<br />
+           <strong>De: Fulano, no dia tal tal</strong>
+       </p>
+   </div>
+   
+ </div>
+ 
+    </div>
     {% else %}
 
     <h2 class="alert alert-important">Este usuário não possui Funcionário</h2>

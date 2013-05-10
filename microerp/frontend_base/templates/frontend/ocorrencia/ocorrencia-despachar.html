@@ -1,0 +1,113 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Ocorrência: Despachar{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-bullhorn"></i> Despachar</h1>
+{% if ocorrencia %}
+
+{{ocorrencia}}
+Correção: {{ocorrencia.responsavel_correcao}}
+{% if procede %}
+<textarea name="providencia"></textarea>
+{% endif %}
+
+{% else %}
+{% for ocorrencia in ocorrencias_abertas %}
+
+    <form method="post" action="{% url "ocorrencia:despachar_ocorrencia" ocorrencia.id %}">
+    {% csrf_token %}
+    <input type="hidden" name="ocorrencia_id" value="{{ocorrencia.id}}">
+        
+    <div class="well well-small" id="ocorrencia-{{ocorrencia.id}}">
+
+        <h2>Ocorrência #{{ocorrencia.id}} <span class="badge badge-info">{{ocorrencia.tipo}}</h2>
+            <div id="ocorrencia-{{ocorrencia.id}}-infos" class="row-fluid">
+                <strong>Cliente / Reclamante</strong>: {{ocorrencia.reclamante}}<br />
+                <strong>Contato</strong>: {% for contato in ocorrencia.contato_principal %} {% if contato %} # {{contato}}{%endif%}{%endfor%}<br />
+                <h3>Descrição</h3>
+                <div class="alert alert-info">
+                    {{ocorrencia.descricao}}
+                </div>
+            
+            </div>
+
+            <div id="ocorrencia-{{ocorrencia.id}}-responsaveis" class="row-fluid">
+                <span class="span4">
+                    <h5><i class="icon-wrench"></i> Responsável por Correção</h5>
+                    <select tabindex=1 id="responsavel_correcao_input" name="responsavel_correcao" class="select2">
+                        <option value="">Escolha um Responsável</option>
+                        {% for rc in funcionarios_ativos %}
+                        <option value="{{rc.id}}" {% ifequal rc.id ocorrencia.responsavel_correcao.id %}selected{%endifequal%}>{{rc}}</option>
+                        {% endfor %}
+                    </select>
+                </span>
+            
+                <span class="span4">
+                    <h5><i class="icon-phone"></i>  Responsável por Contato</h5>
+                    <select tabindex=2 name="responsavel_contato" class="select2">
+                        <option>Escolha um Responsável</option>
+                        {% for rc in funcionarios_ativos %}
+                        <option value="{{rc.id}}" {% ifequal rc.id ocorrencia.responsavel_contato.id %}selected{%endifequal%}>{{rc}}</option>
+                        {% endfor %}
+                    </select>
+                
+                </span>
+            
+                <span class="span4">
+                    <h5><i class="icon-check"></i>  Responsável por Visto</h5>
+                    <select tabindex=3  name="responsavel_visto" class="select2">
+                        <option>Escolha um Responsável</option>
+                        {% for rc in funcionarios_ativos %}
+                        <option value="{{rc.id}}" 
+                        {% if ocorrencia.responsavel_visto.id %}
+                        
+                        {% ifequal ocorrencia.responsavel_visto.id rc.id %}       
+                        selected
+                        {% endifequal %}
+                        
+
+                        {%endif%}>{{rc}}</option>
+                        {% endfor %}
+                    </select>
+                
+                </span>
+            
+                
+            </div>
+        
+            <div id="ocorrencia-{{ocorrencia.id}}-acoes" class="row-fluid">
+                <hr />
+                <span class="span12">
+        
+                    <p class="btn-group">   
+                        <button class="btn btn-success" name="despachar" value="True"><i class="icon-bullhorn"></i> Especificar Providência</button>
+                        <button class="btn btn-danger" name="improceder" value="True"><i class="icon-remove-sign"></i> Não Procede</button>
+                    </p>
+                </span>
+            </div>
+        
+
+        </div>
+
+    </form>
+
+    {% endfor %}
+{% endif %}
+    {% endblock %}
+
+    {% block auxiliar-menu %}
+    {% addtoblock "js" %}
+    <script type="text/javascript" src="/static/js/select2.js"></script>
+    <link href="/static/css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+    <script>
+    $(document).ready(function() {
+        $("#menu-ocorrencia-despachar, #top-menu-ocorrencia").addClass("active");
+        $("#responsavel_correcao_input").focus()
+    });
+    </script>
+    {% endaddtoblock %}
+    {% include "frontend/ocorrencia/ocorrencia-menu.html" %}
+    {% endblock%}

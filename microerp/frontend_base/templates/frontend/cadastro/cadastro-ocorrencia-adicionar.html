@@ -5,12 +5,24 @@
 
 {% block content %}
 <h1><i class="icon icon-th"></i> <i class="icon icon-bell-alt"></i> Adicionar Ocorrência</h1>
+<form method="POST">{% csrf_token %}
+    
+    <div class="row-fluid">
+        
+    </div>
+    
+{{form.as_p}}
+<input type="submit" class="btn btn-primary" value="Adicionar">
 
+</form>
 
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="/static/js/select2.js"></script>
+<link href="/static/css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 <script>
 $(document).ready(function() {
     $("#menu-cadastro-ocorrencia-adicionar, #top-menu-cadastro").addClass("active");
