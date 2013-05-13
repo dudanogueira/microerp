@@ -22,7 +22,7 @@ class OcorrenciaAdmin(admin.ModelAdmin):
         }),
         ('Responsáveis', {
             'classes': ('collapse',),
-            'fields': ('responsavel_correcao', 'correcao_iniciada', 'responsavel_contato', 'responsavel_visto')
+            'fields': ('responsavel_correcao', 'correcao_iniciada', 'responsavel_contato', 'contato_realizado', 'responsavel_visto')
         }),
     )
     filter_horizontal = 'departamentos_afetados',

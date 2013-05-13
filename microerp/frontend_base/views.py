@@ -24,15 +24,15 @@ class OcorrenciaResolvidaForm(forms.ModelForm):
 
 def home(request):
     if request.user.is_authenticated():
-        if request.user.funcionario:
-            # ocorrencias abertas
-            ## precisnado de visto
+        try:
             funcionario = request.user.funcionario
             ocorrencias_abertas = Ocorrencia.objects.filter(
                 Q(status="aberta") & Q(responsavel_contato=funcionario) | \
                 Q(responsavel_correcao=funcionario) | \
                 Q(responsavel_visto=funcionario)
             )
+        except Funcionario.DoesNotExist:
+            pass
     else:
         form = AuthenticationForm()
     

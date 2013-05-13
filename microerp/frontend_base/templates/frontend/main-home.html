@@ -49,7 +49,23 @@
     <h2>Exames Médicos</h2>
         <ul>
         {% for exame in request.user.funcionario.rotinaexamemedico_set.all %}
-            <li>{{exame.get_tipo_display}} <i class="icon-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>, <em>daqui a {{exame.data|timeuntil}}</em> {% if exame.realizado %}<span class="badge badge-success"><i class="icon-check"></i> realizado</span>{%endif%}</li>
+        
+        
+        
+            <li>{{exame.get_tipo_display}}
+                {% if exame.data %}
+                <i class="icon-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>
+                {% else %}
+                                <i class="icon-time"></i><strong>A Definir</strong>
+                {% endif %}
+                {% if exame.realizado %}
+                <em><span class="badge badge-success"><i class="icon-check"></i> realizado</span> há {{exame.data|timesince}}</em>
+                {% else %}
+                <em><span class="badge badge-success"><i class="icon-time"></i> em {{exame.data|timeuntil}}</span></em>
+                
+                {%endif%}
+            </li>
+            
         {% endfor %}
         </ul>
     </div>

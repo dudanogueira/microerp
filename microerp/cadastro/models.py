@@ -49,6 +49,13 @@ RECADO_TIPO_CHOICES = (
     ('informacao_projeto', u'Informação sobre Projeto'),
 )
 
+STATUS_CONTRATO_CHOICES = (
+    ('aberto', 'Contrato Aberto'),
+    ('analise', 'Contrato em Análise'),
+    ('fechado', 'Contrato Fechado'),
+    ('perdido', 'Contrato Perdido'),
+)
+
 class PreCliente(models.Model):
     '''
     Um Pre cliente é convertido depois em Cliente
@@ -337,3 +344,23 @@ class PerfilAcessoRecepcao(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+class Contrato(models.Model):
+    '''Modelo de dados para contratos'''
+    cliente = models.ForeignKey('cadastro.Cliente')
+    status = models.CharField(blank=True, max_length=100, choices=STATUS_CONTRATO_CHOICES)
+    descricao = models.TextField("Descrição", blank=False, null=False)
+    validade = models.DateTimeField(blank=True, default=datetime.datetime.now()+datetime.timedelta(7))
+    valor_proposto = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False)
+    valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False)
+    # funcionarios
+    vendedor = models.ForeignKey('rh.Funcionario', related_name="vendedor_contrato_set")
+    # metadata
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+class ItemContratoMaoDeObra(models.Model):
+    contrato = models.ForeignKey(Contrato)
+    cargo = models.ForeignKey('rh.Cargo')
+    quantidade = models.IntegerField(blank=False, null=False, default=1)

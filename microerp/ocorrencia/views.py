@@ -50,14 +50,14 @@ class DespacharOcorrenciaForm(forms.ModelForm):
 @login_required
 @user_passes_test(possui_perfil_acesso_ocorrencia, login_url='/')
 def home(request):
-    ocorrencias_aberta_count = Ocorrencia.objects.filter(
+    ocorrencias_aberta = Ocorrencia.objects.filter(
         Q(status="aberta") & (Q(responsavel_contato=None) | \
         Q(responsavel_correcao=None) | \
         Q(responsavel_visto=None))
-    ).count()
-    ocorrencias_analise_count = Ocorrencia.objects.filter(status="analise").count()
-    ocorrencias_contato_count = Ocorrencia.objects.filter(status="contato").count()
-    ocorrencias_visto_count = Ocorrencia.objects.filter(status="visto").count()
+    )
+    ocorrencias_analise = Ocorrencia.objects.filter(status="analise")
+    ocorrencias_contato = Ocorrencia.objects.filter(status="contato")
+    ocorrencias_visto = Ocorrencia.objects.filter(status="visto")
     ocorrencias_fechada_procede_count = Ocorrencia.objects.filter(status="resolvida", procede=True).count()
     ocorrencias_fechada_nao_procede_count = Ocorrencia.objects.filter(status="resolvida", procede=False).count()
     return render_to_response('frontend/ocorrencia/ocorrencia-home.html', locals(), context_instance=RequestContext(request),)

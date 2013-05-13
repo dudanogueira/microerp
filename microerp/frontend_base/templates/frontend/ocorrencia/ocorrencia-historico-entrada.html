@@ -1,16 +1,16 @@
 <div class="adicionado">
-    <i class="icon-plus"></i> {{ocorrencia.criado|date:"SHORT_DATETIME_FORMAT"}}<br /> <small>{{ocorrencia.criado|timesince:ocorrencia.despachado_data}} depois<br /></small>
+<strong>    <i class="icon-plus"></i> {{ocorrencia.criado|date:"SHORT_DATETIME_FORMAT"}}</strong><br /> <small>{{ocorrencia.criado|timesince:ocorrencia.despachado_data}} depois<br /></small>
 </div>
 
 <div class="despachado">
     {% if ocorrencia.despachado_data %}
-    <i class="icon-bullhorn"></i> {{ocorrencia.despachado_data|date:"SHORT_DATETIME_FORMAT"}}<br />
+    <i class="icon-bullhorn"></i> <strong>{{ocorrencia.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong><br />
 
     {% if ocorrencia.correcao_iniciada %}
     <small>{{ocorrencia.despachado_data|timesince:ocorrencia.correcao_iniciada}} depois</small><br />
 
 
-    <i class="icon-wrench"></i> {{ocorrencia.correcao_iniciada|date:"SHORT_DATETIME_FORMAT"}}<br />
+    <i class="icon-wrench"></i> <strong>{{ocorrencia.correcao_iniciada|date:"SHORT_DATETIME_FORMAT"}}</strong><br />
     {% endif %}
     {% endif %}
 </div>
@@ -21,18 +21,32 @@
     {% if ocorrencia.procede %}
         <div>
         <small>{{ocorrencia.despachado_data|timesince:ocorrencia.resolucao_final_data}} depois</small><br />
-        <i class="icon-thumbs-up"></i> {{ocorrencia.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}}
+        <i class="icon-thumbs-up"></i> <strong>{{ocorrencia.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}}</strong>
     </div>
     {% else %}
         <div>
-                <i class="icon-thumbs-down"></i> {{ocorrencia.resolucao_final_data}}
+                <i class="icon-thumbs-down"></i> <strong>{{ocorrencia.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}}</strong>
         {% endif %}
-        {% if not ocorrencia.contato_iniciado %}
+        {% if not ocorrencia.contato_realizado %}
         <p class="label label-info"><i class="icon-phone"></i> Aguardando o seu contato</p>
         <p>
         <small><i class="icon-time"></i> Aberta há {{ocorrencia.criado|timesince}}</small>
         </p>
     </div>
+    {% endif %}
+</div>
+ 
+<div class="visto">
+    
+{% if ocorrencia.contato_realizado %}
+ <small>{{ocorrencia.resolucao_final_data|timesince:ocorrencia.contato_realizado}} depois</small><br />
+    
+    <i class="icon-phone"></i> <strong>{{ocorrencia.contato_realizado|date:"SHORT_DATETIME_FORMAT"}}</strong><br />
+    
+    
+    <small><i class="icon-time"></i> Aberta há {{ocorrencia.criado|timesince}}</small>
+    
+
     {% endif %}
 </div>
  

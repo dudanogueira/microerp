@@ -16,6 +16,7 @@ from django.db.models import Count
 
 from rh.models import Departamento
 from comercial.models import SolicitacaoComercial, ContatoComercial, TipoContatoComercial, FonteDeAgendaComercial
+from cadastro.models import Cliente, PreCliente
 
 from django.conf import settings
 
@@ -40,6 +41,12 @@ def possui_perfil_acesso_comercial(user, login_url="/"):
 @login_required
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def home(request):
+    # widget cliente
+    cliente_q = request.GET.get('cliente', False)
+    if cliente_q:
+        clientes = Cliente.objects.filter(nome__icontains=cliente_q)
+        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
+    
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 

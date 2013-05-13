@@ -3,7 +3,7 @@
     <li class="nav-header"><i class="icon icon-bell-alt icon-3x"></i> Ocorrências</li>
     <li id="menu-ocorrencia-home"><a href="{% url "ocorrencia:home" %}"><i class="icon-th"></i> Início</a></li>
     {% if request.user.perfilacessoocorrencia.gerente  %}
-    <li id="menu-ocorrencia-despachar"><a href="{% url "ocorrencia:despachar" %}"><i class="icon icon-bullhorn"></i> Despachar {% if ocorrencia %}> ID#{{ocorrencia.id}}{% else %}<span class="badge badge-info">{{ocorrencias_aberta_count}}</badge>{% endif %}</a></li>
+    <li id="menu-ocorrencia-despachar"><a href="{% url "ocorrencia:despachar" %}"><i class="icon icon-bullhorn"></i> Despachar {% if ocorrencia %}> ID#{{ocorrencia.id}}{% else %}{% if ocorrencias_aberta.count %}<span class="badge badge-info">{{ocorrencias_aberta.count}}</badge>{% endif %}{% endif %}</a></li>
     {% endif %}
   </ul>
 </div><!--/.well -->

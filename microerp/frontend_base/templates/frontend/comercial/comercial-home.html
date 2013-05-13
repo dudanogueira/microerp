@@ -7,6 +7,107 @@
 
 <h1><i class="icon-th"></i> <i class="icon-briefcase"></i> Comercial</h1>
 
+<div class="well well-small">
+    <h2><i class="icon icon-briefcase"></i> Buscar Pré / Cliente</h2>
+    <form class="form-search" action="{% url "comercial:home" %}">
+        <input tabindex="2" type="text" class="input-medium search-query" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
+        <button type="submit" class="btn btn-info"><i class="icon icon-white icon-search"></i> Buscar</button>
+        {% if cliente_q %}
+        <a href="."><i class="icon icon-remove"></i> Limpar</a>
+        {% else %}
+        <a href="{% url "cadastro:preclientes_adicionar" %}" class="btn btn-large btn-success"><i class="icon icon-plus icon-white"></i> Adicionar</a>
+        {% endif %}
+        
+    </form>
+
+    {% if cliente_q %}
+    {% if preclientes %}
+        <a href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}" class="btn btn-small btn-primary"><i class="icon-plus icon-white"></i> adicionar pré cliente</a>
+    {% endif %}
+    <div class="tabela-preclientes">
+        <table class="table table-hover table-striped table-condensed">
+        <thead>
+            <caption><h4 class="alert">Pré Clientes</h4></caption>
+            <tr>
+                <th>Pré Cliente</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+        
+            {% for cliente in preclientes %}
+      
+            <tr>
+                <td>{{cliente.nome}}</td>
+                <td>
+                    <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i> ocorrência</a>
+                </td>
+            </tr>
+            {% empty %}
+        
+            <tr>
+                <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+                <td>{% if cliente_q %}
+                    <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>
+                    <a class="btn btn-large btn-info" href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}"><i class="icon icon-plus icon-white "></i> Adicionar Pré Cliente</a>
+                </td>
+            </tr>
+
+            {% endfor %}
+        
+        
+        </tbody>
+    </table>
+    </div>
+    <hr />
+    <div class="tabela-cliente">
+        <table class="table table-hover table-striped table-condensed">
+        <thead>
+            <caption><h4 class="alert alert-success" >Clientes</h4></caption>
+            <tr>
+                <th>Cliente</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cliente in clientes %}
+      
+            <tr>
+                <td>{% if cliente.tipo == "pf" %}
+                        <span class="label">{{cliente.tipo|upper}}</span>
+                    {% else %}
+                        <span class="label label-success">{{cliente.tipo|upper}}</span> 
+                    {% endif %}
+                    {{cliente.nome}}
+                </td>
+                <td>
+                    <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?cliente={{cliente.id}}"><i class="icon-bell-alt"></i> ocorrência</a>
+                    <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?cliente={{cliente.id}}"><i class="icon-file-alt"></i> proposta</a>
+                </td>
+            </tr>
+            {% empty %}
+        
+            <tr>
+                                        <td class="alert alert-info"><strong>Nenhum Encontrado!</strong></td>
+                <td>            {% if cliente_q %}
+                    <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% endif %}
+</div>
+
 {% endblock %}
 
 {% block auxiliar-menu %}

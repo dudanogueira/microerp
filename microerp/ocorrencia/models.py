@@ -63,7 +63,7 @@ class Ocorrencia(models.Model):
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     contato = models.TextField(blank=True, null=True)
     # ocorrencia
-    prioridade = models.IntegerField(blank=False, null=False, default=10, choices=OCORRENCIA_PRIORIDADE_CHOICES)
+    prioridade = models.IntegerField(blank=False, null=False, default=5, choices=OCORRENCIA_PRIORIDADE_CHOICES)
     descricao = models.TextField(u"Descrição", blank=False, null=False)
     tipo = models.ForeignKey('TipoOcorrencia', verbose_name="Tipo de Ocorrência")
     status = models.CharField(blank=False, max_length=100, choices=OCORRENCIA_STATUS_CHOICES, default="aberta")
@@ -103,7 +103,7 @@ class Ocorrencia(models.Model):
         if self.status == 'resolvida' and not self.resolucao_final:
             raise ValidationError(u"Para alterar o status para Resolvida, deve ser preenchido o campo Resolução Final")
     class Meta:
-        ordering = ['criado',]
+        ordering = ['prioridade', 'criado',]
             
 
 class TipoOcorrencia(models.Model):
