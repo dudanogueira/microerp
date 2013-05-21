@@ -8,15 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding field 'Ocorrencia.contato_iniciado'
-        db.add_column(u'ocorrencia_ocorrencia', 'contato_iniciado',
-                      self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True),
+        # Adding field 'Solicitacao.prazo'
+        db.add_column(u'solicitacao_solicitacao', 'prazo',
+                      self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 5, 30, 0, 0)),
                       keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting field 'Ocorrencia.contato_iniciado'
-        db.delete_column(u'ocorrencia_ocorrencia', 'contato_iniciado')
+        # Deleting field 'Solicitacao.prazo'
+        db.delete_column(u'solicitacao_solicitacao', 'prazo')
 
 
     models = {
@@ -91,50 +91,11 @@ class Migration(SchemaMigration):
             'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'tipo': ('django.db.models.fields.CharField', [], {'max_length': '10'})
         },
-        u'ocorrencia.ocorrencia': {
-            'Meta': {'ordering': "['criado']", 'object_name': 'Ocorrencia'},
-            'adicionado_por': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'ocorrencia_adicionada_set'", 'null': 'True', 'to': u"orm['account.User']"}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'cliente': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Cliente']", 'null': 'True', 'blank': 'True'}),
-            'contato': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'contato_iniciado': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'correcao_iniciada': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'departamento_direto': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'ocorrencia_direta_set'", 'to': u"orm['rh.Departamento']"}),
-            'departamentos_afetados': ('django.db.models.fields.related.ManyToManyField', [], {'blank': 'True', 'related_name': "'ocorrencia_afetada_set'", 'null': 'True', 'symmetrical': 'False', 'to': u"orm['rh.Departamento']"}),
-            'descricao': ('django.db.models.fields.TextField', [], {}),
-            'despachado_data': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'despachado_por': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'ocorrencia_despachado_set'", 'null': 'True', 'to': u"orm['account.User']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nao_procede_porque': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'precliente': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.PreCliente']", 'null': 'True', 'blank': 'True'}),
-            'prioridade': ('django.db.models.fields.IntegerField', [], {'default': '10'}),
-            'procede': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'providencia': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'resolucao_final': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'resolucao_final_data': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'responsavel_contato': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'ocorrencia_contato_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            'responsavel_correcao': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'ocorrencia_correcao_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            'responsavel_visto': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'ocorrencia_visto_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'aberta'", 'max_length': '100'}),
-            'tipo': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['ocorrencia.TipoOcorrencia']"})
-        },
-        u'ocorrencia.perfilacessoocorrencia': {
-            'Meta': {'object_name': 'PerfilAcessoOcorrencia'},
-            'analista': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'gerente': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['account.User']", 'unique': 'True'})
-        },
-        u'ocorrencia.tipoocorrencia': {
-            'Meta': {'object_name': 'TipoOcorrencia'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
         u'rh.cargo': {
             'Meta': {'object_name': 'Cargo'},
+            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
+            'competencias': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rh.Competencia']", 'symmetrical': 'False'}),
+            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
             'departamento': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Departamento']"}),
             'descricao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'dias_renovacao_exames': ('django.db.models.fields.IntegerField', [], {'default': '365'}),
@@ -144,6 +105,11 @@ class Migration(SchemaMigration):
             'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'periculosidade': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
             'salario_referencia': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
+        },
+        u'rh.competencia': {
+            'Meta': {'object_name': 'Competencia'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
         },
         u'rh.departamento': {
             'Meta': {'object_name': 'Departamento'},
@@ -165,11 +131,12 @@ class Migration(SchemaMigration):
             'carteira_profissional_serie': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'cep': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'certificado_reservista': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
+            'competencias': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rh.Competencia']", 'symmetrical': 'False'}),
             'complemento': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
             'cpf': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
             'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
-            'escolaridade_conclusao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 5, 9, 0, 0)', 'null': 'True', 'blank': 'True'}),
+            'escolaridade_conclusao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 5, 20, 0, 0)', 'null': 'True', 'blank': 'True'}),
             'escolaridade_cursos': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'escolaridade_nivel': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
             'escolaridade_serie_inconclusa': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
@@ -217,7 +184,7 @@ class Migration(SchemaMigration):
             'fim': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
             'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inicio': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 5, 9, 0, 0)'})
+            'inicio': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 5, 20, 0, 0)'})
         },
         u'rh.tipodeexamemedico': {
             'Meta': {'object_name': 'TipoDeExameMedico'},
@@ -227,7 +194,51 @@ class Migration(SchemaMigration):
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
             'valor': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
+        },
+        u'solicitacao.perfilacessosolicitacao': {
+            'Meta': {'object_name': 'PerfilAcessoSolicitacao'},
+            'analista': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
+            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
+            'gerente': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['account.User']", 'unique': 'True'})
+        },
+        u'solicitacao.solicitacao': {
+            'Meta': {'ordering': "['prioridade', 'criado']", 'object_name': 'Solicitacao'},
+            'adicionado_por': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'solicitacao_adicionada_set'", 'null': 'True', 'to': u"orm['account.User']"}),
+            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
+            'cliente': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Cliente']", 'null': 'True', 'blank': 'True'}),
+            'contato': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'contato_realizado': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'correcao_iniciada': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
+            'departamento_direto': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'solicitacao_direta_set'", 'null': 'True', 'to': u"orm['rh.Departamento']"}),
+            'departamentos_afetados': ('django.db.models.fields.related.ManyToManyField', [], {'blank': 'True', 'related_name': "'solicitacao_afetada_set'", 'null': 'True', 'symmetrical': 'False', 'to': u"orm['rh.Departamento']"}),
+            'descricao': ('django.db.models.fields.TextField', [], {}),
+            'despachado_data': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'despachado_por': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'solicitacao_despachado_set'", 'null': 'True', 'to': u"orm['account.User']"}),
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'nao_procede_porque': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'prazo': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 5, 30, 0, 0)'}),
+            'precliente': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.PreCliente']", 'null': 'True', 'blank': 'True'}),
+            'prioridade': ('django.db.models.fields.IntegerField', [], {'default': '5'}),
+            'procede': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
+            'providencia': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'resolucao_final': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'resolucao_final_data': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'responsavel_contato': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'solicitacao_contato_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
+            'responsavel_correcao': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'solicitacao_correcao_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
+            'responsavel_visto': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'solicitacao_visto_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
+            'status': ('django.db.models.fields.CharField', [], {'default': "'aberta'", 'max_length': '100'}),
+            'tipo': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['solicitacao.TipoSolicitacao']"}),
+            'visto_data': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'})
+        },
+        u'solicitacao.tiposolicitacao': {
+            'Meta': {'object_name': 'TipoSolicitacao'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
         }
     }
 
-    complete_apps = ['ocorrencia']
+    complete_apps = ['solicitacao']

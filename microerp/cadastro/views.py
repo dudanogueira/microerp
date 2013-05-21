@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
@@ -16,7 +17,7 @@ from rh.models import Funcionario, Departamento
 from cadastro.models import Cliente, PreCliente
 from cadastro.models import Recado
 
-from ocorrencia.models import Ocorrencia
+from solicitacao.models import Solicitacao
 
 from django import forms
 #
@@ -28,12 +29,12 @@ from django_select2.widgets import Select2Widget
 from django_select2 import AutoModelSelect2Field
 
 
-class AdicionarOcorrenciaForm(forms.ModelForm):
+class AdicionarSolicitacaoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         cliente = kwargs.pop('cliente')    
         precliente = kwargs.pop('precliente')
-        super(AdicionarOcorrenciaForm, self).__init__(*args, **kwargs)
+        super(AdicionarSolicitacaoForm, self).__init__(*args, **kwargs)
         self.fields['contato'].label = "Contato / Reclamante"
         self.fields['cliente'].widget.attrs['class'] = 'select2'
         self.fields['precliente'].widget.attrs['class'] = 'select2'
@@ -52,8 +53,9 @@ class AdicionarOcorrenciaForm(forms.ModelForm):
         
     
     class Meta:
-        model = Ocorrencia
+        model = Solicitacao
         fields = 'descricao', 'cliente', 'precliente', 'contato', 'tipo',
+
 
 class AdicionarRecadoForm(forms.ModelForm):
     
@@ -76,6 +78,8 @@ class AdicionarRecadoForm(forms.ModelForm):
         fields = ('texto', 'tipo', 'tipo_outros', 'remetente', 'cliente', 'destinatario', 'avisar_departamento')
     
 
+
+
 class PreClienteAdicionarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         sugestao = kwargs.pop('sugestao')
@@ -86,10 +90,11 @@ class PreClienteAdicionarForm(forms.ModelForm):
         model = PreCliente
         fields = 'nome', 'contato', 'dados'
 
+
+
 #
 # DECORATORS
 #
-
 def possui_perfil_acesso_recepcao(user, login_url="/"):
     try:
         if user.perfilacessorecepcao:
@@ -97,6 +102,10 @@ def possui_perfil_acesso_recepcao(user, login_url="/"):
     except:
         return False
 
+
+#
+# VIEWS
+#
 @user_passes_test(possui_perfil_acesso_recepcao)
 def home(request):
     # widget funcionario
@@ -110,14 +119,17 @@ def home(request):
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     return render_to_response('frontend/cadastro/cadastro-home.html', locals(), context_instance=RequestContext(request),)
 
+
 @user_passes_test(possui_perfil_acesso_recepcao)
 def funcionarios_contatos_ver(request, funcionario_id):
     return render_to_response('frontend/cadastro/cadastro-funcionario-ver-contatos.html', locals(), context_instance=RequestContext(request),)
     
+
 @user_passes_test(possui_perfil_acesso_recepcao)
 def funcionarios_listar(request):
     funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/cadastro/cadastro-funcionario-listar.html', locals(), context_instance=RequestContext(request),)
+
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def funcionarios_recados_listar(request, funcionario_id):
@@ -125,6 +137,7 @@ def funcionarios_recados_listar(request, funcionario_id):
     nao_lidos = Recado.objects.filter(destinatario=funcionario, lido=False)
     lidos = Recado.objects.filter(destinatario=funcionario, lido=True)
     return render_to_response('frontend/cadastro/cadastro-funcionario-recados.html', locals(), context_instance=RequestContext(request),)
+
 
 @user_passes_test(possui_perfil_acesso_recepcao)   
 def funcionarios_recados_adicionar(request, funcionario_id):
@@ -188,6 +201,17 @@ def funcionarios_recados_adicionar(request, funcionario_id):
         form = AdicionarRecadoForm(destinatario=funcionario.id, remetente=remetente_id)
     return render_to_response('frontend/cadastro/cadastro-funcionario-recados-adicionar.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_recepcao)
+def recados_gerenciar(request):
+    nao_lidos = Recado.objects.filter(lido=False)
+    return render_to_response('frontend/cadastro/cadastro-gerenciar-recados.html', locals(), context_instance=RequestContext(request),)
+
+
+#
+# VIEWS EXTERNAS / COM MODULOS
+#
+
 @user_passes_test(possui_perfil_acesso_recepcao)
 def preclientes_adicionar(request):
     if request.POST:
@@ -208,25 +232,28 @@ def preclientes_adicionar(request):
     return render_to_response('frontend/cadastro/cadastro-preclientes-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 
+
 @user_passes_test(possui_perfil_acesso_recepcao)
-def ocorrencia_adicionar(request):
+def solicitacao_adicionar(request):
+    if not 'solicitacao' in settings.INSTALLED_APPS:
+            messages.error(request, u'Modulo de Solicitações não instalado')
+            return redirect(reverse('cadastro:home'))
     cliente_id = request.GET.get('cliente', None)
     precliente_id = request.GET.get('precliente', None)
     if request.POST:
-        form = AdicionarOcorrenciaForm(request.POST, cliente=cliente_id, precliente=precliente_id)
+        form = AdicionarSolicitacaoForm(request.POST, cliente=cliente_id, precliente=precliente_id)
         if form.is_valid():
-            ocorrencia = form.save()
-            messages.success(request, 'Ocorrência #%d criada com sucesso!' % ocorrencia.id)
+            solicitacao = form.save()
+            messages.success(request, 'Solicitação #%d criada com sucesso!' % solicitacao.id)
             return redirect(reverse('cadastro:home'))
     else:
-        form = AdicionarOcorrenciaForm(cliente=cliente_id, precliente=precliente_id)
-    return render_to_response('frontend/cadastro/cadastro-ocorrencia-adicionar.html', locals(), context_instance=RequestContext(request),)
+        form = AdicionarSolicitacaoForm(cliente=cliente_id, precliente=precliente_id)
+    return render_to_response('frontend/cadastro/cadastro-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+
+
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def preclientes_listar(request):
     return render_to_response('frontend/cadastro/cadastro-preclientes-listar.html', locals(), context_instance=RequestContext(request),)
-        
-@user_passes_test(possui_perfil_acesso_recepcao)
-def recados_gerenciar(request):
-    nao_lidos = Recado.objects.filter(lido=False)
-    return render_to_response('frontend/cadastro/cadastro-gerenciar-recados.html', locals(), context_instance=RequestContext(request),)
+

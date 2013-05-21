@@ -27,25 +27,25 @@ from django.db import models
 from django.core.exceptions import ValidationError
 
 
-OCORRENCIA_STATUS_CHOICES = (
-    ('aberta', u'Ocorrência Aberta'),
-    ('analise', u'Ocorrência em Análise'),
-    ('contato', u'Ocorrência em Contato'),
-    ('visto', u'Ocorrência em Visto'),
-    ('resolvida', u'Ocorrência Resolvida'),
-    ('naoresolvido', u'Ocorrência Não Resolvida'),
+SOLICITACAO_STATUS_CHOICES = (
+    ('aberta', u'Solicitação Aberta'),
+    ('analise', u'Solicitação em Análise'),
+    ('contato', u'Solicitação em Contato'),
+    ('visto', u'Solicitação em Visto'),
+    ('resolvida', u'Solicitação Resolvida'),
+    ('naoresolvido', u'Solicitação Não Resolvida'),
 )
 
-OCORRENCIA_PRIORIDADE_CHOICES = (
+SOLICITACAO_PRIORIDADE_CHOICES = (
     (0, u'Baixa Prioridade'),
     (5, u'Média Prioridade'),
     (10, u'Alta Prioridade'),
 )
 
-class Ocorrencia(models.Model):
+class Solicitacao(models.Model):
     
     def __unicode__(self):
-        return u"Ocorrência ID#%d status: %s" % (self.id, self.status)
+        return u"Solicitação ID#%d status: %s" % (self.id, self.status)
         
     def reclamante(self):
         return self.cliente or self.precliente or self.contato
@@ -62,29 +62,31 @@ class Ocorrencia(models.Model):
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     contato = models.TextField(blank=True, null=True)
-    # ocorrencia
-    prioridade = models.IntegerField(blank=False, null=False, default=5, choices=OCORRENCIA_PRIORIDADE_CHOICES)
+    # solicitacao
+    prioridade = models.IntegerField(blank=False, null=False, default=5, choices=SOLICITACAO_PRIORIDADE_CHOICES)
     descricao = models.TextField(u"Descrição", blank=False, null=False)
-    tipo = models.ForeignKey('TipoOcorrencia', verbose_name="Tipo de Ocorrência")
-    status = models.CharField(blank=False, max_length=100, choices=OCORRENCIA_STATUS_CHOICES, default="aberta")
+    tipo = models.ForeignKey('TipoSolicitacao', verbose_name="Tipo de Solicitação")
+    status = models.CharField(blank=False, max_length=100, choices=SOLICITACAO_STATUS_CHOICES, default="aberta")
     procede = models.BooleanField(default=True)
     nao_procede_porque = models.TextField(blank=True)
     providencia = models.TextField(blank=True)
-    resolucao_final = models.TextField(blank=True)
+    # prazo
+    prazo = models.DateField(default=datetime.datetime.today()+datetime.timedelta(days=10))
+    resolucao_final = models.TextField("Resolução Final", blank=True)
     resolucao_final_data = models.DateTimeField(blank=True, null=True)
     # departamento / abrangencia
-    departamentos_afetados = models.ManyToManyField('rh.Departamento', related_name="ocorrencia_afetada_set", blank=True, null=True)
-    departamento_direto = models.ForeignKey('rh.Departamento', related_name="ocorrencia_direta_set", blank=True, null=True)
+    departamentos_afetados = models.ManyToManyField('rh.Departamento', related_name="solicitacao_afetada_set", blank=True, null=True)
+    departamento_direto = models.ForeignKey('rh.Departamento', related_name="solicitacao_direta_set", blank=True, null=True)
     # responsavel correcao
-    responsavel_correcao = models.ForeignKey('rh.Funcionario', related_name="ocorrencia_correcao_set", blank=True, null=True)
+    responsavel_correcao = models.ForeignKey('rh.Funcionario', related_name="solicitacao_correcao_set", blank=True, null=True)
     correcao_iniciada = models.DateTimeField(blank=True, null=True)
-    responsavel_contato = models.ForeignKey('rh.Funcionario', related_name="ocorrencia_contato_set", blank=True, null=True)
+    responsavel_contato = models.ForeignKey('rh.Funcionario', related_name="solicitacao_contato_set", blank=True, null=True)
     contato_realizado = models.DateTimeField(blank=True, null=True)
-    responsavel_visto = models.ForeignKey('rh.Funcionario', related_name="ocorrencia_visto_set", blank=True, null=True)
+    responsavel_visto = models.ForeignKey('rh.Funcionario', related_name="solicitacao_visto_set", blank=True, null=True)
     visto_data = models.DateTimeField(blank=True, default=datetime.datetime.now)
     # metadata
-    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="ocorrencia_adicionada_set",  blank=True, null=True)
-    despachado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="ocorrencia_despachado_set",  blank=True, null=True)
+    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="solicitacao_adicionada_set",  blank=True, null=True)
+    despachado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="solicitacao_despachado_set",  blank=True, null=True)
     despachado_data = models.DateTimeField(blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -92,7 +94,7 @@ class Ocorrencia(models.Model):
     def clean(self):
         # se nao procede, motivo obrigatorio
         if not self.procede and not self.nao_procede_porque:
-            raise ValidationError(u"Se a ocorrência não procede, deve ser informado um motivo.")
+            raise ValidationError(u"Se a solicitação não procede, deve ser informado um motivo.")
         # deve haver pelo menos 1 contato
         if not self.cliente and not self.precliente and not self.contato:
             raise ValidationError(u"Se não houver um Cliente ou Pré Cliente Relacionado, deve haver pelo menos um contato")
@@ -106,7 +108,7 @@ class Ocorrencia(models.Model):
         ordering = ['prioridade', 'criado',]
             
 
-class TipoOcorrencia(models.Model):
+class TipoSolicitacao(models.Model):
     
     def __unicode__(self):
         return self.nome
@@ -114,12 +116,12 @@ class TipoOcorrencia(models.Model):
     nome = models.CharField(blank=True, max_length=100)
 
 
-class PerfilAcessoOcorrencia(models.Model):
-    '''Perfil de Acesso ao RH'''
+class PerfilAcessoSolicitacao(models.Model):
+    '''Perfil de Acesso ao módulo Solicitação'''
     
     class Meta:
-        verbose_name = u"Perfil de Acesso às Ocorrências"
-        verbose_name_plural = u"Perfis de Acesso às Ocorrências"
+        verbose_name = u"Perfil de Acesso à Solicitação"
+        verbose_name_plural = u"Perfis de Acesso às Solicitação"
     
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)

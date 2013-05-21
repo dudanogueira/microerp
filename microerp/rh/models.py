@@ -41,7 +41,7 @@ from workdays import networkdays
 
 from decimal import Decimal
 
-from ocorrencia.models import Ocorrencia
+from solicitacao.models import Solicitacao
 
 horas_por_dia = getattr(settings, 'HORAS_TRABALHADAS_POR_DIA', 8.4)
 
@@ -249,7 +249,7 @@ class Funcionario(models.Model):
 
     # BANCO DE HORAS
     def banco_de_horas_ultimo_lancamento(self):
-        ultimo = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).order_by('criado').all()
+        ultimo = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).order_by('-criado').all()
         if ultimo:
             return ultimo[0]
         else:
@@ -306,9 +306,9 @@ class Funcionario(models.Model):
             )
         return colegas_dpto
     
-    # OCORRENCIA
-    def ocorrencias_total(self):
-        q = Ocorrencia.objects.filter(
+    # SOLICITACAO
+    def solicitacoes_total(self):
+        q = Solicitacao.objects.filter(
             models.Q(status="analise", correcao_iniciada=None, responsavel_correcao=self) |
             models.Q(status="contato", contato_realizado=None, responsavel_contato=self) |
             models.Q(status="visto", responsavel_visto=self)
@@ -316,8 +316,8 @@ class Funcionario(models.Model):
         return q
     
     
-    def ocorrencias_correcao_aberto(self):
-        return self.ocorrencia_correcao_set.filter(status="analise", correcao_iniciada=None)
+    def solicitacoes_correcao_aberto(self):
+        return self.solicitacao_correcao_set.filter(status="analise", correcao_iniciada=None)
         
     
     uuid = UUIDField()
@@ -380,6 +380,8 @@ class Funcionario(models.Model):
     local_de_trabalho = models.TextField(blank=True)
     membro_cipa = models.BooleanField(default=True)
     periodo_trabalhado_corrente = models.OneToOneField("PeriodoTrabalhado", blank=True, null=True, related_name="periodo_trabalhado_corrente")
+    # competencia
+    competencias = models.ManyToManyField('Competencia')
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -459,6 +461,12 @@ class Cargo(models.Model):
     # exames padrao deste cargo
     exame_medico_padrao = models.ManyToManyField('TipoDeExameMedico')
     dias_renovacao_exames = models.IntegerField(blank=False, null=False, default=365)
+    # competencia
+    competencias = models.ManyToManyField('Competencia')
+    # metas
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
 
 class Departamento(models.Model):
     
@@ -789,6 +797,9 @@ class PerfilAcessoRH(models.Model):
 
 class Feriado(models.Model):
     
+    def __unicode__(self):
+        return self.nome
+    
     class Meta:
         ordering = ['data']
 
@@ -796,10 +807,19 @@ class Feriado(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     data = models.DateField()
     importado_por_sync = models.BooleanField(default=False)
-    uid = models.CharField(blank=True, max_length=100) # caso tenha sido importado
-    
+    # caso tenha sido importado
+    uid = models.CharField(blank=True, max_length=100)
+    # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class Competencia(models.Model):
+    
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
+
 
 # SIGNALS
 

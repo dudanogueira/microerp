@@ -18,7 +18,8 @@ urlpatterns = patterns('',
     url(r'^funcionarios/relatorios/ativos/$', 'rh.views.funcionarios_relatorios_listar_ativos', name='funcionarios_listar_ativos'),
 
     # funcionarios > relatorios > aniversários
-    url(r'^funcionarios/relatorios/ativos/aniversarios$', 'rh.views.funcionarios_relatorios_listar_ativos_aniversarios', name='funcionarios_relatorios_listar_ativos_aniversarios'),
+    url(r'^funcionarios/relatorios/ativos/aniversarios$', 'rh.views.funcionarios_relatorios_listar_ativos_aniversarios', name='funcionarios_relatorios_listar_ativos_aniversarios'),    
+    url(r'^competencias/matriz/$', 'rh.views.matriz_de_competencias', name='matriz_de_competencias'),
     
     # exames medicos
     url(r'^exames_medicos/$', 'rh.views.exames_medicos', name='exames_medicos'),

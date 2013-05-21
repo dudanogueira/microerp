@@ -1,0 +1,87 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Solicitação{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-bell-alt"></i> Solicitações</h1>
+
+<div class="row-fluid">
+    
+    <div class="span2 alert alert-info" rel="popover" data-placement="bottom" data-toggle="popover" data-html="true" data-trigger="hover" data-content='    {% for solicitacao in solicitacoes_aberta %}
+        <strong class="badge badge-info"><i class="icon-bell"></i> #{{solicitacao.id}}</strong>
+        {% empty %}
+        <small><em>Nenhuma Solicitação</em></small>
+    {%endfor%}
+' data-original-title="Solicitações a Despachar" >
+        <i class="icon-bullhorn icon-2x pull-left"></i>
+        <h4>Despachar</h4>
+        <span class="badge badge-info">{{solicitacoes_aberta.count}}</span>
+    </div>
+    
+    <div class="span2 alert alert-success" rel="popover" data-placement="bottom" data-toggle="popover" data-html="true" data-trigger="hover" data-content='
+    {% for solicitacao in solicitacoes_analise %}
+        <strong class="badge badge-success"><i class="icon-bell"></i> #{{solicitacao.id}}</strong>
+    {% empty %}
+    <small><em>Nenhuma Solicitação</em></small>
+    {%endfor%}
+    ' data-original-title="Solicitações em Análise">
+        <i class="icon-beaker icon-2x pull-left"></i>
+        <h4>Em Análise</h4>
+        <span class="badge badge-success">{{solicitacoes_analise.count}}</span>
+        
+    </div>
+    
+    <div class="span2 alert" rel="popover" data-placement="bottom" data-toggle="popover" data-html="true" data-trigger="hover" data-content='
+    {% for solicitacao in solicitacoes_contato %}
+        <strong class="badge badge-warning"><i class="icon-bell"></i> #{{solicitacao.id}}</strong>
+    {% empty %}
+    <small><em>Nenhuma Solicitação</em></small>
+    {%endfor%}
+    ' data-original-title="Solicitações em Contato" >
+        <i class="icon-phone icon-2x pull-left"></i>
+        <h4>Em Contato</h4>
+        <span class="badge badge-warning">{{solicitacoes_contato.count}}</span>
+    </div>
+    
+    <div class="span2" rel="popover" data-placement="bottom" data-toggle="popover" data-html="true" data-trigger="hover" data-content='
+    {% for solicitacao in solicitacoes_visto %}
+        <strong class="badge"><i class="icon-bell"></i> #{{solicitacao.id}}</strong>
+    {% empty %}
+    <small><em>Nenhuma Solicitação</em></small>
+    {%endfor%}
+    ' data-original-title="Solicitações em Visto">
+        <i class="icon-check icon-2x pull-left"></i>
+        <h4>Visto</h4>
+        <span class="badge">{{solicitacoes_visto.count}}</span>
+    </div>
+    
+    <div class="span4 alert alert-danger">
+        <i class="icon-remove icon-2x pull-left"></i>
+        <h4>Fechadas</h4>
+        
+        <span class="label label-success pull-right">{{solicitacoes_fechada_procede_count}} Procede</span><br />
+        <span class="label label-important pull-right">{{solicitacoes_fechada_nao_procede_count}} Não Procede</span>
+    </div>
+    
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-solicitacao-home, #top-menu-solicitacao").addClass("active");
+    $("div[data-toggle=popover]")
+          .popover()
+          .click(function(e) {
+            e.preventDefault()
+          })
+    
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/solicitacao/solicitacao-menu.html" %}
+{% endblock%}

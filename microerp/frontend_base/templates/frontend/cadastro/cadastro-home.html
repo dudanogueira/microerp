@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load phonenumber_br %}
+{% load check_installed %}
 
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
@@ -101,7 +102,9 @@
                     <tr>
                         <td>{{cliente.nome}}</td>
                         <td>
-                            <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i> ocorrência</a>
+                        {% if "solicitacao"|is_installed_app %}
+                            <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i> solicitação</a>
+                        {% endif %}
                         </td>
                     </tr>
                     {% empty %}
@@ -147,7 +150,9 @@
                             {{cliente.nome}}
                         </td>
                         <td>
-                            <a class="btn" href="{% url "cadastro:ocorrencia_adicionar" %}?cliente={{cliente.id}}"><i class="icon-bell-alt"></i> ocorrência</a>
+                        {% if "solicitacao"|is_installed_app %}
+                        <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?cliente={{cliente.id}}"><i class="icon-bell-alt"></i> solicitação</a>
+                        {% endif %}
                         </td>
                     </tr>
                     {% empty %}

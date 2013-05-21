@@ -15,15 +15,25 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'microerp.db',
+        'NAME': 'microerp.sqlite3.db',
         'USER': '',
         'PASSWORD': '',
-        'HOST': 'localhost',
+        'HOST': '',
         'PORT': '',
     }
 }
 
 
+# EMAIL CONFS
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_HOST_USER = 'your@gmail.com'
+#EMAIL_HOST_PASSWORD = 'password'
+#EMAIL_PORT = 587
+#EMAIL_USE_TLS = True
+#DEFAULT_FROM_EMAIL = 'MAIL ACCOUNT <your@gmail.com>'
+
+
+HORAS_TRABALHADAS_POR_DIA = 8.4
 
 # CUSTOMS / deprecated in Django 1.5
 AUTH_USER_MODEL = 'account.User'
@@ -32,6 +42,9 @@ LOGIN_REDIRECT_URL = '/'
 
 # APLICATIVO DE FRONTEND
 APP_DE_FRONTEND = 'frontend_base'
+
+# ISTO MOSTRA PRO DJANGO ONDE BUSCAR O __unicode__ padrao do Account.User
+USER_UNICODE_ATTRIBUTE = 'funcionario'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -54,7 +67,7 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = True
+USE_TZ = False
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -137,8 +150,12 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # front end
+    'frontend_base',
     # admin
     'django_admin_bootstrapped',
+    'django_select2',
+    # customizado
     'django.contrib.admin',
     'django.contrib.admindocs',
     # apps terceiros
@@ -151,9 +168,8 @@ INSTALLED_APPS = (
     'rh',
     'almoxarifado',
     'comercial',
+    'solicitacao',
     'account',
-    # customizado
-    'frontend_base',
 )
 
 # A sample logging configuration. The only tangible logging

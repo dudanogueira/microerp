@@ -4,4 +4,10 @@ from django.conf.urls import patterns, include, url
 # urls do Cadastro
 urlpatterns = patterns('',
     url(r'^$', 'comercial.views.home', name='home'),
+    url(r'^precliente/(?P<pre_cliente_id>[0-9]+)/converter/$', 'comercial.views.precliente_converter', name='precliente_converter'),
+    # cliente
+    url(r'^cliente/(?P<cliente_id>[0-9]+)/$', 'comercial.views.cliente_ver', name='cliente_ver'),
+    # solicitações
+    url(r'^solicitacao/adicionar/$', 'comercial.views.solicitacao_adicionar', name='solicitacao_adicionar'),
+    
 )

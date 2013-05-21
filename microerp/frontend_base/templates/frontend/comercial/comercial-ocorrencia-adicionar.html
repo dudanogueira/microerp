@@ -1,10 +1,10 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 
-<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon icon-th"></i> <i class="icon icon-bell-alt"></i> Adicionar Ocorrência</h1>
+<h1><i class="icon icon-th"></i> <i class="icon icon-bell-alt"></i> Adicionar Solicitação</h1>
 <form method="POST">{% csrf_token %}
     
     <div class="row-fluid">
@@ -25,9 +25,9 @@
 
 <script>
 $(document).ready(function() {
-    $("#menu-cadastro-ocorrencia-adicionar, #top-menu-cadastro").addClass("active");
+    $("#menu-comercial-adicionar-solicitacao, #top-menu-comercial").addClass("active");
 });
 </script>
 {% endaddtoblock %}
-{% include "frontend/cadastro/cadastro-menu.html" %}
+{% include "frontend/comercial/comercial-menu.html" %}
 {% endblock%}

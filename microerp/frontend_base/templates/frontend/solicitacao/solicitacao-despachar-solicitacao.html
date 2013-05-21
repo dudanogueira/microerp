@@ -1,11 +1,11 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 
-<title>{%block title %}{{block.super}} - Ocorrência: Despachar{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Solicitação: Despachar{% endblock %}</title>
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-bullhorn"></i> Despachar Ocorrência #{{ocorrencia.id}}</h1>
+<h1><i class="icon-th"></i> <i class="icon-bullhorn"></i> Despachar Solicitação #{{solicitacao.id}}</h1>
 
 <div class="row-fluid">
     
@@ -13,20 +13,20 @@
         
         <p>
             <i class="icon-briefcase"></i>
-            {{ocorrencia.reclamante}}
+            {{solicitacao.reclamante}}
         </p>
 
         <p>
             <i class="icon-user"></i> <i class="icon-wrench"></i>
-            <strong>Corretor</strong>: {{ocorrencia.responsavel_correcao}}
+            <strong>Corretor</strong>: {{solicitacao.responsavel_correcao}}
         </p>
         <p>
             <i class="icon-user"></i> <i class="icon-phone"></i>
-            <strong>Ponto de Contato</strong>: {{ocorrencia.responsavel_contato}}
+            <strong>Ponto de Contato</strong>: {{solicitacao.responsavel_contato}}
         </p>
         <p>
             <i class="icon-user"></i> <i class="icon-check"></i>
-            <strong>Visto</strong>: {{ocorrencia.responsavel_contato}}
+            <strong>Visto</strong>: {{solicitacao.responsavel_contato}}
         </p>
         
     </div>
@@ -34,7 +34,7 @@
     <div class="span6">
         
         <p class="alert alert-info">
-            {{ocorrencia.descricao}}
+            {{solicitacao.descricao}}
         </p>
         
         
@@ -51,18 +51,18 @@
     
     <div class="span4">
         <h3><i class=" icon-wrench"></i> Providência</h3>    
-        <p>{{ocorrencia_form.providencia}}</p>
+        <p>{{solicitacao_form.providencia}}</p>
             
     </div>
     
     <div class="span8">
         <h3><i class="icon-sitemap"></i> Abrangência</h3>    
             <h6>Departamento Direto (Obrigatório)</h6>
-            {{ocorrencia_form.departamento_direto}}
+            {{solicitacao_form.departamento_direto}}
             <h6>Departamentos Afetados (Opcional)</h6>
-            {{ocorrencia_form.departamentos_afetados}}
+            {{solicitacao_form.departamentos_afetados}}
             <h6><i class="icon-tag"></i> Prioridade</h6>
-            <p>{{ocorrencia_form.prioridade}}</p>
+            <p>{{solicitacao_form.prioridade}}</p>
             <p>    <input class="btn btn-primary" type="submit" name="confirmar" value="confirmar">
             </p>
         
@@ -86,9 +86,9 @@
     <script>
     $(document).ready(function() {
         $(".select2").select2();
-        $("#menu-ocorrencia-despachar, #top-menu-ocorrencia").addClass("active");
+        $("#menu-solicitacao-despachar, #top-menu-solicitacao").addClass("active");
     });
     </script>
     {% endaddtoblock %}
-    {% include "frontend/ocorrencia/ocorrencia-menu.html" %}
+    {% include "frontend/solicitacao/solicitacao-menu.html" %}
     {% endblock%}

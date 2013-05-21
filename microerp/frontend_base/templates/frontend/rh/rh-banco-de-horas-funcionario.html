@@ -8,39 +8,39 @@
 <h2>Banco de Horas</h2>
 <div class="alert alert-info">
     {% thumbnail funcionario.foto "50x50" crop="center" as im %}
-          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-   {% endthumbnail %}
+    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+    {% endthumbnail %}
     
     <strong>Admissão</strong>:  {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}
     ||     <strong>Saldo</strong>:  <span class="badge badge-{% if funcionario.banco_de_horas_saldo > 0 %}success{%else%}important{%endif%}">{{funcionario.banco_de_horas_saldo|floatformat:1}}</span>
     ||
-        <strong>Horas Esperadas</strong>:  {{funcionario.banco_de_horas_esperada|floatformat:1}}
+    <strong>Horas Esperadas</strong>:  {{funcionario.banco_de_horas_esperada|floatformat:1}}
     ||
-        <strong>Horas Trabalhadas</strong>:  {{funcionario.banco_de_horas_trabalhadas|floatformat:1}}
+    <strong>Horas Trabalhadas</strong>:  {{funcionario.banco_de_horas_trabalhadas|floatformat:1}}
 
 </div>
 <h2>Folhas Abertas</h2>
 {% for folha in folhas_abertas %}
 <div class="well">
-<h2 class="alert alert-{% if folha.encerrado%}success{%else%}error{%endif%}">Folha #{{folha.id}} - Referência: {{folha.data_referencia|date:"b"|capfirst}}/{{folha.data_referencia.year}}</h2>
-<p><strong>Situação da folha:</strong>
-{% if folha.encerrado%}
-    <span class="label label-success">folha encerrada</span>
-{%else%}
-    <span class="label label-important">folha aberta</span>
-{%endif%}
+    <h2 class="alert alert-{% if folha.encerrado%}success{%else%}error{%endif%}">Folha #{{folha.id}} - Referência: {{folha.data_referencia|date:"b"|capfirst}}/{{folha.data_referencia.year}}</h2>
+    <p><strong>Situação da folha:</strong>
+        {% if folha.encerrado%}
+        <span class="label label-success">folha encerrada</span>
+        {%else%}
+        <span class="label label-important">folha aberta</span>
+        {%endif%}
 
-{% if folha.autorizado %}
-    <span class="label label-info">folha autorizada</span>
-{%else%}
-    <span class="label label-important">folha não revisada</span>
-{%endif%}
-</p>
-<p>
-{% if request.user.perfilacessorh.gerente and not folha.encerrado and folha.entradafolhadeponto_set.count %}
- <a href="{% url "rh:controle_banco_de_horas_do_funcionario_gerenciar" funcionario.id folha.id %}" class="btn btn-large btn-success"><i class="icon-thumbs-up icon-white"></i> Fechar e Autorizar esta Folha</a>
-{% endif %}
-</p>
+        {% if folha.autorizado %}
+        <span class="label label-info">folha autorizada</span>
+        {%else%}
+        <span class="label label-important">folha não revisada</span>
+        {%endif%}
+    </p>
+    <p>
+        {% if request.user.perfilacessorh.gerente and not folha.encerrado and folha.entradafolhadeponto_set.count %}
+        <a href="{% url "rh:controle_banco_de_horas_do_funcionario_gerenciar" funcionario.id folha.id %}" class="btn btn-large btn-success"><i class="icon-thumbs-up icon-white"></i> Fechar e Autorizar esta Folha</a>
+        {% endif %}
+    </p>
 
     <ul>
         {% for entrada in folha.entradafolhadeponto_set.all %}
@@ -54,28 +54,24 @@
     {% if request.user.perfilacessorh.gerente and not folha.encerrado %}
     {# ADICIONAR OUTRA ENTRADA DE FOLHA DE PONTO #}
     <hr />
-    <div class="accordion" id="accordion2">
-      <div class="accordion-group">
-        <div class="accordion-heading in">
-          <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapseTwo">
-<i class="icon icon-plus"></i> Adicionar Nova Entrada na Folha #{{folha.id}}<br />
-          </a>
+    <div class="accordion" id="accordion{{folha.id}}">
+        <div class="accordion-group">
+            <div class="accordion-heading in">
+                <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse{{folha.id}}">
+                    <i class="icon icon-plus"></i> Adicionar Nova Entrada na Folha #{{folha.id}}<br />
+                </a>
+            </div>
+            <div id="collapse{{folha.id}}" class="accordion-body collapse {% if form_add_entrada_folha_ponto.errors %}in{%endif%}">
+                <div class="accordion-inner">          
+                    <form action="{% url "rh:controle_banco_de_horas_do_funcionario" folha.funcionario.id %}" method="post">
+                        {% csrf_token %}
+                        {{form_add_entrada_folha_ponto.as_p}}
+                        <input type="hidden" name="folha" value={{folha.id}}>
+                        <button name="adicionar_entrada_form" type="submit" class="btn btn-success">Adicionar</button>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div id="collapseTwo" class="accordion-body collapse {% if form_add_entrada_folha_ponto.errors %}in{%endif%}">
-          <div class="accordion-inner">
-              
-              <form action="{% url "rh:controle_banco_de_horas_do_funcionario" folha.funcionario.id %}" method="post">
-                  {% csrf_token %}
-              {{form_add_entrada_folha_ponto.as_p}}
-              <input type="hidden" name="folha" value={{folha.id}}>
-              <button name="adicionar_entrada_form" type="submit" class="btn btn-success">Adicionar</button>
-              </form>
-              
-              
-              
-          </div>
-        </div>
-      </div>
     </div>
     {% endif %}
     
@@ -92,16 +88,16 @@
 
 <h2>Folhas Fechadas</h2>
 {% for folha in folhas_fechadas %}
-    <div class="well well-small">
-        <span class="label">ID#{{folha.id}}</span> - <span class="badge badge-success">{{folha.total_horas}} horas</span>
-        {% if folha.arquivo %}
-        <a href="{{folha.arquivo.url}}" class="btn btn-medium btn-info">Arquivo Digital: {{folha.filename}}</a>
-        {% endif %}
-    </div>
+<div class="well well-small">
+    <span class="label">ID#{{folha.id}}</span> - {{folha.data_referencia.month}}/{{folha.data_referencia.year}} <span class="badge badge-success">{{folha.total_horas}} horas</span>
+    {% if folha.arquivo %}
+    <a href="{{folha.arquivo.url}}" class="btn btn-medium btn-info">Arquivo Digital: {{folha.filename}}</a>
+    {% endif %}
+</div>
 {% empty %}
-    <div class="alert alert-info">
-        Nenhuma Folha Fechada
-    </div>
+<div class="alert alert-info">
+    Nenhuma Folha Fechada
+</div>
     
     
 {% endfor %}

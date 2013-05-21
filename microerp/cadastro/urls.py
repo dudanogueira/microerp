@@ -12,6 +12,6 @@ urlpatterns = patterns('',
     url(r'^funcionarios/(?P<funcionario_id>[0-9]+)/recados/$', 'cadastro.views.funcionarios_recados_listar', name='funcionarios_recados_listar'),
     # pre clientes
     url(r'^preclientes/adicionar/$', 'cadastro.views.preclientes_adicionar', name='preclientes_adicionar'),
-    # ocorrencias
-    url(r'^ocorrencia/adicionar/$', 'cadastro.views.ocorrencia_adicionar', name='ocorrencia_adicionar'),
+    # solicitaçõs
+    url(r'^solicitacoes/adicionar/$', 'cadastro.views.solicitacao_adicionar', name='solicitacao_adicionar'),
 )

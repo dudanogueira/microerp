@@ -45,12 +45,12 @@ urlpatterns += patterns('',
     # modulo principal>recados
     url(r'^meus_recados/$', '%s.views.meus_recados' % app_frontend, name='meus_recados'),
     url(r'^meus_recados/(?P<recado_id>[0-9]+)/marcar/lido/$', '%s.views.meus_recados_marcar_lido' % app_frontend, name='meus_recados_marcar_lido'),
-    # modulo principal>ocorrencias
-    url(r'^minhas_ocorrencias/$', '%s.views.minhas_ocorrencias' % app_frontend, name='minhas_ocorrencias'),
-    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/resolvido/$', '%s.views.minhas_ocorrencias_resolvido' % app_frontend, name='minhas_ocorrencias_resolvido'),
-    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/abrir/correcao/$', '%s.views.minhas_ocorrencias_abrir_correcao' % app_frontend, name='minhas_ocorrencias_abrir_correcao'),
-    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/fechar/contato/$', '%s.views.minhas_ocorrencias_fechar_contato' % app_frontend, name='minhas_ocorrencias_fechar_contato'),
-    url(r'^minhas_ocorrencias/(?P<ocorrencia_id>[0-9]+)/fechar/visto/$', '%s.views.minhas_ocorrencias_fechar_visto' % app_frontend, name='minhas_ocorrencias_fechar_visto'),
+    # modulo principal>solicitacoes
+    url(r'^minhas_solicitacoes/$', '%s.views.minhas_solicitacoes' % app_frontend, name='minhas_solicitacoes'),
+    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/resolvido/$', '%s.views.minhas_solicitacoes_resolvido' % app_frontend, name='minhas_solicitacoes_resolvido'),
+    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/abrir/correcao/$', '%s.views.minhas_solicitacoes_abrir_correcao' % app_frontend, name='minhas_solicitacoes_abrir_correcao'),
+    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/fechar/contato/$', '%s.views.minhas_solicitacoes_fechar_contato' % app_frontend, name='minhas_solicitacoes_fechar_contato'),
+    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/fechar/visto/$', '%s.views.minhas_solicitacoes_fechar_visto' % app_frontend, name='minhas_solicitacoes_fechar_visto'),
     
     
     # modulo RH
@@ -59,8 +59,8 @@ urlpatterns += patterns('',
     url(r'^recepcao/', include('cadastro.urls', namespace="cadastro")),
     # modulo comercial
     url(r'^comercial/', include('comercial.urls', namespace="comercial")),
-    # modulo ocorrencia
-    url(r'^ocorrencia/', include('ocorrencia.urls', namespace="ocorrencia")),   
+    # modulo solicitacao
+    url(r'^solicitao/', include('solicitacao.urls', namespace="solicitacao")),   
 )
 # django-select2
 urlpatterns += patterns("",

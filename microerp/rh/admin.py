@@ -20,7 +20,7 @@ from rh.models import PerfilAcessoRH
 from rh.models import Demissao
 from rh.models import DependenteDeFuncionario
 from rh.models import Feriado
-
+from rh.models import Competencia
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -53,6 +53,7 @@ class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
     list_display = ('nome', 'email', 'cargo_atual', 'user')
     list_display_links = list_display
     list_filter = ('cargo_atual',)
+    filter_horizontal = 'competencias',
     inlines = [
         PeriodoTrabalhadoInline,
         IdiomaFuncionarioInline,
@@ -112,10 +113,15 @@ class RotinaExameMedicoAdmin(admin.ModelAdmin):
     list_display = 'id', 'tipo', 'funcionario', 'realizado'
     date_hierarchy = 'data'
 
+class CompetenciaAdmin(admin.ModelAdmin):
+    pass
+
+class CargoAdmin(admin.ModelAdmin):
+    filter_horizontal = 'competencias',
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
-admin.site.register(Cargo)
 admin.site.register(Departamento)
 admin.site.register(CursoFuncionario)
 admin.site.register(PeriodoTrabalhado, PeriodoTrabalhadoAdmin)
@@ -130,3 +136,5 @@ admin.site.register(Demissao, DemissaoAdmin)
 admin.site.register(DependenteDeFuncionario)
 admin.site.register(Feriado, FeriadoAdmin)
 admin.site.register(EntradaFolhaDePonto, EntradaFolhaDePontoAdmin)
+admin.site.register(Competencia, CompetenciaAdmin)
+admin.site.register(Cargo, CargoAdmin)

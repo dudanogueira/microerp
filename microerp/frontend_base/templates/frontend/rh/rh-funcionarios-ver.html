@@ -102,6 +102,10 @@
             <a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="icon icon-time icon-white"></i> Gerenciar Folhas de Ponto</a>
             
         </div>
+        <h3>Competências</h3>
+        <div class="well">
+            {{funcionario.competencias.all|join:","}}
+        </div>
     </div>
     <div class="span6">
         

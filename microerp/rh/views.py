@@ -13,7 +13,7 @@ from django.db.models import Q
 
 from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
-from rh.models import EntradaFolhaDePonto
+from rh.models import EntradaFolhaDePonto, Competencia
 from rh.utils import get_weeks
 
 from django import forms
@@ -323,8 +323,14 @@ def controle_banco_de_horas_do_funcionario(request, funcionario_id):
         form_add_entrada_folha_ponto = AdicionarEntradaFolhaDePontoForm()
     return render_to_response('frontend/rh/rh-banco-de-horas-funcionario.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
 def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, folha_id):
     folha = get_object_or_404(FolhaDePonto, funcionario__id=funcionario_id, id=folha_id)
     folha.encerrado = True
     folha.save()
     return redirect(reverse('rh:controle_banco_de_horas_do_funcionario', args=[folha.funcionario.id,]))
+
+@user_passes_test(possui_perfil_acesso_rh)
+def matriz_de_competencias(request):
+    competencias = Competencia.objects.all()
+    return render_to_response('frontend/rh/rh-matriz-de-competencias.html', locals(), context_instance=RequestContext(request),)

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.contrib import admin
 
-from models import Ocorrencia, TipoOcorrencia, PerfilAcessoOcorrencia
+from models import Solicitacao, TipoSolicitacao, PerfilAcessoSolicitacao
 
-class OcorrenciaAdmin(admin.ModelAdmin):
+class SolicitacaoAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = 'id', 'procede', 'status', 'responsavel_correcao', 'responsavel_contato', 'responsavel_visto'
     list_filter = 'status', 'responsavel_correcao', 'responsavel_contato', 'responsavel_visto'
@@ -11,7 +11,7 @@ class OcorrenciaAdmin(admin.ModelAdmin):
         ('Contato', {
             'fields': ('cliente', 'precliente', 'contato')
         }),
-        ('Ocorrência', {
+        ('Solicitação', {
             'fields': ('prioridade', 'descricao', 'tipo', 'status', 'procede', 'nao_procede_porque', )
         }),
         ('Resolução', {
@@ -27,6 +27,6 @@ class OcorrenciaAdmin(admin.ModelAdmin):
     )
     filter_horizontal = 'departamentos_afetados',
 
-admin.site.register(Ocorrencia, OcorrenciaAdmin)
-admin.site.register(TipoOcorrencia)
-admin.site.register(PerfilAcessoOcorrencia)
+admin.site.register(Solicitacao, SolicitacaoAdmin)
+admin.site.register(TipoSolicitacao)
+admin.site.register(PerfilAcessoSolicitacao)
