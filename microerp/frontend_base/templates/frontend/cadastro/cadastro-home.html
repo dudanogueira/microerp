@@ -103,7 +103,7 @@
                         <td>{{cliente.nome}}</td>
                         <td>
                         {% if "solicitacao"|is_installed_app %}
-                            <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i> solicitação</a>
+                            <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i></a>
                         {% endif %}
                         </td>
                     </tr>
@@ -151,7 +151,7 @@
                         </td>
                         <td>
                         {% if "solicitacao"|is_installed_app %}
-                        <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?cliente={{cliente.id}}"><i class="icon-bell-alt"></i> solicitação</a>
+                        <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?cliente={{cliente.id}}"><i class="icon-bell-alt"></i></a>
                         {% endif %}
                         </td>
                     </tr>

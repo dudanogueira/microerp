@@ -152,7 +152,7 @@ def precliente_converter(request, pre_cliente_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def solicitacao_adicionar(request):
-    if not 'solicitacao_adicionar' in settings.INSTALLED_APPS:
+    if not 'solicitacao' in settings.INSTALLED_APPS:
             messages.error(request, u'Modulo de Solicitação não instalado')
             return redirect(reverse('comercial:home'))
     cliente_id = request.GET.get('cliente', None)
