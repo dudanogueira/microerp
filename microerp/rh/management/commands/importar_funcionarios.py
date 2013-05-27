@@ -73,7 +73,6 @@ class Command(BaseCommand):
                         demissao = str(row['DEMISSAO'])
                         demissao = parse_string_de_data(demissao)
                         print "DEMISSAO", demissao
-
                         # funcionario
                         nome = str(row['NOME'])
                         print "NOME", nome

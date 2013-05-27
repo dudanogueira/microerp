@@ -61,6 +61,9 @@ urlpatterns += patterns('',
     url(r'^comercial/', include('comercial.urls', namespace="comercial")),
     # modulo solicitacao
     url(r'^solicitao/', include('solicitacao.urls', namespace="solicitacao")),   
+    # modulo estoque
+    url(r'^estoque/', include('estoque.urls', namespace="estoque")),   
+    
 )
 # django-select2
 urlpatterns += patterns("",

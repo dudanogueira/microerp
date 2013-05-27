@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import datetime
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
+
 
 from django.db import models
 from django import forms
@@ -83,11 +84,6 @@ class AdicionarCliente(forms.ModelForm):
         'contato', 'email', 'telefone_fixo', 'telefone_celular', 'fax',\
         'funcionario_responsavel'
         
-
-# forms
-from forms import ContatoComercialAdd
-
-from django.contrib.auth.decorators import user_passes_test
 
 #
 # DECORADORES

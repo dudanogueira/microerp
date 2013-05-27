@@ -1,0 +1,37 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load django_select2_tags %}
+
+<title>{%block title %}{{block.super}} - Estoque{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-shopping-cart"></i> <i class="icon-barcode"></i> Etiquetas</h1>
+<h2>Selecionar</h2>
+<p>
+    <a href="{% url "estoque:etiquetas_gerar" %}?todos=sim" class="btn btn-primary">Selecionar todos</a>
+</p>
+<h3>Buscar Produtos</h3>
+<form method="get" action="{%url "estoque:etiquetas_gerar" %}">
+{{form.as_p}}
+<button type="submit">Enviar</button>
+</form>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-estoque-etiquetas, #top-menu-estoque").addClass("active");
+    $(".select2-multiple").select2({
+    });
+});
+</script>
+<script type="text/javascript" src="/static/js/select2.js"></script>
+<link href="/static/css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+{% endaddtoblock %}
+{% include "frontend/estoque/estoque-menu.html" %}
+{% endblock%}

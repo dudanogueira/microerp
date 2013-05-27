@@ -45,7 +45,6 @@ class DespacharSolicitacaoForm(forms.ModelForm):
         fields = 'providencia', 'prioridade', 'departamento_direto', 'departamentos_afetados',
 
 
-
 # HOME
 @login_required
 @user_passes_test(possui_perfil_acesso_solicitacao, login_url='/')
