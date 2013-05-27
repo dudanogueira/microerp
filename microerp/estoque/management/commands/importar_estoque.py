@@ -59,7 +59,7 @@ class Command(BaseCommand):
                         
                         # TIPO / GRUPO
                         tipo_id = row['GRUPO']
-                        if str(tipo_id).isdigit() or int(tipo_id) == 0:
+                        if tipo_id == 0 or tipo_id == '0':
                             tipo = None
                         else:
                             tipo,created = TipoDeProduto.objects.get_or_create(id=tipo_id)
