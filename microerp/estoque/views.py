@@ -132,7 +132,7 @@ def etiquetas_gerar(request):
     
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="somefilename.pdf"'
+    response['Content-Disposition'] = 'attachment; filename="etiquetas.pdf"'
     formato = settings.FORMATOS_ETIQUETA_SUPORTADOS[2]
     pagesize = formato['Papel'] == 'A4' and A4 or letter
     c = canvas.Canvas(response)

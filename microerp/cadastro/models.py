@@ -89,7 +89,7 @@ class Cliente(models.Model):
     1: todo cliente do tipo PJ deve possuir CNPJ
     2: todo cliente do tipo PF deve possuir CPF
     '''
-    
+
     def __unicode__(self):
         return u"%s: %s" % (self.get_tipo_display(), self.nome)
         
@@ -98,30 +98,10 @@ class Cliente(models.Model):
         '''Define as regras de preenchimento e validação da Entidade Cliente.        
         e as regras de validação de CPF ou CNPJ
         '''
-        # checa confs do PJ
-        if self.tipo == "pj":
-            if not self.cnpj:
-                raise ValidationError(u"Para Clientes do tipo PJ (Pessoa Jurídica) é OBRIGATÓRIO o CNPJ)")
-            else:
-                try:
-                    self.cnpj = BRCNPJField().clean(self.cnpj)
-                except:
-                    raise ValidationError(u"Número do CNPJ Inválido!")
-        # checa confs do PF
-        elif self.tipo == "pf":
-            if not self.cpf:
-                raise ValidationError(u"Para Clientes do tipo PF (Pessoa Física) é OBRIGATÓRIO o CPF)")
-            else:
-                try:
-                    self.cpf = BRCPFField().clean(self.cpf)
-                except:
-                    raise ValidationError(u"Número do CPF Inválido!")
         if self.telefone_fixo:
             BRPhoneNumberField().clean(self.telefone_fixo)
         if self.telefone_celular:
             BRPhoneNumberField().clean(self.telefone_celular)
-        if not self.telefone_fixo and not self.telefone_celular:
-            raise ValidationError(u"É obrigatório um contato telefônico!!")
         
     def documento(self):
         if self.tipo == "pj":

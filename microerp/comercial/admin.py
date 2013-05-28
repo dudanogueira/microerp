@@ -21,37 +21,9 @@ __version__ = '0.0.1'
 
 from django.contrib import admin
 
-from comercial.models import SolicitacaoComercial
-from comercial.models import TipoSolicitacaoComercial
-from comercial.models import ContatoComercial
-from comercial.models import TipoContatoComercial
-from comercial.models import FonteDeAgendaComercial
-from comercial.models import PerfilAcessoComercial
+from comercial.models import PropostaComercial
 
-class SolicitacaoComercialAdmin(admin.ModelAdmin):
-    list_filter = ('status', 'tipo__mao_de_obra_inclusa',)
-    list_display = ('identificador', 'cliente', 'tipo', 'valor_calculado', 'status')
-    list_display_links = list_display
-    search_fields = ['id', 'cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__telefone_fixo', 'cliente__telefone_celular',]
-    
-class TipoSolicitacaoComercialAdmin(admin.ModelAdmin):
-    list_filter = ('mao_de_obra_inclusa', 'permite_valor_variavel',)
+class PropostaComercialAdmin(admin.ModelAdmin):
+    pass
 
-class ContatoComercialAdmin(admin.ModelAdmin):
-    date_hierarchy = "inicio"
-    list_display = ('nome', 'status', 'inicio', 'fim', 'cliente')
-    search_fields = ['id', 'cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__telefone_fixo', 'cliente__telefone_celular',]
-    list_filter = ('funcionario', 'inicio', 'status', )
-    list_display_links = list_display
-
-class PerfilAcessoComercialAdmin(admin.ModelAdmin):
-    list_filter = 'user', 'analista', 'gerente',
-    list_display = 'user',  'analista', 'gerente',
-    
-
-admin.site.register(SolicitacaoComercial, SolicitacaoComercialAdmin)
-admin.site.register(TipoSolicitacaoComercial, TipoSolicitacaoComercialAdmin)
-admin.site.register(ContatoComercial, ContatoComercialAdmin)
-admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
-admin.site.register(TipoContatoComercial)
-admin.site.register(FonteDeAgendaComercial)
+admin.site.register(PropostaComercial, PropostaComercialAdmin)

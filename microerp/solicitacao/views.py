@@ -50,9 +50,7 @@ class DespacharSolicitacaoForm(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_solicitacao, login_url='/')
 def home(request):
     solicitacoes_aberta = Solicitacao.objects.filter(
-        Q(status="aberta") & (Q(responsavel_contato=None) | \
-        Q(responsavel_correcao=None) | \
-        Q(responsavel_visto=None))
+        Q(status="aberta")
     )
     solicitacoes_analise = Solicitacao.objects.filter(status="analise")
     solicitacoes_contato = Solicitacao.objects.filter(status="contato")

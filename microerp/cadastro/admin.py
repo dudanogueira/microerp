@@ -27,14 +27,7 @@ from cadastro.models import PreCliente
 from cadastro.models import Recado
 from cadastro.models import EnderecoCliente
 
-from comercial.models import SolicitacaoComercial
-
 from django import forms
-
-class SolicitacaoComercialInline(admin.TabularInline):
-    model = SolicitacaoComercial
-    ordering = ['criado']
-    extra = 0
 
 class ConsultaDeCreditoInline(admin.TabularInline):
     model = ConsultaDeCredito
@@ -80,7 +73,7 @@ class ClienteAdmin(admin.ModelAdmin):
                 'fields': ('criado', 'atualizado', 'uuid')
             }),
         )
-    inlines = [EnderecoClienteInline, ConsultaDeCreditoInline, SolicitacaoComercialInline]
+    inlines = [EnderecoClienteInline, ConsultaDeCreditoInline]
 
 class PerfilAcessoRecepcaoAdmin(admin.ModelAdmin):
     list_filter = 'user', 'analista', 'gerente',
