@@ -26,7 +26,7 @@ from comercial.models import Orcamento
 from comercial.models import LinhaRecursoMaterial
 from comercial.models import LinhaRecursoHumano
 
-class PerfilAcessoComercial(admin.ModelAdmin):
+class PerfilAcessoComercialAdmin(admin.ModelAdmin):
     pass
 
 class PropostaComercialAdmin(admin.ModelAdmin):
