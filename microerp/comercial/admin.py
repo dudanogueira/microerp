@@ -26,6 +26,9 @@ from comercial.models import Orcamento
 from comercial.models import LinhaRecursoMaterial
 from comercial.models import LinhaRecursoHumano
 
+class PerfilAcessoComercial(admin.ModelAdmin):
+    pass
+
 class PropostaComercialAdmin(admin.ModelAdmin):
     pass
 
@@ -43,3 +46,4 @@ class OrcamentoAdmin(admin.ModelAdmin):
 
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
+admin.site.register(PerfilAcessoComercial)
