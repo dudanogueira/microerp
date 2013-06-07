@@ -22,8 +22,24 @@ __version__ = '0.0.1'
 from django.contrib import admin
 
 from comercial.models import PropostaComercial
+from comercial.models import Orcamento
+from comercial.models import LinhaRecursoMaterial
+from comercial.models import LinhaRecursoHumano
 
 class PropostaComercialAdmin(admin.ModelAdmin):
     pass
 
+class LinhaRecursoMaterialInLine(admin.TabularInline):
+    raw_id_fields = ("produto",)
+    model = LinhaRecursoMaterial
+    extra = 0
+
+class LinhaRecursoHumanoInLine(admin.TabularInline):
+    model = LinhaRecursoHumano
+    extra = 0
+
+class OrcamentoAdmin(admin.ModelAdmin):
+    inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
+admin.site.register(Orcamento, OrcamentoAdmin)

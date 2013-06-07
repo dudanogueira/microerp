@@ -24,6 +24,7 @@ from django.contrib import admin
 from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem, ConsultaDeCredito, TipoDeConsultaDeCredito
 from cadastro.models import PerfilAcessoRecepcao
 from cadastro.models import PreCliente
+from cadastro.models import PerfilClienteLogin
 from cadastro.models import Recado
 from cadastro.models import EnderecoCliente
 
@@ -102,6 +103,11 @@ class BairroAdmin(admin.ModelAdmin):
     search_fields = ('nome', 'cidade__nome')
     list_display = 'id', 'nome', 'cidade'
 
+class PerfilClienteLoginAdmin(admin.ModelAdmin):
+    search_fields = ('cliente__nome', 'cliente__cpf', 'cliente__cnpj', 'cliente__user')
+    list_display = 'cliente', 'user'
+    raw_id_fields = 'cliente',
+
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Cidade, CidadeAdmin)
 admin.site.register(Bairro, BairroAdmin)
@@ -111,3 +117,4 @@ admin.site.register(TipoDeConsultaDeCredito)
 admin.site.register(PerfilAcessoRecepcao, PerfilAcessoRecepcaoAdmin)
 admin.site.register(PreCliente, PreClienteAdmin)
 admin.site.register(Recado, RecadoAdmin)
+admin.site.register(PerfilClienteLogin, PerfilClienteLoginAdmin)

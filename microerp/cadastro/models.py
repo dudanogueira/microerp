@@ -80,7 +80,17 @@ class PreCliente(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
     
-
+class PerfilClienteLogin(models.Model):
+    '''
+    Perfil para login do cliente na interface do sistema.
+    Se nao possui esse perfil, o cliente não pode logar
+    '''
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="Usuário do Sistema", blank=True, null=True)
+    cliente = models.OneToOneField('Cliente', verbose_name="Cliente Cadastrado no Sistema", blank=True, null=True)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
 class Cliente(models.Model):
     u'''
     ====

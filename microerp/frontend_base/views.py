@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from django.contrib.auth.forms import AuthenticationForm
 
-from cadastro.models import Recado
+from cadastro.models import Recado, PerfilClienteLogin
 from rh.models import Funcionario
 from solicitacao.models import Solicitacao
 
@@ -26,6 +26,23 @@ def home(request):
     if request.user.is_authenticated():
         try:
             funcionario = request.user.funcionario
+            return(redirect("interface_home_funcionario"))
+        except Funcionario.DoesNotExist:
+            pass
+        try:
+            cliente_perfil = request.user.perfilclientelogin
+            return(redirect("interface_home_cliente"))
+        except PerfilClienteLogin.DoesNotExist:
+            pass
+    else:
+        form = AuthenticationForm()
+        return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
+            
+
+def funcionario(request):
+    if request.user.is_authenticated():
+        try:
+            funcionario = request.user.funcionario
             solicitacoes_abertas = Solicitacao.objects.filter(
                 Q(status="aberta") & Q(responsavel_contato=funcionario) | \
                 Q(responsavel_correcao=funcionario) | \
@@ -36,7 +53,24 @@ def home(request):
     else:
         form = AuthenticationForm()
     
-    return render_to_response('frontend/main-home.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/funcionario-home.html', locals(), context_instance=RequestContext(request),)
+
+
+def cliente(request):
+    if request.user.is_authenticated():
+        try:
+            funcionario = request.user.funcionario
+            solicitacoes_abertas = Solicitacao.objects.filter(
+                Q(status="aberta") & Q(responsavel_contato=funcionario) | \
+                Q(responsavel_correcao=funcionario) | \
+                Q(responsavel_visto=funcionario)
+            )
+        except Funcionario.DoesNotExist:
+            pass
+    else:
+        form = AuthenticationForm()
+    
+    return render_to_response('frontend/cliente-home.html', locals(), context_instance=RequestContext(request),)
 
 def meus_recados(request):
     funcionario = get_object_or_404(Funcionario, user=request.user)

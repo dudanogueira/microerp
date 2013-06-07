@@ -39,19 +39,22 @@ urlpatterns += patterns('django.contrib.auth',
 )
 
 # urls do frontend
-app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend")
+app_frontend = getattr(settings, 'APP_DE_FRONTEND', "frontend_base")
 urlpatterns += patterns('',
     url(r'^$', '%s.views.home' % app_frontend, name='home'),
+    # Interface do Cliente
+    url(r'^cliente/$', '%s.views.cliente' % app_frontend, name='interface_home_cliente'),
+    # Interface do Funcionario
+    url(r'^funcionario/$', '%s.views.funcionario' % app_frontend, name='interface_home_funcionario'),
     # modulo principal>recados
-    url(r'^meus_recados/$', '%s.views.meus_recados' % app_frontend, name='meus_recados'),
-    url(r'^meus_recados/(?P<recado_id>[0-9]+)/marcar/lido/$', '%s.views.meus_recados_marcar_lido' % app_frontend, name='meus_recados_marcar_lido'),
+    url(r'^funcionario/meus_recados/$', '%s.views.meus_recados' % app_frontend, name='meus_recados'),
+    url(r'^funcionario/meus_recados/(?P<recado_id>[0-9]+)/marcar/lido/$', '%s.views.meus_recados_marcar_lido' % app_frontend, name='meus_recados_marcar_lido'),
     # modulo principal>solicitacoes
-    url(r'^minhas_solicitacoes/$', '%s.views.minhas_solicitacoes' % app_frontend, name='minhas_solicitacoes'),
-    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/resolvido/$', '%s.views.minhas_solicitacoes_resolvido' % app_frontend, name='minhas_solicitacoes_resolvido'),
-    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/abrir/correcao/$', '%s.views.minhas_solicitacoes_abrir_correcao' % app_frontend, name='minhas_solicitacoes_abrir_correcao'),
-    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/fechar/contato/$', '%s.views.minhas_solicitacoes_fechar_contato' % app_frontend, name='minhas_solicitacoes_fechar_contato'),
-    url(r'^minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/fechar/visto/$', '%s.views.minhas_solicitacoes_fechar_visto' % app_frontend, name='minhas_solicitacoes_fechar_visto'),
-    
+    url(r'^funcionario/minhas_solicitacoes/$', '%s.views.minhas_solicitacoes' % app_frontend, name='minhas_solicitacoes'),
+    url(r'^funcionario/minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/resolvido/$', '%s.views.minhas_solicitacoes_resolvido' % app_frontend, name='minhas_solicitacoes_resolvido'),
+    url(r'^funcionario/minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/abrir/correcao/$', '%s.views.minhas_solicitacoes_abrir_correcao' % app_frontend, name='minhas_solicitacoes_abrir_correcao'),
+    url(r'^funcionario/minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/fechar/contato/$', '%s.views.minhas_solicitacoes_fechar_contato' % app_frontend, name='minhas_solicitacoes_fechar_contato'),
+    url(r'^funcionario/minhas_solicitacoes/(?P<solicitacao_id>[0-9]+)/fechar/visto/$', '%s.views.minhas_solicitacoes_fechar_visto' % app_frontend, name='minhas_solicitacoes_fechar_visto'),
     
     # modulo RH
     url(r'^rh/', include('rh.urls', namespace="rh")),

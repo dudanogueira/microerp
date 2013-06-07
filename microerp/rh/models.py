@@ -381,7 +381,7 @@ class Funcionario(models.Model):
     membro_cipa = models.BooleanField(default=True)
     periodo_trabalhado_corrente = models.OneToOneField("PeriodoTrabalhado", blank=True, null=True, related_name="periodo_trabalhado_corrente")
     # competencia
-    competencias = models.ManyToManyField('Competencia')
+    competencias = models.ManyToManyField('Competencia', blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        

@@ -51,6 +51,11 @@
     <div class="container-fluid">
       <div class="row-fluid" id="main-content">
         <div class="span3">
+            <div class="pagination-centered">
+            {% if logo_empresa %}
+            <img src="{{logo_empresa}}">
+            {% endif %}
+            </div>
             
             <div class="well sidebar-nav principal">
               <ul class="nav nav-list">
@@ -58,7 +63,7 @@
                 <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Meu Painel</a></li>
                 {% if request.user.funcionario %}
                 <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
-                {% if request.user.perfilacessosolicitacao and  "solicitacao"|is_installed_app %}
+                {% if "solicitacao"|is_installed_app %}
                 
                 <li id="main-home-minhas-solicitacoes"><a href="{% url "minhas_solicitacoes" %}"><i class="icon-bell {% if request.user.funcionario.solicitacoes_total %}icon-animated-bell{% endif %}"></i> Solicitações {% if request.user.funcionario.solicitacoes_total %}<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>{%endif%}</a></li>
                 {% endif %}

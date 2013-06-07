@@ -65,6 +65,7 @@ class PropostaComercial(models.Model):
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=15))
+    orcamento_vinculado = models.ForeignKey('Orcamento', blank=True, null=True)
     follow_up = models.DateTimeField(blank=True, null=True)
     observacoes = models.TextField("Observações", blank=False, null=False)
     # metadata
@@ -74,7 +75,6 @@ class PropostaComercial(models.Model):
 
 class PerfilAcessoComercial(models.Model):
     '''Perfil de Acesso ao Comercial'''
-    
     class Meta:
         verbose_name = u"Perfil de Acesso ao Comercial"
         verbose_name_plural = u"Perfis de Acesso ao Comercial"
@@ -85,3 +85,25 @@ class PerfilAcessoComercial(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+# ORCAMENTO / REQUISICAO DE RECURSOS
+class Orcamento(models.Model):
+    '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
+    descricao = models.CharField(blank=True, max_length=100)
+    cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
+    precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
+    modelo = models.BooleanField(default=False)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+class LinhaRecursoMaterial(models.Model):
+    orcamento = models.ForeignKey('Orcamento')
+    produto = models.ForeignKey('estoque.Produto')
+    quantidade = models.IntegerField("Quantidade de Produtos", blank=True, null=True)
+
+class LinhaRecursoHumano(models.Model):
+    orcamento = models.ForeignKey('Orcamento')
+    cargo = models.ForeignKey('rh.Cargo')
+    quantidade = models.IntegerField(blank=True, null=True, verbose_name="Quantidade de Horas")
+    

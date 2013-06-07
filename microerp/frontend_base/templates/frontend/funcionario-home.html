@@ -5,7 +5,6 @@
 
 {% block content %}
 
-
 {% if request.user.is_authenticated %}
     {% if request.user.funcionario%}
     <h1><i class="icon-th"></i> <i class="icon-home"></i> Olá {{request.user.funcionario}}</h1>

@@ -207,8 +207,6 @@ def propostas_comerciais_precliente(request, precliente_id):
     precliente = PreCliente.objects.get(pk=precliente_id)
     propostas_abertas = PropostaComercial.objects.filter(precliente=precliente, status='aberta')
     return render_to_response('frontend/comercial/comercial-propostas-precliente.html', locals(), context_instance=RequestContext(request),)
-    
-
 
 def propostas_comerciais_precliente_adicionar(request, precliente_id):
     precliente = PreCliente.objects.get(pk=precliente_id)
