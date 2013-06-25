@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+"""This file is part of the microerp project.
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
+__author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
+__copyright__ = 'Copyright (c) 2013 Duda Nogueira'
+__version__ = '0.0.1'
+
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4, letter
 from reportlab.graphics.barcode import code128
@@ -22,7 +42,6 @@ from django.db.models import Count, Q
 from estoque.models import Produto
 
 from django_select2 import AutoModelSelect2MultipleField
-
 
 #
 # DECORADORES
@@ -65,6 +84,12 @@ def home(request):
 # ETIQUETAS
 @user_passes_test(possui_perfil_acesso_estoque, login_url='/')
 def etiquetas(request):
+    
+    # nome,id
+    formatos = []
+    for formato in settings.FORMATOS_ETIQUETA_SUPORTADOS:
+        formatos.append((formato, settings.FORMATOS_ETIQUETA_SUPORTADOS[formato]['Codigo']))        
+    
     if request.GET:
         produtos_adicionar = request.GET.getlist('produtos_adicionar')
         produtos_selecionados_get = request.GET.getlist('produtos_selecionados')
@@ -80,16 +105,18 @@ def etiquetas_configurar(request):
     return render_to_response('frontend/estoque/estoque-etiquetas-configurar.html', locals(), context_instance=RequestContext(request),)
 
 
-def geraPagina(formato, numeros, c, pagesize, SHOW_BORDER=False):
+def geraPagina(formato, numeros, c, pagesize, SHOW_BORDER=True, pular=0):
     w, h = pagesize
+    i = 0
     for linha in range(formato['Linhas']):
         for coluna in range(formato['Colunas']):
+            i += 1
             try:
                 numero = numeros[linha][coluna]
             except IndexError:
                 return
             x = formato['Esquerda']*cm + (formato['Horizontal']*cm * coluna)
-            y = h - formato['Superior']*cm - (formato['Vertical']*cm * (linha+1))
+            y = h - formato['Superior']*cm - (formato['Vertical']*cm * (linha) +1)
             import string
             string = string.uppercase * 4
             string = numero.descricao
@@ -99,11 +126,14 @@ def geraPagina(formato, numeros, c, pagesize, SHOW_BORDER=False):
             c.drawString(x+24*mm, y+(5*mm), string[49:64])
             if SHOW_BORDER:
                 c.rect(x, y, formato['Largura']*cm, formato['Altura']*cm)
-
-            barcode = code128.Code128(numero.codigo, barWidth=0.26*mm, barHeight=13*mm, 
+        
+            if len(numero.codigo) == 1:
+                codigo = "000%d" % int(numero.codigo)
+            else:
+                codigo = numero.codigo
+            barcode = code128.Code128(codigo, barWidth=0.26*mm, barHeight=13*mm, 
                                       quiet=False, humanReadable=True)
-            barcode.drawOn(c, x+(1*mm), y+(4*mm))
-
+            barcode.drawOn(c, x+(1*mm)+(4*mm), y+(4*mm))
 
 def _geraPaginaObjetos(formato, lista):
     l = []
@@ -129,29 +159,53 @@ def etiquetas_gerar(request):
     '''
     view que gera as etiquetas
     '''
-    
+    lista_produtos = request.GET.getlist('produtos_adicionar')
+    show_border_q = request.GET.get('show_border', 0)
+    formato_id = request.GET.get('formato', 17)
+    if show_border_q == 0:
+        show_border = False
+    else:
+        show_border = True
+
+    try:
+        pular_espacos = int(request.GET.get('pular_espacos', 0))
+    except:
+        pular_espacos = 0
+        
+
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="etiquetas.pdf"'
-    formato = settings.FORMATOS_ETIQUETA_SUPORTADOS[2]
+    try:
+        formato = settings.FORMATOS_ETIQUETA_SUPORTADOS[int(formato_id)]
+    except:
+        formato = settings.FORMATOS_ETIQUETA_SUPORTADOS[17]
     pagesize = formato['Papel'] == 'A4' and A4 or letter
     c = canvas.Canvas(response)
-    # Create the PDF object, using the response object as its "file." 
-    lista_produtos = request.GET.getlist('produtos_adicionar')
+    
     if lista_produtos:
         produtos = Produto.objects.filter(id__in=lista_produtos)
     else:
         produtos = Produto.objects.all()
     total = formato['Colunas'] * formato['Linhas']
-    #objetos_por_pagina = zip(*(iter(produtos),) * total)
     objetos_por_pagina = list(chunks(produtos, total))
+    
+    
+    # SISTEMA DE IMPRESSAO DE AVULSOS
+    try:
+        pular = int(pular_espacos)
+    except:
+        pular = 0
+    
     for pagina_objetos in objetos_por_pagina:
-        #lista_objetos = [objeto for objeto in pagina_objetos]
+        
         numeros = _geraPaginaObjetos(formato, pagina_objetos)
-        # Draw things on the PDF. Here's where the PDF generation happens.
-        # See the ReportLab documentation for the full list of functionality.
-        geraPagina(formato, numeros, c, pagesize)
-        # Close the PDF object cleanly, and we're done.
+        for item in range(1, pular_espacos+1):
+            numeros.insert(0, None)
+        #lista_objetos = [objeto for objeto in pagina_objetos]
+        
+        geraPagina(formato, numeros, c, pagesize, SHOW_BORDER=show_border, pular=pular)
+        c.setPageSize(pagesize)
         c.showPage()
     c.save()
     return response

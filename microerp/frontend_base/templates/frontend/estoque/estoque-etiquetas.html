@@ -10,11 +10,26 @@
 <h1><i class="icon-th"></i> <i class="icon-shopping-cart"></i> <i class="icon-barcode"></i> Etiquetas</h1>
 <h2>Selecionar</h2>
 <p>
-    <a href="{% url "estoque:etiquetas_gerar" %}?todos=sim" class="btn btn-primary">Selecionar todos</a>
+    <form action="{% url "estoque:etiquetas_gerar" %}">
+    <button class="btn btn-primary">Selecionar todos</button>
+    </form>
 </p>
 <h3>Buscar Produtos</h3>
 <form method="get" action="{%url "estoque:etiquetas_gerar" %}">
 {{form.as_p}}
+
+<h4>Configurar Impressão</h4>
+<p><input type="checkbox" name="show_border" id="show_border" value="1"> <label for="show_border">Mostrar bordas</label></p>
+
+<p><input type="text" name="pular_espacos" id="pular_espacos" value="0"> <label for="pular_espacos">Pular Espaços</label></p>
+
+<h6>Modelo</h6>
+<select name="formato">
+{% for formato in formatos %}
+    <option value="{{formato.0}}">#{{formato.0}} - {{formato.1}}</option>
+{% endfor %}
+</select>
+
 <button type="submit">Enviar</button>
 </form>
 
