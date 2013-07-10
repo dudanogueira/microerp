@@ -13,6 +13,7 @@ from models import LancamentoComponente
 from models import NotaFiscal
 from models import SubProduto
 from models import LinhaSubProduto
+from models import LinhaSubProdutoAlternativo
 from models import DocumentoTecnicoSubProduto
 from models import Produto
 from models import LinhaProdutoAvulso
@@ -67,11 +68,17 @@ class NotaFiscalAdmin(admin.ModelAdmin):
 
 # PRODUTOS E SUBPRODUTOS
 
+class LinhaSubProdutoAlternativo(admin.StackedInline):
+    model = LinhaSubProdutoAlternativo
+    extra = 0
+
 class LinhaSubProdutoAdmin(admin.ModelAdmin):
-    filter_horizontal = 'componentes_alternativos',
+    #filter_horizontal = 'componentes_alternativos',
+    list_filter = 'subproduto',
+    inlines = LinhaSubProdutoAlternativo,
 
 class LinhaSubProdutoInline(admin.StackedInline):
-    filter_horizontal = 'componentes_alternativos',
+    #filter_horizontal = 'componentes_alternativos',
     model = LinhaSubProduto
     extra= 0
 

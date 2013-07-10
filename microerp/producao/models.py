@@ -410,14 +410,17 @@ class LinhaSubProduto(models.Model):
     
     subproduto = models.ForeignKey('SubProduto')
     componente_padrao = models.ForeignKey('Componente', related_name="subproduto_padrao_set", on_delete=models.PROTECT)
-    componentes_alternativos = models.ManyToManyField('Componente', related_name="subproduto_alternativo_set", blank=True, null=True)
-    quantidade = models.IntegerField(blank=False, null=False)
+    #componentes_alternativos = models.ManyToManyField('Componente', related_name="subproduto_alternativo_set", blank=True, null=True)
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     tag = models.CharField(blank=True, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
-    
-    
+
+class LinhaSubProdutoAlternativo(models.Model):
+    linha = models.ForeignKey('LinhaSubProduto')
+    componente_alternativo = models.ForeignKey('Componente')
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     
 def subproduto_local_documentos(instance, filename):
     return os.path.join(
@@ -463,7 +466,7 @@ class LinhaProdutoAvulso(models.Model):
     
     produto = models.ForeignKey('Produto')
     componente = models.ForeignKey('Componente')
-    quantidade = models.IntegerField(blank=False, null=False)
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     tag = models.CharField(blank=True, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
