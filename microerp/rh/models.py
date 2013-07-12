@@ -149,6 +149,12 @@ class Funcionario(models.Model):
         verbose_name_plural = u"Funcionários"
         ordering = ['nome']
     
+    def ativo(self):
+        if self.periodo_trabalhado_corrente and self.periodo_trabalhado_corrente.ativo():
+            return True
+        else:
+            return False
+    
     def clean(self):
         # check telefones
         if self.telefone_fixo:
@@ -482,6 +488,12 @@ class PeriodoTrabalhado(models.Model):
             return u"Período ATIVO. Funcionário: %s. Admissão: %s" % (self.funcionario, self.inicio.strftime("%d/%m/%y"))
         else:
             return u"Período INATIVO. Funcionário: %s. Admissão: %s. Desligamento: %s" % (self.funcionario, self.inicio.strftime("%d/%m/%y"), self.fim.strftime("%d/%m/%y"))
+    
+    def ativo(self):
+        if not self.fim:
+            return True
+        else:
+            return False
     
     class Meta:
         verbose_name = u"Período Trabalhado"

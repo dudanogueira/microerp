@@ -97,11 +97,10 @@ class PreClienteAdicionarForm(forms.ModelForm):
 #
 def possui_perfil_acesso_recepcao(user, login_url="/"):
     try:
-        if user.perfilacessorecepcao:
+        if user.perfilacessorecepcao and user.funcionario.ativo():
             return True
     except:
         return False
-
 
 #
 # VIEWS
