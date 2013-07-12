@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+"""This file is part of the microerp project.
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+"""
+
+__author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
+__copyright__ = 'Copyright (c) 2013 Duda Nogueira'
+__version__ = '0.0.1'
+
 # Django settings for microerp project.
 import os
 INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
@@ -15,7 +35,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'microerp.sqlite3.db',
+        'NAME': 'microerp.db',
         'USER': '',
         'PASSWORD': '',
         'HOST': '',
@@ -23,20 +43,23 @@ DATABASES = {
     }
 }
 
-
-# EMAIL CONFS
-# EMAIL_HOST = 'smtp.gmail.com'
-# EMAIL_HOST_USER = 'your@gmail.com'
-#EMAIL_HOST_PASSWORD = 'password'
-#EMAIL_PORT = 587
-#EMAIL_USE_TLS = True
-#DEFAULT_FROM_EMAIL = 'MAIL ACCOUNT <your@gmail.com>'
-
-
+PN_PREPEND = 'PN' # PART NUMBER PREPEND
+MOSTRAR_MENU_PRINCIPAL_LATERAL = True
 HORAS_TRABALHADAS_POR_DIA = 8.4
 
-# CUSTOMS / deprecated in Django 1.5
-AUTH_USER_MODEL = 'account.User'
+
+EMAIL_HOST = 'smtp.servidor.com'
+EMAIL_HOST_USER = 'usuario@email.com'
+EMAIL_HOST_PASSWORD = 'senha_do_email'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'CONTA DE ENVIO <usuario@email.com>'
+
+
+
+
+# Using default
+#AUTH_USER_MODEL = 'account.User'
 
 LOGIN_REDIRECT_URL = '/'
 
@@ -82,7 +105,7 @@ MEDIA_URL = '/media/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = INSTANCE('static')
+STATIC_ROOT = INSTANCE('static_local')
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -134,6 +157,8 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
+IMG_SRC_LOGO_EMPRESA = '/media/logo_mestria.png'
+
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
     'django.core.context_processors.debug',
@@ -141,6 +166,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'django.contrib.messages.context_processors.messages',
     'sekizai.context_processors.sekizai',
+    'microerp.processsors.logo_empresa'
 )
 
 INSTALLED_APPS = (
@@ -169,7 +195,9 @@ INSTALLED_APPS = (
     'almoxarifado',
     'comercial',
     'solicitacao',
-    'account',
+    'estoque',
+    'treinamento',
+    #'account',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -201,6 +229,7 @@ LOGGING = {
     }
 }
     
+
 
 
 FORMATOS_ETIQUETA_SUPORTADOS = {
@@ -363,5 +392,18 @@ FORMATOS_ETIQUETA_SUPORTADOS = {
       'Largura': 7.62,
       'Linhas': 6,
       'Papel': 'A4',
-      'Vertical': 4.64}
+      'Vertical': 4.64},
+
+ 17: {
+     'Altura': 2.54,
+     'Codigo': 'POLIFIX 2030',
+     'Colunas': 3,
+     'Linhas': 10,
+     'Superior': 3.8,
+     'Esquerda': 0.48,
+     'Horizontal': 6.98,
+     'Largura': 6.67,
+     'Papel': 'Carta',
+     'Vertical': 2.54},
 }
+
