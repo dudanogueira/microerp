@@ -67,7 +67,7 @@ class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
 
 def possui_perfil_acesso_rh(user, login_url="/"):
     try:
-        if user.perfilacessorh:
+        if user.perfilacessorh and user.funcionario.ativo():
             return True
     except:
         return False

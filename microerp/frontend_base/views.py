@@ -28,28 +28,38 @@ def home(request):
             funcionario = request.user.funcionario
             return(redirect("interface_home_funcionario"))
         except Funcionario.DoesNotExist:
-            pass
+            messages.error(request, 'ERRO! Nenhum funcionário vinculado a esta conta')
+            return(redirect("login"))
         try:
             cliente_perfil = request.user.perfilclientelogin
-            return(redirect("interface_home_cliente"))
+            return(redirect("login"))
         except PerfilClienteLogin.DoesNotExist:
-            pass
-
-    form = AuthenticationForm()
-    return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
+            messages.error(request, 'ERRO! Nenhum cliente ou funcionário Vinculado a esta conta')
+            return(redirect("interface_home_funcionario"))
+            
+    else:
+        form = AuthenticationForm()
+        return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
             
 
 def funcionario(request):
     if request.user.is_authenticated():
         try:
             funcionario = request.user.funcionario
-            solicitacoes_abertas = Solicitacao.objects.filter(
-                Q(status="aberta") & Q(responsavel_contato=funcionario) | \
-                Q(responsavel_correcao=funcionario) | \
-                Q(responsavel_visto=funcionario)
-            )
+            # verifica se o funcionario possui periodo de trabalho ativo
+            if funcionario.periodo_trabalhado_corrente and funcionario.periodo_trabalhado_corrente.ativo():
+                solicitacoes_abertas = Solicitacao.objects.filter(
+                    Q(status="aberta") & Q(responsavel_contato=funcionario) | \
+                    Q(responsavel_correcao=funcionario) | \
+                    Q(responsavel_visto=funcionario)
+                )
+            else:
+                messages.error(request, 'ERRO! Conta inativa')
+                return(redirect("login"))
+                
         except Funcionario.DoesNotExist:
-            pass
+            messages.error(request, 'ERRO! Nenhum funcionário vinculado a esta conta')
+            return(redirect("login"))
     else:
         form = AuthenticationForm()
     
