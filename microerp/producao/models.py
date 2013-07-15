@@ -41,8 +41,7 @@ class PerfilAcessoProducao(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
 
 class EstoqueFisico(models.Model):
@@ -506,7 +505,6 @@ def produto_local_documentos(instance, filename):
     return os.path.join(
         'produto/', str(instance.subproduto.id), 'documento', str(instance.id), filename
       )
-
 
 class DocumentoTecnicoProduto(models.Model):
     
