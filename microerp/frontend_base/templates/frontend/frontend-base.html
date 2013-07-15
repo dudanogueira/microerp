@@ -57,6 +57,7 @@
             {% endif %}
             </div>
             
+            {% if mostra_menu_principal_lateral %}
             <div class="well sidebar-nav principal">
               <ul class="nav nav-list">
                 <li class="nav-header"><i class="icon icon-home icon-3x"></i> Principal</li>
@@ -71,7 +72,7 @@
                 {% endif %}
               </ul>              
             </div><!--/.well -->
-            
+            {% endif %}
             
             <div class="auxiliar-menu">
             {% block auxiliar-menu %}

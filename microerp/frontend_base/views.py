@@ -34,9 +34,9 @@ def home(request):
             return(redirect("interface_home_cliente"))
         except PerfilClienteLogin.DoesNotExist:
             pass
-    else:
-        form = AuthenticationForm()
-        return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
+
+    form = AuthenticationForm()
+    return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
             
 
 def funcionario(request):

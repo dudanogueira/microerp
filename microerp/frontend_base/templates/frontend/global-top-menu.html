@@ -25,6 +25,11 @@
   {% if request.user.perfilacessoestoque and  "estoque"|is_installed_app %}
   <li id="top-menu-estoque"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Estoque" href="{% url "estoque:home" %}"><i class="icon-white icon icon-shopping-cart icon-2x"><span class="visible-phone">Estoque</span></i></a></li>
   {% endif %}
+
+  {% if request.user.perfilacessoproducao and  "producao"|is_installed_app %}
+  <li id="top-menu-producao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Produção" href="{% url "producao:home" %}"><i class="icon-white icon icon-dropbox icon-2x"><span class="visible-phone">Produção</span></i></a></li>
+  {% endif %}
+
   
 </ul>
 

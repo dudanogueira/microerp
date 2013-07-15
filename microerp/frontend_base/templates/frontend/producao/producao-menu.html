@@ -1,0 +1,57 @@
+<div class="well sidebar-nav">
+  <ul class="nav nav-list">
+    <li class="nav-header"><i class="icon icon-dropbox icon-3x"></i>Produção</li>
+    <li id="menu-producao-home"><a href="{% url "producao:home" %}"><i class="icon-th"></i> Início > Produção</a></li>
+    <li id="menu-producao-componentes"><a href="{% url "producao:home" %}">
+            {% if componente %}
+                <i class="icon-stop"></i>
+                Componente > {{componente}}
+            {%else%}
+                <i class="icon-stop"></i>
+                Componentes
+            {%endif%}
+    </a></li>
+    
+    <li id="menu-producao-subprodutos">
+        <a href="{% url "producao:home" %}">
+            <i class="icon-list-ul"></i>
+            Sub Produtos
+        </a>
+    </li>
+    
+    <li id="menu-producao-subprodutos">
+        <a href="{% url "producao:home" %}">
+            <i class="icon-windows"></i>
+            Produtos
+        </a>
+    </li>
+    
+    <li id="menu-producao-subprodutos">
+        <a href="{% url "producao:home" %}">
+            <i class="icon-archive"></i>
+            Estoques Físicos
+        </a>
+    </li>
+    
+    
+    <li id="menu-producao-subprodutos">
+        <a href="{% url "producao:home" %}">
+            <i class="icon-paste"></i>
+            Lançar Nota Fiscal
+        </a>
+    </li>
+    
+    <li id="menu-producao-subprodutos">
+        <a href="{% url "producao:home" %}">
+            <i class="icon-truck"></i>
+            Capacidade de Produção
+        </a>
+    </li>
+    
+    
+    
+    
+    
+    
+  </ul>
+</div><!--/.well -->

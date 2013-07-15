@@ -13,12 +13,14 @@ from models import LancamentoComponente
 from models import NotaFiscal
 from models import SubProduto
 from models import LinhaSubProduto
-from models import LinhaSubProdutoAlternativo
+from models import OpcaoLinhaSubProduto
 from models import DocumentoTecnicoSubProduto
 from models import Produto
 from models import LinhaProdutoAvulso
 from models import LinhaFornecedorFabricanteComponente
 from models import DocumentoTecnicoProduto
+from models import PerfilAcessoProducao
+from models import LinhaSubProdutoAgregado
 
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
@@ -66,16 +68,21 @@ class NotaFiscalAdmin(admin.ModelAdmin):
     actions = [calcular_nota, lancar_no_estoque]
         
 
-# PRODUTOS E SUBPRODUTOS
+# SUBPRODUTOS
 
-class LinhaSubProdutoAlternativo(admin.StackedInline):
-    model = LinhaSubProdutoAlternativo
+class LinhaSubProdutoAgregadoInLine(admin.StackedInline):
+    model = LinhaSubProdutoAgregado
+    extra= 0
+    fk_name = "subproduto_principal"
+
+class OpcaoLinhaSubProdutoAdmin(admin.StackedInline):
+    model = OpcaoLinhaSubProduto
     extra = 0
 
 class LinhaSubProdutoAdmin(admin.ModelAdmin):
     #filter_horizontal = 'componentes_alternativos',
     list_filter = 'subproduto',
-    inlines = LinhaSubProdutoAlternativo,
+    inlines = OpcaoLinhaSubProdutoAdmin,
 
 class LinhaSubProdutoInline(admin.StackedInline):
     #filter_horizontal = 'componentes_alternativos',
@@ -88,8 +95,7 @@ class DocumentoTecnicoSubProdutoInline(admin.StackedInline):
 
     
 class SubProdutoAdmin(admin.ModelAdmin):
-    inlines = [LinhaSubProdutoInline, DocumentoTecnicoSubProdutoInline]
-    filter_horizontal = 'subprodutos_agregados',
+    inlines = [LinhaSubProdutoAgregadoInLine, LinhaSubProdutoInline, DocumentoTecnicoSubProdutoInline]
 
 class LinhaProdutoAvulsoInline(admin.StackedInline):
     model = LinhaProdutoAvulso
@@ -128,3 +134,4 @@ admin.site.register(DocumentoTecnicoSubProduto, DocumentoTecnicoSubProdutoAdmin)
 admin.site.register(LinhaSubProduto, LinhaSubProdutoAdmin)
 admin.site.register(Produto, ProdutoAdmin)
 admin.site.register(LinhaProdutoAvulso)
+admin.site.register(PerfilAcessoProducao)

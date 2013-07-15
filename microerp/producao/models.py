@@ -29,6 +29,22 @@ TIPO_NOTA_FISCAL = (
     ('i', 'Internacional'),
 )
 
+class PerfilAcessoProducao(models.Model):
+    '''Perfil de Acesso à Produção'''
+    
+    class Meta:
+        verbose_name = u"Perfil de Acesso à Produção"
+        verbose_name_plural = u"Perfis de Acesso à Produção"
+    
+    gerente = models.BooleanField(default=False)
+    analista = models.BooleanField(default=True)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+
+
+
 class EstoqueFisico(models.Model):
     
     def __unicode__(self):
@@ -382,12 +398,21 @@ class SubProduto(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     descricao = models.TextField(blank=True)
     possui_tags = models.BooleanField(default=True, help_text="Se este campo for marcado, as Linhas do Sub Produto deverão ser alocadas para uma TAG única.")
-    subprodutos_agregados = models.ManyToManyField('self', blank=True, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
-
+class LinhaSubProdutoAgregado(models.Model):
+    ''' linha com os subprodutos e suas quantidades agregadas'''
+    
+    class Meta:
+        verbose_name = "Linha Sub Produto Agregado"
+        verbose_name_plural = "Linha de Sub Produtos Agregados"
+    
+    
+    quantidade = models.IntegerField(help_text="Numero Inteiro", blank=True, null=True, default=0)
+    subproduto_principal = models.ForeignKey('SubProduto', related_name="linhasubprodutos_agregados")
+    subproduto_agregado = models.ForeignKey('SubProduto', related_name="linhasubproutos_escolhidos")
 
 class LinhaSubProduto(models.Model):
     '''
@@ -395,7 +420,7 @@ class LinhaSubProduto(models.Model):
     '''
     
     def __unicode__(self):
-        return u"Linha de %s com %s unidades de componente %s" % (self.subproduto, self.quantidade, self.componente_padrao.part_number)
+        return u"Linha %s de SubProduto %s" % (self.peso, self.subproduto)
     
     class Meta:
         verbose_name = "Linha de Componentes do Sub Produto"
@@ -407,20 +432,24 @@ class LinhaSubProduto(models.Model):
             linha_igual = LinhaSubProduto.objects.filter(tag=self.tag, subproduto=self.subproduto)
             if linha_igual and linha_igual [0] != self:
                 raise ValidationError('Erro! Já existe uma Linha de Sub Produto com essa TAG!')
-    
+
+    peso = models.IntegerField(blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
-    componente_padrao = models.ForeignKey('Componente', related_name="subproduto_padrao_set", on_delete=models.PROTECT)
-    #componentes_alternativos = models.ManyToManyField('Componente', related_name="subproduto_alternativo_set", blank=True, null=True)
-    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     tag = models.CharField(blank=True, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-class LinhaSubProdutoAlternativo(models.Model):
+class OpcaoLinhaSubProduto(models.Model):
+
+    class Meta:
+        verbose_name = u"Opção para a Linha do SubProduto"
+        unique_together = (('linha', 'padrao'))
+    
     linha = models.ForeignKey('LinhaSubProduto')
-    componente_alternativo = models.ForeignKey('Componente')
+    componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
+    padrao = models.NullBooleanField(default=False)
     
 def subproduto_local_documentos(instance, filename):
     return os.path.join(
