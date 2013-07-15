@@ -1,0 +1,31 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Financeiro{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-rocket"></i> Contratos a Lançar</h1>
+
+
+<div id="contratos-fechados" class="well">
+    <h2>Contratos do tipo Fechado</h2>
+    <ul>
+        {% for contrato in contratos_fechados %}
+        <li>#{{contrato.id}} - {{contrato}}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-financeiro-contratos-a-lancar, #top-menu-financeiro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/financeiro/financeiro-menu.html" %}
+{% endblock%}

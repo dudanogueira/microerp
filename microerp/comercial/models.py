@@ -38,6 +38,24 @@ PROPOSTA_COMERCIAL_STATUS_CHOICES = (
     ('perdida', 'Perdida'),
 )
 
+CONTRATO_FORMA_DE_PAGAMENTO_CHOICES = (
+    ('dinheiro', 'Dinheiro'),
+    ('boleto', 'Boleto'),
+    ('cartao', u'Cartão'),
+    ('cheque', 'Cheque'),
+    ('permuta', 'Permuta'),
+)
+
+CONTRATO_TIPO_CHOICES = (
+    ('aberto', 'Aberto'),
+    ('fechado', 'Fechado'),
+)
+
+CONTRATO_STATUS_CHOICES = (
+    ('emaberto', 'Em Aberto'),
+    ('lancado', u'Contrato Lançado'),
+)
+
 class PropostaComercial(models.Model):
     
     def __unicode__(self):
@@ -101,9 +119,44 @@ class LinhaRecursoMaterial(models.Model):
     orcamento = models.ForeignKey('Orcamento')
     produto = models.ForeignKey('estoque.Produto')
     quantidade = models.IntegerField("Quantidade de Produtos", blank=True, null=True)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
 
 class LinhaRecursoHumano(models.Model):
     orcamento = models.ForeignKey('Orcamento')
     cargo = models.ForeignKey('rh.Cargo')
     quantidade = models.IntegerField(blank=True, null=True, verbose_name="Quantidade de Horas")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    
+
+class ContratoFechado(models.Model):
+    
+    def __unicode__(self):
+        return u"Contrato Fechado com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s" % \
+            (self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.inicio_cobranca, self.get_status_display())
+    
+    cliente = models.ForeignKey('cadastro.Cliente')
+    tipo = models.ForeignKey('TipodeContratoFechado')
+    forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
+    parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
+    inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
+    valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
+    receber_apos_conclusao = models.BooleanField("Receber após a conclusão do Contrato", default=False)
+    tipo = models.CharField(blank=False, max_length=100, default="fechado", choices=CONTRATO_TIPO_CHOICES)
+    status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)
+    concluido = models.BooleanField(default=False)
+    responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class TipodeContratoFechado(models.Model):
+    nome = models.CharField(blank=True, max_length=100)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
     
