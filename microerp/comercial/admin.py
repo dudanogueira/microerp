@@ -26,6 +26,9 @@ from comercial.models import Orcamento
 from comercial.models import LinhaRecursoMaterial
 from comercial.models import LinhaRecursoHumano
 from comercial.models import PerfilAcessoComercial
+from comercial.models import ContratoFechado
+from comercial.models import TipodeContratoFechado
+
 
 class PerfilAcessoComercialAdmin(admin.ModelAdmin):
     pass
@@ -45,6 +48,15 @@ class LinhaRecursoHumanoInLine(admin.TabularInline):
 class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
 
+class ContratoFechadoAdmin(admin.ModelAdmin):
+    list_filter = 'tipo', 'status',
+    search_fields = 'cliente__nome', 
+
+class TipodeContratoFechadoAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
+admin.site.register(ContratoFechado, ContratoFechadoAdmin)
+admin.site.register(TipodeContratoFechado, TipodeContratoFechadoAdmin)

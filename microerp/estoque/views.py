@@ -49,7 +49,7 @@ from django_select2 import AutoModelSelect2MultipleField
 
 def possui_perfil_acesso_estoque(user, login_url="/"):
     try:
-        if user.perfilacessoestoque and user.funcionario.periodo_trabalhado_corrente:
+        if user.perfilacessoestoque and user.funcionario.ativo():
             return True
     except:
         return False

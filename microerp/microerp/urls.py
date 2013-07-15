@@ -66,6 +66,8 @@ urlpatterns += patterns('',
     url(r'^solicitao/', include('solicitacao.urls', namespace="solicitacao")),   
     # modulo estoque
     url(r'^estoque/', include('estoque.urls', namespace="estoque")),   
+    # modulo financeiro
+    url(r'^financeiro/', include('financeiro.urls', namespace="financeiro")),   
     
 )
 # django-select2
