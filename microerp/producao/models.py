@@ -177,6 +177,7 @@ class FabricanteFornecedor(models.Model):
     tipo = models.CharField(blank=True, max_length=100, choices=FABRICANTE_FORNECEDOR_TIPO_CHOICES)
     ativo = models.BooleanField(default=True)
     nome = models.CharField(blank=True, max_length=100)
+    cnpj = models.CharField(blank=True, max_length=400)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -205,13 +206,13 @@ class LancamentoComponente(models.Model):
         if self.nota.status == 'a':
             if self.nota.tipo == 'n':
                 # nota nacional, calculo direto, sem conversao, sem imposto
-                self.valor_total_sem_imposto = self.quantidade * self.valor_unitario
+                self.valor_total_sem_imposto = float(self.quantidade) * float(self.valor_unitario)
                 # nota nacional, calculo direto, sem conversao, com imposto
                 percentual = float(self.valor_unitario) * float(self.impostos) / float(100)
-                self.valor_total_com_imposto = (float(self.valor_unitario) + float(percentual)) * self.quantidade
+                self.valor_total_com_imposto = (float(self.valor_unitario) + float(percentual)) * float(self.quantidade)
             elif self.nota.tipo == 'i':
                 # nota internacional, calculo direto, com conversao de dolar, sem imposto
-                self.valor_total_sem_imposto = self.quantidade * self.valor_unitario * self.nota.cotacao_dolar
+                self.valor_total_sem_imposto = float(self.quantidade) * float(self.valor_unitario) * float(self.nota.cotacao_dolar)
                 # nota internacional, calculo direto, com conversao de dolar, com imposto
                 percentual = float(self.valor_unitario * self.nota.cotacao_dolar) * float(self.impostos) / float(100)
                 self.valor_total_com_imposto = (float(self.valor_unitario * self.nota.cotacao_dolar) + float(percentual)) * self.quantidade
@@ -220,6 +221,19 @@ class LancamentoComponente(models.Model):
     def save(self, *args, **kwargs):
             self.calcula_totais_lancamento()            
             super(LancamentoComponente, self).save(*args, **kwargs)
+    
+    def busca_part_number_na_memoria(self):
+        # se tiver o part_number_fornecedor, buscar informações
+        if self.part_number_fornecedor:
+            conversoes = LinhaFornecedorFabricanteComponente.objects.filter(part_number_fornecedor=self.part_number_fornecedor, fornecedor=self.nota.fabricante_fornecedor)
+            if conversoes.count() == 1:
+                # so encontrou um, assumir como padrao
+                self.fabricante = conversoes[0].fabricante
+                self.part_number_fabricante = conversoes[0].part_number_fabricante
+                self.componente = conversoes[0].componente
+                self.save()
+        
+    
 
     def clean(self):
         # mecanismo para atualizar a memoria de opcao do lancamento
@@ -269,9 +283,9 @@ class LancamentoComponente(models.Model):
     nota = models.ForeignKey('NotaFiscal')
     # quick create
     part_number_fornecedor = models.CharField(blank=True, max_length=100)
-    quantidade = models.IntegerField(blank=False, null=False)    
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     valor_unitario = models.DecimalField("Valor Unitário", max_digits=10, decimal_places=2, default=0)
-    impostos = models.IntegerField("Incidência de Impostos", help_text="Porcentagem que incide de impostos", blank=True, null=True, default=0)
+    impostos = models.DecimalField("Incidência de Impostos", help_text=u"Incidência total de impostos deste Lançamento", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
     
     #campos automaticamente sugeridos, preenchidos opcionais
     componente = models.ForeignKey('Componente', verbose_name="PART NUMBER MESTRIA", blank=True, null=True)
@@ -293,6 +307,9 @@ class NotaFiscal(models.Model):
     
     def __unicode__(self):
         return u"Nota Fiscal Número: %s, %s" % (self.numero, self.get_tipo_display())
+    
+    class Meta:
+        unique_together = (('fabricante_fornecedor', 'numero'))
     
     def lancar_no_estoque(self):
         '''lanca a nota fiscal no estoque configurado como receptor'''
@@ -356,9 +373,9 @@ class NotaFiscal(models.Model):
                 item.valor_taxa_diversa_proporcional = valor_proporconal
                 # calcula valor unitario final:
                 #   total do lancamento com impostos dividido por quantidade
-                valor_unitario = item.valor_total_com_imposto / item.quantidade
+                valor_unitario = float(item.valor_total_com_imposto) / float(item.quantidade)
                 #   total do valor de taxas extra proporcial dividido por quantidade
-                valor_taxas_extra_unitario = item.valor_taxa_diversa_proporcional / item.quantidade
+                valor_taxas_extra_unitario = item.valor_taxa_diversa_proporcional / float(item.quantidade)
                 # ambos somados, sao o numero final do valor unitario, para fins de calculo do preco medio
                 item.valor_unitario_final = float(valor_taxas_extra_unitario) + float(valor_unitario)   
                 item.save()
