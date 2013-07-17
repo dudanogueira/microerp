@@ -95,7 +95,7 @@ class Command(BaseCommand):
                                 
                             setattr(produto, relacao[1], valor_novo)
                         
-                        produto.preco_custo = row['PRECO_CUSTO']
+                        produto.preco_custo = float(row['PRECO_CUSTO'])
                         print "PRECO DE CUSTO:", produto.preco_custo
                         produto.save()
 

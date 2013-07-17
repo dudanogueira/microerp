@@ -78,7 +78,7 @@ class Produto(models.Model):
     descricao = models.CharField(blank=False, max_length=300)
     unidade_de_venda = models.CharField(blank=True, max_length=100, choices=PRODUTO_UNIDADE_DE_VENDA_CHOICES, null=True, default='un')
     unidade_de_compra = models.CharField(blank=True, max_length=100, choices=PRODUTO_UNIDADE_DE_VENDA_CHOICES, null=True, default='un')
-    fator = models.IntegerField(blank=True, null=True)
+    fator = models.CharField(blank=True, null=True, max_length=100)
     quantidade_em_estoque = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
     preco_custo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
