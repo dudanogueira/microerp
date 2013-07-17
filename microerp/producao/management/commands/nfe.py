@@ -37,19 +37,25 @@ class Command(BaseCommand):
             f = args[0]
             try:
                 xmldoc = minidom.parse(f)
-                infNFE = xmldoc.getElementsByTagName('infNFe')[0]
-                idnfe = infNFE.getAttribute('Id')
+                infNFE = xmldoc.getElementsByTagName('chNFe')[0]
+                idnfe = infNFE.firstChild.nodeValue[22:34]
+                nome_emissor = xmldoc.getElementsByTagName('xNome')[0]
+                nome = nome_emissor.firstChild.nodeValue
+                print "NOME DO EMISSOR: %s" % nome
                 print "ID NOTA FISCAL %s" % idnfe
                 emissor = xmldoc.getElementsByTagName('emit')[0]
                 cnpj_emissor = xmldoc.getElementsByTagName('CNPJ')[0].firstChild.nodeValue
                 # busca emissor
-                fornecedor = FabricanteFornecedor.objects.get(cnpj=cnpj_emissor)
+                fornecedor,created = FabricanteFornecedor.objects.get_or_create(cnpj=cnpj_emissor)
+                fornecedor.nome = nome
+                fornecedor.save()
                 print "Fornecedor Encontrado: %s" % fornecedor
                 frete = xmldoc.getElementsByTagName('vFrete')[0].firstChild.nodeValue
                 # criando NFE no sistema
                 nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=idnfe)
                 nfe_sistema.taxas_diversas = frete
                 nfe_sistema.save()
+                # if created:
                 if 1:
                     print "Nota Criada!!"
                     # pega itens da nota
@@ -71,9 +77,21 @@ class Command(BaseCommand):
                             aliquota_ipi = float(item.getElementsByTagName('pIPI')[0].firstChild.nodeValue)
                         except:
                             aliquota_ipi = 0
-                        total_impostos = aliquota_ipi + aliquota_icms
+                        try:
+                            aliquota_pis = float(item.getElementsByTagName('pPIS')[0].firstChild.nodeValue)
+                        except:
+                            aliquota_pis = 0
+                        try:
+                            aliquota_cofins = float(item.getElementsByTagName('pCOFINS')[0].firstChild.nodeValue)
+                        except:
+                            aliquota_cofins = 0
+
+                            
+                        total_impostos = aliquota_ipi + aliquota_icms + aliquota_cofins + aliquota_cofins
                         print "Valor %% ICMS: %s" % aliquota_icms
                         print "Valor %% IPI: %s" % aliquota_ipi
+                        print "Valor %% COFNS: %s" % aliquota_cofins
+                        print "Valor %% PIS: %s" % aliquota_pis
                         print "Incidência de %% impostos: %s" % total_impostos
                                                 
                         item_lancado = nfe_sistema.lancamentocomponente_set.create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario=valor_unitario, impostos=total_impostos)

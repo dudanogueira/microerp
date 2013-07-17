@@ -28,6 +28,13 @@ from comercial.models import LinhaRecursoHumano
 from comercial.models import PerfilAcessoComercial
 from comercial.models import ContratoFechado
 from comercial.models import TipodeContratoFechado
+from comercial.models import CategoriaContratoFechado
+
+# ADMIN ACTIONS
+def lancar_contrato(modeladmin, request, queryset):
+    for contrato in queryset:
+        contrato.lancar()
+lancar_contrato.short_description = u"Lançar Contrato para o Financeiro"
 
 
 class PerfilAcessoComercialAdmin(admin.ModelAdmin):
@@ -51,6 +58,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
 class ContratoFechadoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'status',
     search_fields = 'cliente__nome', 
+    actions = [lancar_contrato,]
 
 class TipodeContratoFechadoAdmin(admin.ModelAdmin):
     pass
@@ -60,3 +68,4 @@ admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
 admin.site.register(ContratoFechado, ContratoFechadoAdmin)
 admin.site.register(TipodeContratoFechado, TipodeContratoFechadoAdmin)
+admin.site.register(CategoriaContratoFechado)

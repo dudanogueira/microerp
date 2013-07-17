@@ -23,12 +23,17 @@ from django.contrib import admin
 
 from financeiro.models import PerfilAcessoFinanceiro
 from financeiro.models import Lancamento
+from financeiro.models import ContaBancaria
 
 class PerfilAcessoFinanceiroAdmin(admin.ModelAdmin):
     pass
 
 class LancamentoAdmin(admin.ModelAdmin):
-    pass
+    search_fields = 'contrato__cliente__nome',
+    list_filter = 'conta', 'situacao', 'data_cobranca', 'modo_recebido', 'peso'
+    date_hierarchy = 'data_cobranca'
+    
 
 admin.site.register(PerfilAcessoFinanceiro, PerfilAcessoFinanceiroAdmin)
 admin.site.register(Lancamento, LancamentoAdmin)
+admin.site.register(ContaBancaria)

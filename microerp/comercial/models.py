@@ -39,9 +39,10 @@ PROPOSTA_COMERCIAL_STATUS_CHOICES = (
 )
 
 CONTRATO_FORMA_DE_PAGAMENTO_CHOICES = (
-    ('dinheiro', 'Dinheiro'),
     ('boleto', 'Boleto'),
-    ('cartao', u'Cartão'),
+    ('credito', u'Cartão de Crédito'),
+    ('debito', u'Cartão de Débito'),
+    ('dinheiro', 'Dinheiro'),
     ('cheque', 'Cheque'),
     ('permuta', 'Permuta'),
 )
@@ -49,6 +50,7 @@ CONTRATO_FORMA_DE_PAGAMENTO_CHOICES = (
 CONTRATO_TIPO_CHOICES = (
     ('aberto', 'Aberto'),
     ('fechado', 'Fechado'),
+    ('mensal', 'Mensal'),
 )
 
 CONTRATO_STATUS_CHOICES = (
@@ -133,14 +135,42 @@ class LinhaRecursoHumano(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
 
-class ContratoFechado(models.Model):
+class CategoriaContratoFechado(models.Model):
     
     def __unicode__(self):
-        return u"Contrato Fechado com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s" % \
-            (self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.inicio_cobranca, self.get_status_display())
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=200)
+
+class ContratoFechado(models.Model):
+    
+    def lancar(self):
+        '''lancar o contrato'''
+        if self.status  == 'emaberto':
+            # lanca o contrato, vinculando X lancamentos mensais do valor_total do contrato à partir da data de inicio da cobranca
+            # valor da parcela
+            try:
+                valor_parcela = self.valor / self.parcelas
+                for peso_parcela in range(1, self.parcelas+1):
+                    if peso_parcela == 1:
+                        data_cobranca = self.inicio_cobranca
+                    else:
+                        data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * peso_parcela
+                    self.lancamento_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca)
+                # fecha o contrato
+                self.status = 'lancado'
+                self.save()
+            except:
+                raise
+                
+    
+    def __unicode__(self):
+        return u"Contrato Fechado #%d  com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s. Categoria: %s" % \
+            (self.id, self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.inicio_cobranca, self.get_status_display(), self.categoria)
     
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado')
+    categoria = models.ForeignKey('CategoriaContratoFechado')
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
@@ -153,6 +183,8 @@ class ContratoFechado(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+    
 
 class TipodeContratoFechado(models.Model):
     nome = models.CharField(blank=True, max_length=100)
