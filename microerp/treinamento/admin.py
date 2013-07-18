@@ -32,8 +32,8 @@ from treinamento.models import ParticipaoDiaDeAula
 class AulaAdmin(admin.ModelAdmin):
     search_fields = 'nome', 'grupo__nome', 'alunos_inscritos__nome'
     filter_horizontal = 'alunos_inscritos',
-    list_display = 'nome', 'professor', 'grupo'
-    list_filter = 'grupo', 'professor'
+    list_display = 'nome', 'professor', 'grupo', 'local'
+    list_filter = 'grupo', 'professor', 'local'
 
 class UnidadeDeAulaAdmin(admin.ModelAdmin):
     search_fields = 'aula__nome', 'aula_grupo__nome',

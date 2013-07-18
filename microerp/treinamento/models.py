@@ -30,7 +30,7 @@ class PerfilAluno(models.Model):
     '''Cliente ou Funcionario pode ser Aluno'''
     
     def __unicode__(self):
-        return self.content_object.nome
+        return self.content_object.__unicode__()
     
     nome = models.CharField(blank=True, max_length=100)
     content_type = models.ForeignKey(ContentType)
@@ -49,7 +49,7 @@ class Aula(models.Model):
     '''Aula em si, separada por grupo, contendo professor e local'''
     
     def __unicode__(self):
-        return self.nome
+        return u"Aula: %s do Grupo %s do Professor %s no local %s" % (self.nome, self.grupo, self.professor, self.local)
     
     nome = models.CharField(blank=True, max_length=100)
     grupo = models.ForeignKey('GrupoAula')
@@ -84,9 +84,12 @@ class ParticipaoDiaDeAula(models.Model):
 def grava_nome_aluno(signal, instance, sender, **kwargs):
     '''Após salvar o Perfil do aluno, puxa o nome do objeto relacionado (Funcionario ou Cliente)
     '''
-    if instance.nome != instance.content_object.nome:
-        instance.nome = instance.content_object.nome
-        instance.save()
+    try:
+        if instance.nome != instance.content_object.nome:
+            instance.nome = instance.content_object.nome
+            instance.save()
+    except:
+        pass
 
 
 # conectores de sinais
