@@ -69,6 +69,10 @@ class UnidadeDeAula(models.Model):
     professor = models.ForeignKey('PerfilProfessor')
 
 class ParticipaoDiaDeAula(models.Model):
+    
+    def __unicode__(self):
+        return u"Participação da Aula %s pelo Aluno %s" % (self.dia_de_aula, self.aluno)
+    
     dia_de_aula = models.ForeignKey('UnidadeDeAula')
     professor = models.ForeignKey('PerfilProfessor')
     aluno = models.ForeignKey('PerfilAluno')

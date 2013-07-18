@@ -155,7 +155,8 @@ class ContratoFechado(models.Model):
                     if peso_parcela == 1:
                         data_cobranca = self.inicio_cobranca
                     else:
-                        data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * peso_parcela
+                        fator = peso_parcela - 1
+                        data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * fator
                     self.lancamento_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca)
                 # fecha o contrato
                 self.status = 'lancado'

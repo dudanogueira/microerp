@@ -67,6 +67,8 @@ def funcionario(request):
 
 
 def cliente(request):
+    # esconde o menu lateral principal
+    mostra_menu_principal_lateral = False
     if request.user.is_authenticated():
         try:
             funcionario = request.user.funcionario
