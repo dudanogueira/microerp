@@ -5,12 +5,13 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-paste"></i> Editar Nota</h1>
+<h1><i class="icon-th"></i> <i class="icon-paste"></i> Editar Nota: {{notafiscal.numero}}</h1>
 
-Nota Fiscal: {{notafiscal}}
-
-Form:
-{{form_notafiscal}}
+<form method="POST">
+    {% csrf_token %}
+{{form_notafiscal.as_p}}
+<input type="submit" value="Aterar Nota">
+</form>
 
 {% endblock %}
 

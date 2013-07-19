@@ -4,13 +4,13 @@
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
 {% block content %}
-
-<h1><i class="icon-th"></i> <i class="icon-paste"></i> Adicionar Nota</h1>
-
+<h1>Nota Fiscal {{notafiscal.numero}}</h1>
+<h2>{{notafiscal.fabricante_fornecedor}}</h2>
+<h3>Adicionar Novo Lançamento</h3>
 <form method="POST">
     {% csrf_token %}
-    {{form_adicionar_notafiscal.as_p}}
-    <input type="submit" value="Adicionar Nota">
+{{lancamento_form.as_p}}
+<input type="submit" value="Adicionar Novo Lançamento">
 </form>
 {% endblock %}
 

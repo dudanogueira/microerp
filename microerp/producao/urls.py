@@ -5,6 +5,13 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     url(r'^$', 'producao.views.home', name='home'),
     url(r'^notafiscal/lancar_nota$', 'producao.views.lancar_nota', name='lancar_nota'),
-    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/editar$', 'producao.views.editar_nota', name='editar_nota'),    
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/calcular$', 'producao.views.calcular_nota', name='calcular_nota'),
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/apagar$', 'producao.views.apagar_nota', name='apagar_nota'),
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/editar$', 'producao.views.editar_nota', name='editar_nota'),
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/ver$', 'producao.views.ver_nota', name='ver_nota'),    
     url(r'^notafiscal/adicionar$', 'producao.views.adicionar_nota', name='adicionar_nota'),
+    # editar lancamentos
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/(?P<lancamento_id>[0-9]+)/editar$', 'producao.views.editar_lancamento', name='editar_lancamento'),
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/adicionar$', 'producao.views.adicionar_lancamento', name='adicionar_lancamento'),
+    
 )

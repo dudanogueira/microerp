@@ -53,7 +53,9 @@ class Command(BaseCommand):
                     print "Fornecedor CRIADO: %s" % fornecedor
                 else:
                     print "Fornecedor encrontrado: %s" % fornecedor
-                frete = xmldoc.getElementsByTagName('vFrete')[0].firstChild.nodeValue
+
+                total = xmldoc.getElementsByTagName('total')[0]
+                frete = total.getElementsByTagName('vFrete')[0].firstChild.nodeValue
                 # criando NFE no sistema
                 nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=idnfe)
                 nfe_sistema.taxas_diversas = frete

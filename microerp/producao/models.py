@@ -215,7 +215,7 @@ class LancamentoComponente(models.Model):
                 self.valor_total_sem_imposto = float(self.quantidade) * float(self.valor_unitario) * float(self.nota.cotacao_dolar)
                 # nota internacional, calculo direto, com conversao de dolar, com imposto
                 percentual = float(self.valor_unitario * self.nota.cotacao_dolar) * float(self.impostos) / float(100)
-                self.valor_total_com_imposto = (float(self.valor_unitario * self.nota.cotacao_dolar) + float(percentual)) * self.quantidade
+                self.valor_total_com_imposto = (float(self.valor_unitario * self.nota.cotacao_dolar) + float(percentual)) * float(self.quantidade)
 
             
     def save(self, *args, **kwargs):
@@ -249,6 +249,8 @@ class LancamentoComponente(models.Model):
             # reinicia o valor do campo
             self.aprender = False
         
+
+    def identificar_partnumber(self):
         # se tiver o part_number_fornecedor, buscar informações
         if self.part_number_fornecedor:
             conversoes = LinhaFornecedorFabricanteComponente.objects.filter(part_number_fornecedor=self.part_number_fornecedor, fornecedor=self.nota.fabricante_fornecedor)
@@ -257,25 +259,25 @@ class LancamentoComponente(models.Model):
                 self.fabricante = conversoes[0].fabricante
                 self.part_number_fabricante = conversoes[0].part_number_fabricante
                 self.componente = conversoes[0].componente
-                #self.save()
-            if conversoes.count() > 1:
-                pns = []
-                for l in conversoes:
-                    pns.append(l.componente)
-                raise ValidationError(u'Erro! Este Part Number do Fornecedor aponta para mais de um PART NUMBER MESTRIA: %s' % pns)
-            if conversoes.count() == 0:
+                self.save()
+            #if conversoes.count() > 1:
+            #    pns = []
+            #    for l in conversoes:
+            #        pns.append(l.componente)
+            #    raise ValidationError(u'Erro! Este Part Number do Fornecedor aponta para mais de um PART NUMBER MESTRIA: %s' % pns)
+            #if conversoes.count() == 0:
                 # nenhuma conversao encontrada
-                if self.componente:
+            #    if self.componente:
                     # part number escolhido, checar se o partnumber já possui um código neste cliente
-                    try:
-                        conversao = LinhaFornecedorFabricanteComponente.objects.get(componente=self.componente, fornecedor=self.nota.fabricante_fornecedor)
-                        raise ValidationError(u'Erro! Este PART NUMBER MESTRIA já existe com o código de %s' % conversao.part_number_fornecedor)                        
-                    except LinhaFornecedorFabricanteComponente.DoesNotExist:
+             #       try:
+             #           conversao = LinhaFornecedorFabricanteComponente.objects.get(componente=self.componente, fornecedor=self.nota.fabricante_fornecedor)
+            #            raise ValidationError(u'Erro! Este PART NUMBER MESTRIA já existe com o código de %s' % conversao.part_number_fornecedor)                        
+            #        except LinhaFornecedorFabricanteComponente.DoesNotExist:
                         # nao possui, aprender se pedido for
-                        raise ValidationError(u'Aprender!')
+            #            raise ValidationError(u'Aprender!')
                 
-                else:
-                    raise ValidationError(u'Erro! Part Number do Fornecedor não encontrado. Escolha o PART NUMBER MESTRIA')
+            #    else:
+            #        raise ValidationError(u'Erro! Part Number do Fornecedor não encontrado. Escolha o PART NUMBER MESTRIA')
             
                 
     

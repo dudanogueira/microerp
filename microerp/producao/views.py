@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import user_passes_test
 
 from producao.models import FabricanteFornecedor
 from producao.models import NotaFiscal
+from producao.models import LancamentoComponente
 
 
 from django import forms
@@ -56,7 +57,8 @@ def importa_nota_sistema(f):
             print "Fornecedor CRIADO: %s" % fornecedor
         else:
             print "Fornecedor encrontrado: %s" % fornecedor
-        frete = xmldoc.getElementsByTagName('vFrete')[0].firstChild.nodeValue
+        total = xmldoc.getElementsByTagName('total')[0]
+        frete = total.getElementsByTagName('vFrete')[0].firstChild.nodeValue
         # criando NFE no sistema
         nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=idnfe)
         nfe_sistema.taxas_diversas = frete
@@ -123,6 +125,7 @@ def importa_nota_sistema(f):
     
 
 def lancar_nota(request):
+    notas_abertas = NotaFiscal.objects.filter(status='a')
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
     if request.GET.get('tipo', None) == 'nfe':
         tipo = 'nfe'
@@ -139,7 +142,7 @@ def lancar_nota(request):
                 nota = importa_nota_sistema(request.FILES['file'])
                 if nota:
                     messages.success(request, 'Nota Importada com Sucesso!')
-                    return redirect(reverse('producao:editar_nota', args=[nota.id]))
+                    return redirect(reverse('producao:ver_nota', args=[nota.id]))
                 else:
                     messages.success(request, 'Erro ao Importar nota!')
             except:
@@ -153,14 +156,88 @@ def lancar_nota(request):
 class NotaFiscalForm(forms.ModelForm):
     class Meta:
         model = NotaFiscal
+        fields = ['fabricante_fornecedor', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar', 'total_com_imposto', 'total_da_nota_em_dolar']
+
+# MODEL FORM LANCAMENTO NOTA FISCAL
+
+class LancamentoNotaFiscalForm(forms.ModelForm):
+    class Meta:
+        model = LancamentoComponente
+        fields = 'part_number_fornecedor', 'quantidade', 'valor_unitario', 'impostos', 'componente', 'fabricante', 'part_number_fabricante', 'aprender'
+
 
 def adicionar_nota(request):
     '''nota fiscal manual / Internacional'''
-    form_adicionar_notafiscal = NotaFiscalForm()
+    if request.POST:
+        form_adicionar_notafiscal = NotaFiscalForm(request.POST)
+        if form_adicionar_notafiscal.is_valid():
+            nota = form_adicionar_notafiscal.save()
+            messages.success(request, u'Nota Adicionada com Sucesso!')
+            return redirect(reverse('producao:ver_nota', args=[nota.id,]))
+            
+    else:
+        form_adicionar_notafiscal = NotaFiscalForm()
     return render_to_response('frontend/producao/producao-adicionar-nota.html', locals(), context_instance=RequestContext(request),)
 
+def apagar_nota(request, notafiscal_id):
+    notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
+    notafiscal.delete()
+    messages.success(request, u'Nota Fiscal Apagada com Sucesso!')
+    return redirect(reverse('producao:lancar_nota'))
+
 def editar_nota(request, notafiscal_id):
-    notafiscal = NotaFiscal.objects.get(id=notafiscal_id)
-    form_notafiscal = NotaFiscalForm(instance=notafiscal)
+    notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
+    if request.POST:
+        form_notafiscal = NotaFiscalForm(request.POST, instance=notafiscal)
+        if form_notafiscal.is_valid():
+            form_notafiscal.save()
+            messages.success(request, u'Nota Fiscal Alterada com Sucesso!')
+            return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
+            
+    else:
+        form_notafiscal = NotaFiscalForm(instance=notafiscal)
     return render_to_response('frontend/producao/producao-editar-nota.html', locals(), context_instance=RequestContext(request),)
+
+def calcular_nota(request, notafiscal_id):
+    notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
+    # calcular todas os lancamentos
+    for lancamento in notafiscal.lancamentocomponente_set.all():
+        lancamento.calcula_totais_lancamento()
+    # calcula total da nota
+    notafiscal.calcula_totais_nota()
+    # retorna para ver a nota
+    messages.success(request, u'Totais e Impostos Calculados com Sucesso!')
+    return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
+
+def ver_nota(request, notafiscal_id):
+    notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
+    return render_to_response('frontend/producao/producao-ver-nota.html', locals(), context_instance=RequestContext(request),)
+
+def editar_lancamento(request, notafiscal_id, lancamento_id):
+    lancamento = get_object_or_404(LancamentoComponente, nota__id=notafiscal_id, id=lancamento_id)
+    if request.POST:        
+        lancamento_form = LancamentoNotaFiscalForm(request.POST, instance=lancamento)
+        if lancamento_form.is_valid():
+            lancamento_form.save()
+            messages.success(request, u'Lançamento %d Editado com Sucesso!' % lancamento.id)
+            return redirect(reverse('producao:ver_nota', args=[lancamento.nota.id,]))
+            
+    else:
+        lancamento_form = LancamentoNotaFiscalForm(instance=lancamento)
+        
+    return render_to_response('frontend/producao/producao-editar-lancamento.html', locals(), context_instance=RequestContext(request),)
+
+def adicionar_lancamento(request, notafiscal_id):
+    notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
+    if request.POST:
+        lancamento_form = LancamentoNotaFiscalForm(request.POST)
+        if lancamento_form.is_valid():
+            lancamento = lancamento_form.save(commit=False)
+            lancamento.nota = notafiscal
+            lancamento.save()
+            messages.success(request, u'Lançamento %d Adicionado com Sucesso à nota %s!' % (lancamento.id, notafiscal))
+            return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
+    else:
+        lancamento_form = LancamentoNotaFiscalForm()
+    return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
     

@@ -29,6 +29,13 @@
 
 {% endif %}
 
+<h2>Notas Abertas</h2>
+<ul>
+{% for nota in notas_abertas %}
+    <li><a href="{% url "producao:ver_nota" nota.id %}"><strong>{{nota.fabricante_fornecedor}}</strong>: {{nota}}</a></li>
+{% endfor %}
+</ul>
+
 {% endblock %}
 
 {% block auxiliar-menu %}
