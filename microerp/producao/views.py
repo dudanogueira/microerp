@@ -72,7 +72,7 @@ def importa_nota_sistema(f):
             valor_unitario = item.getElementsByTagName('vUnCom')[0].firstChild.nodeValue
             print u"ITEM: %s" % codigo_produto
             print u"Quantidade: %s" % quantidade
-            print u"Valor Unitário: %s" % valor_unitario
+            print u"Valor Unitario: %s" % valor_unitario
             # impostos
             try:
                 aliquota_icms = float(item.getElementsByTagName('pICMS')[0].firstChild.nodeValue)
@@ -98,7 +98,7 @@ def importa_nota_sistema(f):
             print "Valor %% IPI: %s" % aliquota_ipi
             print "Valor %% COFNS: %s" % aliquota_cofins
             print "Valor %% PIS: %s" % aliquota_pis
-            print "Incidência de %% impostos: %s" % total_impostos
+            print "Incidencia de %% impostos: %s" % total_impostos
         
             # busca o lancamento, para evitar dois lancamentos iguais do mesmo partnumber
             item_lancado,created = nfe_sistema.lancamentocomponente_set.get_or_create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario= valor_unitario, impostos= total_impostos)
@@ -117,7 +117,7 @@ def importa_nota_sistema(f):
         print "TOTAL DA NOTA: %s (Frete) + %s (Produtos + Impostos)" % (frete, produtos)
         print "Produtos"
         for lancamento in nfe_sistema.lancamentocomponente_set.all():
-            print u"----- PN-FORNECEDOR: %s, QTD: %s VALOR: %s, Impostos: %s%% = TOTAL: %s Unitário (considerando frete proporcional) %s" % (lancamento.part_number_fornecedor, lancamento.quantidade, lancamento.valor_unitario, lancamento.impostos, lancamento.valor_total_com_imposto, lancamento.valor_unitario_final)
+            print u"----- PN-FORNECEDOR: %s, QTD: %s VALOR: %s, Impostos: %s%% = TOTAL: %s Unitario (considerando frete proporcional) %s" % (lancamento.part_number_fornecedor, lancamento.quantidade, lancamento.valor_unitario, lancamento.impostos, lancamento.valor_total_com_imposto, lancamento.valor_unitario_final)
         return nfe_sistema
     except:
         raise
