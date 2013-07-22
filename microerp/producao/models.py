@@ -144,7 +144,7 @@ class Componente(models.Model):
     ativo = models.BooleanField(default=True)
     part_number = models.CharField("PART NUMBER", help_text="IDENTIFICADOR GERADO AUTOMÁTICO", blank=True, null=True, max_length=100)
     identificador = models.IntegerField("Identificador único junto a categoria", blank=True, null=True, default=1)
-    tipo = models.ForeignKey('ComponenteTipo')    
+    tipo = models.ForeignKey('ComponenteTipo', blank=False, null=False)    
     descricao = models.TextField(blank=True)
     importado = models.BooleanField(default=False)
     ncm = models.CharField(blank=True, max_length=100)

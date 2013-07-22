@@ -9,10 +9,14 @@ from django.core.urlresolvers import reverse
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import user_passes_test
+from django.db.models import Q
+from django.conf import settings
 
 from producao.models import FabricanteFornecedor
 from producao.models import NotaFiscal
 from producao.models import LancamentoComponente
+from producao.models import Componente
+from producao.models import ComponenteTipo
 
 
 from django import forms
@@ -124,6 +128,7 @@ def importa_nota_sistema(f):
         return False
     
 
+
 def lancar_nota(request):
     notas_abertas = NotaFiscal.objects.filter(status='a')
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
@@ -166,6 +171,7 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         fields = 'part_number_fornecedor', 'quantidade', 'valor_unitario', 'impostos', 'componente', 'fabricante', 'part_number_fabricante', 'aprender'
 
 
+
 def adicionar_nota(request):
     '''nota fiscal manual / Internacional'''
     if request.POST:
@@ -179,11 +185,13 @@ def adicionar_nota(request):
         form_adicionar_notafiscal = NotaFiscalForm()
     return render_to_response('frontend/producao/producao-adicionar-nota.html', locals(), context_instance=RequestContext(request),)
 
+
 def apagar_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     notafiscal.delete()
     messages.success(request, u'Nota Fiscal Apagada com Sucesso!')
     return redirect(reverse('producao:lancar_nota'))
+
 
 def editar_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
@@ -198,6 +206,7 @@ def editar_nota(request, notafiscal_id):
         form_notafiscal = NotaFiscalForm(instance=notafiscal)
     return render_to_response('frontend/producao/producao-editar-nota.html', locals(), context_instance=RequestContext(request),)
 
+
 def calcular_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     # calcular todas os lancamentos
@@ -209,9 +218,11 @@ def calcular_nota(request, notafiscal_id):
     messages.success(request, u'Totais e Impostos Calculados com Sucesso!')
     return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
 
+
 def ver_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     return render_to_response('frontend/producao/producao-ver-nota.html', locals(), context_instance=RequestContext(request),)
+
 
 def editar_lancamento(request, notafiscal_id, lancamento_id):
     lancamento = get_object_or_404(LancamentoComponente, nota__id=notafiscal_id, id=lancamento_id)
@@ -227,6 +238,7 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
         
     return render_to_response('frontend/producao/producao-editar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
+
 def adicionar_lancamento(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     if request.POST:
@@ -240,4 +252,114 @@ def adicionar_lancamento(request, notafiscal_id):
     else:
         lancamento_form = LancamentoNotaFiscalForm()
     return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
+
+
+
+# COMPONENTES
+
+## FORMS
+
+class ComponenteFormAdd(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        identificador = kwargs.pop('identificador')
+        tipo = kwargs.pop('tipo')
+        super(ComponenteFormAdd, self).__init__(*args, **kwargs)
+        self.fields['identificador'].initial  = identificador
+        self.fields['identificador'].widget.attrs['readonly'] = True
+        self.fields['tipo'].initial  = tipo
+        self.fields['tipo'].widget.attrs['readonly'] = True
+        
+
+    class Meta:
+        fields = ('identificador', 'tipo', 'descricao', 'importado', 'ncm', 'lead_time', 'quantidade_minima', 'medida')
+        model = Componente
+
+
+
+class ComponenteFormPreAdd(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(ComponenteFormPreAdd, self).__init__(*args, **kwargs)
+        self.fields['tipo'].required = True
+    
+    class Meta:
+        model = Componente
+        fields = ['tipo',]
+
+
+class TipoComponenteAdd(forms.ModelForm):
+    class Meta:
+        model = ComponenteTipo
+## VIEWS
+
+def listar_componentes(request):
+    if request.POST:
+        if request.POST.get('adicionar-tipo-componente', None):
+            tipo_componente_form = TipoComponenteAdd(request.POST)
+            if tipo_componente_form.is_valid():
+                tipo = tipo_componente_form.save()
+                messages.success(request, u'Tipo de Componente %s Adicionado com  Sucesso!' % tipo)
+                return redirect(reverse('producao:listar_componentes'))
+    
+    elif request.GET:
+        q_componente = request.GET.get('q_componente', True)
+        if q_componente:
+            if q_componente == "todos":
+                componentes_encontrados = Componente.objects.all()
+            else:
+                componentes_encontrados = Componente.objects.filter(
+                    Q(part_number__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
+                )
+        
+    componente_form = ComponenteFormPreAdd()
+    tipo_componente_form = TipoComponenteAdd()
+    return render_to_response('frontend/producao/producao-listar-componentes.html', locals(), context_instance=RequestContext(request),)
+
+
+def adicionar_componentes(request):
+    if request.POST.get('adicionar-componente', None):
+        identificador = request.POST.get('identificador', None)
+        tipo = request.POST.get('tipo', None)
+        form_add_componente = ComponenteFormAdd(request.POST, identificador=identificador, tipo=tipo)
+        if form_add_componente.is_valid():
+            componente = form_add_componente.save()
+            messages.success(request, u"Sucesso! Componente %s Adicionado!" % componente)
+            return redirect(reverse('producao:listar_componentes'))
+        else:
+            messages.error(request, u"Erro! Componente NÃO Adicionado!")
+            return render_to_response('frontend/producao/producao-adicionar-componentes.html', locals(), context_instance=RequestContext(request),)    
+            
+    
+    if request.POST.get('pre-adicionar-componente', None):        
+        # componente pre adicionado (tipo escolhido)
+        tipo_componente_form = ComponenteFormPreAdd(request.POST)
+        if tipo_componente_form.is_valid():
+            tipo = tipo_componente_form.save(commit=False).tipo
+            if tipo:
+                messages.success(request, u"Adicionando um Componente do tipo <strong>%s</strong>" % tipo)
+                # seleciona o último componente nessa situação
+                ultimo_identificador = Componente.objects.filter(tipo=tipo).order_by('-identificador')
+                if ultimo_identificador.count():
+                    ultimo_identificador = ultimo_identificador[0].identificador
+                else:
+                    # caso não exista nenhum componente deste tipo, assumir identificador inicial
+                    ultimo_identificador = 0                    
+                identificador = ultimo_identificador + 1
+                form_add_componente = ComponenteFormAdd(tipo=tipo, identificador=identificador)
+        else:
+            messages.warning(request, u"Nenhuma ação tomada. É preciso escolher o Tipo de Componente para adicionar")
+            return redirect(reverse('producao:listar_componentes'))
+        
+        
+        pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
+        part_number = u"%s-%s%s" % (pn_prepend, tipo.nome[0:3].upper(), "%05d" % identificador)
+        return render_to_response('frontend/producao/producao-adicionar-componentes.html', locals(), context_instance=RequestContext(request),)    
+    else:
+        # retorna à listagem
+        messages.warning(request, u"Nenhuma ação tomada. É preciso escolher o tipo de Componente para adicionar")
+        return redirect(reverse('producao:listar_componentes'))
+    
+def ver_componente(request, componente_id):
+    componente = get_object_or_404(Componente, pk=componente_id)
+    return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
     

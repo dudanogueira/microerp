@@ -13,5 +13,9 @@ urlpatterns = patterns('',
     # editar lancamentos
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/(?P<lancamento_id>[0-9]+)/editar$', 'producao.views.editar_lancamento', name='editar_lancamento'),
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/adicionar$', 'producao.views.adicionar_lancamento', name='adicionar_lancamento'),
+    # componentes e categorias
+    url(r'^componentes$', 'producao.views.listar_componentes', name='listar_componentes'),
+    url(r'^componentes/adicionar$', 'producao.views.adicionar_componentes', name='adicionar_componentes'),
+    url(r'^componentes/(?P<componente_id>[0-9]+)/ver$', 'producao.views.ver_componente', name='ver_componente'),
     
 )

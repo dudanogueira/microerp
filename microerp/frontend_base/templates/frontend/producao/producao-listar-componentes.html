@@ -1,0 +1,61 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-stop"></i> Componentes</h1>
+<div class="well well-small">
+    <h2>Buscar</h2>
+    <h5>Campos: Part Number, Descrição</h5>
+    <form class="form-search">
+      <input type="text" class="input-medium search-query" name="q_componente", id="busca_componente" {% if q_componente %}value="{{q_componente}}"{% endif %}>
+      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Componente</button>
+      <a class="btn btn-success" href="?q_componente=todos">Listar Todos</a>
+    </form>
+    {% if componentes_encontrados %}
+    <hr/>
+    <ul>
+    {% for componente in componentes_encontrados %}
+        <li><a href="{% url "producao:ver_componente"  componente.id %}">{{componente}}</a></li>
+    {% endfor %}
+    </ul>
+    
+    {% endif %}
+</div>
+
+<div class="well well-small">
+    <h2>Adicionar Componente</h2>
+    <form method="POST" action="{% url "producao:adicionar_componentes" %}" class="form-inline">
+        {% csrf_token %}
+        {{componente_form}}
+        <button type="submit" value="Adicionar Componente" name="pre-adicionar-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Componente</button>
+    </form>
+</div>
+
+<div class="well well-small">
+    <h2>Adicionar Tipo de Componente</h2>
+    <form method="POST" class="form-inline">
+        {% csrf_token %}
+        {{tipo_componente_form}}
+        <button type="submit" value="Adicionar Tipo de Componente" name="adicionar-tipo-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Tipo de Componente</button>
+    </form>
+    
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
+    $("#busca_componente").focus()
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

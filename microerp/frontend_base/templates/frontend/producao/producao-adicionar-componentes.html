@@ -1,0 +1,26 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+<h1>Adicionando {{part_number}}</h1>
+<form method="POST">
+    {% csrf_token %}
+    {{form_add_componente.as_p}}
+    <button type="submit" class="btn btn-primary" name="adicionar-componente" value="adicionar"><i class="icon-plus"></i> Adicionar {{part_number}}</button>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
+    $("#busca_componente").focus()
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

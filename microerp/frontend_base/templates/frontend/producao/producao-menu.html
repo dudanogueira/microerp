@@ -2,7 +2,7 @@
   <ul class="nav nav-list">
     <li class="nav-header"><i class="icon icon-dropbox icon-3x"></i>Produção</li>
     <li id="menu-producao-home"><a href="{% url "producao:home" %}"><i class="icon-th"></i> Início > Produção</a></li>
-    <li id="menu-producao-componentes"><a href="{% url "producao:home" %}">
+    <li id="menu-producao-componentes"><a href="{% url "producao:listar_componentes" %}">
             {% if componente %}
                 <i class="icon-stop"></i>
                 Componente > {{componente}}
@@ -47,6 +47,14 @@
             Capacidade de Produção
         </a>
     </li>
+    
+    <li id="menu-producao-fabricantes-fornecedores">
+        <a href="{% url "producao:lancar_nota" %}">
+            <i class="icon-building"></i>
+            Fabricantes / Fornecedores
+        </a>
+    </li>
+    
     
     
     
