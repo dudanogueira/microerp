@@ -83,7 +83,7 @@ class ComponenteTipo(models.Model):
     def __unicode__(self):
         return self.nome
     
-    nome = models.CharField(blank=True, max_length=100)
+    nome = models.CharField(blank=True, max_length=100, unique=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -190,6 +190,7 @@ class LancamentoComponente(models.Model):
         
     class Meta:
         unique_together = (('part_number_fornecedor', 'componente', 'nota'), ('part_number_fornecedor', 'nota'))
+        ordering = ('peso', 'nota')
         
     def converter_part_number_fornecedor(self):
         '''Busca o part_number_fornecedor do produto na tabela de conversao e relaciona com o produto'''
@@ -283,6 +284,7 @@ class LancamentoComponente(models.Model):
     
     
     nota = models.ForeignKey('NotaFiscal')
+    peso = models.IntegerField(blank=True, null=True)
     # quick create
     part_number_fornecedor = models.CharField(blank=True, max_length=100)
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)

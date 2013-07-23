@@ -41,5 +41,10 @@ def home(request):
 
 
 def contratos_a_lancar(request):
-    contratos_fechados = ContratoFechado.objects.filter(status="emaberto", tipo="fechado")
+    contratos_fechados_a_receber = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=False)
+    contratos_fechados_receber_apos_conclusao = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=True)
     return render_to_response('frontend/financeiro/financeiro-contratos-a-lancar.html', locals(), context_instance=RequestContext(request),)
+
+def ver_contrato(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    return render_to_response('frontend/financeiro/financeiro-ver-contrato.html', locals(), context_instance=RequestContext(request),)

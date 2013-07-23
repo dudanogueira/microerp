@@ -13,6 +13,9 @@
 <input type="submit" value="Aterar Nota">
 </form>
 
+<strong>Total da Nota Com Imposto</strong>: {{ notafiscal.total_com_imposto}}<br/>
+{% if notafiscal.tipo == 'i' %}<strong>Total da Nota em Dólar</strong>: {{notafiscal.total_da_nota_em_dolar}}{% endif %}
+
 {% endblock %}
 
 {% block auxiliar-menu %}

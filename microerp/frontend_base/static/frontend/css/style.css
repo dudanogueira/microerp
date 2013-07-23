@@ -153,3 +153,8 @@ ul.errorlist {
 .select2-container-multi{
     min-width: 400px;
 }
+
+textarea{
+    width: 50%;
+    height: 80px;
+}

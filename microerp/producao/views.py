@@ -41,6 +41,12 @@ def home(request):
 # FORMULARIO DA NOTA
 class UploadFileForm(forms.Form):
     file  = forms.FileField()
+    
+    def clean_file(self):
+            file = self.cleaned_data['file']
+            file_type = file.content_type
+            if file_type != "text/xml":
+                raise forms.ValidationError(u'Formato Não suportado. Use XML de Nota Fiscal')
 
 def importa_nota_sistema(f):
     try:
@@ -71,10 +77,12 @@ def importa_nota_sistema(f):
         itens = xmldoc.getElementsByTagName('det')
         for item in itens:
             # cada item da nota...
+            peso = int(item.getAttribute('nItem'))
             codigo_produto = item.getElementsByTagName('cProd')[0].firstChild.nodeValue
             quantidade = item.getElementsByTagName('qCom')[0].firstChild.nodeValue
             valor_unitario = item.getElementsByTagName('vUnCom')[0].firstChild.nodeValue
             print u"ITEM: %s" % codigo_produto
+            print u"Peso: %d" % peso
             print u"Quantidade: %s" % quantidade
             print u"Valor Unitario: %s" % valor_unitario
             # impostos
@@ -105,7 +113,7 @@ def importa_nota_sistema(f):
             print "Incidencia de %% impostos: %s" % total_impostos
         
             # busca o lancamento, para evitar dois lancamentos iguais do mesmo partnumber
-            item_lancado,created = nfe_sistema.lancamentocomponente_set.get_or_create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario= valor_unitario, impostos= total_impostos)
+            item_lancado,created = nfe_sistema.lancamentocomponente_set.get_or_create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario= valor_unitario, impostos= total_impostos, peso=peso)
             # salva
             item_lancado.save()
             # busca na memoria automaticamente
@@ -161,7 +169,7 @@ def lancar_nota(request):
 class NotaFiscalForm(forms.ModelForm):
     class Meta:
         model = NotaFiscal
-        fields = ['fabricante_fornecedor', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar', 'total_com_imposto', 'total_da_nota_em_dolar']
+        fields = ['fabricante_fornecedor', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar',]
 
 # MODEL FORM LANCAMENTO NOTA FISCAL
 
@@ -265,15 +273,16 @@ class ComponenteFormAdd(forms.ModelForm):
         tipo = kwargs.pop('tipo')
         super(ComponenteFormAdd, self).__init__(*args, **kwargs)
         self.fields['identificador'].initial  = identificador
-        self.fields['identificador'].widget.attrs['readonly'] = True
+        self.fields['identificador'].widget = forms.HiddenInput()
         self.fields['tipo'].initial  = tipo
-        self.fields['tipo'].widget.attrs['readonly'] = True
+        self.fields['tipo'].widget = forms.HiddenInput()
         
 
     class Meta:
         fields = ('identificador', 'tipo', 'descricao', 'importado', 'ncm', 'lead_time', 'quantidade_minima', 'medida')
         model = Componente
-
+    
+    
 
 
 class ComponenteFormPreAdd(forms.ModelForm):
@@ -287,7 +296,17 @@ class ComponenteFormPreAdd(forms.ModelForm):
         fields = ['tipo',]
 
 
+
 class TipoComponenteAdd(forms.ModelForm):
+    
+    def clean_nome(self):
+        """
+        If somebody enters into this form ' hello ', or 'hello friend'
+        the extra whitespace will be stripped and replaced
+        return 'hello' and 'hellofriend'
+        """
+        return self.cleaned_data.get('nome', '').strip().replace(' ', '').upper()
+    
     class Meta:
         model = ComponenteTipo
 ## VIEWS
@@ -300,6 +319,8 @@ def listar_componentes(request):
                 tipo = tipo_componente_form.save()
                 messages.success(request, u'Tipo de Componente %s Adicionado com  Sucesso!' % tipo)
                 return redirect(reverse('producao:listar_componentes'))
+            else:
+                return render_to_response('frontend/producao/producao-listar-componentes.html', locals(), context_instance=RequestContext(request),)
     
     elif request.GET:
         q_componente = request.GET.get('q_componente', True)
@@ -362,4 +383,17 @@ def adicionar_componentes(request):
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
+
+# FABRICANTES E FORNECEDORES
+def listar_fabricantes_fornecedores(request):
+    if request.GET:
+        q_fab_for = request.GET.get('q_fab_for', True)
+        if q_fab_for:
+            if q_fab_for == "todos":
+                fab_for_encontrados = FabricanteFornecedor.objects.all()
+            else:
+                fab_for_encontrados = FabricanteFornecedor.objects.filter(
+                    Q(cnpj__icontains=q_fab_for) | Q(nome__icontains=q_fab_for)
+                )
+    return render_to_response('frontend/producao/producao-listar-fabricantes-fornecedores.html', locals(), context_instance=RequestContext(request),)    
     

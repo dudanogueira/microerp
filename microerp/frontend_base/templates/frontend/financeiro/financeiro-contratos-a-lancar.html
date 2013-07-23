@@ -10,13 +10,69 @@
 
 
 <div id="contratos-fechados" class="well">
-    <h2>Contratos do tipo Fechado</h2>
-    <ul>
-        {% for contrato in contratos_fechados %}
-        <li>#{{contrato.id}} - {{contrato}}</li>
-        {% endfor %}
-    </ul>
+    <h2>Contratos do tipo Fechado a Receber</h2>    
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Valor</th>
+                <th>Parcelas</th>
+                <th>Tipo</th>
+                <th>Início da Cobrança</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contrato in contratos_fechados_a_receber %}
+            <tr>
+                <td>{{contrato.id}}</td>
+                <td>{{contrato.cliente}}</td>
+                <td>{{contrato.valor}}</td>
+                <td>{{contrato.parcelas}}x</td>
+                <td>{{contrato.get_tipo_display}}</td>
+                <td>{{contrato.inicio_cobranca|date:"SHORT_DATE_FORMAT"}}</td>
+                <td><a href="" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
+
+
+<div id="contratos-fechados" class="well">
+    <h2>Contratos do tipo Fechado a Receber Após Conclusão</h2>    
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Valor</th>
+                <th>Parcelas</th>
+                <th>Tipo</th>
+                <th>Concluído</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contrato in contratos_fechados_receber_apos_conclusao %}
+            <tr>
+                <td>{{contrato.id}}</td>
+                <td>{{contrato.cliente}}</td>
+                <td>{{contrato.valor}}</td>
+                <td>{{contrato.parcelas}}x</td>
+                <td>{{contrato.get_tipo_display}}</td>
+                <td>{{contrato.concluido|yesno|capfirst}}</td>
+                <td>
+                    {% if contrato.concluido %}<a href="" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>{% endif %}
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 {% endblock %}
 
 {% block auxiliar-menu %}
