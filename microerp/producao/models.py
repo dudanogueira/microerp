@@ -83,7 +83,7 @@ class ComponenteTipo(models.Model):
     def __unicode__(self):
         return self.nome
     
-    nome = models.CharField(blank=True, max_length=100, unique=True)
+    nome = models.CharField(blank=False, null=False, max_length=100, unique=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

@@ -1,0 +1,39 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+<h1>Fabricantes e Fornecedores</h1>
+
+<div class="well well-small">
+    <h2>Buscar Fabricantes e Fornecedores</h2>
+    <form class="form-search">
+      <input type="text" class="input-medium search-query" name="q_fab_for", id="busca_fab_for" {% if q_fab_for %}value="{{q_fab_for}}"{% endif %}>
+
+      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Fabricantes / Fornecedor</button>
+      <a class="btn btn-success" href="?q_fab_for=todos">Listar Todos</a>
+            <br /><small><strong>Campos: Nome e CNPJ</strong></small>
+    </form>
+</div>
+
+{% if fab_for_encontrados %}
+{% for fab_for in fab_for_encontrados %}
+    <a href="">{{fab_for}}</a>
+    <hr />
+{% endfor %}
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-fabricantes-fornecedores, #top-menu-producao").addClass("active");
+    $("#busca_fab_for").focus()
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}
