@@ -9,6 +9,7 @@ urlpatterns = patterns('',
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/apagar$', 'producao.views.apagar_nota', name='apagar_nota'),
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/editar$', 'producao.views.editar_nota', name='editar_nota'),
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/ver$', 'producao.views.ver_nota', name='ver_nota'),    
+    url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancar$', 'producao.views.lancar_nota_fechar', name='lancar_nota_fechar'),
     url(r'^notafiscal/adicionar$', 'producao.views.adicionar_nota', name='adicionar_nota'),
     # editar lancamentos
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/(?P<lancamento_id>[0-9]+)/editar$', 'producao.views.editar_lancamento', name='editar_lancamento'),

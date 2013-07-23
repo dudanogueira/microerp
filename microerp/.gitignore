@@ -3,3 +3,4 @@
 microerp/settings.py
 microerp/media
 microerp/static
+microerp/static_local/

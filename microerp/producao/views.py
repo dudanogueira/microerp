@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.conf import settings
 
 from producao.models import FabricanteFornecedor
@@ -262,6 +262,18 @@ def adicionar_lancamento(request, notafiscal_id):
     return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
 
+def lancar_nota_fechar(request, notafiscal_id):
+    notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id, status="a")
+    if notafiscal.lancamentocomponente_set.filter(componente=None).count() == 0:
+        if notafiscal.lancar_no_estoque():
+            messages.success(request, u'Nota Fiscal %s Lançada com Sucesso!' % notafiscal)
+        else:
+            messages.error(request, u'ERRO! Nota Fiscal %s Não Lancada!' % notafiscal)
+        return redirect(reverse('producao:lancar_nota'))
+    else:
+        messages.error(request, u'ERRO! Nota Fiscal %s Possui Lançamentos não vinculados à Componente! (em vermelho)' % notafiscal.numero)
+        return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
+    
 
 # COMPONENTES
 
@@ -277,13 +289,10 @@ class ComponenteFormAdd(forms.ModelForm):
         self.fields['tipo'].initial  = tipo
         self.fields['tipo'].widget = forms.HiddenInput()
         
-
     class Meta:
         fields = ('identificador', 'tipo', 'descricao', 'importado', 'ncm', 'lead_time', 'quantidade_minima', 'medida')
         model = Componente
     
-    
-
 
 class ComponenteFormPreAdd(forms.ModelForm):
     
@@ -382,6 +391,8 @@ def adicionar_componentes(request):
     
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
+    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l')
+    fornecedores = LancamentoComponente.objects.filter(componente=componente).values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
     return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
 
 # FABRICANTES E FORNECEDORES

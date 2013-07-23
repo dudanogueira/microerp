@@ -6,16 +6,74 @@
 {% block content %}
 <h1>Componente {{componente.part_number}}</h1>
 
+
+<h4>Histórico de Valores Lançados</h4>
+<div class="row-fluid">
+    <div class="span6">
+        <h6>Gráfico R$ X Lançamento
+        <canvas id="canvas" height="200" width="450px"></canvas>
+    </div>
+    
+    <div class="span6">
+        <h6>Valores da última compra:</h6>
+        {% if componente.preco_liquido_unitario_dolar %}
+        Preço Líquido Unitário em Dólar: USD {{componente.preco_liquido_unitario_dolar}}
+        {% endif %}
+        {% if componente.preco_liquido_unitario_real %}
+        <strong>Preço Líquido Unitário em Real</strong>: R$ {{componente.preco_liquido_unitario_real}}<br />
+        {% endif %}
+        {% if componente.preco_medio_unitario %}
+        <strong>Preço Médio Bruto Unitário</strong>: R$ {{componente.preco_medio_unitario}}
+        {% endif %}
+        <h6>Posição em Estoques</h6>
+        
+    </div>
+    
+</div>
+
+
+<h4>Fornecedores - Unidades já fornecidas</h4>
+{% for fornecedor in fornecedores %}
+<strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}}<br />
+{% endfor %}
+
+<h4>Participações em Produtos e Sub Produtos</h4>
+
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
 <script>
 $(document).ready(function() {
 	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
     $("#busca_componente").focus()
 });
 </script>
+
+
+<script>
+
+	var lineChartData = {
+		labels : [{% for lancamento in lancamentos %}"{{lancamento.criado|date:"SHORT_DATE_FORMAT"}}",{% endfor %}
+],
+		datasets : [
+			{
+				fillColor : "rgba(53,150,159,0.5)",
+				strokeColor : "rgba(220,220,220,1)",
+				pointColor : "rgba(220,220,220,1)",
+				pointStrokeColor : "#fff",
+				data : [{% for lancamento in lancamentos %}{{lancamento.valor_unitario_final}},{% endfor %}
+]
+			},
+		]
+		
+	}
+
+var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Line(lineChartData);
+
+</script>
+
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}
 {% endblock%}

@@ -15,7 +15,7 @@ from models import SubProduto
 from models import LinhaSubProduto
 from models import OpcaoLinhaSubProduto
 from models import DocumentoTecnicoSubProduto
-from models import Produto
+from models import ProdutoFinal
 from models import LinhaProdutoAvulso
 from models import LinhaFornecedorFabricanteComponente
 from models import DocumentoTecnicoProduto
@@ -132,6 +132,6 @@ admin.site.register(LinhaFornecedorFabricanteComponente, LinhaFornecedorFabrican
 admin.site.register(SubProduto, SubProdutoAdmin)
 admin.site.register(DocumentoTecnicoSubProduto, DocumentoTecnicoSubProdutoAdmin)
 admin.site.register(LinhaSubProduto, LinhaSubProdutoAdmin)
-admin.site.register(Produto, ProdutoAdmin)
+admin.site.register(ProdutoFinal, ProdutoAdmin)
 admin.site.register(LinhaProdutoAvulso)
 admin.site.register(PerfilAcessoProducao)

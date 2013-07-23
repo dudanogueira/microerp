@@ -186,7 +186,7 @@ class FabricanteFornecedor(models.Model):
 class LancamentoComponente(models.Model):
     
     def __unicode__(self):
-        return u"Lançamento %s da nota %s" % (self.id, self.nota)
+        return u"Lançamento %s da nota %s Componente: %s" % (self.id, self.nota, self.componente)
         
     class Meta:
         unique_together = (('part_number_fornecedor', 'componente', 'nota'), ('part_number_fornecedor', 'nota'))
@@ -292,7 +292,7 @@ class LancamentoComponente(models.Model):
     impostos = models.DecimalField("Incidência de Impostos", help_text=u"Incidência total de impostos deste Lançamento", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
     
     #campos automaticamente sugeridos, preenchidos opcionais
-    componente = models.ForeignKey('Componente', verbose_name="PART NUMBER MESTRIA", blank=True, null=True)
+    componente = models.ForeignKey('Componente', verbose_name="PART NUMBER", blank=True, null=True)
     fabricante = models.ForeignKey('FabricanteFornecedor', blank=True, null=True)
     part_number_fabricante = models.CharField(blank=True, max_length=100)
     
@@ -310,10 +310,16 @@ class LancamentoComponente(models.Model):
 class NotaFiscal(models.Model):
     
     def __unicode__(self):
-        return u"Nota Fiscal Número: %s, %s" % (self.numero, self.get_tipo_display())
+        return u"Nota Fiscal Número: %s, %s de %s" % (self.numero, self.get_tipo_display(), self.fabricante_fornecedor)
     
     class Meta:
         unique_together = (('fabricante_fornecedor', 'numero'))
+    
+    def numero_de_serie(self):
+        return self.numero[0:3]
+    
+    def numero_identificador(self):
+        return self.numero[3:]
     
     def lancar_no_estoque(self):
         '''lanca a nota fiscal no estoque configurado como receptor'''
@@ -345,8 +351,10 @@ class NotaFiscal(models.Model):
 
                 self.status = 'l'
                 self.save()
+                return True
         except:
             raise
+            return False
     
     def clean(self):
         if self.tipo == 'i' and not self.cotacao_dolar:
@@ -388,7 +396,7 @@ class NotaFiscal(models.Model):
     numero = models.CharField(max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, default='n', choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Taxas Diversas", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
-    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real", max_digits=10, decimal_places=2, blank=True, null=True)
+    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real", help_text="Campo utilizado somente para notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
     fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
@@ -491,7 +499,7 @@ class DocumentoTecnicoSubProduto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
 
-class Produto(models.Model):
+class ProdutoFinal(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
@@ -513,7 +521,7 @@ class LinhaProdutoAvulso(models.Model):
         verbose_name = "Linha de Componente Avulso do Produto"
         verbose_name_plural = "Linhas de Componentes Avulsos do Produto"
     
-    produto = models.ForeignKey('Produto')
+    produto = models.ForeignKey('ProdutoFinal')
     componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     tag = models.CharField(blank=True, max_length=100)
@@ -533,7 +541,7 @@ class DocumentoTecnicoProduto(models.Model):
         verbose_name = u"Documento Técnico do Sub Produto"
         verbose_name_plural = u"Documentos Técnicos do Sub Produto"
     
-    produto = models.ForeignKey('Produto')
+    produto = models.ForeignKey('ProdutoFinal')
     titulo = models.CharField(blank=True, max_length=100)
     descricao = models.TextField(blank=True)
     arquivo = models.FileField(upload_to=produto_local_documentos)

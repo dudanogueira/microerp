@@ -9,7 +9,7 @@
         
         <h1><i class="icon-th"></i> <i class="icon-paste"></i> Ver Nota</h1>
 
-        <h3>Nota Fiscal número {{notafiscal.numero}}</h3> <h4>{{notafiscal.get_tipo_display}}</h4>
+        <h3>NFe Série {{notafiscal.numero_de_serie}}, Número {{notafiscal.numero_identificador}}</h3> <h4>{{notafiscal.get_tipo_display}}</h4>
         
     </div>
     
@@ -40,33 +40,45 @@
     <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="icon-refresh"></i> Calcular</a>
 
 
-    <a class="btn btn-danger" href="{% url "producao:editar_nota" notafiscal.id %}"><i class="icon-paste"></i> Lançar em Estoque</a>
+    <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="icon-paste"></i> Lançar em Estoque</a>
     {% endifequal %}
     </p>
 
 
-<table class="table table-striped table-bordered table-condensed table-hover">
+<table class="table table-bordered table-condensed table-hover">
     <thead>
         <tr>
           <th>ITEM / #ID</th>
-          <th>PART NUMBER</th>
+          <th>PART NUMBER FORNECEDOR</th>
           <th>QTD</th>
-          <th>VLR UNIT SEM IMP</th>
+          <th>VLR UNIT</th>
           <th>IMP</th>
-          <th>TX DIVERSA PROP.</th>
-          <th>TOT UNIT com imp.</th>
+          <th>TOT UNIT + IMP</th>
           <th>EDITAR</th>
         </tr>
     </thead>
     <tbody>
         {% for lancamento in notafiscal.lancamentocomponente_set.all %}
-        <tr>
+        <tr {% if not lancamento.componente %}class="alert-danger"{%else%}class="alert-success"{%endif%}>
             <td>{% if lancamento.peso %}{{lancamento.peso}}{% else %}{{forloop.counter}}{%endif%} / #{{lancamento.id}}</td>
-            <td>{{lancamento.part_number_fornecedor}} {% if lancamento.componente %}(<strong>{{lancamento.componente.part_number}}</strong>){% endif %}</td>
+            <td>{{lancamento.part_number_fornecedor}}
+                {% if lancamento.componente %}
+                (<strong>{{lancamento.componente.part_number}}</strong>)
+                    {% if lancamento.componente.descricao %}
+                    <br /><small><strong>Descrição</strong>: {{lancamento.componente.descricao}}</small>
+                    
+                    {% endif %}
+                    {% if lancamento.fabricante %}
+                    <br /><small><strong>Fabricante</strong>: {{lancamento.fabricante.nome}}</small>
+                    {% endif %}
+                    {% if lancamento.part_number_fabricante %}
+                    <br /><small><strong>PN Fabricante</strong>: {{lancamento.part_number_fabricante}}</small>
+                    {% endif %}
+                    
+                {% endif %}</td>
             <td>{{lancamento.quantidade}}</td>
             <td>{% if lancamento.nota.tipo == 'n' %}R${%else%}USD{%endif%} {{lancamento.valor_unitario}}</td>
             <td>{{lancamento.impostos}}%</td>
-            <td>R$ {{lancamento.valor_taxa_diversa_proporcional}} / {{lancamento.quantidade}}</td>
             <td>R$ {{lancamento.valor_unitario_final}}</td>
             <td><a href="{% url "producao:editar_lancamento" notafiscal.id lancamento.id %}" class="btn"><i class="icon-pencil"></i></a>
         </tr>
