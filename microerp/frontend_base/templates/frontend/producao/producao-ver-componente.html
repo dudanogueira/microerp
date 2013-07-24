@@ -7,37 +7,72 @@
 <h1>Componente {{componente.part_number}}</h1>
 
 
-<h4>Histórico de Valores Lançados</h4>
 <div class="row-fluid">
-    <div class="span6">
-        <h6>Gráfico R$ X Lançamento
-        <canvas id="canvas" height="200" width="450px"></canvas>
+    <div class='span6'>
+        <h3>Fornecedores - Unidades</h3>
+        {% for fornecedor in fornecedores %}
+        <strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}} {{componente.get_medida_display}}{{fornecedor.total|pluralize}}<br />
+        {% endfor %}
+
+        <h3>Fabricantes - Unidades já fornecidas</h3>
+        {% for fabricante in fabricantes %}
+        <strong>{{fabricante.fabricante__nome}}</strong>: {{fabricante.total}} {{componente.get_medida_display}}{{fabricante.total|pluralize}}<br />
+        {% endfor %}
+
+
+        <h3>Participações</h3>
+        
     </div>
     
     <div class="span6">
-        <h6>Valores da última compra:</h6>
-        {% if componente.preco_liquido_unitario_dolar %}
-        Preço Líquido Unitário em Dólar: USD {{componente.preco_liquido_unitario_dolar}}
-        {% endif %}
-        {% if componente.preco_liquido_unitario_real %}
-        <strong>Preço Líquido Unitário em Real</strong>: R$ {{componente.preco_liquido_unitario_real}}<br />
-        {% endif %}
-        {% if componente.preco_medio_unitario %}
-        <strong>Preço Médio Bruto Unitário</strong>: R$ {{componente.preco_medio_unitario}}
-        {% endif %}
-        <h6>Posição em Estoques</h6>
+        <div class="well well-small">
+            <h6>Valores da última compra:</h6>
+            {% if componente.preco_liquido_unitario_dolar %}
+            <strong>Preço Líquido Unitário em Dólar</strong>: USD {{componente.preco_liquido_unitario_dolar}}<br />
+            {% endif %}
+            {% if componente.preco_liquido_unitario_real %}
+            <strong>Preço Líquido Unitário em Real</strong>: R$ {{componente.preco_liquido_unitario_real}}<br />
+            {% endif %}
+            {% if componente.preco_medio_unitario %}
+            <strong>Preço Médio Bruto Unitário</strong>: R$ {{componente.preco_medio_unitario}}
+            {% endif %}        
+        </div>
         
+        <div class="well well-small">
+            <h6>Posições em Estoque</h6>
+            <table class="table table-condensed table-striped table-rounded">
+                <thead>
+                    <tr>
+                        <th>Estoque</th>
+                        <th>Quantidade</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                </tbody>
+                {% for posicao in posicoes_estoque %}
+                <tr>
+                    <td>{% if posicao.estoque.nome %}{{posicao.estoque.nome}}{% else %}{{posicao.estoque}}{% endif %}</td>
+                    <td>{{posicao.quantidade}}</td>
+                    <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+</div>
+
+<h4>Histórico de Valores Lançados</h4>
+<div class="row-fluid">
+    <div class="span12">
+        <h6>Gráfico R$ X Lançamento
+        <canvas id="canvas" height="300px" width=""></canvas>
     </div>
     
 </div>
 
-
-<h4>Fornecedores - Unidades já fornecidas</h4>
-{% for fornecedor in fornecedores %}
-<strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}}<br />
-{% endfor %}
-
-<h4>Participações em Produtos e Sub Produtos</h4>
 
 {% endblock %}
 

@@ -70,7 +70,7 @@ class PosicaoEstoque(models.Model):
     nota_referecia = models.ForeignKey('NotaFiscal', blank=True, null=True, on_delete=models.PROTECT)
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
-    quantidade = models.CharField(blank=True, max_length=100)
+    quantidade = models.DecimalField(max_digits=15, decimal_places=2)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     justificativa = models.TextField(blank=True)
@@ -287,7 +287,7 @@ class LancamentoComponente(models.Model):
     peso = models.IntegerField(blank=True, null=True)
     # quick create
     part_number_fornecedor = models.CharField(blank=True, max_length=100)
-    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
+    quantidade = models.DecimalField(max_digits=15, decimal_places=2)
     valor_unitario = models.DecimalField("Valor Unitário", max_digits=10, decimal_places=2, default=0)
     impostos = models.DecimalField("Incidência de Impostos", help_text=u"Incidência total de impostos deste Lançamento", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
     
@@ -334,7 +334,8 @@ class NotaFiscal(models.Model):
                         posicao_atual = PosicaoEstoque.objects.filter(estoque=estoque_receptor, componente=item.componente).order_by('-data_entrada')[0].quantidade
                     except:
                         posicao_atual = 0
-                    posicao_nova = PosicaoEstoque.objects.create(estoque=estoque_receptor, componente=item.componente, quantidade=int(posicao_atual)+int(item.quantidade), nota_referecia=self)
+                    posicao_calculada = posicao_atual + item.quantidade
+                    posicao_nova = PosicaoEstoque.objects.create(estoque=estoque_receptor, componente=item.componente, quantidade=posicao_calculada, nota_referecia=self)
                     # registra o preco medio do compoente
                     item.componente.registrar_preco_medio()
                     if item.nota.tipo == 'i': # nota internacional
@@ -395,7 +396,7 @@ class NotaFiscal(models.Model):
     #arquivo = models.FileField(upload_to=arquivo)
     numero = models.CharField(max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, default='n', choices=TIPO_NOTA_FISCAL)
-    taxas_diversas = models.DecimalField("Taxas Diversas", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    taxas_diversas = models.DecimalField("Taxas Diversas", help_text="em R$", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real", help_text="Campo utilizado somente para notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
     fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')

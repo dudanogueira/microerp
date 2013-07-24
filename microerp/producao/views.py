@@ -17,6 +17,7 @@ from producao.models import NotaFiscal
 from producao.models import LancamentoComponente
 from producao.models import Componente
 from producao.models import ComponenteTipo
+from producao.models import EstoqueFisico
 
 
 from django import forms
@@ -174,6 +175,27 @@ class NotaFiscalForm(forms.ModelForm):
 # MODEL FORM LANCAMENTO NOTA FISCAL
 
 class LancamentoNotaFiscalForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        nota = kwargs.pop('nota')
+        super(LancamentoNotaFiscalForm, self).__init__(*args, **kwargs)
+        self.fields['quantidade'].localize=True
+        self.fields['quantidade'].widget.is_localized = True
+        self.fields['quantidade'].widget.attrs['class'] = 'nopoint'
+        self.fields['valor_unitario'].localize=True
+        self.fields['valor_unitario'].widget.is_localized = True
+        self.fields['valor_unitario'].widget.attrs['class'] = 'nopoint'
+        self.fields['impostos'].localize=True
+        self.fields['impostos'].widget.is_localized = True
+        self.fields['impostos'].widget.attrs['class'] = 'nopoint'
+        
+        
+        if nota.tipo == 'n':
+            self.fields['valor_unitario'].help_text ="Nota Nacional: Valor em Reais"
+        else:
+            self.fields['valor_unitario'].help_text ="Nota Internacional: Valor em Dolar"
+    
+    
     class Meta:
         model = LancamentoComponente
         fields = 'part_number_fornecedor', 'quantidade', 'valor_unitario', 'impostos', 'componente', 'fabricante', 'part_number_fabricante', 'aprender'
@@ -235,14 +257,14 @@ def ver_nota(request, notafiscal_id):
 def editar_lancamento(request, notafiscal_id, lancamento_id):
     lancamento = get_object_or_404(LancamentoComponente, nota__id=notafiscal_id, id=lancamento_id)
     if request.POST:        
-        lancamento_form = LancamentoNotaFiscalForm(request.POST, instance=lancamento)
+        lancamento_form = LancamentoNotaFiscalForm(request.POST, instance=lancamento, nota=lancamento.nota)
         if lancamento_form.is_valid():
             lancamento_form.save()
             messages.success(request, u'Lançamento %d Editado com Sucesso!' % lancamento.id)
             return redirect(reverse('producao:ver_nota', args=[lancamento.nota.id,]))
             
     else:
-        lancamento_form = LancamentoNotaFiscalForm(instance=lancamento)
+        lancamento_form = LancamentoNotaFiscalForm(instance=lancamento, nota=lancamento.nota)
         
     return render_to_response('frontend/producao/producao-editar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
@@ -250,7 +272,7 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
 def adicionar_lancamento(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     if request.POST:
-        lancamento_form = LancamentoNotaFiscalForm(request.POST)
+        lancamento_form = LancamentoNotaFiscalForm(request.POST, nota=notafiscal)
         if lancamento_form.is_valid():
             lancamento = lancamento_form.save(commit=False)
             lancamento.nota = notafiscal
@@ -258,7 +280,7 @@ def adicionar_lancamento(request, notafiscal_id):
             messages.success(request, u'Lançamento %d Adicionado com Sucesso à nota %s!' % (lancamento.id, notafiscal))
             return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
     else:
-        lancamento_form = LancamentoNotaFiscalForm()
+        lancamento_form = LancamentoNotaFiscalForm(nota=notafiscal)
     return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -393,7 +415,17 @@ def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l')
     fornecedores = LancamentoComponente.objects.filter(componente=componente).values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
+    fabricantes = LancamentoComponente.objects.filter(componente=componente).values('fabricante__nome').annotate(total=Sum('quantidade'))
+    posicoes_estoque = []
+    for estoque in EstoqueFisico.objects.all():
+        try:
+            posicao = estoque.posicaoestoque_set.filter(componente=componente).order_by('-data_entrada')[0]
+        except:
+            posicao = None
+        if posicao:
+            posicoes_estoque.append(posicao)
     return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
+    
 
 # FABRICANTES E FORNECEDORES
 def listar_fabricantes_fornecedores(request):

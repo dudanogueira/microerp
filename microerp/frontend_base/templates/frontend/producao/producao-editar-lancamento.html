@@ -8,7 +8,7 @@
 <h2>Editando Lançamento: {{lancamento.id}}</h2>
 <form method="POST" class="form-horizontal">
     {% csrf_token %}
-    {{lancamento_form}}
+    {{lancamento_form.as_p}}
     <p>
         <input type="submit" value="Alterar este Lançamento">
     </p>
@@ -22,6 +22,9 @@
 <script>
 $(document).ready(function() {
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
+    $("input:text").keyup(function() {
+            $(this).val($(this).val().replace(/[.]/g, ""));
+      });
 });
 </script>
 {% endaddtoblock %}

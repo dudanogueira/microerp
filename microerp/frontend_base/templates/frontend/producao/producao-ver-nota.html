@@ -22,7 +22,7 @@
         <strong>Total da Nota Com Imposto</strong>: R$ {{notafiscal.total_com_imposto}}<br />
         {% if notafiscal.tipo == 'i' %}
         <h6>Nota Internacional</h6>
-        <strong>Total da Nota em Dólar (sem impostos)</strong>: {{notafiscal.total_da_nota_em_dolar}}<br />
+        <strong>Total da Nota em Dólar (sem impostos)</strong>: USD {{notafiscal.total_da_nota_em_dolar}}<br />
         <strong>Cotação do Dolar</strong>: R$ {{notafiscal.cotacao_dolar}}
         {% endif %}
         
