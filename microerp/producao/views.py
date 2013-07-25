@@ -448,9 +448,8 @@ def adicionar_componentes(request):
     
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
-    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l')
-    fornecedores = LancamentoComponente.objects.filter(componente=componente).values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
-    fabricantes = LancamentoComponente.objects.filter(componente=componente).values('fabricante__nome').annotate(total=Sum('quantidade'))
+    fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
+    fabricantes = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('fabricante__nome').annotate(total=Sum('quantidade'))
     posicoes_estoque = []
     for estoque in EstoqueFisico.objects.all():
         try:
@@ -485,8 +484,8 @@ def listar_fabricantes_fornecedores(request):
 
 def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
-    fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor).values('componente__part_number', 'componente__id', 'componente__ativo').annotate(total=Sum('quantidade')).order_by('-total')
-    fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor).values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id').annotate(total=Sum('quantidade')).order_by('-total')
+    fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__id', 'componente__ativo').annotate(total=Sum('quantidade')).order_by('-total')
+    fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id').annotate(total=Sum('quantidade')).order_by('-total')
     return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
     
 

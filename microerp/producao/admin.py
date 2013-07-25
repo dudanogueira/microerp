@@ -121,7 +121,7 @@ class DocumentoTecnicoSubProdutoAdmin(admin.ModelAdmin):
     pass
 
 class LancamentoComponenteAdmin(admin.ModelAdmin):
-    list_filter = 'nota__fabricante_fornecedor',
+    list_filter = 'nota__fabricante_fornecedor', 'componente', 'nota__status'
     list_display = 'nota', 'componente', 'quantidade'
 
 admin.site.register(EstoqueFisico)
