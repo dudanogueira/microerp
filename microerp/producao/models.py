@@ -161,8 +161,6 @@ class Componente(models.Model):
     
     # preco_medio_unitario
     preco_medio_unitario = models.DecimalField("Preço Médio Bruto Unitário", max_digits=10, decimal_places=2, default=0)
-    # quantidades
-    quantidade_minima = models.IntegerField(blank=True, null=True, default=0)
     # medida
     medida = models.CharField(blank=True, max_length=100, choices=COMPONENTE_UNIDADE_MEDIDA, default='un')
     # meta
@@ -297,10 +295,10 @@ class LancamentoComponente(models.Model):
     part_number_fornecedor = models.CharField(blank=True, max_length=100)
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
     valor_unitario = models.DecimalField("Valor Unitário", max_digits=10, decimal_places=2, default=0)
-    impostos = models.DecimalField("Incidência de Impostos", help_text=u"Incidência total de impostos deste Lançamento", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
+    impostos = models.DecimalField("Incidência de Impostos (%)", help_text=u"Incidência total de impostos deste Lançamento em %", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
     
     #campos automaticamente sugeridos, preenchidos opcionais
-    componente = models.ForeignKey('Componente', verbose_name="PART NUMBER", blank=True, null=True)
+    componente = models.ForeignKey('Componente', verbose_name=getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'), blank=True, null=True)
     fabricante = models.ForeignKey('FabricanteFornecedor', blank=True, null=True)
     part_number_fabricante = models.CharField(blank=True, max_length=100)
     
