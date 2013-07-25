@@ -346,7 +346,7 @@ class ComponenteFormAdd(forms.ModelForm):
         self.fields['tipo'].widget = forms.HiddenInput()
         
     class Meta:
-        fields = ('identificador', 'tipo', 'descricao', 'importado', 'ncm', 'lead_time', 'quantidade_minima', 'medida')
+        fields = ('identificador', 'tipo', 'descricao', 'importado', 'ncm', 'lead_time', 'medida')
         model = Componente
     
 
