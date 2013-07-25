@@ -6,6 +6,9 @@
 {% block content %}
 <h1>Fabricantes e Fornecedores</h1>
 
+<p>
+    <a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Fabricante / Fornecedor</a>
+</p>
 <div class="well well-small">
     <h2>Buscar Fabricantes e Fornecedores</h2>
     <form class="form-search">
@@ -19,7 +22,7 @@
 
 {% if fab_for_encontrados %}
 {% for fab_for in fab_for_encontrados %}
-    <a href="">{{fab_for}}</a>
+    <a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="icon-building"></i> {{fab_for}}</a>
     <hr />
 {% endfor %}
 {% endif %}

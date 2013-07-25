@@ -10,12 +10,15 @@
 <form method="POST">
     {% csrf_token %}
     {{form_adicionar_notafiscal.as_p}}
-    <input type="submit" value="Adicionar Nota">
+    <button type="submit" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Nota</button>
 </form>
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 <script>
 $(document).ready(function() {
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");

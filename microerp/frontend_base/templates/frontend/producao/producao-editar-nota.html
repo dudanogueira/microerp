@@ -10,7 +10,7 @@
 <form method="POST">
     {% csrf_token %}
 {{form_notafiscal.as_p}}
-<input type="submit" value="Aterar Nota">
+<button type="submit" class="btn btn-primary"><i class="icon-pencil"></i> Aterar Nota</button>
 </form>
 
 <strong>Total da Nota Com Imposto</strong>: {{ notafiscal.total_com_imposto}}<br/>

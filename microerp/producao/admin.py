@@ -120,12 +120,16 @@ class FabricanteFornecedorAdmin(admin.ModelAdmin):
 class DocumentoTecnicoSubProdutoAdmin(admin.ModelAdmin):
     pass
 
+class LancamentoComponenteAdmin(admin.ModelAdmin):
+    list_filter = 'nota__fabricante_fornecedor',
+    list_display = 'nota', 'componente', 'quantidade'
+
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
 admin.site.register(ComponenteTipo)
 admin.site.register(Componente, ComponenteAdmin)
 admin.site.register(FabricanteFornecedor, FabricanteFornecedorAdmin)
-admin.site.register(LancamentoComponente)
+admin.site.register(LancamentoComponente, LancamentoComponenteAdmin)
 admin.site.register(NotaFiscal, NotaFiscalAdmin)
 admin.site.register(LinhaFornecedorFabricanteComponente, LinhaFornecedorFabricanteComponenteAdmin)
 # PRODUTOS SUB PRODUTOS

@@ -1,0 +1,62 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+<h1>Fabricantes e Fornecedores</h1>
+<div class="row-fluid">
+    
+    
+    <div class="span6">
+        
+        <h2><i class="icon-building"></i> {{fabricante_fornecedor}}</h2>
+        <a class="btn btn-primary" href="{% url "producao:editar_fabricantes_fornecedores" fabricante_fornecedor.id %}"><i class="icon-pencil"></i> Editar</a>
+        
+        
+    </div>
+    
+    
+    <div class="span6">
+        <h2><i class="icon-envelope"></i> Contatos</h2>
+        {{fabricante_fornecedor.contatos}}
+        
+    </div>
+    
+</div>
+
+
+
+<h3>Componentes Já Fornecidos</h3>
+{% for fornecido in fornecidos %}
+<a href="{% url "producao:ver_componente" fornecido.componente__id %}">
+        <strong>{{fornecido.componente__part_number}}</strong>: {{fornecido.total}} {{fornecido.componente__medida}} - <i>{{fornecido.componente__ativo|yesno:"Ativo,Inativo"}}</i><br />
+</a>
+{% empty %}
+Este Fabricante / Fornecedor nunca forneceu componentes.
+{% endfor %}
+
+<h3>Componentes Já Fabricados</h3>
+
+{% for fabricado in fabricados %}
+<a href="{% url "producao:ver_componente" fabricado.componente__id %}">
+<strong>{{fabricado.componente__part_number}}</strong>: {{fabricado.total}} {{fabricado.componente__medida}} - <i>{{fabricado.componente__ativo|yesno:"Ativo,Inativo"}}</i><br />
+</a>
+{% empty %}
+Este Fabricante / Fornecedor nunca fabricou componentes.
+{% endfor %}
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-fabricantes-fornecedores, #top-menu-producao").addClass("active");
+    $("#busca_fab_for").focus()
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

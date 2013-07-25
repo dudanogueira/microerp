@@ -50,10 +50,17 @@
     
     <li id="menu-producao-fabricantes-fornecedores">
         <a href="{% url "producao:listar_fabricantes_fornecedores" %}">
-            <i class="icon-building"></i>
-            Fabricantes / Fornecedores
+            {% if fabricante_fornecedor %}
+                <i class="icon-building"></i>
+                Fabricante / Fornecedor > {{fabricante_fornecedor}}
+            {%else%}
+                <i class="icon-building"></i>
+                Fabricante / Fornecedor
+            {%endif%}
         </a>
     </li>
+    
+    
     
     
     

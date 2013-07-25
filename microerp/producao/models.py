@@ -172,12 +172,20 @@ class Componente(models.Model):
 class FabricanteFornecedor(models.Model):
     
     def __unicode__(self):
-        return u"%s: %s" % (self.get_tipo_display(), self.nome)
+        if self.tipo:
+            return u"%s: %s" % (self.get_tipo_display(), self.nome)
+        else:
+            if self.nome:
+                return self.nome
+            else:
+                return "Nome Não Preenchido"
+        
     
     tipo = models.CharField(blank=True, max_length=100, choices=FABRICANTE_FORNECEDOR_TIPO_CHOICES)
     ativo = models.BooleanField(default=True)
-    nome = models.CharField(blank=True, max_length=100)
+    nome = models.CharField(blank=False, null=False, max_length=100)
     cnpj = models.CharField(blank=True, max_length=400)
+    contatos = models.TextField(blank=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

@@ -9,7 +9,7 @@ from django.core.urlresolvers import reverse
 
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.conf import settings
 
 from producao.models import FabricanteFornecedor
@@ -76,62 +76,65 @@ def importa_nota_sistema(f):
         nfe_sistema.save()
         # pega itens da nota
         itens = xmldoc.getElementsByTagName('det')
-        for item in itens:
-            # cada item da nota...
-            peso = int(item.getAttribute('nItem'))
-            codigo_produto = item.getElementsByTagName('cProd')[0].firstChild.nodeValue
-            quantidade = item.getElementsByTagName('qCom')[0].firstChild.nodeValue
-            valor_unitario = item.getElementsByTagName('vUnCom')[0].firstChild.nodeValue
-            print u"ITEM: %s" % codigo_produto
-            print u"Peso: %d" % peso
-            print u"Quantidade: %s" % quantidade
-            print u"Valor Unitario: %s" % valor_unitario
-            # impostos
-            try:
-                aliquota_icms = float(item.getElementsByTagName('pICMS')[0].firstChild.nodeValue)
-            except:
-                aliquota_icms = 0
-            try:
-                aliquota_ipi = float(item.getElementsByTagName('pIPI')[0].firstChild.nodeValue)
-            except:
-                aliquota_ipi = 0
-            try:
-                aliquota_pis = float(item.getElementsByTagName('pPIS')[0].firstChild.nodeValue)
-            except:
-                aliquota_pis = 0
-            try:
-                aliquota_cofins = float(item.getElementsByTagName('pCOFINS')[0].firstChild.nodeValue)
-            except:
-                aliquota_cofins = 0
+        if not created:
+            return "duplicada"
+        else:
+            for item in itens:
+                # cada item da nota...
+                peso = int(item.getAttribute('nItem'))
+                codigo_produto = item.getElementsByTagName('cProd')[0].firstChild.nodeValue
+                quantidade = item.getElementsByTagName('qCom')[0].firstChild.nodeValue
+                valor_unitario = item.getElementsByTagName('vUnCom')[0].firstChild.nodeValue
+                print u"ITEM: %s" % codigo_produto
+                print u"Peso: %d" % peso
+                print u"Quantidade: %s" % quantidade
+                print u"Valor Unitario: %s" % valor_unitario
+                # impostos
+                try:
+                    aliquota_icms = float(item.getElementsByTagName('pICMS')[0].firstChild.nodeValue)
+                except:
+                    aliquota_icms = 0
+                try:
+                    aliquota_ipi = float(item.getElementsByTagName('pIPI')[0].firstChild.nodeValue)
+                except:
+                    aliquota_ipi = 0
+                try:
+                    aliquota_pis = float(item.getElementsByTagName('pPIS')[0].firstChild.nodeValue)
+                except:
+                    aliquota_pis = 0
+                try:
+                    aliquota_cofins = float(item.getElementsByTagName('pCOFINS')[0].firstChild.nodeValue)
+                except:
+                    aliquota_cofins = 0
 
             
-            total_impostos = aliquota_ipi + aliquota_icms + aliquota_cofins + aliquota_cofins
-            total_impostos = aliquota_ipi
-            print "Valor %% ICMS: %s" % aliquota_icms
-            print "Valor %% IPI: %s" % aliquota_ipi
-            print "Valor %% COFNS: %s" % aliquota_cofins
-            print "Valor %% PIS: %s" % aliquota_pis
-            print "Incidencia de %% impostos: %s" % total_impostos
+                total_impostos = aliquota_ipi + aliquota_icms + aliquota_cofins + aliquota_cofins
+                total_impostos = aliquota_ipi
+                print "Valor %% ICMS: %s" % aliquota_icms
+                print "Valor %% IPI: %s" % aliquota_ipi
+                print "Valor %% COFNS: %s" % aliquota_cofins
+                print "Valor %% PIS: %s" % aliquota_pis
+                print "Incidencia de %% impostos: %s" % total_impostos
         
-            # busca o lancamento, para evitar dois lancamentos iguais do mesmo partnumber
-            item_lancado,created = nfe_sistema.lancamentocomponente_set.get_or_create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario= valor_unitario, impostos= total_impostos, peso=peso)
-            # salva
-            item_lancado.save()
-            # busca na memoria automaticamente
-            item_lancado.busca_part_number_na_memoria()
+                # busca o lancamento, para evitar dois lancamentos iguais do mesmo partnumber
+                item_lancado,created = nfe_sistema.lancamentocomponente_set.get_or_create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario= valor_unitario, impostos= total_impostos, peso=peso)
+                # salva
+                item_lancado.save()
+                # busca na memoria automaticamente
+                item_lancado.busca_part_number_na_memoria()
 
-        # calcula total da nota
-        nfe_sistema.calcula_totais_nota()
-        # printa tudo
-        print "#"*10
-        print "NOTA %s importada" % nfe_sistema.numero
-        frete = nfe_sistema.taxas_diversas 
-        produtos = nfe_sistema.total_com_imposto
-        print "TOTAL DA NOTA: %s (Frete) + %s (Produtos + Impostos)" % (frete, produtos)
-        print "Produtos"
-        for lancamento in nfe_sistema.lancamentocomponente_set.all():
-            print u"----- PN-FORNECEDOR: %s, QTD: %s VALOR: %s, Impostos: %s%% = TOTAL: %s Unitario (considerando frete proporcional) %s" % (lancamento.part_number_fornecedor, lancamento.quantidade, lancamento.valor_unitario, lancamento.impostos, lancamento.valor_total_com_imposto, lancamento.valor_unitario_final)
-        return nfe_sistema
+            # calcula total da nota
+            nfe_sistema.calcula_totais_nota()
+            # printa tudo
+            print "#"*10
+            print "NOTA %s importada" % nfe_sistema.numero
+            frete = nfe_sistema.taxas_diversas 
+            produtos = nfe_sistema.total_com_imposto
+            print "TOTAL DA NOTA: %s (Frete) + %s (Produtos + Impostos)" % (frete, produtos)
+            print "Produtos"
+            for lancamento in nfe_sistema.lancamentocomponente_set.all():
+                print u"----- PN-FORNECEDOR: %s, QTD: %s VALOR: %s, Impostos: %s%% = TOTAL: %s Unitario (considerando frete proporcional) %s" % (lancamento.part_number_fornecedor, lancamento.quantidade, lancamento.valor_unitario, lancamento.impostos, lancamento.valor_total_com_imposto, lancamento.valor_unitario_final)
+            return nfe_sistema
     except:
         raise
         return False
@@ -154,11 +157,13 @@ def lancar_nota(request):
             # importa nota pra dentro do sistema
             try:
                 nota = importa_nota_sistema(request.FILES['file'])
-                if nota:
+                if type(nota) == NotaFiscal:
                     messages.success(request, 'Nota Importada com Sucesso!')
                     return redirect(reverse('producao:ver_nota', args=[nota.id]))
+                elif nota == "duplicada":
+                    messages.error(request, 'Erro! Nota já Importada!')
                 else:
-                    messages.success(request, 'Erro ao Importar nota!')
+                    messages.error(request, 'Erro ao Importar nota!')
             except:
                 raise
                 
@@ -168,6 +173,19 @@ def lancar_nota(request):
 # MODEL FORM NOTA FISCAL
 
 class NotaFiscalForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(NotaFiscalForm, self).__init__(*args, **kwargs)    
+        self.fields['taxas_diversas'].localize=True
+        self.fields['taxas_diversas'].widget.is_localized = True
+        self.fields['taxas_diversas'].widget.attrs['class'] = 'nopoint'
+        self.fields['cotacao_dolar'].localize=True
+        self.fields['cotacao_dolar'].widget.is_localized = True
+        self.fields['cotacao_dolar'].widget.attrs['class'] = 'nopoint'
+        self.fields['fabricante_fornecedor'].widget.attrs['class'] = 'select2'
+        
+    
+    
     class Meta:
         model = NotaFiscal
         fields = ['fabricante_fornecedor', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar',]
@@ -188,8 +206,11 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         self.fields['impostos'].localize=True
         self.fields['impostos'].widget.is_localized = True
         self.fields['impostos'].widget.attrs['class'] = 'nopoint'
+        self.fields['componente'].widget.attrs['class'] = 'select2'
+        self.fields['fabricante'].widget.attrs['class'] = 'select2'
+
         
-        
+
         if nota.tipo == 'n':
             self.fields['valor_unitario'].help_text ="Nota Nacional: Valor em Reais"
         else:
@@ -321,6 +342,7 @@ class ComponenteFormPreAdd(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ComponenteFormPreAdd, self).__init__(*args, **kwargs)
         self.fields['tipo'].required = True
+        self.fields['tipo'].widget.attrs['class'] = 'select2'
     
     class Meta:
         model = Componente
@@ -428,6 +450,13 @@ def ver_componente(request, componente_id):
     
 
 # FABRICANTES E FORNECEDORES
+
+# FORMS FABRICANTES E FORNECEDORES
+class AdicionarFabricanteFornecedor(forms.ModelForm):
+    
+    class Meta:
+        model = FabricanteFornecedor
+
 def listar_fabricantes_fornecedores(request):
     if request.GET:
         q_fab_for = request.GET.get('q_fab_for', True)
@@ -439,4 +468,37 @@ def listar_fabricantes_fornecedores(request):
                     Q(cnpj__icontains=q_fab_for) | Q(nome__icontains=q_fab_for)
                 )
     return render_to_response('frontend/producao/producao-listar-fabricantes-fornecedores.html', locals(), context_instance=RequestContext(request),)    
+
+
+def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
+    fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
+    fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor).values('componente__part_number', 'componente__id', 'componente__ativo').annotate(total=Sum('quantidade')).order_by('-total')
+    fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor).values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id').annotate(total=Sum('quantidade')).order_by('-total')
+    return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
     
+
+def adicionar_fabricantes_fornecedores(request):
+    if request.POST:
+        form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(request.POST)
+        if form_add_fabricante_fornecedor.is_valid():
+            fabricante_fornecedor = form_add_fabricante_fornecedor.save()
+            messages.success(request, 'Sucesso! Fabricante Fornecedor %s Adicionado!' % fabricante_fornecedor)
+            return redirect(reverse('producao:ver_fabricantes_fornecedores', args=[fabricante_fornecedor.id]))
+    else:
+        form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor()
+        
+    return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
+
+
+def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
+    fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
+    if request.POST:
+        form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(request.POST, instance=fabricante_fornecedor)
+        if form_add_fabricante_fornecedor.is_valid():
+            fabricante_fornecedor = form_add_fabricante_fornecedor.save()
+            messages.success(request, 'Sucesso! Fabricante Fornecedor %s Editado!' % fabricante_fornecedor)
+            return redirect(reverse('producao:ver_fabricantes_fornecedores', args=[fabricante_fornecedor.id]))
+    else:
+        form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(instance=fabricante_fornecedor)
+        
+    return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    

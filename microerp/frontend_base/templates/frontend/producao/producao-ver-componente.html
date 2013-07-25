@@ -9,12 +9,12 @@
 
 <div class="row-fluid">
     <div class='span6'>
-        <h3>Fornecedores - Unidades</h3>
+        <h3>Fornecedores - Unidades fornecidas</h3>
         {% for fornecedor in fornecedores %}
         <strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}} {{componente.get_medida_display}}{{fornecedor.total|pluralize}}<br />
         {% endfor %}
 
-        <h3>Fabricantes - Unidades já fornecidas</h3>
+        <h3>Fabricantes - Unidades fornecidas</h3>
         {% for fabricante in fabricantes %}
         <strong>{{fabricante.fabricante__nome}}</strong>: {{fabricante.total}} {{componente.get_medida_display}}{{fabricante.total|pluralize}}<br />
         {% endfor %}
