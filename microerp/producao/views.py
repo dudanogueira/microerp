@@ -251,6 +251,12 @@ def editar_nota(request, notafiscal_id):
         if form_notafiscal.is_valid():
             form_notafiscal.save()
             messages.success(request, u'Nota Fiscal Alterada com Sucesso!')
+            # calcular todas os lancamentos
+            for lancamento in notafiscal.lancamentocomponente_set.all():
+                lancamento.calcula_totais_lancamento()
+            # calcula total da nota
+            notafiscal.calcula_totais_nota()
+            messages.info(request, u'Nota Fiscal Recalculada!')
             return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
             
     else:
@@ -282,6 +288,13 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
         if lancamento_form.is_valid():
             lancamento_form.save()
             messages.success(request, u'Lançamento %d Editado com Sucesso!' % lancamento.id)
+            # calcular todas os lancamentos
+            for lancamento in lancamento.nota.lancamentocomponente_set.all():
+                lancamento.calcula_totais_lancamento()
+            # calcula total da nota
+            lancamento.nota.calcula_totais_nota()
+            messages.info(request, u'Nota Fiscal Recalculada!')
+            
             return redirect(reverse('producao:ver_nota', args=[lancamento.nota.id,]))
             
     else:
