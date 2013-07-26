@@ -448,6 +448,7 @@ def adicionar_componentes(request):
     
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
+    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l')
     fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
     fabricantes = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('fabricante__nome').annotate(total=Sum('quantidade'))
     posicoes_estoque = []
