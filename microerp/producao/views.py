@@ -18,6 +18,7 @@ from producao.models import LancamentoComponente
 from producao.models import Componente
 from producao.models import ComponenteTipo
 from producao.models import EstoqueFisico
+from producao.models import LinhaFornecedorFabricanteComponente
 
 
 from django import forms
@@ -71,7 +72,7 @@ def importa_nota_sistema(f):
         total = xmldoc.getElementsByTagName('total')[0]
         frete = total.getElementsByTagName('vFrete')[0].firstChild.nodeValue
         # criando NFE no sistema
-        nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=idnfe)
+        nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=idnfe, tipo='n')
         nfe_sistema.taxas_diversas = frete
         nfe_sistema.save()
         # pega itens da nota
@@ -183,6 +184,7 @@ class NotaFiscalForm(forms.ModelForm):
         self.fields['cotacao_dolar'].widget.is_localized = True
         self.fields['cotacao_dolar'].widget.attrs['class'] = 'nopoint'
         self.fields['fabricante_fornecedor'].widget.attrs['class'] = 'select2'
+        self.fields['tipo'].choices.insert(0, ('','Escolha o Tipo' ) )
         
     
     
@@ -449,6 +451,8 @@ def adicionar_componentes(request):
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l')
+    # memorias: LinhaFornecedorFabricanteComponente
+    memorias = LinhaFornecedorFabricanteComponente.objects.filter(componente=componente)
     fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
     fabricantes = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('fabricante__nome').annotate(total=Sum('quantidade'))
     posicoes_estoque = []
@@ -487,6 +491,7 @@ def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
     fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__id', 'componente__ativo').annotate(total=Sum('quantidade')).order_by('-total')
     fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id').annotate(total=Sum('quantidade')).order_by('-total')
+    memorias = LinhaFornecedorFabricanteComponente.objects.filter(fornecedor=fabricante_fornecedor)
     return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
     
 

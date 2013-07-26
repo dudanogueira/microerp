@@ -177,7 +177,11 @@ class FabricanteFornecedor(models.Model):
                 return self.nome
             else:
                 return "Nome Não Preenchido"
-        
+    
+    
+    def nome_curto(self):
+        return " ".join(self.nome.split()[0:2])
+    
     
     tipo = models.CharField(blank=True, max_length=100, choices=FABRICANTE_FORNECEDOR_TIPO_CHOICES)
     ativo = models.BooleanField(default=True)
@@ -401,7 +405,7 @@ class NotaFiscal(models.Model):
     
     #arquivo = models.FileField(upload_to=arquivo)
     numero = models.CharField(max_length=100, blank=False, null=False)
-    tipo = models.CharField(blank=False, max_length=1, default='n', choices=TIPO_NOTA_FISCAL)
+    tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Taxas Diversas", help_text="em R$", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real", help_text="Campo utilizado somente para notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')

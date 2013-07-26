@@ -47,6 +47,18 @@ Este Fabricante / Fornecedor nunca fabricou componentes.
 {% endfor %}
 
 
+
+<h4>Memória de Relacionamento Neste Fornecedor</h4>
+<div class="well well-small">
+    <ul>
+    {% for memoria in memorias %}
+        <li><strong>{{memoria.part_number_fornecedor}}</a> -> <em><a href="{% url "producao:ver_componente" memoria.componente.id %}">{{memoria.componente.part_number}}</a></em></strong> <p class="label label-info">FAB: {{memoria.fabricante.nome}}</p> <p class="label label-info">PNFAB: {{memoria.part_number_fabricante}}</p></li>
+    {% endfor %}
+    </ul>
+    
+</div>
+
+
 {% endblock %}
 
 {% block auxiliar-menu %}
