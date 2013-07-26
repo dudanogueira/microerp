@@ -80,7 +80,7 @@
                 
                 <td>R$ {{contrato.valor}}
                     {% if contrato.valor_entrada %}
-                        {{contrato.valor_entrada}}
+                        <br /><small><strong>Entrada</strong>: R$ {{contrato.valor_entrada}}</small>
                     {% endif %}
                 </td>
                 <td>{{contrato.parcelas}}x</td>
@@ -125,10 +125,13 @@
                 <strong>Recebido</strong>: R$ {% if contrato.total_valor_recebido_lancamentos.valor_recebido__sum  %}{{contrato.total_valor_recebido_lancamentos.valor_recebido__sum}}{% else %}0{% endif %}</td>
                     
                 <td>
-                                {{contrato.ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}<br />
+                            {% if contrato.ultimo_lancamento %}    {{contrato.ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}<br />
                     <strong>Cobrado</strong>: R$ {{contrato.ultimo_lancamento.valor_cobrado}}<br />
                     {% if contrato.ultimo_lancamento.valor_recebido %}
                     <strong>Recebido</strong>: R$ {{contrato.ultimo_lancamento.valor_recebido}}<br />
+                    {% endif %}
+                    {% else %}
+                    Nenhum Lançamento Já realizado.
                     {% endif %}
                 </td>
                 <td>
