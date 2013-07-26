@@ -194,7 +194,11 @@ class ContratoFechado(models.Model):
 
     
     def ultimo_lancamento(self):
-        return self.lancamento_set.all().order_by('-data_recebido')[0]
+        try:
+            ultimo_lancamento = self.lancamento_set.all().order_by('-data_recebido')[0]
+        except:
+            ultimo_lancamento = None
+        return ultimo_lancamento
     
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado')
