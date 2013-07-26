@@ -71,9 +71,7 @@ class Lancamento(models.Model):
             return u"Lançamento de peso %d RECEBIDO em %s do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.data_recebido, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
         else:
             return u"Lançamento de peso %d  A RECEBER do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
-    
-    
-    
+
     def clean(self):
         if self.data_recebido and not self.modo_recebido:
             raise ValidationError(u"Erro. Para receber o valor, é preciso especificar o modo recebido")
@@ -87,7 +85,7 @@ class Lancamento(models.Model):
     data_cobranca = models.DateField(default=datetime.datetime.today)
     valor_cobrado = models.DecimalField("Valor Cobrado", max_digits=10, decimal_places=2)
     valor_recebido = models.DecimalField("Valor Recebido", max_digits=10, decimal_places=2, blank=True, null=True)
-    modo_recebido = models.CharField(blank=True, null=True, max_length=100, choices=LANCAMENTO_MODO_RECEBIDO_CHOICES)
+    modo_recebido = models.CharField(blank=False, null=False, max_length=100, choices=LANCAMENTO_MODO_RECEBIDO_CHOICES)
     data_recebido = models.DateField(blank=True, null=True)
     data_recebido_em_conta = models.DateField(blank=True, null=True)
     conta = models.ForeignKey('ContaBancaria', blank=True, null=True)

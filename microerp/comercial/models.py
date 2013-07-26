@@ -25,10 +25,14 @@ from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
+from django.db.models import Sum
+
 from cadastro.models import Cliente
 from rh.models import Funcionario
 
 import urllib2
+
+from django.contrib import messages
 
 from icalendar import Calendar, Event
 
@@ -144,30 +148,53 @@ class CategoriaContratoFechado(models.Model):
 
 class ContratoFechado(models.Model):
     
-    def lancar(self):
+    def lancar(self, request=None):
         '''lancar o contrato'''
         if self.status  == 'emaberto':
             # lanca o contrato, vinculando X lancamentos mensais do valor_total do contrato à partir da data de inicio da cobranca
             # valor da parcela
             try:
-                valor_parcela = self.valor / self.parcelas
+                # verifica se tem entrada
+                if self.valor_entrada != 0:
+                    # cria lancamento de entrada
+                    self.lancamento_set.create(valor_cobrado=self.valor_entrada, peso=0, data_cobranca=datetime.date.today(), modo_recebido=self.forma_pagamento)
+                    messages.info(request, u"Sucesso! Lançamento de Entrada para o contrato #%s, valor %s" % (self.pk, self.valor_entrada))
+                valor_parcela = (self.valor - self.valor_entrada) / self.parcelas
                 for peso_parcela in range(1, self.parcelas+1):
                     if peso_parcela == 1:
                         data_cobranca = self.inicio_cobranca
                     else:
                         fator = peso_parcela - 1
                         data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * fator
-                    self.lancamento_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca)
+                    self.lancamento_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca, modo_recebido=self.forma_pagamento)
+                    messages.info(request, u"Sucesso! Lançamento para o contrato #%s, Parcela %s, valor %s, no dia %s realizado" % (self.pk, peso_parcela, valor_parcela, data_cobranca))
                 # fecha o contrato
                 self.status = 'lancado'
+                self.concluido = True
                 self.save()
             except:
                 raise
-                
+    def proximo_peso_lancamento(self):
+        try:
+            ultimo_peso = self.lancamento_set.order_by('-peso')[0].peso
+        except:
+            ultimo_peso = 0
+        proximo_peso = int(ultimo_peso) + 1
+        return proximo_peso
     
     def __unicode__(self):
-        return u"Contrato Fechado #%d  com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s. Categoria: %s" % \
+        return u"Contrato #%d  com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s. Categoria: %s" % \
             (self.id, self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.inicio_cobranca, self.get_status_display(), self.categoria)
+    
+    def total_valor_cobrado_lancamentos(self):
+        return self.lancamento_set.all().aggregate(Sum('valor_cobrado'))
+
+    def total_valor_recebido_lancamentos(self):
+        return self.lancamento_set.all().aggregate(Sum('valor_recebido'))
+
+    
+    def ultimo_lancamento(self):
+        return self.lancamento_set.all().order_by('-data_recebido')[0]
     
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado')
@@ -176,6 +203,7 @@ class ContratoFechado(models.Model):
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
+    valor_entrada = models.DecimalField("Valor de Entrada", max_digits=10, decimal_places=2)
     receber_apos_conclusao = models.BooleanField("Receber após a conclusão do Contrato", default=False)
     tipo = models.CharField(blank=False, max_length=100, default="fechado", choices=CONTRATO_TIPO_CHOICES)
     status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)

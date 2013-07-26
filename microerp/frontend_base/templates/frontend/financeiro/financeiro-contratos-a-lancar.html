@@ -10,7 +10,7 @@
 
 
 <div id="contratos-fechados" class="well">
-    <h2>Contratos do tipo Fechado a Receber</h2>    
+    <h2>Tipo Fechado a Receber</h2>    
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
@@ -27,13 +27,28 @@
             {% for contrato in contratos_fechados_a_receber %}
             <tr>
                 <td>{{contrato.id}}</td>
-                <td>{{contrato.cliente}}</td>
-                <td>{{contrato.valor}}</td>
+                <td>{{contrato.cliente}}<br />
+                    <strong>Categoria</strong>: {{contrato.categoria}}
+                </td>
+                
+                <td>
+                    R$ {{contrato.valor}}
+                    {% if contrato.valor_entrada %}
+                        <br /><small><strong>Entrada</strong>: R$ {{contrato.valor_entrada}}</small>
+                    {% endif %}
+                    
+                
+                </td>
                 <td>{{contrato.parcelas}}x</td>
                 <td>{{contrato.get_tipo_display}}</td>
                 <td>{{contrato.inicio_cobranca|date:"SHORT_DATE_FORMAT"}}</td>
-                <td><a href="" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>
+                <td><a href="{% url "financeiro:realizar_lancamento" contrato.id %}" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>
+                </td>
                 
+            </tr>
+            {% empty %}
+            <tr>
+                <td><small>Nenhum Contrato A Lançar</small></td>
             </tr>
             {% endfor %}
         </tbody>
@@ -42,7 +57,7 @@
 
 
 <div id="contratos-fechados" class="well">
-    <h2>Contratos do tipo Fechado a Receber Após Conclusão</h2>    
+    <h2>Tipo Fechado a Receber Após Conclusão</h2>    
     <table class="table table-striped table-bordered">
         <thead>
             <tr>
@@ -59,19 +74,87 @@
             {% for contrato in contratos_fechados_receber_apos_conclusao %}
             <tr>
                 <td>{{contrato.id}}</td>
-                <td>{{contrato.cliente}}</td>
-                <td>{{contrato.valor}}</td>
+                <td>{{contrato.cliente}}<br />
+                    <strong>Categoria</strong>: {{contrato.categoria}}
+                </td>
+                
+                <td>R$ {{contrato.valor}}
+                    {% if contrato.valor_entrada %}
+                        {{contrato.valor_entrada}}
+                    {% endif %}
+                </td>
                 <td>{{contrato.parcelas}}x</td>
                 <td>{{contrato.get_tipo_display}}</td>
                 <td>{{contrato.concluido|yesno|capfirst}}</td>
                 <td>
-                    {% if contrato.concluido %}<a href="" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>{% endif %}
+                    {% if contrato.concluido %}<a href="{% url "financeiro:realizar_lancamento" contrato.id %}" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>{% endif %}
+                </td>
                 
             </tr>
+            {% empty %}
+            <tr>
+                <td><small>Nenhum Contrato A Lançar</small></td>
+            </tr>
+            
             {% endfor %}
+            
         </tbody>
     </table>
 </div>
+
+<div id="contrato-aberto" class="well">
+    <h2>Contratos Abertos</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Cliente</th>
+                <th>Valor Acumulado / Lançamentos</th>
+                <th>Último Lançamento</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for contrato in contratos_abertos %}
+            <tr>
+                <td>{{contrato.id}}</td>
+                <td>{{contrato.cliente}}<br />
+                    <strong>Categoria</strong>: {{contrato.categoria}}
+                </td>
+                <td><strong>Cobrado</strong>: R$ {% if contrato.total_valor_cobrado_lancamentos.valor_cobrado__sum  %}{{contrato.total_valor_cobrado_lancamentos.valor_cobrado__sum}}{% else %}0{% endif %}<br />
+                <strong>Recebido</strong>: R$ {% if contrato.total_valor_recebido_lancamentos.valor_recebido__sum  %}{{contrato.total_valor_recebido_lancamentos.valor_recebido__sum}}{% else %}0{% endif %}</td>
+                    
+                <td>
+                                {{contrato.ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}<br />
+                    <strong>Cobrado</strong>: R$ {{contrato.ultimo_lancamento.valor_cobrado}}<br />
+                    {% if contrato.ultimo_lancamento.valor_recebido %}
+                    <strong>Recebido</strong>: R$ {{contrato.ultimo_lancamento.valor_recebido}}<br />
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url "financeiro:contrato_adicionar_lancamento" contrato.id %}" class="btn btn-primary"> <i class="icon-plus"></i> <i class="icon-rocket"></i> Adicionar Lançamento</a><br />
+                    <a href="{% url "financeiro:contrato_fechar" contrato.id %}" class="btn btn-danger"> <i class="icon-close"></i> Fechar Contrato</a>
+                </td>
+                    
+                
+            </tr>
+            
+            {% empty %}
+            <tr>
+                <td><small>Nenhum Contrato A Lançar</small></td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+</div>
+
+<div id="contrato-aberto" class="well">
+    <h2>Contratos Mensais</h2>
+        {{contratos_mensais}}
+    </form>
+</div>
+
 
 {% endblock %}
 

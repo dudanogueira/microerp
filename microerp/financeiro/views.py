@@ -25,8 +25,16 @@ __version__ = '0.0.1'
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.contrib.auth.decorators import user_passes_test
+from django.contrib import messages
+from django.core.urlresolvers import reverse
+from django import forms
+
+from django.db.models import Sum
 
 from comercial.models import ContratoFechado
+from financeiro.models import Lancamento
+
+import datetime
 
 def possui_perfil_acesso_financeiro(user, login_url="/"):
     try:
@@ -39,12 +47,76 @@ def possui_perfil_acesso_financeiro(user, login_url="/"):
 def home(request):
     return render_to_response('frontend/financeiro/financeiro-home.html', locals(), context_instance=RequestContext(request),)
 
-
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def contratos_a_lancar(request):
     contratos_fechados_a_receber = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=False)
     contratos_fechados_receber_apos_conclusao = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=True)
+    contratos_abertos = ContratoFechado.objects.filter(status="emaberto", tipo="aberto")
+    contratos_mensais = ContratoFechado.objects.filter(status="emaberto", tipo="mensal")
     return render_to_response('frontend/financeiro/financeiro-contratos-a-lancar.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def ver_contrato(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
     return render_to_response('frontend/financeiro/financeiro-ver-contrato.html', locals(), context_instance=RequestContext(request),)
+
+# Adicionar Lancamento em Contrato
+class AdicionarLancamentoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        contrato = kwargs.pop('contrato')
+        proximo_peso = kwargs.pop('proximo_peso')
+        super(AdicionarLancamentoForm, self).__init__(*args, **kwargs)
+        if contrato:
+            self.fields['contrato'].widget = forms.HiddenInput()
+            self.fields['contrato'].initial = contrato.id
+            self.fields['data_cobranca'].widget.attrs['class'] = 'datepicker'
+            self.fields['data_recebido'].widget.attrs['class'] = 'datepicker'
+            self.fields['data_recebido_em_conta'].widget.attrs['class'] = 'datepicker'
+        if proximo_peso:
+            self.fields['peso'].initial = proximo_peso
+    
+    class Meta:
+        model = Lancamento
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def realizar_lancamento(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    if contrato.status == 'emaberto':
+        messages.success(request, u'Sucesso! Contrato #%s Lançado!' % contrato.id)
+        contrato.lancar(request)
+        
+    else:
+        messages.error(request, u'Erro! Contrato não está em Aberto')
+    return redirect(reverse('financeiro:contratos_a_lancar'))
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def contrato_adicionar_lancamento(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    if contrato.status == 'emaberto':
+        if request.POST:
+            form = AdicionarLancamentoForm(request.POST, contrato=contrato, proximo_peso=contrato.proximo_peso_lancamento())
+            if form.is_valid():
+                lancamento = form.save()
+                messages.success(request, "Sucesso! Lançamento realizado!" )
+                return(redirect("financeiro:contratos_a_lancar"))
+        else:
+            form = AdicionarLancamentoForm(contrato=contrato, proximo_peso=contrato.proximo_peso_lancamento())
+        
+    else:
+        messages.error(request, u'Erro! Contrato não está em Aberto')
+    return render_to_response('frontend/financeiro/financeiro-contrato-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def contrato_fechar(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    contrato.status = "lancado"
+    contrato.concluido = True
+    contrato.save()
+    return(redirect("financeiro:contratos_a_lancar"))
+
+# Lancamentos a Receber
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def lancamentos_a_receber(request):
+    lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today())
+    lancamentos_pendentes_total =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))
+    return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)
