@@ -425,7 +425,7 @@ class NotaFiscal(models.Model):
     numero = models.CharField(max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Taxas Diversas (em R$)", help_text="(em R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
-    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real", help_text="Campo utilizado somente para notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
+    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (em R$)", help_text="Campo utilizado somente para notas Internacionais. (em R$)", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
     fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
