@@ -317,7 +317,7 @@ class LancamentoComponente(models.Model):
     part_number_fornecedor = models.CharField(blank=True, max_length=100)
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
     valor_unitario = models.DecimalField("Valor Unitário", max_digits=10, decimal_places=2, default=0)
-    impostos = models.DecimalField("Incidência de Impostos (%)", help_text=u"Incidência total de impostos deste Lançamento em %", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
+    impostos = models.DecimalField("Incidência de Impostos (%)", help_text=u"Incidência total de impostos deste Lançamento em (%)", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
     
     #campos automaticamente sugeridos, preenchidos opcionais
     componente = models.ForeignKey('Componente', verbose_name=getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'), blank=True, null=True)
@@ -424,7 +424,7 @@ class NotaFiscal(models.Model):
     #arquivo = models.FileField(upload_to=arquivo)
     numero = models.CharField(max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
-    taxas_diversas = models.DecimalField("Taxas Diversas", help_text="em R$", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    taxas_diversas = models.DecimalField("Taxas Diversas (em R$)", help_text="(em R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real", help_text="Campo utilizado somente para notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
     fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')

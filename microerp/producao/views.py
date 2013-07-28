@@ -216,9 +216,9 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         
 
         if nota.tipo == 'n':
-            self.fields['valor_unitario'].help_text ="Nota Nacional: Valor em Reais"
+            self.fields['valor_unitario'].help_text ="Nota Nacional: Valor em Reais (R$)"
         else:
-            self.fields['valor_unitario'].help_text ="Nota Internacional: Valor em Dolar"
+            self.fields['valor_unitario'].help_text ="Nota Internacional: Valor em Dolar (USD)"
     
     
     class Meta:
