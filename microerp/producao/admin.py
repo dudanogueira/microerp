@@ -28,7 +28,7 @@ class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     model = LinhaFornecedorFabricanteComponente
 
 class ComponenteAdmin(admin.ModelAdmin):
-    list_filter = 'tipo', 'importado'
+    list_filter = 'tipo', 'nacionalidade'
     list_display = '__unicode__',
     inlines = [LinhaFornecedorFabricanteComponenteInline,]
 
@@ -124,9 +124,12 @@ class LancamentoComponenteAdmin(admin.ModelAdmin):
     list_filter = 'nota__fabricante_fornecedor', 'componente', 'nota__status'
     list_display = 'nota', 'componente', 'quantidade'
 
+class ComponenteTipoAdmin(admin.ModelAdmin):
+    list_display = 'nome', 'slug'
+
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
-admin.site.register(ComponenteTipo)
+admin.site.register(ComponenteTipo, ComponenteTipoAdmin)
 admin.site.register(Componente, ComponenteAdmin)
 admin.site.register(FabricanteFornecedor, FabricanteFornecedorAdmin)
 admin.site.register(LancamentoComponente, LancamentoComponenteAdmin)

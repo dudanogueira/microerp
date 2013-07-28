@@ -12,7 +12,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q, Sum, Count
 from django.conf import settings
 
-from producao.models import FabricanteFornecedor
+from producao.models import FabricanteFornecedor, FABRICANTE_FORNECEDOR_TIPO_CHOICES
 from producao.models import NotaFiscal
 from producao.models import LancamentoComponente
 from producao.models import Componente
@@ -64,6 +64,8 @@ def importa_nota_sistema(f):
         # busca emissor
         fornecedor,created = FabricanteFornecedor.objects.get_or_create(cnpj=cnpj_emissor)
         fornecedor.nome = nome
+        if created:
+            fornecedor.tipo = 'fornecedor'
         fornecedor.save()
         if created:
             print "Fornecedor CRIADO: %s" % fornecedor
@@ -348,7 +350,7 @@ class ComponenteFormAdd(forms.ModelForm):
         self.fields['tipo'].widget = forms.HiddenInput()
         
     class Meta:
-        fields = ('identificador', 'tipo', 'descricao', 'importado', 'ncm', 'lead_time', 'medida')
+        fields = ('identificador', 'tipo', 'descricao', 'nacionalidade', 'ncm', 'lead_time', 'medida')
         model = Componente
     
 
@@ -441,7 +443,7 @@ def adicionar_componentes(request):
         
         
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        part_number = u"%s-%s%s" % (pn_prepend, tipo.nome[0:3].upper(), "%05d" % identificador)
+        part_number = u"%s-%s%s" % (pn_prepend, tipo.slug.upper(), "%05d" % identificador)
         return render_to_response('frontend/producao/producao-adicionar-componentes.html', locals(), context_instance=RequestContext(request),)    
     else:
         # retorna à listagem
@@ -450,7 +452,7 @@ def adicionar_componentes(request):
     
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
-    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l')
+    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-criado')
     # memorias: LinhaFornecedorFabricanteComponente
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(componente=componente)
     fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
@@ -475,8 +477,10 @@ class AdicionarFabricanteFornecedor(forms.ModelForm):
         model = FabricanteFornecedor
 
 def listar_fabricantes_fornecedores(request):
+    tipos_possiveis = FABRICANTE_FORNECEDOR_TIPO_CHOICES
     if request.GET:
         q_fab_for = request.GET.get('q_fab_for', True)
+        q_tipo = request.GET.get('q_tipo')
         if q_fab_for:
             if q_fab_for == "todos":
                 fab_for_encontrados = FabricanteFornecedor.objects.all()
@@ -484,6 +488,8 @@ def listar_fabricantes_fornecedores(request):
                 fab_for_encontrados = FabricanteFornecedor.objects.filter(
                     Q(cnpj__icontains=q_fab_for) | Q(nome__icontains=q_fab_for)
                 )
+        if q_tipo:
+            fab_for_encontrados = fab_for_encontrados.filter(tipo=q_tipo)
     return render_to_response('frontend/producao/producao-listar-fabricantes-fornecedores.html', locals(), context_instance=RequestContext(request),)    
 
 
@@ -519,4 +525,4 @@ def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     else:
         form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(instance=fabricante_fornecedor)
         
-    return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
+    return render_to_response('frontend/producao/producao-editar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    

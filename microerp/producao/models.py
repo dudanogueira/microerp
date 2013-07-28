@@ -29,6 +29,13 @@ TIPO_NOTA_FISCAL = (
     ('i', 'Internacional'),
 )
 
+
+TIPO_NACIONALIDADE_COMPONENTE = (
+    ('n', 'Nacional'),
+    ('i', 'Internacional'),
+)
+
+
 class PerfilAcessoProducao(models.Model):
     '''Perfil de Acesso à Produção'''
     
@@ -80,10 +87,18 @@ class PosicaoEstoque(models.Model):
 class ComponenteTipo(models.Model):
     '''tipo/categoria de componente'''
     
+    def save(self, *args, **kwargs):
+            # se não existir part_number, forcar o padrao
+            if not self.slug:
+                self.slug = self.nome[0:3]
+            super(Componente, self).save(*args, **kwargs)    
+    
+    
     def __unicode__(self):
-        return self.nome
+        return "%s (%s)" % (self.nome, self.slug)
     
     nome = models.CharField(blank=False, null=False, max_length=100, unique=True)
+    slug = models.SlugField(max_length=3, help_text="Letras usadas para definição do %s" % getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'))
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -115,12 +130,15 @@ class Componente(models.Model):
             return "%s - %s" % (self.part_number, self.descricao)
         else:
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-            return u"%s-%s%s %s" % (pn_prepend, self.tipo.nome[0:3].upper(), "%05d" % self.identificador, self.descricao)
+            return u"%s-%s%s %s" % (pn_prepend, self.tipo.slug.upper(), "%05d" % self.identificador, self.descricao)
     
     def save(self, *args, **kwargs):
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-            self.part_number = u"%s-%s%s" % (pn_prepend, self.tipo.nome[0:3].upper(), "%05d" % self.identificador)
+            # se não existir part_number, forcar o padrao
+            if not self.part_number:
+                self.part_number = u"%s-%s%s" % (pn_prepend, self.tipo.slug.upper(), "%05d" % self.identificador)
             super(Componente, self).save(*args, **kwargs)    
+
     
     class Meta:
         unique_together = (('identificador', 'tipo'))
@@ -146,7 +164,7 @@ class Componente(models.Model):
     identificador = models.IntegerField("Identificador único junto a categoria", blank=True, null=True, default=1)
     tipo = models.ForeignKey('ComponenteTipo', blank=False, null=False)    
     descricao = models.TextField(blank=True)
-    importado = models.BooleanField(default=False)
+    nacionalidade = models.CharField(blank=False, max_length=1, choices=TIPO_NACIONALIDADE_COMPONENTE)
     ncm = models.CharField(blank=True, max_length=100)
     # lead time
     lead_time = models.IntegerField("Lead Time", help_text="Número de Semanas decorridas do pedido à disponibilidade do componente em estoque", blank=False, null=False)
@@ -320,7 +338,7 @@ class LancamentoComponente(models.Model):
 class NotaFiscal(models.Model):
     
     def __unicode__(self):
-        return u"Nota Fiscal Número: %s, %s de %s" % (self.numero, self.get_tipo_display(), self.fabricante_fornecedor)
+        return u"Nota Fiscal Série %s, Número: %s, %s de %s" % (self.numero_de_serie(), self.numero_identificador(), self.get_tipo_display(), self.fabricante_fornecedor)
     
     class Meta:
         unique_together = (('fabricante_fornecedor', 'numero'))

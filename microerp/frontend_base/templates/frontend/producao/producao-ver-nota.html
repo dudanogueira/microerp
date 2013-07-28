@@ -16,7 +16,7 @@
     <div class="span6 well well-small">
         <strong>Status</strong>: {{notafiscal.get_status_display}}<br />
         <strong>Fornecedor</strong>: {{notafiscal.fabricante_fornecedor}}<br />
-        <strong>Data de Entrada</strong>: {{notafiscal.data_entrada}}<br />
+        <strong>Data de Entrada</strong>: {{notafiscal.data_entrada|date:"SHORT_DATETIME_FORMAT"}} <em> <small>(há {{notafiscal.data_entrada|timesince}})</small></em><br />
         <strong>Taxas Diversas</strong>: R$ {{notafiscal.taxas_diversas}}<br />
         <strong>Total da Nota Sem Imposto</strong>: R$ {{notafiscal.total_sem_imposto}}<br />
         <strong>Total da Nota Com Imposto</strong>: R$ {{notafiscal.total_com_imposto}}<br />
@@ -24,9 +24,7 @@
         <h6>Nota Internacional</h6>
         <strong>Total da Nota em Dólar (sem impostos)</strong>: USD {{notafiscal.total_da_nota_em_dolar}}<br />
         <strong>Cotação do Dolar</strong>: R$ {{notafiscal.cotacao_dolar}}
-        {% endif %}
-        
-        
+        {% endif %}        
     </div>
     
     
