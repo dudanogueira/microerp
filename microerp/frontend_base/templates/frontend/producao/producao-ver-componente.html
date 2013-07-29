@@ -11,7 +11,7 @@
   <li><a href="#fornecimento" data-toggle="tab">Fornecimento</a></li>
   <li><a href="#fabricacao" data-toggle="tab">Fabricação</a></li>
   <li><a href="#participacao" data-toggle="tab">Participações</a></li>
-  <li><a href="#historicoememoria" data-toggle="tab">Memória</a></li>
+  <li><a href="#memoria" data-toggle="tab">Memória</a></li>
 </ul>
 
 
@@ -101,16 +101,18 @@
         
         </div>
         
-        <div class="tab-pane fade in" id="historicoememoria">
+        <div class="tab-pane fade in" id="memoria">
             
             <h4>Memória de Relacionamento com Fornecedores</h4>
             <p>
-                <a href="" class="btn btn-primary"><i class="icon-plus"></i> Adicionar à Memória</a>
+                <a href="{% url "producao:adicionar_memoria_componente" componente.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar à Memória</a>
             </p>
             <div class="well well-small">
                 <ul>
+
                 {% for memoria in memorias %}
-                    <li><strong><a href="{% url "producao:ver_fabricantes_fornecedores" memoria.fornecedor.id %}">{{memoria.fornecedor.nome_curto}}</a>: {{memoria.part_number_fornecedor}}</a> -> <em>{{memoria.componente.part_number}}</em></strong> <p class="label label-info">FAB: {{memoria.fabricante.nome}}</p> <p class="label label-info">PNFAB: {{memoria.part_number_fabricante}}</p> <a href="" class="btn btn-danger"><i class="icon-trash"></i> Apagar</a></li>
+                    <li><strong><a href="{% url "producao:ver_fabricantes_fornecedores" memoria.fornecedor.id %}">{{memoria.fornecedor.nome_curto}}</a>: {{memoria.part_number_fornecedor}}</a> -> <em>{{memoria.componente.part_number}}</em></strong> <p class="label label-info">FAB: {{memoria.fabricante.nome}}</p> <p class="label label-info">PNFAB: {{memoria.part_number_fabricante}}</p> <a href="                    {% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}
+" class="btn btn-danger"><i class="icon-trash"></i> Apagar</a></li>
                     {% empty %}
                     <p>Este Fornecedor Não possui memória de entrada de lançamentos de nota fiscal</p>
                 {% endfor %}
@@ -137,6 +139,9 @@
 $(document).ready(function() {
 	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
     $("#busca_componente").focus()
+   var activeTab = $('[href=' + location.hash + ']');
+   activeTab && activeTab.tab('show');
+    
 });
 </script>
 

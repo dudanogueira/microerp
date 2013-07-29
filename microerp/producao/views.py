@@ -468,6 +468,44 @@ def ver_componente(request, componente_id):
     return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
     
 
+# MEMORIA DE COMPONENTE
+
+class AdicionarMemoriaComponenteForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        componente = kwargs.pop('componente')
+        super(AdicionarMemoriaComponenteForm, self).__init__(*args, **kwargs)
+        self.fields['part_number_fabricante'].required = True
+        if componente:
+            self.fields['componente'].initial = componente.id
+        self.fields['fornecedor'].widget.attrs['class'] = 'select2'
+        self.fields['fabricante'].widget.attrs['class'] = 'select2'
+        self.fields['componente'].widget.attrs['class'] = 'select2'
+        
+    
+    class Meta:
+        model = LinhaFornecedorFabricanteComponente
+
+def adicionar_memoria_componente(request, componente_id):
+    componente = get_object_or_404(Componente, pk=componente_id)
+    if request.POST:
+        form = AdicionarMemoriaComponenteForm(request.POST, componente=componente)
+        if form.is_valid():
+            memoria = form.save()
+            messages.success(request, "Sucesso! Memória de Conversão adicionada!")
+            return(redirect(reverse('producao:ver_componente', args=[componente.id,]) + "#memoria"))
+    else:
+        form = AdicionarMemoriaComponenteForm(componente=componente)
+    return render_to_response('frontend/producao/producao-componente-adicionar-memoria.html', locals(), context_instance=RequestContext(request),)    
+
+
+def apagar_memoria_componente(request, memoria_id, componente_id):
+    componente = get_object_or_404(Componente, pk=componente_id)
+    memoria = get_object_or_404(LinhaFornecedorFabricanteComponente, componente=componente, pk=memoria_id)
+    memoria.delete()
+    messages.success(request, "Sucesso! Mensagem apagada com sucesso!")
+    return redirect(reverse("producao:ver_componente", args=[componente.id]) + "#memoria")
+
 # FABRICANTES E FORNECEDORES
 
 # FORMS FABRICANTES E FORNECEDORES

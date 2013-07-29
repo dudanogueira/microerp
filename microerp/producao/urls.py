@@ -18,6 +18,8 @@ urlpatterns = patterns('',
     url(r'^componentes$', 'producao.views.listar_componentes', name='listar_componentes'),
     url(r'^componentes/adicionar$', 'producao.views.adicionar_componentes', name='adicionar_componentes'),
     url(r'^componentes/(?P<componente_id>[0-9]+)/ver$', 'producao.views.ver_componente', name='ver_componente'),
+    url(r'^componentes/(?P<componente_id>[0-9]+)/memoria/(?P<memoria_id>[0-9]+)/apagar$', 'producao.views.apagar_memoria_componente', name='apagar_memoria_componente'),
+    url(r'^componentes/(?P<componente_id>[0-9]+)/memoria/adicionar$', 'producao.views.adicionar_memoria_componente', name='adicionar_memoria_componente'),
     # Fabricantes e Fornecedores
     url(r'^fabricantes_fornecedores/(?P<fabricante_fornecedor_id>[0-9]+)/editar$', 'producao.views.editar_fabricantes_fornecedores', name='editar_fabricantes_fornecedores'),
     url(r'^fabricantes_fornecedores/(?P<fabricante_fornecedor_id>[0-9]+)/ver$', 'producao.views.ver_fabricantes_fornecedores', name='ver_fabricantes_fornecedores'),    
