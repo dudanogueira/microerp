@@ -327,6 +327,7 @@ def lancar_nota_fechar(request, notafiscal_id):
     if notafiscal.lancamentocomponente_set.filter(componente=None).count() == 0:
         if notafiscal.lancar_no_estoque():
             notafiscal.data_lancado_estoque = datetime.datetime.now()
+            notafiscal.lancado_por = request.user
             notafiscal.save()
             messages.success(request, u'Nota Fiscal %s Lançada com Sucesso!' % notafiscal)
         else:
@@ -454,7 +455,7 @@ def adicionar_componentes(request):
     
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
-    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-criado')
+    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-nota__data_lancado_estoque')
     # memorias: LinhaFornecedorFabricanteComponente
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(componente=componente)
     fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
