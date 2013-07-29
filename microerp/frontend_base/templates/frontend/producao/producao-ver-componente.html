@@ -84,7 +84,7 @@
             
             <h3>Lançamentos Fornecidos</h3>
             {% for lancamento in lancamentos %}
-            <span class="label label-info">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_entrada|date:"SHORT_DATETIME_FORMAT"}} <strong>Fornecimento {{lancamento.nota.fabricante_fornecedor.nome}}</strong>, nota: {{lancamento.nota.numero}}<br />
+            <span class="label label-info">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_lancado_estoque|date:"SHORT_DATETIME_FORMAT"}} <strong>Fornecimento {{lancamento.nota.fabricante_fornecedor.nome}}</strong>, nota: {{lancamento.nota.numero}}<br />
             {% endfor %}
             
         </div>

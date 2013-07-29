@@ -326,6 +326,8 @@ def lancar_nota_fechar(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id, status="a")
     if notafiscal.lancamentocomponente_set.filter(componente=None).count() == 0:
         if notafiscal.lancar_no_estoque():
+            notafiscal.data_lancado_estoque = datetime.datetime.now()
+            notafiscal.save()
             messages.success(request, u'Nota Fiscal %s Lançada com Sucesso!' % notafiscal)
         else:
             messages.error(request, u'ERRO! Nota Fiscal %s Não Lancada!' % notafiscal)

@@ -429,6 +429,7 @@ class NotaFiscal(models.Model):
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
     fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    data_lancado_estoque = models.DateTimeField(blank=True, null=True)
     # totais e valores
     total_sem_imposto = models.DecimalField("Total da Nota sem Imposto", help_text="Campo calculado automaticamente", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     total_com_imposto = models.DecimalField("Total da Nota com Imposto", help_text="Campo calculado automaticamente", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
