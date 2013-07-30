@@ -98,8 +98,8 @@ class ComponenteTipo(models.Model):
     def __unicode__(self):
         return "%s - %s" % (self.slug, self.nome)
     
+    slug = models.SlugField(u"Abreviação", max_length=3, unique=True)
     nome = models.CharField(u"Descrição", blank=False, null=False, max_length=100, unique=True)
-    slug = models.SlugField(max_length=3, help_text="Letras usadas para definição do %s" % getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'), unique=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
