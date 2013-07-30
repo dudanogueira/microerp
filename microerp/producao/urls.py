@@ -25,5 +25,7 @@ urlpatterns = patterns('',
     url(r'^fabricantes_fornecedores/(?P<fabricante_fornecedor_id>[0-9]+)/ver$', 'producao.views.ver_fabricantes_fornecedores', name='ver_fabricantes_fornecedores'),    
     url(r'^fabricantes_fornecedores/adicionar$', 'producao.views.adicionar_fabricantes_fornecedores', name='adicionar_fabricantes_fornecedores'),
     url(r'^fabricantes_fornecedores/$', 'producao.views.listar_fabricantes_fornecedores', name='listar_fabricantes_fornecedores'),
+    # Estoque e Movimentação
+    url(r'^estoque/$', 'producao.views.listar_estoque', name='listar_estoque'),
     
 )

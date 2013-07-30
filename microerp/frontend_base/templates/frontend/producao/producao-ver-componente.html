@@ -14,7 +14,6 @@
   <li><a href="#memoria" data-toggle="tab">Memória</a></li>
 </ul>
 
-
 <div id="myTabContent" class="tab-content">
         <div class="tab-pane fade in active" id="valores">
             
@@ -84,7 +83,8 @@
             
             <h3>Lançamentos Fornecidos</h3>
             {% for lancamento in lancamentos %}
-            <span class="label label-info">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_lancado_estoque|date:"SHORT_DATETIME_FORMAT"}} <strong>Fornecedor: {{lancamento.nota.fabricante_fornecedor.nome}}</strong>, nota: {{lancamento.nota.numero}}. <strong>Por: {{lancamento.nota.lancado_por.funcionario}}</strong><br />
+            <span class="label label-info">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_lancado_estoque|date:"SHORT_DATETIME_FORMAT"}} <strong>Fornecedor: {{lancamento.nota.fabricante_fornecedor.nome}} ({{lancamento.part_number_fornecedor}})</strong>, <span class="label label-warning">{{lancamento.fabricante.nome}} - {{lancamento.part_number_fabricante}}</span> nota: {{lancamento.nota.numero}}. <strong>Por: {{lancamento.nota.lancado_por.funcionario}}</strong><br />
+            <hr />
             {% endfor %}
             
         </div>

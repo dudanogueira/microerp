@@ -6,8 +6,6 @@
 {% block content %}
 <h1>Fabricantes e Fornecedores</h1>
 <div class="row-fluid">
-    
-    
     <div class="span6">
         
         <h2><i class="icon-building"></i> {{fabricante_fornecedor}}</h2>
@@ -19,7 +17,7 @@
     
     <div class="span6">
         <h2><i class="icon-envelope"></i> Contatos</h2>
-        {{fabricante_fornecedor.contatos}}
+        {{fabricante_fornecedor.contatos|linebreaks|safe}}
         
     </div>
     

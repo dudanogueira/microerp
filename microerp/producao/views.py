@@ -19,6 +19,7 @@ from producao.models import Componente
 from producao.models import ComponenteTipo
 from producao.models import EstoqueFisico
 from producao.models import LinhaFornecedorFabricanteComponente
+from producao.models import PosicaoEstoque
 
 
 from django import forms
@@ -216,10 +217,12 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         
 
         if nota.tipo == 'n':
-            self.fields['valor_unitario'].help_text ="Nota Nacional: Valor em Reais (R$)"
+            self.fields['valor_unitario'].label = "Valor Unitário (R$):"
         else:
-            self.fields['valor_unitario'].help_text ="Nota Internacional: Valor em Dolar (USD)"
+            self.fields['valor_unitario'].label = "Valor Unitário (USD):"
     
+        self.fields['valor_unitario'].help_text = ""
+        self.fields['impostos'].help_text = ""
     
     class Meta:
         model = LancamentoComponente
@@ -372,7 +375,7 @@ class ComponenteFormPreAdd(forms.ModelForm):
 
 class TipoComponenteAdd(forms.ModelForm):
     
-    def clean_nome(self):
+    def clean_nome_outro(self):
         """
         If somebody enters into this form ' hello ', or 'hello friend'
         the extra whitespace will be stripped and replaced
@@ -552,8 +555,7 @@ def adicionar_fabricantes_fornecedores(request):
     else:
         form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor()
         
-    return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
-
+    return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)
 
 def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
@@ -567,3 +569,64 @@ def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
         form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(instance=fabricante_fornecedor)
         
     return render_to_response('frontend/producao/producao-editar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
+
+# ESTOQUES
+
+class ConsultaEstoque(forms.Form):
+    
+    componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=False)
+    estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=False)
+    def __init__(self, *args, **kwargs):
+        super(ConsultaEstoque, self).__init__(*args, **kwargs)
+        self.fields['componente'].widget.attrs.update({'class' : 'select2'})
+        self.fields['estoque'].widget.attrs.update({'class' : 'select2'})
+
+class MoverEstoque(forms.Form):
+    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
+    estoque_origem = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
+    estoque_destino = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
+    
+    
+
+def listar_estoque(request):
+    if request.POST:
+        form_consulta_estoque = ConsultaEstoque(request.POST)
+        if form_consulta_estoque.is_valid():
+            consultado = True
+            componente_consultado = form_consulta_estoque.cleaned_data['componente']
+            estoque_consultado = form_consulta_estoque.cleaned_data['estoque']
+            if not componente_consultado and not estoque_consultado:
+                messages.error(request, "Erro! Deve selecionar pelo menos uma opção!")
+                consultado = False
+            elif estoque_consultado and componente_consultado:
+                consulta_dupla = True
+                posicaoestoque = componente_consultado.posicao_no_estoque(estoque_consultado)
+            if componente_consultado and not estoque_consultado:
+                consulta_componente = True
+                posicoes_estoque = []
+                for estoque in EstoqueFisico.objects.all():
+                    try:
+                        posicao = estoque.posicaoestoque_set.filter(componente=componente_consultado).order_by('-data_entrada')[0]
+                    except:
+                        posicao = None
+                    if posicao:
+                        posicoes_estoque.append(posicao)
+
+            if not componente_consultado and estoque_consultado:
+                consulta_estoque = True
+                posicoes_estoque = []
+                for componente_ver in Componente.objects.all():
+                    try:
+                        posicao = PosicaoEstoque.objects.filter(componente=componente_ver, estoque=estoque_consultado).order_by('-data_entrada')[0]
+                    except:
+                        posicao = None
+                    if posicao:
+                        posicoes_estoque.append(posicao)
+                    
+                
+                
+    else:
+        form_consulta_estoque = ConsultaEstoque()
+    return render_to_response('frontend/producao/producao-listar-estoques.html', locals(), context_instance=RequestContext(request),)    
+    

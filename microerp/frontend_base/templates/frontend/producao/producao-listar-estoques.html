@@ -1,0 +1,122 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Listar Estoques{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-archive"></i> Estoque</h1>
+
+<h3>Consultar</h3>
+<div id="consultar">
+    {% if consultado %}
+
+        {% if consulta_dupla %}
+         <div id="consulta dupla">
+         
+             <h3>Componente {{componente_consultado.part_number}}</h3>
+             <h4>No Estoque: {{estoque_consultado}}</h4>
+             <div class="well">
+                 {{posicaoestoque}}
+             </div>
+             <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta</a>
+         </div>
+        {% endif %}
+    
+        {% if consulta_componente %}
+        <div id="consulta_componente">
+            <h3>Consultando Componente {{componente_consultado.part_number}}</h3>
+
+
+            <table class="table table-condensed table-striped table-rounded table-bordered">
+                <thead>
+                    <tr>
+                        <th>Estoque</th>
+                        <th>Quantidade</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                </tbody>
+                {% for posicao in posicoes_estoque %}
+                <tr>
+                    <td>{% if posicao.estoque.nome %}{{posicao.estoque.nome}}{% else %}{{posicao.estoque}}{% endif %}</td>
+                    <td>{{posicao.quantidade}}</td>
+                    <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+    
+            <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta</a>
+        </div>
+        {% endif %}
+    
+        {% if consulta_estoque %}
+        <div id="consulta_componente">
+            <h3>Consultando Estoque {{estoque_consultado}}</h3>
+
+            <table class="table table-condensed table-striped table-rounded table-bordered">
+                <thead>
+                    <tr>
+                        <th>Componente</th>
+                        <th>Quantidade</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                </tbody>
+                {% for posicao in posicoes_estoque %}
+                <tr>
+                    <td>{{posicao.componente.part_number}}</td>
+                    <td>{{posicao.quantidade}}</td>
+                    <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+    
+            <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta</a>
+        </div>
+        {% endif %}
+    
+    {% else %}
+        <form method="POST">
+            {% csrf_token %}
+        {{form_consulta_estoque.as_p}}
+        <p>
+            <button type="submit" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+        </p>
+        </form>
+    {% endif %}
+</div>
+
+<h3>Movimentar</h3>
+<div id="movimentar">
+    Mover X quantidade do Componente Y de Estoque a para Estoque B
+    <hr />
+    Adicionar X quantidade do Componente Y ao Estoque X
+    <hr />
+    Remover X quantidade do Componente Y do Estoque X
+    
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+	$("#menu-producao-estoque, #top-menu-producao").addClass("active");
+    
+});
+</script>
+
+
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

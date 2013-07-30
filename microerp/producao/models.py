@@ -17,6 +17,7 @@ COMPONENTE_UNIDADE_MEDIDA = (
 FABRICANTE_FORNECEDOR_TIPO_CHOICES = (
     ('fabricante', 'Fabricante'),
     ('fornecedor', 'Fornecedor'),
+    ('fabricantefornecedor', 'Fabricante e Fornecedor'),
 )
 
 STATUS_NOTA_FISCAL = (
@@ -91,14 +92,14 @@ class ComponenteTipo(models.Model):
             # se não existir part_number, forcar o padrao
             if not self.slug:
                 self.slug = self.nome[0:3]
-            super(Componente, self).save(*args, **kwargs)    
+            super(ComponenteTipo, self).save(*args, **kwargs)    
     
     
     def __unicode__(self):
-        return "%s (%s)" % (self.nome, self.slug)
+        return "%s - %s" % (self.slug, self.nome)
     
-    nome = models.CharField(blank=False, null=False, max_length=100, unique=True)
-    slug = models.SlugField(max_length=3, help_text="Letras usadas para definição do %s" % getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'))
+    nome = models.CharField(u"Descrição", blank=False, null=False, max_length=100, unique=True)
+    slug = models.SlugField(max_length=3, help_text="Letras usadas para definição do %s" % getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'), unique=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -316,7 +317,7 @@ class LancamentoComponente(models.Model):
     # quick create
     part_number_fornecedor = models.CharField(blank=True, max_length=100)
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
-    valor_unitario = models.DecimalField("Valor Unitário", max_digits=10, decimal_places=2, default=0)
+    valor_unitario = models.DecimalField("Valor Unitário (R$)", max_digits=10, decimal_places=2, default=0)
     impostos = models.DecimalField("Incidência de Impostos (%)", help_text=u"Incidência total de impostos deste Lançamento em (%)", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
     
     #campos automaticamente sugeridos, preenchidos opcionais
