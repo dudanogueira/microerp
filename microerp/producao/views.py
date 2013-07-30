@@ -328,7 +328,7 @@ def adicionar_lancamento(request, notafiscal_id):
 def lancar_nota_fechar(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id, status="a")
     if notafiscal.lancamentocomponente_set.filter(componente=None).count() == 0:
-        if notafiscal.lancar_no_estoque():
+        if notafiscal.lancar_no_estoque(user_id=request.user.id):
             notafiscal.data_lancado_estoque = datetime.datetime.now()
             notafiscal.lancado_por = request.user
             notafiscal.save()
@@ -582,51 +582,168 @@ class ConsultaEstoque(forms.Form):
         self.fields['estoque'].widget.attrs.update({'class' : 'select2'})
 
 class MoverEstoque(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(MoverEstoque, self).__init__(*args, **kwargs)
+        self.fields['componente'].widget.attrs.update({'class' : 'select2'})
+    
+    
+    def clean(self):
+        cleaned_data = super(MoverEstoque, self).clean()
+        quantidade = cleaned_data.get("quantidade")
+        estoque_origem = cleaned_data.get("estoque_origem")
+        estoque_destino = cleaned_data.get("estoque_destino")
+        componente = cleaned_data.get("componente")
+        
+        if estoque_origem and estoque_destino:
+            if estoque_origem == estoque_destino:
+                raise forms.ValidationError("Estoques precisam ser diferentes!")
+        
+        if componente:
+            posicao = componente.posicao_no_estoque(estoque_origem)
+            if posicao == 0:
+                raise forms.ValidationError(u"Impossível Movimentar o Estoque. Não existe o componente %s no Estoque Origem %s" % (componente, estoque_origem))
+            if posicao < quantidade:
+                raise forms.ValidationError(u"Impossível Movimentar o Estoque. Só existem %s %s(s) de %s no Estoque %s" % (posicao, componente.get_medida_display(), componente.part_number, estoque_origem))
+                
+        return cleaned_data    
+    
     quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
     componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
     estoque_origem = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     estoque_destino = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
+    justificativa = forms.CharField(widget=forms.Textarea, required=False)
+    
+
+class AlterarEstoque(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(AlterarEstoque, self).__init__(*args, **kwargs)
+        self.fields['componente'].widget.attrs.update({'class' : 'select2'})
     
     
+    def clean(self):
+        cleaned_data = super(AlterarEstoque, self).clean()
+        quantidade = cleaned_data.get("quantidade")
+        alteracao_tipo = cleaned_data.get("alteracao_tipo")
+        estoque = cleaned_data.get("estoque")
+        componente = cleaned_data.get("componente")
+        
+        # se operacao for remover, verificar se existe a quantidade
+        if alteracao_tipo == "remover":            
+            quantidade_atual = componente.posicao_no_estoque(estoque)
+            if quantidade_atual < quantidade:
+                raise forms.ValidationError(u"Erro! Quantidade no estoque %s é %s, menor do que a quantidade a se remover, %s" % (estoque, quantidade_atual, quantidade))
+        
+        return cleaned_data
+    
+    alteracao_tipo = forms.ChoiceField(label="Tipo de Alteração", choices=(('adicionar', 'Adicionar'), ('remover', 'Remover')))
+    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
+    estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
+    justificativa = forms.CharField(widget=forms.Textarea, required=False)
 
 def listar_estoque(request):
+    historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')
     if request.POST:
-        form_consulta_estoque = ConsultaEstoque(request.POST)
-        if form_consulta_estoque.is_valid():
-            consultado = True
-            componente_consultado = form_consulta_estoque.cleaned_data['componente']
-            estoque_consultado = form_consulta_estoque.cleaned_data['estoque']
-            if not componente_consultado and not estoque_consultado:
-                messages.error(request, "Erro! Deve selecionar pelo menos uma opção!")
-                consultado = False
-            elif estoque_consultado and componente_consultado:
-                consulta_dupla = True
-                posicaoestoque = componente_consultado.posicao_no_estoque(estoque_consultado)
-            if componente_consultado and not estoque_consultado:
-                consulta_componente = True
-                posicoes_estoque = []
-                for estoque in EstoqueFisico.objects.all():
-                    try:
-                        posicao = estoque.posicaoestoque_set.filter(componente=componente_consultado).order_by('-data_entrada')[0]
-                    except:
-                        posicao = None
-                    if posicao:
-                        posicoes_estoque.append(posicao)
+        if request.POST.get('consulta-estoque'):
+            form_mover_estoque = MoverEstoque()
+            form_alterar_estoque = AlterarEstoque()
+            form_consulta_estoque = ConsultaEstoque(request.POST)
+            if form_consulta_estoque.is_valid():
+                consultado = True
+                componente_consultado = form_consulta_estoque.cleaned_data['componente']
+                estoque_consultado = form_consulta_estoque.cleaned_data['estoque']
+                if not componente_consultado and not estoque_consultado:
+                    messages.error(request, "Erro! Deve selecionar pelo menos uma opção!")
+                    consultado = False
+                elif estoque_consultado and componente_consultado:
+                    consulta_dupla = True
+                    posicaoestoque = componente_consultado.posicao_no_estoque(estoque_consultado)
+                if componente_consultado and not estoque_consultado:
+                    consulta_componente = True
+                    posicoes_estoque = []
+                    for estoque in EstoqueFisico.objects.all():
+                        try:
+                            posicao = estoque.posicaoestoque_set.filter(componente=componente_consultado).order_by('-data_entrada')[0]
+                        except:
+                            posicao = None
+                        if posicao:
+                            posicoes_estoque.append(posicao)
 
-            if not componente_consultado and estoque_consultado:
-                consulta_estoque = True
-                posicoes_estoque = []
-                for componente_ver in Componente.objects.all():
-                    try:
-                        posicao = PosicaoEstoque.objects.filter(componente=componente_ver, estoque=estoque_consultado).order_by('-data_entrada')[0]
-                    except:
-                        posicao = None
-                    if posicao:
-                        posicoes_estoque.append(posicao)
+                if not componente_consultado and estoque_consultado:
+                    consulta_estoque = True
+                    posicoes_estoque = []
+                    for componente_ver in Componente.objects.all():
+                        try:
+                            posicao = PosicaoEstoque.objects.filter(componente=componente_ver, estoque=estoque_consultado).order_by('-data_entrada')[0]
+                        except:
+                            posicao = None
+                        if posicao:
+                            posicoes_estoque.append(posicao)
+            
                     
                 
                 
+
+        if request.POST.get('movimentar-estoque'):
+            form_mover_estoque = MoverEstoque(request.POST)
+            form_consulta_estoque = ConsultaEstoque()
+            form_alterar_estoque = AlterarEstoque()
+            if form_mover_estoque.is_valid():
+                # mover estoque
+                estoque_origem = form_mover_estoque.cleaned_data['estoque_origem']
+                estoque_destino = form_mover_estoque.cleaned_data['estoque_destino']
+                componente = form_mover_estoque.cleaned_data['componente']
+                quantidade = form_mover_estoque.cleaned_data['quantidade']
+                justificativa = form_mover_estoque.cleaned_data['justificativa']
+                ## remover a quantidade do estoque origem
+                # antiga posicao de origem
+                antiga_posicao_origem = componente.posicao_no_estoque(estoque_origem)
+                messages.info(request, u"Posição Atual do Estoque Origem %s: %s -> %s" % (estoque_origem, componente.part_number, antiga_posicao_origem))
+                # antiga posicao de destino
+                antiga_posicao_destino = componente.posicao_no_estoque(estoque_destino)
+                messages.info(request, u"Posição Atual do Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, antiga_posicao_destino))
+                # REALIZA OPERACAO
+                # nova posicao na origem
+                nova_posicao_origem = antiga_posicao_origem - quantidade
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_origem, quantidade=nova_posicao_origem, criado_por=request.user, justificativa=justificativa)
+                messages.warning(request, u"Nova posição no Estoque Origem %s: %s -> %s" % (estoque_origem, componente.part_number, nova_posicao_origem))
+                # nova posicao no destino
+                nova_posicao_origem = antiga_posicao_destino + quantidade
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_destino, quantidade=nova_posicao_origem, criado_por=request.user, justificativa=justificativa)
+                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_origem))
+                # resultado final
+                messages.success(request, u"Movido %s %s de Estoque Origem %s para Estoque Destino %s" % (quantidade, componente.part_number, estoque_origem, estoque_destino))
+                return redirect(reverse("producao:listar_estoque"))
+                
+        if request.POST.get('alterar-estoque'):
+            form_mover_estoque = MoverEstoque()
+            form_consulta_estoque = ConsultaEstoque()
+            form_alterar_estoque = AlterarEstoque(request.POST)
+            if form_alterar_estoque.is_valid():
+                alteracao_tipo = form_alterar_estoque.cleaned_data['alteracao_tipo']
+                componente = form_alterar_estoque.cleaned_data['componente']
+                estoque = form_alterar_estoque.cleaned_data['estoque']
+                quantidade = form_alterar_estoque.cleaned_data['quantidade']
+                justificativa = form_alterar_estoque.cleaned_data['justificativa']
+                quantidade_atual = componente.posicao_no_estoque(estoque)
+                messages.info(request, u"Posição Atual do Estoque %s: %s -> %s" % (estoque, componente.part_number, quantidade_atual))
+                if alteracao_tipo == 'remover':
+                    nova_quantidade = float(quantidade_atual) - float(quantidade)
+                    string_justificada = "- %s" % quantidade
+                else:
+                    nova_quantidade = float(quantidade_atual) + float(quantidade)
+                    string_justificada = "+ %s" % quantidade
+                messages.warning(request, u"Nova Posição do Estoque %s: %s -> %s" % (estoque, componente.part_number, nova_quantidade))
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque, quantidade=nova_quantidade, criado_por=request.user, justificativa="%s (%s)" % (justificativa, string_justificada))
+                messages.success(request, u"Sucesso! Posição de Estoque Alterada!")
+                return redirect(reverse("producao:listar_estoque"))
+                
+            
     else:
         form_consulta_estoque = ConsultaEstoque()
+        form_mover_estoque = MoverEstoque()
+        form_alterar_estoque = AlterarEstoque()
     return render_to_response('frontend/producao/producao-listar-estoques.html', locals(), context_instance=RequestContext(request),)    
     

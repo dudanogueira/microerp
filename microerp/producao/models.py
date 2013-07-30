@@ -75,7 +75,7 @@ class PosicaoEstoque(models.Model):
         ordering = ('-criado', '-id')
     
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
-    nota_referecia = models.ForeignKey('NotaFiscal', blank=True, null=True, on_delete=models.PROTECT)
+    nota_referencia = models.ForeignKey('NotaFiscal', blank=True, null=True, on_delete=models.PROTECT)
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
@@ -350,7 +350,7 @@ class NotaFiscal(models.Model):
     def numero_identificador(self):
         return self.numero[3:]
     
-    def lancar_no_estoque(self):
+    def lancar_no_estoque(self, user_id=None):
         '''lanca a nota fiscal no estoque configurado como receptor'''
         try:
             if self.status == 'a':
@@ -364,7 +364,10 @@ class NotaFiscal(models.Model):
                     except:
                         posicao_atual = 0
                     posicao_calculada = posicao_atual + item.quantidade
-                    posicao_nova = PosicaoEstoque.objects.create(estoque=estoque_receptor, componente=item.componente, quantidade=posicao_calculada, nota_referecia=self)
+                    posicao_nova = PosicaoEstoque.objects.create(estoque=estoque_receptor, componente=item.componente, quantidade=posicao_calculada, nota_referencia=self)
+                    if user_id:
+                        posicao_nova.criado_por_id = user_id
+                        posicao_nova.save()
                     # registra o preco medio do compoente
                     item.componente.registrar_preco_medio()
                     if item.nota.tipo == 'i': # nota internacional
@@ -426,7 +429,7 @@ class NotaFiscal(models.Model):
     numero = models.CharField(max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Taxas Diversas (em R$)", help_text="(em R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
-    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (em R$)", help_text="Campo utilizado somente para notas Internacionais. (em R$)", max_digits=10, decimal_places=2, blank=True, null=True)
+    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (em R$)", help_text="utilizado somente em notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
     fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)

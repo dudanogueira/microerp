@@ -127,7 +127,6 @@ class LancamentoComponenteAdmin(admin.ModelAdmin):
 class ComponenteTipoAdmin(admin.ModelAdmin):
     list_display = 'nome', 'slug'
     
-    
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.componente_set.count() != 0: # when editing an object
             return ['slug']

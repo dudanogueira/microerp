@@ -6,101 +6,178 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-archive"></i> Estoque</h1>
 
-<h3>Consultar</h3>
-<div id="consultar">
-    {% if consultado %}
+<ul class="nav nav-tabs">
+  <li class="active"><a href="#consultar" data-toggle="tab">Consultar</a></li>
+  <li><a href="#movimentar" data-toggle="tab">Movimentar</a></li>
+  <li><a href="#alterar" data-toggle="tab">Alterar</a></li>
+  <li><a href="#historico" data-toggle="tab">Histórico</a></li>
+</ul>
 
-        {% if consulta_dupla %}
-         <div id="consulta dupla">
+<div id="myTabContent" class="tab-content">
+
+    <div class="tab-pane fade in active" id="consultar">
+        
+        <h3>Consultar</h3>
+
+        <div id="consultar">
+            {% if consultado %}
+
+                {% if consulta_dupla %}
+                 <div id="consulta dupla">
          
-             <h3>Componente {{componente_consultado.part_number}}</h3>
-             <h4>No Estoque: {{estoque_consultado}}</h4>
-             <div class="well">
-                 {{posicaoestoque}}
-             </div>
-             <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta</a>
-         </div>
-        {% endif %}
+                     <h3>Componente {{componente_consultado.part_number}}</h3>
+                     <h4>No Estoque: {{estoque_consultado}}</h4>
+                     <div class="well">
+                         {{posicaoestoque}}
+                     </div>
+                     <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
+                 </div>
+                {% endif %}
     
-        {% if consulta_componente %}
-        <div id="consulta_componente">
-            <h3>Consultando Componente {{componente_consultado.part_number}}</h3>
+                {% if consulta_componente %}
+                <div id="consulta_componente">
+                    <h3>Consultando Componente {{componente_consultado.part_number}}</h3>
 
 
-            <table class="table table-condensed table-striped table-rounded table-bordered">
-                <thead>
-                    <tr>
-                        <th>Estoque</th>
-                        <th>Quantidade</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                </tbody>
-                {% for posicao in posicoes_estoque %}
-                <tr>
-                    <td>{% if posicao.estoque.nome %}{{posicao.estoque.nome}}{% else %}{{posicao.estoque}}{% endif %}</td>
-                    <td>{{posicao.quantidade}}</td>
-                    <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-                </tr>
-                {% endfor %}
+                    <table class="table table-condensed table-striped table-rounded table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Estoque</th>
+                                <th>Quantidade</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        </tbody>
+                        {% for posicao in posicoes_estoque %}
+                        <tr>
+                            <td>{% if posicao.estoque.nome %}{{posicao.estoque.nome}}{% else %}{{posicao.estoque}}{% endif %}</td>
+                            <td>{{posicao.quantidade}}</td>
+                            <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                        </tr>
+                        {% endfor %}
 
-                </tbody>
-            </table>
+                        </tbody>
+                    </table>
 
     
-            <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta</a>
+                    <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
+                </div>
+                {% endif %}
+    
+                {% if consulta_estoque %}
+                <div id="consulta_componente">
+                    <h3>Consultando Estoque {{estoque_consultado}}</h3>
+
+                    <table class="table table-condensed table-striped table-rounded table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Componente</th>
+                                <th>Quantidade</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        </tbody>
+                        {% for posicao in posicoes_estoque %}
+                        <tr>
+                            <td>{{posicao.componente.part_number}}</td>
+                            <td>{{posicao.quantidade}}</td>
+                            <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                        </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+
+    
+                    <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
+                </div>
+                {% endif %}
+    
+            {% else %}
+                <form method="POST" action="#consultar">
+                    {% csrf_token %}
+                {{form_consulta_estoque.as_p}}
+                <p>
+                    <button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+                </p>
+                </form>
+            {% endif %}
         </div>
-        {% endif %}
-    
-        {% if consulta_estoque %}
-        <div id="consulta_componente">
-            <h3>Consultando Estoque {{estoque_consultado}}</h3>
+        
+        
+    </div>
 
-            <table class="table table-condensed table-striped table-rounded table-bordered">
-                <thead>
-                    <tr>
-                        <th>Componente</th>
-                        <th>Quantidade</th>
-                        <th>Data</th>
-                    </tr>
-                </thead>
-                </tbody>
-                {% for posicao in posicoes_estoque %}
-                <tr>
-                    <td>{{posicao.componente.part_number}}</td>
-                    <td>{{posicao.quantidade}}</td>
-                    <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-                </tr>
-                {% endfor %}
+    <div class="tab-pane fade in" id="movimentar">
+        
+        <h3>Movimentar</h3>
 
-                </tbody>
-            </table>
-
-    
-            <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta</a>
+        <div id="movimentar">
+            <h4>Mover <strong>X Quantidade</strong> do <strong>Componente Y</strong> de <strong>Estoque A</strong> para <strong>Estoque B</strong></h4>
+            <form method="POST" class="form-inline" action="#movimentar">
+                {% csrf_token %}
+                {{form_mover_estoque.as_p}}
+                <button type='submit' class="btn btn-primary" name='movimentar-estoque' value="movimentar"><i class="icon-arrow-right"></i> Movimentar Estoque</button>
+            </form>
         </div>
-        {% endif %}
+        <hr />
+        
+    </div>
     
-    {% else %}
-        <form method="POST">
-            {% csrf_token %}
-        {{form_consulta_estoque.as_p}}
-        <p>
-            <button type="submit" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
-        </p>
-        </form>
-    {% endif %}
+    <div class="tab-pane fade in" id="alterar">
+        <h3>Alterar</h3>
+        <h4>Alterar (<strong>Adicionar ou Remover</strong>) <strong>X Quantidade</strong> do <strong>Componente Y</strong> ao <strong>Estoque A</strong></h4>
+        <div id="alterar">
+            <form method="POST" action="#alterar">
+                {% csrf_token %}
+            {{form_alterar_estoque.as_p}}
+            <button type="submit" name='alterar-estoque' value="alterar" class="btn btn-primary"><i class="icon-wrench"></i> Alterar Estoque</button>
+            </form>
+        </div>
+        
+    </div>
+    
+    <div class="tab-pane fade in" id="historico">
+        
+        <table class="table table-condensed table-striped table-rounded">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Estoque</th>
+                    <th>Componente</th>
+                    <th>Quantidade</th>
+                    <th>Por</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for historico in historicos %}
+                <tr>
+                        <td>{{historico.data_entrada|date:"SHORT_DATETIME_FORMAT"}}</td>
+                    <td>{{historico.estoque.identificacao}}</td>
+                    <td>{{historico.componente.part_number}}</td>
+                    <td>{{historico.quantidade}}</td>
+                    <td>{{historico.criado_por.funcionario}}
+                        {% if historico.justificativa %}
+                        <br />
+                        <small class="label label-info">
+                            Justificativa: {{historico.justificativa}}
+                        </small>
+                        {% endif %}
+                        {% if historico.nota_referencia %}
+                        <br />
+                        <small class="label label-warning">
+                            Nota Fiscal: {{historico.nota_referencia.numero}}
+                        </small>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        
+    </div>
+    
 </div>
 
-<h3>Movimentar</h3>
-<div id="movimentar">
-    Mover X quantidade do Componente Y de Estoque a para Estoque B
-    <hr />
-    Adicionar X quantidade do Componente Y ao Estoque X
-    <hr />
-    Remover X quantidade do Componente Y do Estoque X
-    
-</div>
 
 {% endblock %}
 
@@ -112,6 +189,9 @@
 <script>
 $(document).ready(function() {
 	$("#menu-producao-estoque, #top-menu-producao").addClass("active");
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.tab('show');
+    
     
 });
 </script>
