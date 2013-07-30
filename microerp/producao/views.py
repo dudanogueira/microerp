@@ -707,12 +707,12 @@ def listar_estoque(request):
                 # REALIZA OPERACAO
                 # nova posicao na origem
                 nova_posicao_origem = antiga_posicao_origem - quantidade
-                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_origem, quantidade=nova_posicao_origem, criado_por=request.user, justificativa="%s (+ %s)" % (justificativa, quantidade))
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_origem, quantidade=nova_posicao_origem, criado_por=request.user, justificativa="%s (- %s)" % (justificativa, quantidade))
                 messages.warning(request, u"Nova posição no Estoque Origem %s: %s -> %s" % (estoque_origem, componente.part_number, nova_posicao_origem))
                 # nova posicao no destino
-                nova_posicao_origem = antiga_posicao_destino + quantidade
-                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_destino, quantidade=nova_posicao_origem, criado_por=request.user, justificativa="%s (- %s)" % (justificativa, quantidade))
-                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_origem))
+                nova_posicao_destino = antiga_posicao_destino + quantidade
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_destino, quantidade=nova_posicao_destino, criado_por=request.user, justificativa="%s (+ %s)" % (justificativa, quantidade))
+                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_destino))
                 # resultado final
                 messages.success(request, u"Movido %s %s de Estoque Origem %s para Estoque Destino %s" % (quantidade, componente.part_number, estoque_origem, estoque_destino))
                 return redirect(reverse("producao:listar_estoque"))
