@@ -29,7 +29,7 @@
     
     
 </div>
-
+    {% if request.user.perfilacessoproducao.gerente %}
     <p class="btn-group">
             <a href="{% url "producao:adicionar_lancamento" notafiscal.id %}" class="btn btn-medium btn-primary"><i class="icon-plus"></i> Lançamento</a>
     {% ifequal notafiscal.status "a" %}
@@ -41,6 +41,7 @@
     <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="icon-paste"></i> Lançar em Estoque</a>
     {% endifequal %}
     </p>
+    {% endif %}
 
 
 <table class="table table-bordered table-condensed table-hover">
@@ -78,16 +79,20 @@
             <td>{% if lancamento.nota.tipo == 'n' %}R${%else%}USD{%endif%} {{lancamento.valor_unitario}}</td>
             <td>{{lancamento.impostos}}%</td>
             <td>R$ {{lancamento.valor_unitario_final}}</td>
-            <td><a href="{% url "producao:editar_lancamento" notafiscal.id lancamento.id %}" class="btn"><i class="icon-pencil"></i></a>
+            <td>
+                {% if request.user.perfilacessoproducao.gerente %}
+                <a href="{% url "producao:editar_lancamento" notafiscal.id lancamento.id %}" class="btn"><i class="icon-pencil"></i></a>
+                {% endif %}
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-
+{% if request.user.perfilacessoproducao.gerente %}
 <p>
 <a href="{% url "producao:apagar_nota" notafiscal.id %}" class="btn btn-danger"><i class="icon-trash"></i> Apagar Nota</a>
 </p>
+{% endif %}
 
 
 {% endblock %}

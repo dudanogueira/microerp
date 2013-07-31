@@ -21,16 +21,22 @@ from models import LinhaFornecedorFabricanteComponente
 from models import DocumentoTecnicoProduto
 from models import PerfilAcessoProducao
 from models import LinhaSubProdutoAgregado
+from models import ArquivoAnexoComponente
 
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
     model = LinhaFornecedorFabricanteComponente
 
+class ArquivoAnexoComponenteInline(admin.StackedInline):
+    model = ArquivoAnexoComponente
+    extra = 0
+
+
 class ComponenteAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'nacionalidade'
     list_display = '__unicode__',
-    inlines = [LinhaFornecedorFabricanteComponenteInline,]
+    inlines = [ArquivoAnexoComponenteInline, LinhaFornecedorFabricanteComponenteInline,]
 
 class PosicaoEstoqueAdmin(admin.ModelAdmin):
     list_filter = 'estoque', 'data_entrada', 'criado_por',
@@ -132,6 +138,9 @@ class ComponenteTipoAdmin(admin.ModelAdmin):
             return ['slug']
         return self.readonly_fields
 
+class ArquivoAnexoComponenteAdmin(admin.ModelAdmin):
+    pass
+
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
 admin.site.register(ComponenteTipo, ComponenteTipoAdmin)
@@ -147,3 +156,4 @@ admin.site.register(LinhaSubProduto, LinhaSubProdutoAdmin)
 admin.site.register(ProdutoFinal, ProdutoAdmin)
 admin.site.register(LinhaProdutoAvulso)
 admin.site.register(PerfilAcessoProducao)
+admin.site.register(ArquivoAnexoComponente, ArquivoAnexoComponenteAdmin)

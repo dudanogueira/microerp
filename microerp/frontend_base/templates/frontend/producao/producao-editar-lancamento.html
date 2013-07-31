@@ -4,7 +4,7 @@
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
 {% block content %}
-<h1>Nota Fiscal {{lancamento.nota.numero}}</h1>
+<h1>Nota Fiscal {{lancamento.nota.numero_identificador}}</h1>
 <h2>Editando Lançamento: {{lancamento.id}}</h2>
 
 <form method="POST" class="form-horizontal">

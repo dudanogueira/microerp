@@ -5,7 +5,7 @@
 
 {% block content %}
 <h1>Adicionando {{part_number}}</h1>
-<form method="POST">
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     {{form_add_componente.as_p}}
     <button type="submit" class="btn btn-primary" name="adicionar-componente" value="adicionar"><i class="icon-plus"></i> Adicionar {{part_number}}</button>

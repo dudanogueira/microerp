@@ -9,7 +9,9 @@
     <div class="span6">
         
         <h2><i class="icon-building"></i> {{fabricante_fornecedor}}</h2>
+        {% if request.user.perfilacessoproducao.gerente %}
         <a class="btn btn-primary" href="{% url "producao:editar_fabricantes_fornecedores" fabricante_fornecedor.id %}"><i class="icon-pencil"></i> Editar</a>
+        {% endif %}
         
         
     </div>
@@ -51,6 +53,8 @@ Este Fabricante / Fornecedor nunca fabricou componentes.
     <ul>
     {% for memoria in memorias %}
         <li><strong>{{memoria.part_number_fornecedor}}</a> -> <em><a href="{% url "producao:ver_componente" memoria.componente.id %}">{{memoria.componente.part_number}}</a></em></strong> <p class="label label-info">FAB: {{memoria.fabricante.nome}}</p> <p class="label label-info">PNFAB: {{memoria.part_number_fabricante}}</p></li>
+    {% empty %}
+    Este Fornecedor Não possui memórias de conversão.
     {% endfor %}
     </ul>
     

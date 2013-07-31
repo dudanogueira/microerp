@@ -6,29 +6,29 @@
 {% block content %}
 
 <h1><i class="icon-th"></i> <i class="icon-paste"></i> Lançar Nota</h1>
+{% if request.user.perfilacessoproducao.gerente %}
+    {% if not tipo %}
 
-{% if not tipo %}
+    <h2>Escolha o tipo de nota</h2>
+    <p>
+    <a href="?tipo=nfe" class="btn btn-large btn-success">Nota Fiscal Eletrônica (ARQUIVO XML)</a>
+    </p>
 
-<h2>Escolha o tipo de nota</h2>
-<p>
-<a href="?tipo=nfe" class="btn btn-large btn-success">Nota Fiscal Eletrônica (ARQUIVO XML)</a>
-</p>
+    <p>
+        <a href="{% url "producao:adicionar_nota" %}" class="btn btn-large btn-info">Nota Manual</a>
+    </p>
+    {% else %}
+        <h2>Tipo Escolhido {{tipo}}</h2>
+        {% ifequal tipo 'nfe' %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{upload_form}}
+                <input type="submit" name="arquivo_nfe" class="btn btn-success" value="Enviar">
+            </form>
+        {% endifequal %}
 
-<p>
-    <a href="{% url "producao:adicionar_nota" %}" class="btn btn-large btn-info">Nota Manual</a>
-</p>
-{% else %}
-    <h2>Tipo Escolhido {{tipo}}</h2>
-    {% ifequal tipo 'nfe' %}
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{upload_form}}
-            <input type="submit" name="arquivo_nfe" class="btn btn-success" value="Enviar">
-        </form>
-    {% endifequal %}
-
+    {% endif %}
 {% endif %}
-
 <h2>Notas Abertas</h2>
 <ul>
 {% for nota in notas_abertas %}

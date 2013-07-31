@@ -20,6 +20,7 @@ from producao.models import ComponenteTipo
 from producao.models import EstoqueFisico
 from producao.models import LinhaFornecedorFabricanteComponente
 from producao.models import PosicaoEstoque
+from producao.models import ArquivoAnexoComponente
 
 
 from django import forms
@@ -356,7 +357,7 @@ class ComponenteFormAdd(forms.ModelForm):
         self.fields['tipo'].widget = forms.HiddenInput()
         
     class Meta:
-        fields = ('identificador', 'tipo', 'descricao', 'nacionalidade', 'ncm', 'lead_time', 'medida')
+        fields = ('identificador', 'tipo', 'imagem', 'descricao', 'nacionalidade', 'ncm', 'lead_time', 'medida')
         model = Componente
     
 
@@ -385,6 +386,20 @@ class TipoComponenteAdd(forms.ModelForm):
     
     class Meta:
         model = ComponenteTipo
+
+class ArquivoAnexoComponenteForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        componente = kwargs.pop('componente')
+        super(ArquivoAnexoComponenteForm, self).__init__(*args, **kwargs)
+        self.fields['componente'].initial  = componente
+        self.fields['componente'].widget = forms.HiddenInput()
+    
+    
+    class Meta:
+        model = ArquivoAnexoComponente
+    
+
 ## VIEWS
 
 def listar_componentes(request):
@@ -413,11 +428,12 @@ def listar_componentes(request):
     return render_to_response('frontend/producao/producao-listar-componentes.html', locals(), context_instance=RequestContext(request),)
 
 
+
 def adicionar_componentes(request):
     if request.POST.get('adicionar-componente', None):
         identificador = request.POST.get('identificador', None)
         tipo = request.POST.get('tipo', None)
-        form_add_componente = ComponenteFormAdd(request.POST, identificador=identificador, tipo=tipo)
+        form_add_componente = ComponenteFormAdd(request.POST, request.FILES, identificador=identificador, tipo=tipo)
         if form_add_componente.is_valid():
             componente = form_add_componente.save()
             messages.success(request, u"Sucesso! Componente %s Adicionado!" % componente)
@@ -433,7 +449,6 @@ def adicionar_componentes(request):
         if tipo_componente_form.is_valid():
             tipo = tipo_componente_form.save(commit=False).tipo
             if tipo:
-                messages.success(request, u"Adicionando um Componente do tipo <strong>%s</strong>" % tipo)
                 # seleciona o último componente nessa situação
                 ultimo_identificador = Componente.objects.filter(tipo=tipo).order_by('-identificador')
                 if ultimo_identificador.count():
@@ -456,6 +471,8 @@ def adicionar_componentes(request):
         messages.warning(request, u"Nenhuma ação tomada. É preciso escolher o tipo de Componente para adicionar")
         return redirect(reverse('producao:listar_componentes'))
     
+
+
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-nota__data_lancado_estoque')
@@ -471,6 +488,18 @@ def ver_componente(request, componente_id):
             posicao = None
         if posicao:
             posicoes_estoque.append(posicao)
+    # Anexos
+    if request.POST:
+        form_anexos = ArquivoAnexoComponenteForm(request.POST, request.FILES, componente=componente)
+        if form_anexos.is_valid():
+            try:
+                anexo = form_anexos.save()
+                messages.success(request, u"Sucesso! Arquivo Anexado!")
+            except:
+                raise
+                messages.error(request, u"Erro! Arquivo NÃO Anexado!")
+    else:
+        form_anexos = ArquivoAnexoComponenteForm(componente=componente)
     return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
     
 
@@ -612,7 +641,7 @@ class MoverEstoque(forms.Form):
     componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
     estoque_origem = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     estoque_destino = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
-    justificativa = forms.CharField(widget=forms.Textarea, required=False)
+    justificativa = forms.CharField(widget=forms.Textarea, required=True)
     
 
 class AlterarEstoque(forms.Form):
@@ -641,7 +670,7 @@ class AlterarEstoque(forms.Form):
     quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
     componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
-    justificativa = forms.CharField(widget=forms.Textarea, required=False)
+    justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
 def listar_estoque(request):
     historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')
@@ -707,12 +736,12 @@ def listar_estoque(request):
                 # REALIZA OPERACAO
                 # nova posicao na origem
                 nova_posicao_origem = antiga_posicao_origem - quantidade
-                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_origem, quantidade=nova_posicao_origem, criado_por=request.user, justificativa="%s (- %s)" % (justificativa, quantidade))
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_origem, quantidade=nova_posicao_origem, criado_por=request.user, justificativa=justificativa, quantidade_alterada="- %s" % quantidade)
                 messages.warning(request, u"Nova posição no Estoque Origem %s: %s -> %s" % (estoque_origem, componente.part_number, nova_posicao_origem))
                 # nova posicao no destino
                 nova_posicao_destino = antiga_posicao_destino + quantidade
-                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_destino, quantidade=nova_posicao_destino, criado_por=request.user, justificativa="%s (+ %s)" % (justificativa, quantidade))
-                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_destino))
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque_destino, quantidade=nova_posicao_destino, criado_por=request.user, justificativa=justificativa,  quantidade_alterada="+ %s" % quantidade)
+                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_origem))
                 # resultado final
                 messages.success(request, u"Movido %s %s de Estoque Origem %s para Estoque Destino %s" % (quantidade, componente.part_number, estoque_origem, estoque_destino))
                 return redirect(reverse("producao:listar_estoque"))
@@ -736,7 +765,7 @@ def listar_estoque(request):
                     nova_quantidade = float(quantidade_atual) + float(quantidade)
                     string_justificada = "+ %s" % quantidade
                 messages.warning(request, u"Nova Posição do Estoque %s: %s -> %s" % (estoque, componente.part_number, nova_quantidade))
-                PosicaoEstoque.objects.create(componente=componente, estoque=estoque, quantidade=nova_quantidade, criado_por=request.user, justificativa="%s (%s)" % (justificativa, string_justificada))
+                PosicaoEstoque.objects.create(componente=componente, estoque=estoque, quantidade=nova_quantidade, criado_por=request.user, justificativa=justificativa,  quantidade_alterada=string_justificada)
                 messages.success(request, u"Sucesso! Posição de Estoque Alterada!")
                 return redirect(reverse("producao:listar_estoque"))
                 

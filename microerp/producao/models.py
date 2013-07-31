@@ -79,6 +79,7 @@ class PosicaoEstoque(models.Model):
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
+    quantidade_alterada = models.CharField(blank=True, max_length=100)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     justificativa = models.TextField(blank=True)
@@ -159,16 +160,24 @@ class Componente(models.Model):
     def quem_fornece(self):
         pass
         
+    
+    def componente_local_imagem(instance, filename):
+        return os.path.join(
+            'componente/', str(instance.part_number), 'imagem', filename
+          )
+    
+    
     # geral
     ativo = models.BooleanField(default=True)
+    imagem = models.ImageField(upload_to=componente_local_imagem, blank=True, null=True)
     part_number = models.CharField("PART NUMBER", help_text="IDENTIFICADOR GERADO AUTOMÁTICO", blank=True, null=True, max_length=100)
     identificador = models.IntegerField("Identificador único junto a categoria", blank=True, null=True, default=1)
     tipo = models.ForeignKey('ComponenteTipo', blank=False, null=False)    
-    descricao = models.TextField(blank=True)
+    descricao = models.TextField("Descrição", blank=True)
     nacionalidade = models.CharField(blank=False, max_length=1, choices=TIPO_NACIONALIDADE_COMPONENTE)
-    ncm = models.CharField(blank=True, max_length=100)
+    ncm = models.CharField("NCM", blank=True, max_length=100)
     # lead time
-    lead_time = models.IntegerField("Lead Time", help_text="Número de Semanas decorridas do pedido à disponibilidade do componente em estoque", blank=False, null=False)
+    lead_time = models.IntegerField("Lead Time (Semanas)", blank=False, null=False)
     
     ## preco_liquido_unitario_dolar
     #Obrigatorio se for componente importado, vai ser aramazenado o ultimo preco do lancamento
@@ -185,7 +194,23 @@ class Componente(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class ArquivoAnexoComponente(models.Model):
     
+    
+    def anexo_componente_local(instance, filename):
+        return os.path.join(
+            'componente/', str(instance.componente.part_number), 'anexos', filename
+          )
+    
+    
+    componente = models.ForeignKey('Componente')
+    arquivo = models.FileField(upload_to=anexo_componente_local)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
+
 class FabricanteFornecedor(models.Model):
     
     def __unicode__(self):
@@ -204,9 +229,17 @@ class FabricanteFornecedor(models.Model):
     
     tipo = models.CharField(blank=True, max_length=100, choices=FABRICANTE_FORNECEDOR_TIPO_CHOICES)
     ativo = models.BooleanField(default=True)
-    nome = models.CharField(blank=False, null=False, max_length=100)
-    cnpj = models.CharField(blank=True, max_length=400)
+    nome = models.CharField(u"Razão Social", blank=False, null=False, max_length=100)
+    cnpj = models.CharField("CNPJ", blank=True, max_length=400)
     contatos = models.TextField(blank=True)
+    rua = models.CharField(blank=True, max_length=100)
+    numero = models.CharField(blank=True, max_length=100)
+    bairro = models.CharField(blank=True, max_length=100)
+    cep = models.CharField("CEP", blank=True, max_length=100)
+    cidade = models.CharField(blank=True, max_length=100)
+    estado = models.CharField(blank=True, max_length=100)
+    telefone = models.CharField(blank=True, max_length=100)
+    
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -315,7 +348,7 @@ class LancamentoComponente(models.Model):
     nota = models.ForeignKey('NotaFiscal')
     peso = models.IntegerField(blank=True, null=True)
     # quick create
-    part_number_fornecedor = models.CharField(blank=True, max_length=100)
+    part_number_fornecedor = models.CharField("Part Number Fornecedor", blank=True, max_length=100)
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
     valor_unitario = models.DecimalField("Valor Unitário (R$)", max_digits=10, decimal_places=2, default=0)
     impostos = models.DecimalField("Incidência de Impostos (%)", help_text=u"Incidência total de impostos deste Lançamento em (%)", max_digits=10, decimal_places=2, default=0, blank=False, null=False)
@@ -323,7 +356,7 @@ class LancamentoComponente(models.Model):
     #campos automaticamente sugeridos, preenchidos opcionais
     componente = models.ForeignKey('Componente', verbose_name=getattr(settings, 'NOME_PART_NUMBER_INTERNO', 'PART NUMBER'), blank=True, null=True)
     fabricante = models.ForeignKey('FabricanteFornecedor', blank=True, null=True)
-    part_number_fabricante = models.CharField(blank=True, max_length=100)
+    part_number_fabricante = models.CharField("Part Number Fabricante", blank=True, max_length=100)
     
     # ativar o aprender / memorizar opcoes
     aprender = models.BooleanField(default=False)
@@ -426,12 +459,12 @@ class NotaFiscal(models.Model):
                 item.save()
     
     #arquivo = models.FileField(upload_to=arquivo)
-    numero = models.CharField(max_length=100, blank=False, null=False)
+    numero = models.CharField("Número", max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
-    taxas_diversas = models.DecimalField("Taxas Diversas (em R$)", help_text="(em R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
-    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (em R$)", help_text="utilizado somente em notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
+    taxas_diversas = models.DecimalField("Valores Diversos (R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
+    cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (R$)", help_text="utilizado somente em notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=STATUS_NOTA_FISCAL, default='a')
-    fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor')
+    fabricante_fornecedor = models.ForeignKey('FabricanteFornecedor', verbose_name="Fornecedor")
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
     data_lancado_estoque = models.DateTimeField(blank=True, null=True)
     lancado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)

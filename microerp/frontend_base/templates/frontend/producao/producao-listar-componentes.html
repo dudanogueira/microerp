@@ -6,7 +6,7 @@
 {% block content %}
 
 <h1><i class="icon-th"></i> <i class="icon-stop"></i> Componentes</h1>
-
+{% if request.user.perfilacessoproducao.gerente %}
 {# ADICIONAR TIPO COMPONENTE #}
 <div class="well well-small">
     <h2>Adicionar Tipo de Componente</h2>
@@ -28,6 +28,7 @@
     </form>
 </div>
 
+{% endif %}
 
 {# BUSCAR COMPONENTES #}
 <div class="well well-small">
