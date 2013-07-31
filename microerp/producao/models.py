@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import datetime, os
-from django.db import models
+from django.db import models, IntegrityError
 from django.conf import settings
 from django.db.models import signals
 
 from django.core.exceptions import ValidationError
 
 from django.db.models import Sum, Avg
+
+import re
+from django.template.defaultfilters import slugify
 
 
 COMPONENTE_UNIDADE_MEDIDA = (
@@ -481,17 +484,41 @@ class NotaFiscal(models.Model):
 
 def subproduto_local_imagem(instance, filename):
     return os.path.join(
-        'subproduto/', str(instance.id), filename
+        'subproduto/', str(instance.slug), 'imagem', filename
       )
 
 class SubProduto(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        return "%s-SUB%s %s" % (pn_prepend, "%05d" % self.id, self.nome)
+        return "%s-SUB%s" % (pn_prepend, "%05d" % self.id)
+
+    def save(self):
+        """Auto-populate an empty slug field from the MyModel name and
+        if it conflicts with an existing slug then append a number and try
+        saving again.
+        """
+
+        if not self.slug:
+            self.slug = slugify(self.nome)
+
+        while True:
+            try:
+                super(SubProduto, self).save()
+            # Assuming the IntegrityError is due to a slug fight
+            except IntegrityError:
+                match_obj = re.match(r'^(.*)-(\d+)$', self.slug)
+                if match_obj:
+                    next_int = int(match_obj.group(2)) + 1
+                    self.slug = match_obj.group(1) + '-' + str(next_int)
+                else:
+                    self.slug += '-2'
+            else:
+                break
     
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
-    nome = models.CharField(blank=True, max_length=100)
+    nome = models.CharField(blank=False, max_length=100)
+    slug = models.SlugField(blank=True, null=True, unique=True)
     descricao = models.TextField(blank=True)
     possui_tags = models.BooleanField(default=True, help_text="Se este campo for marcado, as Linhas do Sub Produto deverão ser alocadas para uma TAG única.")
     # meta
@@ -515,12 +542,16 @@ class LinhaSubProduto(models.Model):
     Modelo de Objeto
     '''
     
+    def opcao_padrao(self):
+        return self.opcaolinhasubproduto_set.get(padrao=True)
+    
     def __unicode__(self):
         return u"Linha %s de SubProduto %s" % (self.peso, self.subproduto)
     
     class Meta:
         verbose_name = "Linha de Componentes do Sub Produto"
         verbose_name_plural = "Linhas de Componentes do Sub Produto"
+        ordering = 'peso',
     
     def clean(self, exclude=None):
         if self.subproduto.possui_tags:

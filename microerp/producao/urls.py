@@ -27,5 +27,14 @@ urlpatterns = patterns('',
     url(r'^fabricantes_fornecedores/$', 'producao.views.listar_fabricantes_fornecedores', name='listar_fabricantes_fornecedores'),
     # Estoque e Movimentação
     url(r'^estoque/$', 'producao.views.listar_estoque', name='listar_estoque'),
+    # sub produto
+    url(r'^subproduto/adicionar$', 'producao.views.adicionar_subproduto', name='adicionar_subproduto'),
+    url(r'^subproduto/(?P<subproduto_id>[0-9]+)/ver$', 'producao.views.ver_subproduto', name='ver_subproduto'),
+    url(r'^subproduto/(?P<subproduto_id>[0-9]+)/editar$', 'producao.views.editar_subproduto', name='editar_subproduto'),
+    url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/adicionar$', 'producao.views.adicionar_linha_subproduto', name='adicionar_linha_subproduto'),
+    url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/(?P<linha_subproduto_id>[0-9]+)/editar$', 'producao.views.editar_linha_subproduto', name='editar_linha_subproduto'),
+    url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/(?P<linha_subproduto_id>[0-9]+)/adicionar/opcao$', 'producao.views.editar_linha_subproduto_adicionar_opcao', name='editar_linha_subproduto_adicionar_opcao'),
+    url(r'^subproduto/$', 'producao.views.listar_subprodutos', name='listar_subprodutos'),
+    
     
 )

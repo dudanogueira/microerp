@@ -21,6 +21,9 @@ from producao.models import EstoqueFisico
 from producao.models import LinhaFornecedorFabricanteComponente
 from producao.models import PosicaoEstoque
 from producao.models import ArquivoAnexoComponente
+from producao.models import SubProduto
+from producao.models import LinhaSubProduto
+from producao.models import OpcaoLinhaSubProduto
 
 
 from django import forms
@@ -775,4 +778,128 @@ def listar_estoque(request):
         form_mover_estoque = MoverEstoque()
         form_alterar_estoque = AlterarEstoque()
     return render_to_response('frontend/producao/producao-listar-estoques.html', locals(), context_instance=RequestContext(request),)    
+
+# SUB PRODUTOS
+
+class SubProdutoForm(forms.ModelForm):
+
+    class Meta:
+        model = SubProduto
+
+def listar_subprodutos(request):
+    
+    if request.GET:
+        q_subproduto = request.GET.get('q_subproduto', None)
+        if q_subproduto:
+            if q_subproduto == "todos":
+                subprodutos_encontrados = SubProduto.objects.all()
+            else:
+                subprodutos_encontrados = SubProduto.objects.filter(
+                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
+                )
+    
+    return render_to_response('frontend/producao/producao-listar-subprodutos.html', locals(), context_instance=RequestContext(request),)    
+
+def adicionar_subproduto(request):
+    if request.POST:
+        form = SubProdutoForm(request.POST, request.FILES)
+        if form.is_valid():
+            subproduto = form.save()
+            messages.success(request, u"SubProduto %s Adicionado com sucesso!" % subproduto )
+    else:
+        form = SubProdutoForm()
+    return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+
+def editar_subproduto(request, subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    if request.POST:
+        form = SubProdutoForm(request.POST, request.FILES, instance=subproduto)
+        if form.is_valid():
+            subproduto = form.save()
+        messages.success(request, u"Sucesso! Subproduto Alterado!")
+        return redirect(reverse("producao:ver_subproduto", args=[subproduto.id,]))
+    else:
+        form = SubProdutoForm(instance=subproduto)
+    return render_to_response('frontend/producao/producao-editar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+def ver_subproduto(request, subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+class LinhaSubProdutoForm(forms.ModelForm):
+    
+    class Meta:
+        model = LinhaSubProduto
+        fields = 'peso', 'tag'
+
+class AdicionarLinhaSubProdutoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        subproduto = kwargs.pop('subproduto')
+        super(AdicionarLinhaSubProdutoForm, self).__init__(*args, **kwargs)
+        self.fields['subproduto'].initial  = subproduto
+        self.fields['subproduto'].widget = forms.HiddenInput()
+    
+    
+    class Meta:
+        model = LinhaSubProduto
+
+def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    linha = get_object_or_404(LinhaSubProduto, subproduto=subproduto, pk=linha_subproduto_id)
+    if request.POST:
+        form = LinhaSubProdutoForm(request.POST, instance=linha)
+        if form.is_valid():
+            linha = form.save()
+            messages.success(request, u"Sucesso! Linha alterada.")
+            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
+    else:
+        form = LinhaSubProdutoForm(instance=linha)
+    return render_to_response('frontend/producao/producao-editar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+
+def adicionar_linha_subproduto(request, subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    if request.POST:
+        form = AdicionarLinhaSubProdutoForm(request.POST, subproduto=subproduto)
+        if form.is_valid():
+            linha = form.save()
+            messages.success(request, u"Sucesso! Linha Adicionada.")
+            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+    else:
+        form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
+    return render_to_response('frontend/producao/producao-adicionar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    
+    
+
+class OpcaoLinhaSubProdutoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        linha = kwargs.pop('linha')
+        super(OpcaoLinhaSubProdutoForm, self).__init__(*args, **kwargs)
+        self.fields['linha'].initial  = linha
+        self.fields['linha'].widget = forms.HiddenInput()
+    
+    class Meta:
+        model = OpcaoLinhaSubProduto
+
+def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    linha = get_object_or_404(LinhaSubProduto, subproduto=subproduto, pk=linha_subproduto_id)
+    if request.POST:
+        form = OpcaoLinhaSubProdutoForm(request.POST, linha=linha)
+        if form.is_valid():
+            opcao = form.save()
+            messages.success(request, u"Sucesso! Opção adiconada com sucesso em %s" % linha)
+            return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
+    else:
+        form = OpcaoLinhaSubProdutoForm(linha=linha)
+    return render_to_response('frontend/producao/producao-editar-linha-subproduto-adicionar-opcao.html', locals(), context_instance=RequestContext(request),)    
+
+# PRODUTO
+
+def listar_produtos(request):
+        
+    return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
     

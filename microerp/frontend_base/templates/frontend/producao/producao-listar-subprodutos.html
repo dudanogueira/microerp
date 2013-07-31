@@ -1,0 +1,36 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Lista Sub Produtos{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-list-ul"></i>  Sub Produtos</h1>
+
+<p>
+    <a class="btn btn-primary" href="{% url "producao:adicionar_subproduto" %}"><i class="icon-plus"></i> Adicionar Sub Produto</a>
+</p>
+<hr />
+<form class="form-search">
+  <input type="text" class="input-medium search-query" name="q_subproduto", id="busca_subproduto" {% if q_subproduto %}value="{{q_subproduto}}"{% endif %}>
+  <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar SubProduto</button>
+  <a class="btn btn-success" href="?q_subproduto=todos">Listar Todos</a>
+</form>
+{% if subprodutos_encontrados %}
+{% for subproduto in subprodutos_encontrados %}
+    <a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}}</a>
+    <hr />
+{% endfor %}
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}
