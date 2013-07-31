@@ -8,17 +8,21 @@
 
 <ul class="nav nav-tabs">
   <li class="active"><a href="#valores" data-toggle="tab">Valores</a></li>
+<li><a href="#participacao" data-toggle="tab">Participações</a></li>
   <li><a href="#fornecimento" data-toggle="tab">Fornecimento</a></li>
   <li><a href="#fabricacao" data-toggle="tab">Fabricação</a></li>
-  <li><a href="#participacao" data-toggle="tab">Participações</a></li>
   <li><a href="#memoria" data-toggle="tab">Memória</a></li>
-  <li><a href="#anexos" data-toggle="tab">Arquivos Anexos</a></li>
+  <li><a href="#arquivos" data-toggle="tab">Arquivos Anexos</a></li>
+  
 </ul>
 {% if componente.imagem %}
 <a href="{{componente.imagem.url}}"><img src="{{componente.imagem.url}}"></a>
 {% endif %}
 
 <div id="myTabContent" class="tab-content">
+    
+    
+    
         <div class="tab-pane fade in active" id="valores">
             
             <div class="row-fluid">
@@ -109,7 +113,7 @@
         </div>
         
         <div class="tab-pane fade in" id="participacao">
-        
+            Participação
         </div>
         
         <div class="tab-pane fade in" id="memoria">
@@ -125,9 +129,30 @@
                 <ul>
 
                 {% for memoria in memorias %}
-                    <li><strong><a href="{% url "producao:ver_fabricantes_fornecedores" memoria.fornecedor.id %}">{{memoria.fornecedor.nome_curto}}</a>: <span class="label label-warning">PNFOR: {{memoria.part_number_fornecedor}}</span></a> -> <span class="label label-success"><em>{{memoria.componente.part_number}}</em></span> <p class="label label-info">FAB: {{memoria.fabricante.nome}}</p> <p class="label label-info">PNFAB: {{memoria.part_number_fabricante}}</p> {% if request.user.perfilacessoproducao.gerente %}<a href="                    {% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}
-            " class="btn btn-danger"><i class="icon-trash"></i> Apagar</a>{% endif %}</li>
-                    {% empty %}
+                    <li>
+                        <a href="{% url "producao:ver_fabricantes_fornecedores" memoria.fornecedor.id %}">
+                            {{memoria.fornecedor.nome_curto}}
+                        </a>:
+                        <span class="label label-warning">
+                            PNFOR: {{memoria.part_number_fornecedor}}
+                        </span>
+                        ->
+                        <span class="label label-success">
+                            <em>{{memoria.componente.part_number}}</em>
+                        </span>
+                        <span class="label label-info">
+                            FAB: {{memoria.fabricante.nome}}
+                        </span>
+                        <span class="label label-info">
+                            PNFAB: {{memoria.part_number_fabricante}}
+                        </span>
+                        
+                        {% if request.user.perfilacessoproducao.gerente %}
+                        <a href="{% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}" class="btn btn-danger">
+                            <i class="icon-trash"></i> Apagar
+                        </a>{% endif %}
+                    </li>
+                {% empty %}
                     <p>Este Fornecedor Não possui memória de entrada de lançamentos de nota fiscal</p>
                 {% endfor %}
                 </ul>
@@ -137,7 +162,8 @@
         
         </div>
         
-        <div class="tab-pane fade in" id="anexos">
+        <div class="tab-pane fade in" id="arquivos">
+
             {% if request.user.perfilacessoproducao.gerente %}
             <form method="POST" class="form-horizontal" action="#anexos" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -150,8 +176,11 @@
             {% for anexo in componente.arquivoanexocomponente_set.all %}
             <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
             <hr />
+            {% empty %}
+            Nenhum arquivo anexo.
             {% endfor %}
         </div>
+        
 </div>
 
 
