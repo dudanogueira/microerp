@@ -61,7 +61,7 @@
 
 <h3>Lançamentos Futuros Nesta Semana</h3>
 <h4>De {{inicio_semana|date:"SHORT_DATE_FORMAT"}} a {{fim_semana|date:"SHORT_DATE_FORMAT"}}</h4>
-<table class="table table-striped table-bordered table-hover">
+<table class="table table-bordered table-hover">
     <thead>
         <tr>
             <th>#</th>
@@ -74,7 +74,17 @@
     <tbody>
         {% for lancamento in lancamentos_futuros %}
         <tr>
-            <td>{{lancamento.id}}</td>
+            <td class="alert
+            {% if lancamento.pendente %}
+                alert-danger
+            {% else %}
+                {% if lancamento.antecipado %}
+                    alert-warning
+                {% else %}
+                    alert-info
+                {% endif %}
+            {% endif %}
+            "><strong>#{{lancamento.id}}</strong></td>
             <td>{{lancamento.contrato.cliente}}<br />
                 <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
@@ -115,9 +125,22 @@
         {% endfor %}
     </tbody>
 </table>
-<strong>Soma dos Valores Cobrados</strong>: <span class="label label-success">R$ {{soma_lancamentos_futuro.valor_cobrado__sum}}</span>
-<br />
-<strong>Soma dos Valores Antecipados</strong>: <span class="label label-warning">{{soma_lancamentos_antecipados.valor_recebido__sum}}</span>
+<div class="row-fluid">
+    <div class="span5">
+        <strong>Soma dos Valores Cobrados</strong>: <span class="label label-success">R$ {{soma_lancamentos_futuro.valor_cobrado__sum}}</span>
+        <br />
+        <strong>Soma dos Valores Antecipados</strong>: <span class="label label-warning">{{soma_lancamentos_antecipados.valor_recebido__sum}}</span>
+    </div>
+    
+    <div class="span7">
+        <h5>Legenda</h5>
+        <span class="label label-info">Agendado</span>
+        <span class="label label-success">Cobrado</span>
+        <span class="label label-important">Pendente</span>
+        <span class="label label-warning">Antecipado</span>
+        
+    </div>
+</div>
 
 {% endblock %}
 
