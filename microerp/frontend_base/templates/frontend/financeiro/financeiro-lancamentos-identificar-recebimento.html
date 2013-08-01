@@ -10,7 +10,9 @@
 <h3>Contrato: #{{lancamento.contrato.id}}</h3>
 <h3>Cliente: {{lancamento.contrato.cliente}}</h3>
 <span class="label label-success">Valor Original: {{lancamento.valor_cobrado}}</span>
-<span class="label label-warning">Lançamento Antecipado</span>
+{% if lancamento.antecipado %}
+    <span class="label label-warning">Lançamento Antecipado</span>
+{% endif %}
 <form method="POST">
     {% csrf_token %}
 {{form.as_p}}
