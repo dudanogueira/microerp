@@ -193,7 +193,7 @@ class ContratoFechado(models.Model):
     
     def ultimo_lancamento(self):
         try:
-            ultimo_lancamento = self.lancamento_set.all().order_by('-data_recebido')[0]
+            ultimo_lancamento = self.lancamento_set.all().order_by('-criado')[0]
         except:
             ultimo_lancamento = None
         return ultimo_lancamento

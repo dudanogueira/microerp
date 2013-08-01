@@ -128,7 +128,8 @@
                 <strong>Recebido</strong>: R$ {% if contrato.total_valor_recebido_lancamentos.valor_recebido__sum  %}{{contrato.total_valor_recebido_lancamentos.valor_recebido__sum}}{% else %}0{% endif %}</td>
                     
                 <td>
-                            {% if contrato.ultimo_lancamento %}    {{contrato.ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}<br />
+                    
+                            {% if contrato.ultimo_lancamento %}   {{contrato.ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}<br />
                     <strong>Cobrado</strong>: R$ {{contrato.ultimo_lancamento.valor_cobrado}}<br />
                     {% if contrato.ultimo_lancamento.valor_recebido %}
                     <strong>Recebido</strong>: R$ {{contrato.ultimo_lancamento.valor_recebido}}<br />
