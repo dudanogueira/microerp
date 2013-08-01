@@ -176,7 +176,7 @@ def lancamentos_a_receber(request):
     inicio_semana = semana_exibir[0]
     fim_semana = semana_exibir[-1]
     lancamentos_futuros = Lancamento.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
-    
+    soma_lancamentos_futuro = lancamentos_futuros.aggregate(Sum('valor_cobrado'))
     return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)
 
 
