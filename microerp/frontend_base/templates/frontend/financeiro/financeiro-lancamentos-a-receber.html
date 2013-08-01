@@ -55,8 +55,8 @@
 </table>
 {% if lancamentos_pendentes_total.valor_cobrado__sum %}
 <hr />
-<strong>Total SEM Juros e Multa:</strong> R${{lancamentos_pendentes_total.valor_cobrado__sum}}<br />
-<strong>Total COM Juros e Multa:</strong> R${{total_com_juros_e_multa}}
+<strong>Soma dos Valores Cobrados:</strong> <span class="label label-success">R${{lancamentos_pendentes_total.valor_cobrado__sum}}</span><br />
+<strong>Soma dos Valores Cobrados com Juros e Multa:</strong> <span class="label label-important">R${{total_com_juros_e_multa}}</span>
 {% endif %}
 
 <h3>Lançamentos Futuros Nesta Semana</h3>
@@ -86,7 +86,12 @@
                 <span class="label label-warning"><strong>Antecipado</strong>: R$ {{lancamento.valor_recebido}}</span>
                 {% endif %}
             </td>
-            <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</td>
+            <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}
+                {% if lancamento.pendente %}
+                <span class="badge badge-important">pendente</span><br />
+                <small>atrasado há {{lancamento.data_cobranca|timesince}}</small>
+                {% endif %}
+            </td>
             <td>
                 {% if lancamento.antecipado %}
                 <a href="" class="btn btn-warning disabled">
@@ -110,8 +115,9 @@
         {% endfor %}
     </tbody>
 </table>
-<strong>Soma do Valor Cobrado</strong>: <span class="label label-success">R$ {{soma_lancamentos_futuro.valor_cobrado__sum}}</span>
-
+<strong>Soma dos Valores Cobrados</strong>: <span class="label label-success">R$ {{soma_lancamentos_futuro.valor_cobrado__sum}}</span>
+<br />
+<strong>Soma dos Valores Antecipados</strong>: <span class="label label-warning">{{soma_lancamentos_antecipados.valor_recebido__sum}}</span>
 
 {% endblock %}
 
