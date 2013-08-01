@@ -157,9 +157,9 @@ class ContratoFechado(models.Model):
                 # verifica se tem entrada
                 if self.valor_entrada != 0:
                     # cria lancamento de entrada
-                    self.lancamento_set.create(valor_cobrado=self.valor_entrada, peso=0, data_cobranca=datetime.date.today(), modo_recebido=self.forma_pagamento)
+                    lancamento = self.lancamento_set.create(valor_cobrado=self.valor_entrada, peso=0, data_cobranca=datetime.date.today(), modo_recebido=self.forma_pagamento)
                     if request:
-                        messages.info(request, u"Sucesso! Lançamento de Entrada para o contrato #%s, valor %s em %s" % (self.pk, self.valor_entrada, self.data_cobranca.strftime("%d/%m/%y")))
+                        messages.info(request, u"Sucesso! Lançamento de Entrada para o contrato #%s, valor %s em %s" % (self.pk, self.valor_entrada, lancamento.data_cobranca.strftime("%d/%m/%y")))
                 valor_parcela = (self.valor - self.valor_entrada) / self.parcelas
                 for peso_parcela in range(1, self.parcelas+1):
                     data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * peso_parcela
