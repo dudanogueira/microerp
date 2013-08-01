@@ -116,10 +116,44 @@ def contrato_fechar(request, contrato_id):
 
 # Lancamentos a Receber
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def lancamentos_a_receber_identificar(request, lancamento_id):
+    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    if request.POST:
+        form = FormIdentificarRecebido(request.POST, instance=lancamento)
+        if form.is_valid():
+            lancamento = form.save()
+            return(redirect("financeiro:lancamentos_a_receber"))
+    else:
+        form = FormIdentificarRecebido(instance=lancamento, initial = {
+            'data_recebido' : datetime.date.today(),
+            'valor_recebido' : lancamento.total_pendente(),
+            'modo_recebido' : lancamento.contrato.forma_pagamento,
+            
+            })
+        
+    return render_to_response('frontend/financeiro/financeiro-lancamentos-identificar-recebimento.html', locals(), context_instance=RequestContext(request),)  
+
+class FormIdentificarRecebido(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormIdentificarRecebido, self).__init__(*args, **kwargs)
+        self.fields['data_recebido'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_recebido'].required = True
+        self.fields['valor_recebido'].required = True
+        self.fields['modo_recebido'].required = True
+        self.fields['conta'].required = True
+    
+    
+    class Meta:
+        model = Lancamento
+        fields = ('valor_recebido', 'modo_recebido', 'data_recebido','conta')
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber(request):
-    lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today())
+    lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
     lancamentos_pendentes_total =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))
     total_com_juros_e_multa = 0
+    form = FormIdentificarRecebido
     for lancamento in lancamentos_pendentes:
         total_com_juros_e_multa += lancamento.total_pendente()
     return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)
