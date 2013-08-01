@@ -106,7 +106,10 @@ class Lancamento(models.Model):
             return 0
     
     def total_pendente(self):
-        return self.valor_cobrado + self.juros() + self.multa()
+        if self.pendente():
+            return self.valor_cobrado + self.juros() + self.multa()
+        else:
+            return self.valor_cobrado
             
     
     contrato = models.ForeignKey('comercial.ContratoFechado')

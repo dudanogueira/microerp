@@ -117,7 +117,7 @@ def contrato_fechar(request, contrato_id):
 # Lancamentos a Receber
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_identificar(request, lancamento_id):
-    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    lancamento = get_object_or_404(Lancamento, pk=lancamento_id, data_recebido=None)
     if request.POST:
         form = FormIdentificarRecebido(request.POST, instance=lancamento)
         if form.is_valid():
