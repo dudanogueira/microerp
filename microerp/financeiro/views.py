@@ -119,4 +119,7 @@ def contrato_fechar(request, contrato_id):
 def lancamentos_a_receber(request):
     lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today())
     lancamentos_pendentes_total =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))
+    total_com_juros_e_multa = 0
+    for lancamento in lancamentos_pendentes:
+        total_com_juros_e_multa += lancamento.total_pendente()
     return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)

@@ -25,20 +25,21 @@
         <tr>
             <td>{{lancamento.id}}</td>
             <td>{{lancamento.contrato.cliente}}<br />
-                <strong>Categoria</strong>: {{lancamento.contrato.categoria}}
+                <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
+                <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
             </td>
             <td>
                 <strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}
                 {% if lancamento.pendente %}
                 <br />
                 <small>
-                    <strong>Juros</strong>: {{lancamento.juros}},
-                    <strong>Multa</strong>: {{lancamento.multa}}<br />
-                    <span class="label label-important">Total: {{lancamento.total_pendente}}</span>
+                    <strong>Juros</strong>: R$ {{lancamento.juros}},
+                    <strong>Multa</strong>: R$ {{lancamento.multa}}<br />
+                    <span class="label label-important">Total: R$ {{lancamento.total_pendente}}</span>
                 </small>
                 {% endif %}
             </td>
-            <td><strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>({{lancamento.data_cobranca|timesince}})</small></td>
+            <td><strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>(<strong>{{lancamento.data_cobranca|timesince}} atrasado</strong>)</small></td>
             <td></td>
                 
             
@@ -54,7 +55,8 @@
 </table>
 {% if lancamentos_pendentes_total.valor_cobrado__sum %}
 <hr />
-<strong>total:</strong> R${{lancamentos_pendentes_total.valor_cobrado__sum}}
+<strong>Total SEM Juros e Multa:</strong> R${{lancamentos_pendentes_total.valor_cobrado__sum}}<br />
+<strong>Total COM Juros e Multa:</strong> R${{total_com_juros_e_multa}}
 {% endif %}
 {% endblock %}
 
