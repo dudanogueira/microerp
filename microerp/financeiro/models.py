@@ -78,6 +78,36 @@ class Lancamento(models.Model):
     
     class Meta:
         unique_together = (('contrato', 'peso'),)
+        ordering = ('data_cobranca',)
+    
+    def pendente(self):
+        if self.data_cobranca < datetime.date.today():
+            return True
+        else:
+            return False
+    
+    def juros(self):
+        '''calcula o valor incidido de juros neste lancamento'''
+        porcentagem_juros = getattr(settings, 'JUROS', 10)
+        if self.pendente():
+            dias = datetime.date.today() - self.data_cobranca
+            dias = dias.days
+            juros = self.valor_cobrado * porcentagem_juros / 100
+            return juros * dias
+        else:
+            return 0
+    
+    def multa(self):
+        if self.pendente():
+            porcentagem_multa = getattr(settings, 'MULTA', 50)
+            multa = self.valor_cobrado * porcentagem_multa / 100
+            return multa
+        else:
+            return 0
+    
+    def total_pendente(self):
+        return self.valor_cobrado + self.juros() + self.multa()
+            
     
     contrato = models.ForeignKey('comercial.ContratoFechado')
     peso = models.IntegerField(blank=False, null=False, default=1)

@@ -560,7 +560,7 @@ class LinhaSubProduto(models.Model):
             if linha_igual and linha_igual [0] != self:
                 raise ValidationError('Erro! Já existe uma Linha de Sub Produto com essa TAG!')
 
-    peso = models.IntegerField(blank=True, null=True)
+    peso = models.IntegerField("Item", blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
     tag = models.CharField(blank=True, max_length=100)
     # meta
@@ -591,7 +591,7 @@ class DocumentoTecnicoSubProduto(models.Model):
     
     subproduto = models.ForeignKey('SubProduto')
     titulo = models.CharField(blank=True, max_length=100)
-    descricao = models.TextField(blank=True)
+    descricao = models.TextField("Descrição", blank=True)
     arquivo = models.FileField(upload_to=subproduto_local_documentos)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
@@ -606,7 +606,7 @@ class ProdutoFinal(models.Model):
     
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=True, max_length=100)
-    descricao = models.TextField(blank=True)
+    descricao = models.TextField(u"Descrição", blank=True)
     
     subprodutos = models.ManyToManyField('SubProduto')
     # meta
@@ -642,7 +642,7 @@ class DocumentoTecnicoProduto(models.Model):
     
     produto = models.ForeignKey('ProdutoFinal')
     titulo = models.CharField(blank=True, max_length=100)
-    descricao = models.TextField(blank=True)
+    descricao = models.TextField(u"Descrição", blank=True)
     arquivo = models.FileField(upload_to=produto_local_documentos)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

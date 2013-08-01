@@ -158,16 +158,14 @@ class ContratoFechado(models.Model):
                 if self.valor_entrada != 0:
                     # cria lancamento de entrada
                     self.lancamento_set.create(valor_cobrado=self.valor_entrada, peso=0, data_cobranca=datetime.date.today(), modo_recebido=self.forma_pagamento)
-                    messages.info(request, u"Sucesso! Lançamento de Entrada para o contrato #%s, valor %s" % (self.pk, self.valor_entrada))
+                    if request:
+                        messages.info(request, u"Sucesso! Lançamento de Entrada para o contrato #%s, valor %s em %s" % (self.pk, self.valor_entrada, self.data_cobranca.strftime("%d/%m/%y")))
                 valor_parcela = (self.valor - self.valor_entrada) / self.parcelas
                 for peso_parcela in range(1, self.parcelas+1):
-                    if peso_parcela == 1:
-                        data_cobranca = self.inicio_cobranca
-                    else:
-                        fator = peso_parcela - 1
-                        data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * fator
+                    data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * peso_parcela
                     self.lancamento_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca, modo_recebido=self.forma_pagamento)
-                    messages.info(request, u"Sucesso! Lançamento para o contrato #%s, Parcela %s, valor %s, no dia %s realizado" % (self.pk, peso_parcela, valor_parcela, data_cobranca))
+                    if request:
+                        messages.info(request, u"Sucesso! Lançamento para o contrato #%s, Parcela %s, valor %s, no dia %s realizado" % (self.pk, peso_parcela, valor_parcela, data_cobranca.strftime("%d/%m/%y")))
                 # fecha o contrato
                 self.status = 'lancado'
                 self.concluido = True
@@ -207,7 +205,7 @@ class ContratoFechado(models.Model):
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
-    valor_entrada = models.DecimalField("Valor de Entrada", max_digits=10, decimal_places=2)
+    valor_entrada = models.DecimalField("Valor de Entrada", max_digits=10, decimal_places=2, default=0)
     receber_apos_conclusao = models.BooleanField("Receber após a conclusão do Contrato", default=False)
     tipo = models.CharField(blank=False, max_length=100, default="fechado", choices=CONTRATO_TIPO_CHOICES)
     status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)

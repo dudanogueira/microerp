@@ -27,7 +27,17 @@
             <td>{{lancamento.contrato.cliente}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}
             </td>
-            <td><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</td>
+            <td>
+                <strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}
+                {% if lancamento.pendente %}
+                <br />
+                <small>
+                    <strong>Juros</strong>: {{lancamento.juros}},
+                    <strong>Multa</strong>: {{lancamento.multa}}<br />
+                    <span class="label label-important">Total: {{lancamento.total_pendente}}</span>
+                </small>
+                {% endif %}
+            </td>
             <td><strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>({{lancamento.data_cobranca|timesince}})</small></td>
             <td></td>
                 
@@ -36,15 +46,16 @@
         
         {% empty %}
         <tr>
-            <td><small>Nenhum Contrato A Lançar</small></td>
+            <td><small>Nenhum Lançamento Pendente</small></td>
         </tr>
         {% endfor %}
 
     </tbody>
 </table>
-
+{% if lancamentos_pendentes_total.valor_cobrado__sum %}
 <hr />
 <strong>total:</strong> R${{lancamentos_pendentes_total.valor_cobrado__sum}}
+{% endif %}
 {% endblock %}
 
 {% block auxiliar-menu %}
