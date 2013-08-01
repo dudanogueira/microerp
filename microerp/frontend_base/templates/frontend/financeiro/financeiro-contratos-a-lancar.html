@@ -28,7 +28,8 @@
             <tr>
                 <td>{{contrato.id}}</td>
                 <td>{{contrato.cliente}}<br />
-                    <strong>Categoria</strong>: {{contrato.categoria}}
+                    <strong>Categoria</strong>: {{contrato.categoria}}<br />
+                    <strong>Responsável</strong>: {{contrato.responsavel}}
                 </td>
                 
                 <td>
@@ -120,7 +121,8 @@
             <tr>
                 <td>{{contrato.id}}</td>
                 <td>{{contrato.cliente}}<br />
-                    <strong>Categoria</strong>: {{contrato.categoria}}
+                    <strong>Categoria</strong>: {{contrato.categoria}}<br />
+                    <strong>Responsável</strong>: {{contrato.responsavel}}
                 </td>
                 <td><strong>Cobrado</strong>: R$ {% if contrato.total_valor_cobrado_lancamentos.valor_cobrado__sum  %}{{contrato.total_valor_cobrado_lancamentos.valor_cobrado__sum}}{% else %}0{% endif %}<br />
                 <strong>Recebido</strong>: R$ {% if contrato.total_valor_recebido_lancamentos.valor_recebido__sum  %}{{contrato.total_valor_recebido_lancamentos.valor_recebido__sum}}{% else %}0{% endif %}</td>
