@@ -84,7 +84,6 @@
                 <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span>
                 {% if lancamento.antecipado %}
                 <span class="label label-warning"><strong>Antecipado</strong>: R$ {{lancamento.valor_recebido}}</span>
-                        
                 {% endif %}
             </td>
             <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</td>

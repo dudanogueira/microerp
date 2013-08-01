@@ -8,6 +8,51 @@
 
 <h1><i class="icon-th"></i> <i class="icon-money"></i> Financeiro</h1>
 
+<div class="row-fluid">
+    
+    <div class="span4">
+        <h4>Contratos em Aberto:</span>
+    </div>
+    
+    <div class="span2 ">
+        <h5>Tipo Fechado</h5>
+        <div class="alert alert-info well-small">
+            <h3>{{contratos_tipo_fechado.count}}</h3>
+        </div>
+        
+
+    </div>
+    
+    <div class="span2">
+        <h5>Tipo Aberto</h5>
+        <div class="alert alert-success well-small">
+            <h3>{{contratos_tipo_aberto.count}}</h3>
+        </div>
+    </div>
+    
+    <div class="span2">
+                    <h5>Receber Após</h5>
+        <div class="alert alert-warning well-small">
+
+            <h3>{{contratos_receber_apos_conclusao.count}}</h3>
+        </div>
+        
+    </div>
+    
+    <div class="span2">
+                    <h5>Mensal</h5>
+        <div class="alert alert-danger well-small">
+
+            <h3>{{contratos_tipo_mensal.count}}</h3>
+        </div>
+        
+    </div>
+    
+    
+    
+    
+</div>
+
 {% endblock %}
 
 {% block auxiliar-menu %}

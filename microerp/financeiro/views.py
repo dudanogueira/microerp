@@ -47,6 +47,12 @@ def possui_perfil_acesso_financeiro(user, login_url="/"):
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def home(request):
+    # widget do contratos
+    contratos_tipo_fechado = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=False)
+    contratos_tipo_aberto = ContratoFechado.objects.filter(status="emaberto", tipo="aberto")
+    contratos_tipo_mensal = ContratoFechado.objects.filter(status="emaberto", tipo="mensal")
+    contratos_receber_apos_conclusao = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=True)
+    total_aberto = ContratoFechado.objects.filter(status="emaberto").count()
     return render_to_response('frontend/financeiro/financeiro-home.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
