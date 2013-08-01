@@ -30,7 +30,7 @@ class PerfilAcessoFinanceiroAdmin(admin.ModelAdmin):
 
 class LancamentoAdmin(admin.ModelAdmin):
     search_fields = 'contrato__cliente__nome',
-    list_filter = 'conta', 'situacao', 'data_cobranca', 'modo_recebido', 'peso', 'contrato__categoria'
+    list_filter = 'conta', 'situacao', 'antecipado','data_cobranca', 'modo_recebido', 'peso', 'contrato__categoria'
     date_hierarchy = 'data_cobranca'
     
 

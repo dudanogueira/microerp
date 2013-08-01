@@ -12,5 +12,6 @@ urlpatterns = patterns('',
     url(r'^contrato/(?P<contrato_id>[0-9]+)/fechar-contrato$', 'financeiro.views.contrato_fechar', name='contrato_fechar'),
     # lancamentos
     url(r'^lancamentos/a-receber$', 'financeiro.views.lancamentos_a_receber', name='lancamentos_a_receber'),
-    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/identificar$', 'financeiro.views.lancamentos_a_receber_identificar', name='lancamentos_a_receber_identificar'),
+    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/receber$', 'financeiro.views.lancamentos_a_receber_receber', name='lancamentos_a_receber_receber'),
+    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/antecipar$', 'financeiro.views.lancamentos_a_receber_antecipar', name='lancamentos_a_receber_antecipar'),
 )

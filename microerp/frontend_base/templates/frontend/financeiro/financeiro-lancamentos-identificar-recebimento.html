@@ -9,11 +9,13 @@
 <h2><i class="icon-th"></i> <i class="icon-paperclip"></i> Identificar Lançamento #{{lancamento.id}} como Recebido</h2>
 <h3>Contrato: #{{lancamento.contrato.id}}</h3>
 <h3>Cliente: {{lancamento.contrato.cliente}}</h3>
+<span class="label label-success">Valor Original: {{lancamento.valor_cobrado}}</span>
+<span class="label label-warning">Lançamento Antecipado</span>
 <form method="POST">
     {% csrf_token %}
 {{form.as_p}}
 <p>
-<button type="submit" class="btn btn-primary"><i class="thumbs-up"></i> Identificar</button>
+<button type="submit" class="btn btn-primary"><i class="icon-thumbs-up"></i> Identificar</button>
 </p>
 </form>
 

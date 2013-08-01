@@ -36,6 +36,7 @@ LANCAMENTO_SITUACAO_CHOICES = (
     ('a','Aberto'),
     ('r','Recebido'),
     ('p','Pendente'),
+    ('t','Antecipado'),
 )
 
 import datetime
@@ -70,7 +71,10 @@ class Lancamento(models.Model):
         if self.data_recebido:
             return u"Lançamento de peso %d RECEBIDO em %s do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.data_recebido, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
         else:
-            return u"Lançamento de peso %d  A RECEBER do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
+            if self.antecipado:
+                return u"Lançamento de peso %d  Já ANTECIPADO do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
+            else:
+                return u"Lançamento de peso %d  A RECEBER do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
 
     def clean(self):
         if self.data_recebido and not self.modo_recebido:
@@ -109,19 +113,31 @@ class Lancamento(models.Model):
         if self.pendente():
             return self.valor_cobrado + self.juros() + self.multa()
         else:
-            return self.valor_cobrado
+            if self.antecipado:
+                return self.valor_recebido
+            else:
+                return self.valor_cobrado
             
     
     contrato = models.ForeignKey('comercial.ContratoFechado')
     peso = models.IntegerField(blank=False, null=False, default=1)
     situacao = models.CharField(blank=False, default="a", choices=LANCAMENTO_SITUACAO_CHOICES, max_length=1)
+    # cobranca
     data_cobranca = models.DateField(default=datetime.datetime.today)
     valor_cobrado = models.DecimalField("Valor Cobrado", max_digits=10, decimal_places=2)
+    # recebimento
     valor_recebido = models.DecimalField("Valor Recebido", max_digits=10, decimal_places=2, blank=True, null=True)
     modo_recebido = models.CharField(blank=False, null=False, max_length=100, choices=LANCAMENTO_MODO_RECEBIDO_CHOICES)
     data_recebido = models.DateField(blank=True, null=True)
+    recebido_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="lancamento_recebido_set", blank=True, null=True)
+    # conciliacao - recebido em conta
     data_recebido_em_conta = models.DateField(blank=True, null=True)
     conta = models.ForeignKey('ContaBancaria', blank=True, null=True)
+    conciliado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="lancamento_conciliado_set", blank=True, null=True)
+    # antecipacao
+    data_antecipado = models.DateField(u"Data da Antecipação", blank=True, null=True)
+    antecipado = models.BooleanField(default=False)
+    antecipado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="lancamento_antecipado_set", blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")

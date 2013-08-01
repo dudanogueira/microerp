@@ -29,7 +29,7 @@
                 <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
             </td>
             <td>
-                <strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}
+                <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span>
                 {% if lancamento.pendente %}
                 <br />
                 <small>
@@ -41,10 +41,8 @@
             </td>
             <td><strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>(<strong>{{lancamento.data_cobranca|timesince}} atrasado</strong>)</small></td>
             <td>
-                <a href="{% url "financeiro:lancamentos_a_receber_identificar" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Identificar Recebido</a>
+                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Receber</a>
             </td>
-                
-            
         </tr>
         
         {% empty %}
@@ -61,7 +59,59 @@
 <strong>Total COM Juros e Multa:</strong> R${{total_com_juros_e_multa}}
 {% endif %}
 
- 
+<h3>Lançamentos Futuros Nesta Semana</h3>
+<h4>De {{inicio_semana|date:"SHORT_DATE_FORMAT"}} a {{fim_semana|date:"SHORT_DATE_FORMAT"}}</h4>
+<table class="table table-striped table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Valor Cobrado</th>
+            <th>Data</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lancamento in lancamentos_futuros %}
+        <tr>
+            <td>{{lancamento.id}}</td>
+            <td>{{lancamento.contrato.cliente}}<br />
+                <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
+                <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
+                <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
+            </td>
+            <td>
+                <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span>
+                {% if lancamento.antecipado %}
+                <span class="label label-warning"><strong>Antecipado</strong>: R$ {{lancamento.valor_recebido}}</span>
+                        
+                {% endif %}
+            </td>
+            <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</td>
+            <td>
+                {% if lancamento.antecipado %}
+                <a href="" class="btn btn-warning disabled">
+                    <i class="icon-usd"></i> Antecipado</a>
+                </a>
+                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Acusar Pagamento</a>
+                
+                {% else %}
+                    <a href="{% url "financeiro:lancamentos_a_receber_antecipar" lancamento.id %}" class="btn btn-danger">
+                        <i class="icon-arrow-left"></i> Antecipar
+                    </a>
+                    <br />
+                    <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Receber</a>
+                    
+                {% endif %}
+                
+                
+            </td>
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 
 
 {% endblock %}

@@ -31,6 +31,8 @@ from django import forms
 
 from django.db.models import Sum
 
+from rh.utils import get_weeks
+
 from comercial.models import ContratoFechado
 from financeiro.models import Lancamento
 
@@ -116,12 +118,16 @@ def contrato_fechar(request, contrato_id):
 
 # Lancamentos a Receber
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
-def lancamentos_a_receber_identificar(request, lancamento_id):
+def lancamentos_a_receber_receber(request, lancamento_id):
     lancamento = get_object_or_404(Lancamento, pk=lancamento_id, data_recebido=None)
     if request.POST:
         form = FormIdentificarRecebido(request.POST, instance=lancamento)
         if form.is_valid():
-            lancamento = form.save()
+            lancamento = form.save(commit=False)
+            lancamento.situacao = "r"
+            lancamento.recebido_por = request.user
+            lancamento.save()
+
             return(redirect("financeiro:lancamentos_a_receber"))
     else:
         form = FormIdentificarRecebido(instance=lancamento, initial = {
@@ -143,7 +149,6 @@ class FormIdentificarRecebido(forms.ModelForm):
         self.fields['modo_recebido'].required = True
         self.fields['conta'].required = True
     
-    
     class Meta:
         model = Lancamento
         fields = ('valor_recebido', 'modo_recebido', 'data_recebido','conta')
@@ -153,7 +158,47 @@ def lancamentos_a_receber(request):
     lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
     lancamentos_pendentes_total =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))
     total_com_juros_e_multa = 0
-    form = FormIdentificarRecebido
     for lancamento in lancamentos_pendentes:
         total_com_juros_e_multa += lancamento.total_pendente()
+    # demais lancamentos
+    # semana atual
+    semana = get_weeks()
+    if request.GET.get('semana'):
+        semana_exibir = semana[request.GET.get('semana')]
+    else:
+        semana_exibir = semana[0]
+    inicio_semana = semana_exibir[0]
+    fim_semana = semana_exibir[-1]
+    lancamentos_futuros = Lancamento.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
+    
     return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)
+
+
+class AnteciparLancamentoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(AnteciparLancamentoForm, self).__init__(*args, **kwargs)
+        self.fields['data_antecipado'].widget.attrs['class'] = 'datepicker'
+    
+    class Meta:
+        model = Lancamento
+        fields = 'valor_recebido', 'modo_recebido', 'data_antecipado', 'conta', 
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def lancamentos_a_receber_antecipar(request, lancamento_id):
+    lancamento = get_object_or_404(Lancamento, pk=lancamento_id, antecipado=False)
+    lancamento.atencipado=True
+    if request.POST:
+        form = AnteciparLancamentoForm(request.POST, instance=lancamento)
+        if form.is_valid():
+            lancamento = form.save(commit=False)
+            lancamento.situacao = "t"
+            lancamento.antecipado_por = request.user
+            lancamento.antecipado=True
+            lancamento.save()
+            messages.success(request, "Sucesso! Lançamento Antecipado!" )
+            return(redirect("financeiro:lancamentos_a_receber"))
+    else:
+        form = AnteciparLancamentoForm(instance=lancamento)
+    return render_to_response('frontend/financeiro/financeiro-lancamentos-antecipar.html', locals(), context_instance=RequestContext(request),)
+    
