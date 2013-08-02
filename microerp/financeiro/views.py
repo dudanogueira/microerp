@@ -47,12 +47,32 @@ def possui_perfil_acesso_financeiro(user, login_url="/"):
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def home(request):
-    # widget do contratos
+    ## widget do contratos
     contratos_tipo_fechado = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=False)
     contratos_tipo_aberto = ContratoFechado.objects.filter(status="emaberto", tipo="aberto")
     contratos_tipo_mensal = ContratoFechado.objects.filter(status="emaberto", tipo="mensal")
     contratos_receber_apos_conclusao = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=True)
-    total_aberto = ContratoFechado.objects.filter(status="emaberto").count()
+    ## totais de contratos
+    contratos_tipo_fechado_total =  contratos_tipo_fechado.aggregate(Sum('valor'))['valor__sum'] or 0
+    contratos_tipo_aberto_total =  contratos_tipo_aberto.aggregate(Sum('valor'))['valor__sum'] or 0
+    contratos_tipo_mensal_total = contratos_tipo_mensal.aggregate(Sum('valor'))['valor__sum'] or 0
+    contratos_receber_apos_conclusao_total = contratos_receber_apos_conclusao.aggregate(Sum('valor'))['valor__sum'] or 0
+    # totais
+    total_contratos_emaberto_count = ContratoFechado.objects.filter(status="emaberto").count()
+    
+    ## widget de lancamentos
+    # pendentes
+    lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+    lancamentos_pendentes_total_valor =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
+    # atecipados
+    lancamentos_abertos_atencipados = Lancamento.objects.filter(antecipado=True, data_recebido=None)
+    lancamentos_abertos_atencipados_total_valor = lancamentos_abertos_atencipados.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
+    # a receber
+    lancamentos_a_receber = Lancamento.objects.filter(antecipado=False, data_recebido=None, data_cobranca__gte=datetime.date.today())
+    lancamentos_a_receber_total_valor = lancamentos_a_receber.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
+    # total
+    total_lancamentos_a_receber = lancamentos_pendentes.count() + lancamentos_abertos_atencipados.count() + lancamentos_a_receber.count()
+    total_valor_lancamentos_a_receber = lancamentos_pendentes_total_valor + lancamentos_a_receber_total_valor
     return render_to_response('frontend/financeiro/financeiro-home.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')

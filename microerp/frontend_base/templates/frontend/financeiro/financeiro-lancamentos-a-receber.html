@@ -9,7 +9,7 @@
 <h1><i class="icon-th"></i> <i class="icon-paperclip"></i> Lançamentos a Receber</h1>
 <h2>Lançamentos Pendentes</h2>
 
-<table class="table table-striped table-bordered table-hover">
+<table class="table table-bordered table-hover">
     <thead>
         <tr>
             <th>#</th>
@@ -22,7 +22,7 @@
     <tbody>
         {% for lancamento in lancamentos_pendentes %}
         <tr>
-            <td>{{lancamento.id}}</td>
+            <td class="alert {% if lancamento.antecipado %}alert-warning{% else %}alert-danger{% endif %}">{{lancamento.id}}</td>
             <td>{{lancamento.contrato.cliente}}<br />
                 <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
@@ -30,6 +30,10 @@
             </td>
             <td>
                 <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span>
+                {% if lancamento.antecipado %}
+                <br />
+                <span class="badge badge-warning">Antecipado R$ {{lancamento.valor_recebido}} em {{lancamento.data_antecipado|date:"SHORT_DATE_FORMAT"}}</span>
+                {% endif %}
                 {% if lancamento.pendente %}
                 <br />
                 <small>
@@ -53,12 +57,23 @@
 
     </tbody>
 </table>
-{% if lancamentos_pendentes_total.valor_cobrado__sum %}
-<hr />
-<strong>Soma dos Valores Cobrados:</strong> <span class="label label-success">R${{lancamentos_pendentes_total.valor_cobrado__sum}}</span><br />
-<strong>Soma dos Valores Cobrados com Juros e Multa:</strong> <span class="label label-important">R${{total_com_juros_e_multa}}</span>
-{% endif %}
 
+<div class="row-fluid">
+    <div class="span7">
+        <strong>Soma dos Valores Cobrados:</strong> <span class="label label-success">R${{lancamentos_pendentes_total.valor_cobrado__sum}}</span><br />
+        <strong>Soma dos Valores Cobrados com Juros e Multa:</strong> <span class="label label-important">R${{total_com_juros_e_multa}}</span>
+    </div>
+    
+    <div class="span5">
+        <h5>Legenda</h5>
+        <span class="label label-success">Cobrado</span>
+        <span class="label label-important">Pendente</span>
+        <span class="label label-warning">Antecipado</span>
+        
+    </div>
+</div>
+
+<hr />
 <h3>Lançamentos Futuros Nesta Semana</h3>
 <h4>De {{inicio_semana|date:"SHORT_DATE_FORMAT"}} a {{fim_semana|date:"SHORT_DATE_FORMAT"}}</h4>
 <table class="table table-bordered table-hover">
@@ -98,8 +113,12 @@
             </td>
             <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}
                 {% if lancamento.pendente %}
-                <span class="badge badge-important">pendente</span><br />
-                <small>atrasado há {{lancamento.data_cobranca|timesince}}</small>
+                    <span class="badge badge-important">pendente</span><br />
+                    <small>atrasado há {{lancamento.data_cobranca|timesince}}</small>
+                    <br />
+                    {% if lancamento.antecipado %}
+                    <span class="badge badge-warning">Antecipado em: {{lancamento.data_antecipado|date:"SHORT_DATE_FORMAT"}}</span>
+                    {% endif %}
                 {% endif %}
             </td>
             <td>
@@ -126,13 +145,13 @@
     </tbody>
 </table>
 <div class="row-fluid">
-    <div class="span5">
+    <div class="span7">
         <strong>Soma dos Valores Cobrados</strong>: <span class="label label-success">R$ {{soma_lancamentos_futuro.valor_cobrado__sum}}</span>
         <br />
         <strong>Soma dos Valores Antecipados</strong>: <span class="label label-warning">{{soma_lancamentos_antecipados.valor_recebido__sum}}</span>
     </div>
     
-    <div class="span7">
+    <div class="span5">
         <h5>Legenda</h5>
         <span class="label label-info">Agendado</span>
         <span class="label label-success">Cobrado</span>

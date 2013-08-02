@@ -69,12 +69,12 @@ class Lancamento(models.Model):
     
     def __unicode__(self):
         if self.data_recebido:
-            return u"Lançamento de peso %d RECEBIDO em %s do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.data_recebido, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
+            return u"Lançamento #%s de peso %d RECEBIDO em %s do Contrato #%d, Cliente %s de R$%s para %s" % (self.id, self.peso, self.data_recebido, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
         else:
             if self.antecipado:
-                return u"Lançamento de peso %d  Já ANTECIPADO do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
+                return u"Lançamento #%s de peso %d  Já ANTECIPADO do Contrato #%d, Cliente %s de R$%s para %s" % (self.id, self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
             else:
-                return u"Lançamento de peso %d  A RECEBER do Contrato #%d, Cliente %s de R$%s para %s" % (self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
+                return u"Lançamento #%s de peso %d  A RECEBER do Contrato #%d, Cliente %s de R$%s para %s" % (self.id, self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
 
     def clean(self):
         if self.data_recebido and not self.modo_recebido:
