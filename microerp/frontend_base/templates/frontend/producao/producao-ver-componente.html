@@ -175,12 +175,14 @@
                 </div>
                 
                 <div class="span6">
+                    {% if request.user.perfilacessoproducao.gerente %}
                     <form method="POST" class="well form-horizontal" action="#arquivos" enctype="multipart/form-data">
                         {% csrf_token %}
                         {{form_imagem.as_p}}
                         <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
                 
                     </form>
+                    {% endif %}
                     
                     
                 </div>

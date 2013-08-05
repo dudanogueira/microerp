@@ -5,15 +5,19 @@
 
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Linha #{{linha.id}} do SubProduto {{subproduto}}</h1>
-
+{% if request.user.perfilacessoproducao.gerente %}
 <form method="POST">
     {% csrf_token %}
     {{form.as_p}}
     <button class="btn btn-primary"><i class="icon-pencil"></i> Alterar Linha</button>
 </form>
+{% endif %}
 <hr />
 <h2>Opções dessa Linha (#{{linha.id}})</h2>
+
+{% if request.user.perfilacessoproducao.gerente %}
 <a href="{% url "producao:editar_linha_subproduto_adicionar_opcao" subproduto.id linha.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Opção</a>
+{% endif %}
 <hr />
 
 <table class="table table-condensed table-striped table-rounded">
@@ -33,7 +37,10 @@
                    <td>{{opcao.quantidade}}</td>
                    <td>{{opcao.componente.part_number}}</td>
                    <td>{{opcao.componente.descricao}}</td>
-                   <td>{% if not opcao.padrao %}<a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success"><i class="icon-check"></i> tornar padrão</a>{% endif %} <a href="" class="btn btn-danger"><i class="icon-trash"></i> remover</a>
+                   <td>
+                       {% if request.user.perfilacessoproducao.gerente %}
+                           {% if not opcao.padrao %}<a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success"><i class="icon-check"></i> tornar padrão</a>{% endif %} <a href="" class="btn btn-danger"><i class="icon-trash"></i> remover</a>
+                       {% endif %}
                </tr>
                
                {% empty %}

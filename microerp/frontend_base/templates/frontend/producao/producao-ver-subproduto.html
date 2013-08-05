@@ -7,9 +7,11 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-list-ul"></i>  Sub Produto {{subproduto}}</h1>
 
+{% if request.user.perfilacessoproducao.gerente %}
 <p>
     <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="icon-pencil"></i> Editar SubProduto</a>
 </p>
+{% endif %}
 
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
@@ -65,7 +67,12 @@
     <div class="tab-pane fade in" id="linhas-componente">
         
         <h2>Linhas do Sub Produto</h2>
+        
+        {% if request.user.perfilacessoproducao.gerente %}
+        
         <a href="{% url "producao:adicionar_linha_subproduto" subproduto.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Linha de Componente</a>
+        
+        {% endif %}
 
         <table class="table table-condensed table-striped table-rounded">
             <thead>
@@ -88,7 +95,14 @@
                    <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}}</td>
                     <td>{{linha.opcao_padrao.componente.part_number}}</td>
                     <td>{{linha.opcao_padrao.componente.descricao}}</td>
-                   <td><a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-pencil"></i></a></td>
+                   <td>
+                       {% if request.user.perfilacessoproducao.gerente %}
+                       <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-pencil"></i></a>
+                       {% else %}
+                       <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-eye"></i></a>
+                       
+                       {% endif %}
+                   </td>
                </tr>
            
                {% empty %}
