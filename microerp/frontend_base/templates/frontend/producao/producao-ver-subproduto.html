@@ -99,7 +99,7 @@
                        {% if request.user.perfilacessoproducao.gerente %}
                        <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-pencil"></i></a>
                        {% else %}
-                       <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-eye"></i></a>
+                       <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-eye-open"></i></a>
                        
                        {% endif %}
                    </td>
