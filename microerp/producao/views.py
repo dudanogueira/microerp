@@ -24,6 +24,7 @@ from producao.models import ArquivoAnexoComponente
 from producao.models import SubProduto
 from producao.models import LinhaSubProduto
 from producao.models import OpcaoLinhaSubProduto
+from producao.models import DocumentoTecnicoSubProduto
 
 
 from django import forms
@@ -34,7 +35,7 @@ from django import forms
 
 def possui_perfil_acesso_producao(user, login_url="/"):
     try:
-        if user.perfilacessoproducao:
+        if user.perfilacessorh and user.funcionario.ativo():
             return True
     except:
         return False
@@ -148,7 +149,7 @@ def importa_nota_sistema(f):
         return False
     
 
-
+@user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
     notas_abertas = NotaFiscal.objects.filter(status='a')
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
@@ -234,6 +235,8 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
 
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_nota(request):
     '''nota fiscal manual / Internacional'''
     if request.POST:
@@ -248,6 +251,8 @@ def adicionar_nota(request):
     return render_to_response('frontend/producao/producao-adicionar-nota.html', locals(), context_instance=RequestContext(request),)
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def apagar_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     notafiscal.delete()
@@ -255,6 +260,8 @@ def apagar_nota(request, notafiscal_id):
     return redirect(reverse('producao:lancar_nota'))
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def editar_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     if request.POST:
@@ -275,6 +282,8 @@ def editar_nota(request, notafiscal_id):
     return render_to_response('frontend/producao/producao-editar-nota.html', locals(), context_instance=RequestContext(request),)
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def calcular_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     # calcular todas os lancamentos
@@ -287,11 +296,15 @@ def calcular_nota(request, notafiscal_id):
     return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def ver_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     return render_to_response('frontend/producao/producao-ver-nota.html', locals(), context_instance=RequestContext(request),)
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def editar_lancamento(request, notafiscal_id, lancamento_id):
     lancamento = get_object_or_404(LancamentoComponente, nota__id=notafiscal_id, id=lancamento_id)
     if request.POST:        
@@ -314,6 +327,8 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
     return render_to_response('frontend/producao/producao-editar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_lancamento(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
     if request.POST:
@@ -329,6 +344,8 @@ def adicionar_lancamento(request, notafiscal_id):
     return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota_fechar(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id, status="a")
     if notafiscal.lancamentocomponente_set.filter(componente=None).count() == 0:
@@ -390,6 +407,12 @@ class TipoComponenteAdd(forms.ModelForm):
     class Meta:
         model = ComponenteTipo
 
+class ImagemComponenteForm(forms.ModelForm):
+
+    class Meta:
+        model = Componente
+        fields = 'imagem',
+
 class ArquivoAnexoComponenteForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -405,6 +428,7 @@ class ArquivoAnexoComponenteForm(forms.ModelForm):
 
 ## VIEWS
 
+@user_passes_test(possui_perfil_acesso_producao)
 def listar_componentes(request):
     if request.POST:
         if request.POST.get('adicionar-tipo-componente', None):
@@ -432,6 +456,8 @@ def listar_componentes(request):
 
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_componentes(request):
     if request.POST.get('adicionar-componente', None):
         identificador = request.POST.get('identificador', None)
@@ -476,6 +502,8 @@ def adicionar_componentes(request):
     
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-nota__data_lancado_estoque')
@@ -493,18 +521,42 @@ def ver_componente(request, componente_id):
             posicoes_estoque.append(posicao)
     # Anexos
     if request.POST:
-        form_anexos = ArquivoAnexoComponenteForm(request.POST, request.FILES, componente=componente)
-        if form_anexos.is_valid():
-            try:
-                anexo = form_anexos.save()
-                messages.success(request, u"Sucesso! Arquivo Anexado!")
-            except:
-                raise
-                messages.error(request, u"Erro! Arquivo NÃO Anexado!")
+        if request.POST.get('anexar-documento', None):
+            form_anexos = ArquivoAnexoComponenteForm(request.POST, request.FILES, componente=componente)
+            if form_anexos.is_valid():
+                try:
+                    anexo = form_anexos.save()
+                    messages.success(request, u"Sucesso! Arquivo %s Anexado!" % anexo)
+                    return(redirect(reverse('producao:ver_componente', args=[anexo.componente.id,]) + "#arquivos"))
+                except:
+                    raise
+                    messages.error(request, u"Erro! Arquivo %s NÃO Anexado!" % anexo)
+        if request.POST.get('anexar-imagem', None): 
+            form_imagem = ImagemComponenteForm(request.POST, request.FILES, instance=componente)
+            if form_imagem.is_valid():
+                try:
+                    anexo = form_imagem.save()
+                    messages.success(request, u"Sucesso! Imagem Alterada!")
+                except:
+                    raise
+                    messages.error(request, u"Erro! Imagem NÃO Alterada!")
+                
     else:
         form_anexos = ArquivoAnexoComponenteForm(componente=componente)
+        form_imagem = ImagemComponenteForm(instance=componente)
     return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
     
+    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ver_componente_apagar_anexo(request, componente_id, anexo_id):
+    anexo = get_object_or_404(ArquivoAnexoComponente, componente__id=componente_id, pk=anexo_id)
+    try:
+        anexo.delete()
+        messages.success(request, u"Sucesso! Anexo %s Apagado!" % anexo)
+    except:
+        messages.error(request, u"Erro! Anexo %s não Apagado!" % anexo)
+    return(redirect(reverse('producao:ver_componente', args=[anexo.componente.id,]) + "#arquivos"))
 
 # MEMORIA DE COMPONENTE
 
@@ -524,6 +576,8 @@ class AdicionarMemoriaComponenteForm(forms.ModelForm):
     class Meta:
         model = LinhaFornecedorFabricanteComponente
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_memoria_componente(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     if request.POST:
@@ -537,6 +591,8 @@ def adicionar_memoria_componente(request, componente_id):
     return render_to_response('frontend/producao/producao-componente-adicionar-memoria.html', locals(), context_instance=RequestContext(request),)    
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def apagar_memoria_componente(request, memoria_id, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
     memoria = get_object_or_404(LinhaFornecedorFabricanteComponente, componente=componente, pk=memoria_id)
@@ -552,6 +608,8 @@ class AdicionarFabricanteFornecedor(forms.ModelForm):
     class Meta:
         model = FabricanteFornecedor
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def listar_fabricantes_fornecedores(request):
     tipos_possiveis = FABRICANTE_FORNECEDOR_TIPO_CHOICES
     if request.GET:
@@ -569,6 +627,8 @@ def listar_fabricantes_fornecedores(request):
     return render_to_response('frontend/producao/producao-listar-fabricantes-fornecedores.html', locals(), context_instance=RequestContext(request),)    
 
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
     fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__id', 'componente__ativo').annotate(total=Sum('quantidade')).order_by('-total')
@@ -577,6 +637,8 @@ def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
     
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_fabricantes_fornecedores(request):
     if request.POST:
         form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(request.POST)
@@ -589,6 +651,8 @@ def adicionar_fabricantes_fornecedores(request):
         
     return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
     if request.POST:
@@ -675,6 +739,8 @@ class AlterarEstoque(forms.Form):
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def listar_estoque(request):
     historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')
     if request.POST:
@@ -786,6 +852,29 @@ class SubProdutoForm(forms.ModelForm):
     class Meta:
         model = SubProduto
 
+
+class ImagemSubprodutoForm(forms.ModelForm):
+    
+    class Meta:
+        model = SubProduto
+        fields = 'imagem',
+
+class ArquivoAnexoSubProdutoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        subproduto = kwargs.pop('subproduto')
+        super(ArquivoAnexoSubProdutoForm, self).__init__(*args, **kwargs)
+        self.fields['subproduto'].initial  = subproduto
+        self.fields['subproduto'].widget = forms.HiddenInput()
+    
+    
+    class Meta:
+        model = DocumentoTecnicoSubProduto
+        fields = 'arquivo', 'subproduto'
+
+
+
+@user_passes_test(possui_perfil_acesso_producao)
 def listar_subprodutos(request):
     
     if request.GET:
@@ -800,6 +889,8 @@ def listar_subprodutos(request):
     
     return render_to_response('frontend/producao/producao-listar-subprodutos.html', locals(), context_instance=RequestContext(request),)    
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_subproduto(request):
     if request.POST:
         form = SubProdutoForm(request.POST, request.FILES)
@@ -809,9 +900,10 @@ def adicionar_subproduto(request):
             return redirect(reverse("ver_subproduto", args=[subproduto.id]))
     else:
         form = SubProdutoForm()
-    return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)
 
 
+@user_passes_test(possui_perfil_acesso_producao)
 def editar_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     if request.POST:
@@ -824,15 +916,59 @@ def editar_subproduto(request, subproduto_id):
         form = SubProdutoForm(instance=subproduto)
     return render_to_response('frontend/producao/producao-editar-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
+
+
+@user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    if request.POST:
+        if request.POST.get('anexar-documento', None):
+            form_anexos = ArquivoAnexoSubProdutoForm(request.POST, request.FILES, subproduto=subproduto)
+            if form_anexos.is_valid():
+                try:
+                    anexo = form_anexos.save()
+                    messages.success(request, u"Sucesso! Arquivo %s Anexado!" % anexo)
+                    return(redirect(reverse('producao:ver_subproduto', args=[anexo.subproduto.id,]) + "#arquivos"))
+                except:
+                    raise
+                    messages.error(request, u"Erro! Arquivo %s NÃO Anexado!" % anexo)
+        if request.POST.get('anexar-imagem', None): 
+            form_imagem = ImagemSubprodutoForm(request.POST, request.FILES, instance=subproduto)
+            if form_imagem.is_valid():
+                try:
+                    anexo = form_imagem.save()
+                    messages.success(request, u"Sucesso! Imagem Alterada!")
+                    return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+                except:
+                    raise
+                    messages.error(request, u"Erro! Imagem NÃO Alterada!")
+        
+                
+    else:
+        form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
+        form_imagem = ImagemSubprodutoForm(instance=subproduto)
+        
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+
+
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ver_subproduto_apagar_anexo(request, subproduto_id, anexo_id):
+    anexo = get_object_or_404(DocumentoTecnicoSubProduto, subproduto__id=subproduto_id, pk=anexo_id)
+    try:
+        anexo.delete()
+        messages.success(request, u"Sucesso! Anexo %s Apagado!" % anexo)
+    except:
+        messages.error(request, u"Erro! Anexo %s não Apagado!" % anexo)
+    return(redirect(reverse('producao:ver_subproduto', args=[anexo.subproduto.id,]) + "#arquivos"))
+    
 
 class LinhaSubProdutoForm(forms.ModelForm):
     
     class Meta:
         model = LinhaSubProduto
-        fields = 'peso', 'tag'
+        fields = 'tag',
 
 class AdicionarLinhaSubProdutoForm(forms.ModelForm):
     
@@ -845,7 +981,10 @@ class AdicionarLinhaSubProdutoForm(forms.ModelForm):
     
     class Meta:
         model = LinhaSubProduto
+        fields = 'tag', 'subproduto'
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     linha = get_object_or_404(LinhaSubProduto, subproduto=subproduto, pk=linha_subproduto_id)
@@ -859,7 +998,7 @@ def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
         form = LinhaSubProdutoForm(instance=linha)
     return render_to_response('frontend/producao/producao-editar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
-
+@user_passes_test(possui_perfil_acesso_producao)
 def adicionar_linha_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     if request.POST:
@@ -884,22 +1023,47 @@ class OpcaoLinhaSubProdutoForm(forms.ModelForm):
     
     class Meta:
         model = OpcaoLinhaSubProduto
+        fields = 'componente', 'quantidade', 'linha'
 
+
+@user_passes_test(possui_perfil_acesso_producao)
 def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     linha = get_object_or_404(LinhaSubProduto, subproduto=subproduto, pk=linha_subproduto_id)
     if request.POST:
         form = OpcaoLinhaSubProdutoForm(request.POST, linha=linha)
         if form.is_valid():
-            opcao = form.save()
+            
+            if linha.opcaolinhasubproduto_set.count() == 0:
+                opcao = form.save()
+                opcao.padrao = True
+            else:
+                opcao = form.save()
+                opcao.padrao = None
+            opcao.save()            
             messages.success(request, u"Sucesso! Opção adiconada com sucesso em %s" % linha)
             return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
     else:
         form = OpcaoLinhaSubProdutoForm(linha=linha)
     return render_to_response('frontend/producao/producao-editar-linha-subproduto-adicionar-opcao.html', locals(), context_instance=RequestContext(request),)    
 
+@user_passes_test(possui_perfil_acesso_producao)
+def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subproduto_id, opcao_linha_subproduto_id):
+    linha = get_object_or_404(LinhaSubProduto, subproduto__id=subproduto_id, pk=linha_subproduto_id)
+    opcao = get_object_or_404(OpcaoLinhaSubProduto, linha=linha, pk=opcao_linha_subproduto_id)
+    # transforma todas as opcoes da linha em nao padrao
+    linha.opcaolinhasubproduto_set.all().update(padrao=None)
+    # define a opcao escolhida como padrao
+    opcao.padrao = True
+    opcao.save()
+    # retorna a exibição da linha
+    messages.success(request, u"Sucesso! Nova opção padrão definida!")
+    return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
+    
+
 # PRODUTO
 
+@user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
         
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    

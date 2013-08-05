@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load thumbnail %}
 
 <title>{%block title %}{{block.super}} - Produção - Ver Sub Produtos{% endblock %}</title>
 
@@ -14,7 +15,7 @@
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
     <li><a href="#linhas-componente" data-toggle="tab">Linhas de Componente</a></li>
     <li><a href="#sub-produtos-agregados" data-toggle="tab">Sub Produtos Agregados</a></li>
-    <li><a href="#documentos-tecnicos" data-toggle="tab">Documentos Técnicos</a></li>
+    <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos</a></li>
     <li><a href="#relatórios" data-toggle="tab">Relatórios</a></li>
     
 
@@ -27,23 +28,32 @@
         
         <div class="row-fluid">
             <div class="span6">
+                <h2>Geral</h2>
                 <strong>Nome</strong>: {{subproduto.nome}}<br />
-                <strong>Descrição</strong>: {{subproduto.descricao}}
-                <strong>Custo Total:</strong>
+                <strong>Descrição</strong>: {{subproduto.descricao}}<br />
+                <strong>Custo Total *:</strong>
                 <strong>Soma dos Valores de Componentes Internacionais em Dólar:</strong>
                 
                 <h2>Produção</h2>
-                <strong>Montado:</strong>
-                <strong>Testando:</strong>
-                <strong>Funcionando:</strong>
-                <strong>Quantidade Máxima de Produção:</strong>
-                <strong>Quantidade Estimada de Produção Semanal:</strong>
+                <h3>Situação de Testes</h3>
+                <strong>Montado:</strong><br />
+                <strong>Testando:</strong><br />
+                <strong>Funcionando:</strong><br />
+                <h3>Quantidades de Produção</h3>
+                <strong>Quantidade Máxima de Produção:</strong><br />
+                <strong>Quantidade Estimada de Produção Semanal:</strong><br />
                 
             </div>
-            
+
             <div clas="span6">
                 {% if subproduto.imagem %}
-                <a href="{{subproduto.imagem.url}}"><img src="{{subproduto.imagem.url}}"></a>
+                <a href="{{subproduto.imagem.url}}">
+                    
+                    {% thumbnail subproduto.imagem "200" crop="center" as im %}
+                          <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                   {% endthumbnail %}
+
+                </a>
                 {% endif %}
                 
             </div>
@@ -63,17 +73,21 @@
                            <th>Item</th>
                            <th>TAG</th>
                            <th>Opções</th>
-                           <th>Padrão</th>
+                           <th>Padrão:QTD</th>
+                           <th>Padrão:COMPONENTE</th>
+                           <th>Padrão:DESCRIÇÃO</th>
                            <th>Ação</th>
                        </tr>
                    </thead>
             <tbody>
                {% for linha in subproduto.linhasubproduto_set.all %}
                <tr>
-                   <td>{{linha.peso}}</td>
+                   <td>{{forloop.counter}}</td>
                    <td>{{linha.tag}}</td>
                    <td>{{linha.opcaolinhasubproduto_set.count}}</td>
-                   <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}} {{linha.opcao_padrao.componente}}</td>
+                   <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}}</td>
+                    <td>{{linha.opcao_padrao.componente.part_number}}</td>
+                    <td>{{linha.opcao_padrao.componente.descricao}}</td>
                    <td><a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-pencil"></i></a></td>
                </tr>
            
@@ -95,7 +109,53 @@
         
     </div>
     
-    <div class="tab-pane fade in" id="documentos-tecnicos">
+    <div class="tab-pane fade in" id="arquivos">
+        
+        <h2>Imagem</h2>
+        <div class="row-fluid">
+            <div class="span6">
+                {% if subproduto.imagem %}
+                    <a href="{{subproduto.imagem.url}}">
+                        {% thumbnail subproduto.imagem "400" crop="center" as im %}
+                              <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                       {% endthumbnail %}
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="span6">
+                {% if request.user.perfilacessoproducao.gerente %}
+                <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form_imagem.as_p}}
+                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+            
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        
+        <h2>Documentos Técnicos</h2>
+
+        {% if request.user.perfilacessoproducao.gerente %}
+        <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form_anexos}}
+            <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
+            
+        </form>
+        {% endif %}
+        <hr />
+        {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
+        <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+        {% if request.user.perfilacessoproducao.gerente %}
+        <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+        {% endif %}
+        <hr />
+        {% empty %}
+        Nenhum arquivo anexo.
+        {% endfor %}
         
     </div>
     

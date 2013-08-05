@@ -4,7 +4,7 @@
 <title>{%block title %}{{block.super}} - Produção - Editar Linha do Sub Produto{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Linha {{linha.peso}} do SubProduto {{subproduto}}</h1>
+<h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Linha #{{linha.id}} do SubProduto {{subproduto}}</h1>
 
 <form method="POST">
     {% csrf_token %}
@@ -12,24 +12,28 @@
     <button class="btn btn-primary"><i class="icon-pencil"></i> Alterar Linha</button>
 </form>
 <hr />
-<h2>Opções dessa Linha</h2>
+<h2>Opções dessa Linha (#{{linha.id}})</h2>
 <a href="{% url "producao:editar_linha_subproduto_adicionar_opcao" subproduto.id linha.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Opção</a>
 <hr />
 
 <table class="table table-condensed table-striped table-rounded">
            <thead>
                <tr>
-                   <th>Padrão</th>
+                   <th>#ID / Padrão</th>
                    <th>Quantidade</th>
                    <th>Componente</th>
+                   <th>Descrição</th>
+                   <th>Ações</th>
                </tr>
            </thead>
            <tbody>
                {% for opcao in linha.opcaolinhasubproduto_set.all %}
                <tr>
-                   <td>{% if opcao.padrao %}Sim{%else%}Não{%endif%}</td>
+                   <td>#{{opcao.id}} / {% if opcao.padrao %}<span class="badge badge-success">Sim</span>{%else%}Não{%endif%}</td>
                    <td>{{opcao.quantidade}}</td>
-                   <td>{{opcao.componente}}</td>
+                   <td>{{opcao.componente.part_number}}</td>
+                   <td>{{opcao.componente.descricao}}</td>
+                   <td>{% if not opcao.padrao %}<a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success"><i class="icon-check"></i> tornar padrão</a>{% endif %} <a href="" class="btn btn-danger"><i class="icon-trash"></i> remover</a>
                </tr>
                
                {% empty %}

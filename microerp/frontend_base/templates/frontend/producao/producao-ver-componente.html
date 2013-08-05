@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load thumbnail %}
 
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
@@ -15,11 +16,6 @@
   <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos</a></li>
   
 </ul>
-{% if componente.imagem %}
-<p>
-<a href="{{componente.imagem.url}}"><img src="{{componente.imagem.url}}"></a>
-</p>
-{% endif %}
 
 <div id="myTabContent" class="tab-content">
     
@@ -165,9 +161,36 @@
         </div>
         
         <div class="tab-pane fade in" id="arquivos">
+            
+            <h2>Imagem</h2>
+            <div class="row-fluid">
+                <div class="span6">
+                    {% if componente.imagem %}
+                        <a href="{{componente.imagem.url}}">
+                            {% thumbnail componente.imagem "400x400" crop="center" as im %}
+                                  <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                           {% endthumbnail %}
+                        </a>
+                    {% endif %}
+                </div>
+                
+                <div class="span6">
+                    <form method="POST" class="well form-horizontal" action="#arquivos" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{form_imagem.as_p}}
+                        <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+                
+                    </form>
+                    
+                    
+                </div>
+            </div>
+            
+            
+            <h2>Documentos Técnicos</h2>
 
             {% if request.user.perfilacessoproducao.gerente %}
-            <form method="POST" class="form-horizontal" action="#anexos" enctype="multipart/form-data">
+            <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{form_anexos}}
                 <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
@@ -176,7 +199,7 @@
             {% endif %}
             <hr />
             {% for anexo in componente.arquivoanexocomponente_set.all %}
-            <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+            <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a> <a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
             <hr />
             {% empty %}
             Nenhum arquivo anexo.

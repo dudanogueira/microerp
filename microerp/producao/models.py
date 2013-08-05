@@ -40,6 +40,12 @@ TIPO_NACIONALIDADE_COMPONENTE = (
 )
 
 
+OPCAO_LINHA_SUBPRODUTO_PADRAO = (
+    (True, 'Sim'),
+    (False, u'Não'),
+)
+
+
 class PerfilAcessoProducao(models.Model):
     '''Perfil de Acesso à Produção'''
     
@@ -98,6 +104,9 @@ class ComponenteTipo(models.Model):
                 self.slug = self.nome[0:3]
             super(ComponenteTipo, self).save(*args, **kwargs)    
     
+    def clean(self):
+        if self.slug == 'SUB' or self.slug == 'PRO':
+            raise ValidationError(u"Erro! 'SUB' e 'PRO' são reservados para o sistema.")
     
     def __unicode__(self):
         return "%s - %s" % (self.slug, self.nome)
@@ -200,6 +209,8 @@ class Componente(models.Model):
 
 class ArquivoAnexoComponente(models.Model):
     
+    def __unicode__(self):
+        return "Arquivo %s anexo do Componente %s" % (self.arquivo, self.componente)
     
     def anexo_componente_local(instance, filename):
         return os.path.join(
@@ -213,6 +224,8 @@ class ArquivoAnexoComponente(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
+    class Meta:
+        ordering = ('criado',)
 
 class FabricanteFornecedor(models.Model):
     
@@ -551,7 +564,7 @@ class LinhaSubProduto(models.Model):
     class Meta:
         verbose_name = "Linha de Componentes do Sub Produto"
         verbose_name_plural = "Linhas de Componentes do Sub Produto"
-        ordering = 'peso',
+        ordering = 'tag',
     
     def clean(self, exclude=None):
         if self.subproduto.possui_tags:
@@ -562,7 +575,7 @@ class LinhaSubProduto(models.Model):
 
     peso = models.IntegerField("Item", blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
-    tag = models.CharField(blank=True, max_length=100)
+    tag = models.CharField("TAG", blank=True, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -576,14 +589,17 @@ class OpcaoLinhaSubProduto(models.Model):
     linha = models.ForeignKey('LinhaSubProduto')
     componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
-    padrao = models.NullBooleanField(default=False)
+    padrao = models.NullBooleanField(u"Padrão", default=False)
     
 def subproduto_local_documentos(instance, filename):
     return os.path.join(
-        'subproduto/', str(instance.subproduto.id), 'documento', str(instance.id), filename
+        'subproduto/', str(instance.subproduto.slug), 'documento', filename
       )
 
 class DocumentoTecnicoSubProduto(models.Model):
+    
+    def __unicode__(self):
+        return u"Documento Técnico %s do SubProduto %s" % (self.subproduto, self.arquivo)
     
     class Meta:
         verbose_name = u"Documento Técnico do Sub Produto"
@@ -592,7 +608,7 @@ class DocumentoTecnicoSubProduto(models.Model):
     subproduto = models.ForeignKey('SubProduto')
     titulo = models.CharField(blank=True, max_length=100)
     descricao = models.TextField("Descrição", blank=True)
-    arquivo = models.FileField(upload_to=subproduto_local_documentos)
+    arquivo = models.FileField(upload_to=subproduto_local_documentos, blank=False, null=False)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -623,7 +639,7 @@ class LinhaProdutoAvulso(models.Model):
     produto = models.ForeignKey('ProdutoFinal')
     componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
-    tag = models.CharField(blank=True, max_length=100)
+    tag = models.CharField("TAG", blank=True, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
