@@ -35,10 +35,11 @@ from django import forms
 
 def possui_perfil_acesso_producao(user, login_url="/"):
     try:
-        if user.perfilacessorh and user.funcionario.ativo():
+        if user.perfilacessoproducao and user.funcionario.ativo():
             return True
     except:
         return False
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def home(request):
