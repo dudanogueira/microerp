@@ -959,7 +959,7 @@ def ver_subproduto(request, subproduto_id):
         if request.POST.get('agregar-subproduto-btn', None):
             form_agregar_subproduto = AgregarSubProdutoForm(request.POST, subproduto_principal=subproduto)
             if form_agregar_subproduto.is_valid():
-                linha_sub_agregado = form_agregar.save()
+                linha_sub_agregado = form_agregar_subproduto.save()
                 messages.success(request, u"Sucesso! Sub Produto %s agregado %s vezes no SubProduto Principal %s" % (linha_sub_agregado.subproduto_agregado, linha_sub_agregado.quantidade, linha_sub_agregado.subproduto_principal))
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
                 
