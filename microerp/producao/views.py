@@ -25,6 +25,7 @@ from producao.models import SubProduto
 from producao.models import LinhaSubProduto
 from producao.models import OpcaoLinhaSubProduto
 from producao.models import DocumentoTecnicoSubProduto
+from producao.models import LinhaSubProdutoAgregado
 
 
 from django import forms
@@ -875,6 +876,18 @@ class ArquivoAnexoSubProdutoForm(forms.ModelForm):
 
 
 
+class AgregarSubProdutoForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        subproduto_principal = kwargs.pop('subproduto_principal')
+        super(AgregarSubProdutoForm, self).__init__(*args, **kwargs)
+        self.fields['subproduto_principal'].initial  = subproduto_principal
+        self.fields['subproduto_principal'].widget = forms.HiddenInput()
+        self.fields['subproduto_agregado'].queryset = self.fields['subproduto_agregado'].queryset.exclude(id=subproduto_principal.id)
+    
+    class Meta:
+        model = LinhaSubProdutoAgregado
+
+
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_subprodutos(request):
     
@@ -943,11 +956,19 @@ def ver_subproduto(request, subproduto_id):
                 except:
                     raise
                     messages.error(request, u"Erro! Imagem NÃO Alterada!")
+        if request.POST.get('agregar-subproduto-btn', None):
+            form_agregar_subproduto = AgregarSubProdutoForm(request.POST, subproduto_principal=subproduto)
+            if form_agregar_subproduto.is_valid():
+                linha_sub_agregado = form_agregar.save()
+                messages.success(request, u"Sucesso! Sub Produto %s agregado %s vezes no SubProduto Principal %s" % (linha_sub_agregado.subproduto_agregado, linha_sub_agregado.quantidade, linha_sub_agregado.subproduto_principal))
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+                
         
                 
     else:
         form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
         form_imagem = ImagemSubprodutoForm(instance=subproduto)
+        form_agregar_subproduto = AgregarSubProdutoForm(subproduto_principal=subproduto)
         
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
@@ -1061,6 +1082,13 @@ def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subprodut
     messages.success(request, u"Sucesso! Nova opção padrão definida!")
     return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
     
+
+def subproduto_apagar_linha_subproduto_agregado(request, subproduto_id, linha_subproduto_agregado_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    linha_agregada = get_object_or_404(LinhaSubProdutoAgregado, subproduto_principal=subproduto, pk=linha_subproduto_agregado_id)
+    linha_agregada.delete()
+    messages.success(request, u"Sucesso! Linha de SubProduto Agregado ao Produto Principal %s Apagado!" % subproduto)
+    return(redirect(reverse('producao:ver_subproduto', args=[subproduto.id,]) + "#sub-produtos-agregados"))
 
 # PRODUTO
 

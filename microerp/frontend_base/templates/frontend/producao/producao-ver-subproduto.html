@@ -20,8 +20,6 @@
     <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos</a></li>
     <li><a href="#relatórios" data-toggle="tab">Relatórios</a></li>
     
-
-    
 </ul>
 
 <div id="myTabContent" class="tab-content">
@@ -33,8 +31,12 @@
                 <h2>Geral</h2>
                 <strong>Nome</strong>: {{subproduto.nome}}<br />
                 <strong>Descrição</strong>: {{subproduto.descricao}}<br />
-                <strong>Custo Total *:</strong>
-                <strong>Soma dos Valores de Componentes Internacionais em Dólar:</strong>
+                <h2>Custos</h2>
+                <strong>Custo das Linhas de Componente:</strong> R$ {{subproduto.custo_total_linhas|floatformat:2}}<br />
+                <strong>Custo Dos SubProdutos Agregados:</strong> R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}<br />
+                <span class="badge badge-success">Custo Total: R$ {{subproduto.custo|floatformat:2}}</span><br />
+                <h3>Custo Internacional</h3>
+                <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
                 
                 <h2>Produção</h2>
                 <h3>Situação de Testes</h3>
@@ -83,6 +85,7 @@
                            <th>Padrão:QTD</th>
                            <th>Padrão:COMPONENTE</th>
                            <th>Padrão:DESCRIÇÃO</th>
+                           <th>Custo</th>
                            <th>Ação</th>
                        </tr>
                    </thead>
@@ -95,6 +98,7 @@
                    <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}}</td>
                     <td>{{linha.opcao_padrao.componente.part_number}}</td>
                     <td>{{linha.opcao_padrao.componente.descricao}}</td>
+                    <td>R$ {{linha.custo|floatformat:2}}
                    <td>
                        {% if request.user.perfilacessoproducao.gerente %}
                        <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-pencil"></i></a>
@@ -112,14 +116,70 @@
                    </td>
                </tr>
                {% endfor %}
+               <tr>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                   <td></td>
+                   <td>
+                       <span class="badge badge-success">Total: R$ {{subproduto.custo_total_linhas|floatformat:2}}</span>
+                   </td>
+                   <td></td>
+               </tr>
 
             </tbody>
         </table>
+        
         
     
     </div>
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
+        {% if request.user.perfilacessoproducao.gerente %}
+        <h1>Agregar um Sub Produto</h1>
+        <form method="POST" action="#sub-produtos-agregados">
+            {% csrf_token %}
+            {{form_agregar_subproduto.as_p}}
+            <button class="btn btn-primary" name='agregar-subproduto-btn' value="agregar">Agregar Sub Produto</button>
+        </form>
+        {% endif %}
+        
+        <h2>Sub Produtos Agregados</h2>            
+        <table class="table table-condensed table-striped table-rounded">
+            <thead>
+                       <tr>
+                           <th>Item</th>
+                           <th>Quantidade</th>
+                           <th>SubProduto</th>
+                           <th>Custo</th>
+                           <th>Ações</th>
+                       </tr>
+                   </thead>
+            <tbody>
+                {% for linha in subproduto.linhasubprodutos_agregados.all %}
+                <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{linha.quantidade}}</td>
+                    <td>{{linha.subproduto_agregado}}</td>
+                    <td>R$ {{linha.custo|floatformat:2}}</td>
+                    <td>
+                        {% if request.user.perfilacessoproducao.gerente %}
+                        <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="badge badge-success">Total: R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
+                </tr>
+                
+            </tbody>
+        </table>
         
     </div>
     

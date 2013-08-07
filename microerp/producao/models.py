@@ -529,6 +529,41 @@ class SubProduto(models.Model):
             else:
                 break
     
+    def custo_total_linhas(self):
+        '''calcula o custo total deste subproduto, incluindo as quantidades de linha'''
+        # total de linhas
+        total_parcial = 0
+        # para cada linha
+        for linha in self.linhasubproduto_set.all():
+            # somente as linhas que possuem opcao padrao
+            if linha.opcao_padrao():
+                valor = linha.opcao_padrao().quantidade * linha.opcao_padrao().componente.preco_liquido_unitario_real
+                total_parcial += valor
+        return total_parcial
+    
+    def custo_total_dos_sub_produtos_agregados(self):
+        total_parcial = 0
+        for linha in self.linhasubprodutos_agregados.all():
+            total_parcial += linha.quantidade * linha.subproduto_agregado.custo_total_linhas()
+        return total_parcial
+    
+    def custo(self):
+        return self.custo_total_linhas() + self.custo_total_dos_sub_produtos_agregados()
+    
+    def custo_dolar_componentes_internacionais(self):
+        '''calcula o custo total deste subproduto, somente dos componentes internacionais'''
+        # total de linhas
+        total_parcial = 0
+        # para cada linha
+        for linha in self.linhasubproduto_set.all():
+            # somente as linhas que possuem opcao padrao
+            padrao = linha.opcao_padrao()
+            if padrao and padrao.quantidade and padrao.componente.preco_liquido_unitario_real:
+                if padrao.componente.nacionalidade == 'i':
+                    valor = padrao.quantidade * padrao.componente.preco_liquido_unitario_dolar
+                    total_parcial += valor
+        return total_parcial        
+
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
     slug = models.SlugField(blank=True, null=True, unique=True)
@@ -545,6 +580,12 @@ class LinhaSubProdutoAgregado(models.Model):
         verbose_name = "Linha Sub Produto Agregado"
         verbose_name_plural = "Linha de Sub Produtos Agregados"
     
+    def clean(self):
+        if self.quantidade == 0:
+            raise ValidationError(u"Erro! Quantidade deve ser maior que 0")
+    
+    def custo(self):
+        return self.quantidade * self.subproduto_agregado.custo_total_linhas()
     
     quantidade = models.IntegerField(help_text="Numero Inteiro", blank=True, null=True, default=0)
     subproduto_principal = models.ForeignKey('SubProduto', related_name="linhasubprodutos_agregados")
@@ -556,10 +597,14 @@ class LinhaSubProduto(models.Model):
     '''
     
     def opcao_padrao(self):
-        return self.opcaolinhasubproduto_set.get(padrao=True)
+        try:
+            padrao = self.opcaolinhasubproduto_set.get(padrao=True)
+            return padrao
+        except:
+            return None
     
     def __unicode__(self):
-        return u"Linha %s de SubProduto %s" % (self.peso, self.subproduto)
+        return u"Linha %s de SubProduto %s" % (self.id, self.subproduto)
     
     class Meta:
         verbose_name = "Linha de Componentes do Sub Produto"
@@ -572,6 +617,14 @@ class LinhaSubProduto(models.Model):
             linha_igual = LinhaSubProduto.objects.filter(tag=self.tag, subproduto=self.subproduto)
             if linha_igual and linha_igual [0] != self:
                 raise ValidationError('Erro! Já existe uma Linha de Sub Produto com essa TAG!')
+
+    def custo(self):
+        padrao = self.opcao_padrao()
+        if padrao and padrao.quantidade and padrao.componente.preco_liquido_unitario_real:
+            valor = padrao.quantidade * padrao.componente.preco_liquido_unitario_real
+            return valor or 0
+        else:
+            return 0
 
     peso = models.IntegerField("Item", blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
