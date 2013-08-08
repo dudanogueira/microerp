@@ -10,10 +10,25 @@
 <ul class="nav nav-tabs">
   <li class="active"><a href="#valores" data-toggle="tab">Valores</a></li>
 <li><a href="#participacao" data-toggle="tab">Participações</a></li>
-  <li><a href="#fornecimento" data-toggle="tab">Fornecimento</a></li>
+  <li><a href="#fornecimento" data-toggle="tab">Fornecimento
+      {% if componente.lancamentocomponente_set.count %}
+          <span class="badge badge-success">{{componente.lancamentocomponente_set.count}}</span>
+      {% endif %}
+      
+      
+  </a></li>
   <li><a href="#fabricacao" data-toggle="tab">Fabricação</a></li>
-  <li><a href="#memoria" data-toggle="tab">Memória</a></li>
-  <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos</a></li>
+  <li><a href="#memoria" data-toggle="tab">Memória
+      {% if componente.linhafornecedorfabricantecomponente_set.count %}
+          <span class="badge badge-warning">{{componente.linhafornecedorfabricantecomponente_set.count}}</span>
+      {% endif %}
+      
+  </a></li>
+  <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos 
+      {% if componente.arquivoanexocomponente_set.count %}
+          <span class="badge">{{componente.arquivoanexocomponente_set.count}}</span>
+      {% endif %}
+  </a></li>
   
 </ul>
 
@@ -91,7 +106,7 @@
             
             <h3>Lançamentos Fornecidos</h3>
             {% for lancamento in lancamentos %}
-            <span class="label label-info">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_lancado_estoque|date:"SHORT_DATETIME_FORMAT"}} <span class="label label-success"><strong>Fornecedor: {{lancamento.nota.fabricante_fornecedor.nome}} ({{lancamento.part_number_fornecedor}})</strong></span>, <span class="label label-warning">Fabricante: {{lancamento.fabricante.nome}} - {{lancamento.part_number_fabricante}}</span> nota: {{lancamento.nota.numero}}. <strong>Por: {{lancamento.nota.lancado_por.funcionario}}</strong><br />
+            <span class="label label-success">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_lancado_estoque|date:"SHORT_DATETIME_FORMAT"}} <span class="label label-success"><strong>Fornecedor: {{lancamento.nota.fabricante_fornecedor.nome}} ({{lancamento.part_number_fornecedor}})</strong></span>, <span class="label label-warning">Fabricante: {{lancamento.fabricante.nome}} - {{lancamento.part_number_fabricante}}</span> nota: {{lancamento.nota.numero}}. <strong>Por: {{lancamento.nota.lancado_por.funcionario}}</strong><br />
             <hr />
             {% empty %}
                 Nenhum Lançamento Realizado
@@ -146,7 +161,7 @@
                         </span>
                         
                         {% if request.user.perfilacessoproducao.gerente %}
-                        <a href="{% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}" class="btn btn-danger">
+                        <a href="{% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')">
                             <i class="icon-trash"></i> Apagar
                         </a>{% endif %}
                     </li>
@@ -201,7 +216,7 @@
             {% endif %}
             <hr />
             {% for anexo in componente.arquivoanexocomponente_set.all %}
-            <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a> <a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+            <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a> <a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" ><i class="icon-trash"></i></a>
             <hr />
             {% empty %}
             Nenhum arquivo anexo.
@@ -220,12 +235,13 @@
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 <script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
+
 <script>
 $(document).ready(function() {
-	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
+    $("#menu-producao-componentes, #top-menu-producao").addClass("active");
     $("#busca_componente").focus()
-   var activeTab = $('[href=' + location.hash + ']');
-   activeTab && activeTab.tab('show');
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.tab('show');
     
 });
 </script>

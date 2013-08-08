@@ -850,6 +850,13 @@ def listar_estoque(request):
 # SUB PRODUTOS
 
 class SubProdutoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(SubProdutoForm, self).__init__(*args, **kwargs)
+        instance = getattr(self, 'instance', None)
+        if instance and instance.pk:
+            self.fields['slug'].widget.attrs['readonly'] = True
+    
 
     class Meta:
         model = SubProduto

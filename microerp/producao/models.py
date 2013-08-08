@@ -210,7 +210,7 @@ class Componente(models.Model):
 class ArquivoAnexoComponente(models.Model):
     
     def __unicode__(self):
-        return "Arquivo %s anexo do Componente %s" % (self.arquivo, self.componente)
+        return u"Arquivo %s anexo do Componente %s" % (self.arquivo, self.componente)
     
     def anexo_componente_local(instance, filename):
         return os.path.join(
