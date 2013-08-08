@@ -5,6 +5,9 @@
 
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Linha #{{linha.id}} do SubProduto {{subproduto}}</h1>
+<p>
+    <a href="{% url "producao:ver_subproduto" subproduto.id %}#linhas-componente"><i class="icon-arrow-left"></i> Voltar ao Produto {{subproduto}}</a>
+</p>
 {% if request.user.perfilacessoproducao.gerente %}
 <form method="POST">
     {% csrf_token %}
@@ -27,6 +30,7 @@
                    <th>Quantidade</th>
                    <th>Componente</th>
                    <th>Descrição</th>
+                   <th>Custo</th>
                    <th>Ações</th>
                </tr>
            </thead>
@@ -37,6 +41,7 @@
                    <td>{{opcao.quantidade}}</td>
                    <td>{{opcao.componente.part_number}}</td>
                    <td>{{opcao.componente.descricao}}</td>
+                   <td>R$ {{opcao.custo|floatformat:2}}</td>
                    <td>
                        {% if request.user.perfilacessoproducao.gerente %}
                            {% if not opcao.padrao %}<a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success"><i class="icon-check"></i> tornar padrão</a>{% endif %} <a href="" class="btn btn-danger"><i class="icon-trash"></i> remover</a>

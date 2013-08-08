@@ -15,9 +15,32 @@
 
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
-    <li><a href="#linhas-componente" data-toggle="tab">Linhas de Componente</a></li>
-    <li><a href="#sub-produtos-agregados" data-toggle="tab">Sub Produtos Agregados</a></li>
-    <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos</a></li>
+    <li>
+        <a href="#linhas-componente" data-toggle="tab">
+            Linhas de Componente 
+            {% if subproduto.linhasubproduto_set.count %}
+            <span class="badge badge-info">{{subproduto.linhasubproduto_set.count}}</span>
+        
+            {% endif %}
+        </a>
+    </li>
+    <li>
+        <a href="#sub-produtos-agregados" data-toggle="tab">
+            Sub Produtos Agregados
+            {% if subproduto.linhasubprodutos_agregados.count %}
+            <span class="badge badge-success">{{subproduto.linhasubprodutos_agregados.count}}</span>
+            {% endif %}
+            
+        </a>
+    </li>
+    <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
+        {% if subproduto.documentotecnicosubproduto_set.count %}
+        <span class="badge badge">{{subproduto.documentotecnicosubproduto_set.count}}</span>
+        {% endif %}
+        
+    
+    
+    </a></li>
     <li><a href="#relatórios" data-toggle="tab">Relatórios</a></li>
     
 </ul>
@@ -94,14 +117,15 @@
                <tr>
                    <td>{{forloop.counter}}</td>
                    <td>{{linha.tag}}</td>
-                   <td>{{linha.opcaolinhasubproduto_set.count}}</td>
+                   <td><span class="badge badge-warning">{{linha.opcaolinhasubproduto_set.count}}</span></td>
                    <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}}</td>
                     <td>{{linha.opcao_padrao.componente.part_number}}</td>
                     <td>{{linha.opcao_padrao.componente.descricao}}</td>
-                    <td>R$ {{linha.custo|floatformat:2}}
+                    <td><span class="label">R$ {{linha.custo|floatformat:2}}</span>
                    <td>
                        {% if request.user.perfilacessoproducao.gerente %}
                        <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-pencil"></i></a>
+                       <a class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" href="{% url "producao:apagar_linha_subproduto" subproduto.id linha.id %}"><i class="icon-trash"></i></a>
                        {% else %}
                        <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn"><i class="icon-eye-open"></i></a>
                        
@@ -142,7 +166,7 @@
         <form method="POST" action="#sub-produtos-agregados">
             {% csrf_token %}
             {{form_agregar_subproduto.as_p}}
-            <button class="btn btn-primary" name='agregar-subproduto-btn' value="agregar">Agregar Sub Produto</button>
+            <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar">Agregar Sub Produto</button>
         </form>
         {% endif %}
         
@@ -163,10 +187,10 @@
                     <td>{{forloop.counter}}</td>
                     <td>{{linha.quantidade}}</td>
                     <td>{{linha.subproduto_agregado}}</td>
-                    <td>R$ {{linha.custo|floatformat:2}}</td>
+                    <td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
                     <td>
                         {% if request.user.perfilacessoproducao.gerente %}
-                        <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+                        <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
                         {% endif %}
                     </td>
                 </tr>
@@ -224,7 +248,7 @@
         {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
         <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
         {% if request.user.perfilacessoproducao.gerente %}
-        <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+        <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
         {% endif %}
         <hr />
         {% empty %}

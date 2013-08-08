@@ -1005,6 +1005,17 @@ class AdicionarLinhaSubProdutoForm(forms.ModelForm):
         model = LinhaSubProduto
         fields = 'tag', 'subproduto'
 
+@user_passes_test(possui_perfil_acesso_producao)
+def apagar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    linha = get_object_or_404(LinhaSubProduto, subproduto=subproduto, pk=linha_subproduto_id)
+    try:
+        linha.delete()
+        messages.success(request, "Sucesso! Linha Apagada.")
+    except:
+        messages.error(request, "Erro! Linha não Apagada.")
+    return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):

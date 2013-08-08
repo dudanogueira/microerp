@@ -639,6 +639,12 @@ class OpcaoLinhaSubProduto(models.Model):
         verbose_name = u"Opção para a Linha do SubProduto"
         unique_together = (('linha', 'padrao'))
     
+    def custo(self):
+        valor = 0
+        valor = self.quantidade * self.componente.preco_liquido_unitario_real
+        return valor
+        
+    
     linha = models.ForeignKey('LinhaSubProduto')
     componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
