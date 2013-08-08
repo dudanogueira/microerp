@@ -38,6 +38,7 @@ urlpatterns = patterns('',
     url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/(?P<linha_subproduto_id>[0-9]+)/apagar$', 'producao.views.apagar_linha_subproduto', name='apagar_linha_subproduto'),
     url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/(?P<linha_subproduto_id>[0-9]+)/adicionar/opcao$', 'producao.views.editar_linha_subproduto_adicionar_opcao', name='editar_linha_subproduto_adicionar_opcao'),
     url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/(?P<linha_subproduto_id>[0-9]+)/opcao/(?P<opcao_linha_subproduto_id>[0-9]+)/tornar_padrao$', 'producao.views.tornar_padrao_opcao_linha_subproduto', name='tornar_padrao_opcao_linha_subproduto'),
+    url(r'^subproduto/(?P<subproduto_id>[0-9]+)/linha/(?P<linha_subproduto_id>[0-9]+)/opcao/(?P<opcao_linha_subproduto_id>[0-9]+)/apagar$', 'producao.views.apagar_opcao_linha_subproduto', name='apagar_opcao_linha_subproduto'),
     url(r'^subproduto/(?P<subproduto_id>[0-9]+)/subproduto-agregado/(?P<linha_subproduto_agregado_id>[0-9]+)/apagar$', 'producao.views.subproduto_apagar_linha_subproduto_agregado', name='subproduto_apagar_linha_subproduto_agregado'),
     url(r'^subproduto/$', 'producao.views.listar_subprodutos', name='listar_subprodutos'),
     

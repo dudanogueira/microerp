@@ -890,6 +890,7 @@ class AgregarSubProdutoForm(forms.ModelForm):
         self.fields['subproduto_principal'].initial  = subproduto_principal
         self.fields['subproduto_principal'].widget = forms.HiddenInput()
         self.fields['subproduto_agregado'].queryset = self.fields['subproduto_agregado'].queryset.exclude(id=subproduto_principal.id)
+        self.fields['subproduto_agregado'].widget.attrs['class'] = 'select2'
     
     class Meta:
         model = LinhaSubProdutoAgregado
@@ -1046,7 +1047,7 @@ def adicionar_linha_subproduto(request, subproduto_id):
         if form.is_valid():
             linha = form.save()
             messages.success(request, u"Sucesso! Linha Adicionada.")
-            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
+            return redirect(reverse("producao:editar_linha_subproduto_adicionar_opcao", args=[subproduto.id, linha.id]) + "#linhas-componente")
     else:
         form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
     return render_to_response('frontend/producao/producao-adicionar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
@@ -1060,6 +1061,7 @@ class OpcaoLinhaSubProdutoForm(forms.ModelForm):
         super(OpcaoLinhaSubProdutoForm, self).__init__(*args, **kwargs)
         self.fields['linha'].initial  = linha
         self.fields['linha'].widget = forms.HiddenInput()
+        self.fields['componente'].widget.attrs['class'] = 'select2'
     
     class Meta:
         model = OpcaoLinhaSubProduto
@@ -1099,7 +1101,16 @@ def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subprodut
     # retorna a exibição da linha
     messages.success(request, u"Sucesso! Nova opção padrão definida!")
     return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
-    
+
+def apagar_opcao_linha_subproduto(request, subproduto_id, linha_subproduto_id, opcao_linha_subproduto_id):
+    opcao = get_object_or_404(OpcaoLinhaSubProduto, pk=opcao_linha_subproduto_id, linha__pk=linha_subproduto_id, linha__subproduto__pk=subproduto_id)
+    if not opcao.padrao:
+        try:
+            opcao.delete()
+            messages.success(request, u"Sucesso! Opção Removida!")
+        except:
+            messages.error(request, u"Erro ao remover Opção.")
+    return redirect(reverse("producao:editar_linha_subproduto", args=[opcao.linha.subproduto.id, opcao.linha.id]))
 
 def subproduto_apagar_linha_subproduto_agregado(request, subproduto_id, linha_subproduto_agregado_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)

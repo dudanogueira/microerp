@@ -54,10 +54,10 @@
                 <h2>Geral</h2>
                 <strong>Nome</strong>: {{subproduto.nome}}<br />
                 <strong>Descrição</strong>: {{subproduto.descricao}}<br />
-                <h2>Custos</h2>
-                <strong>Custo das Linhas de Componente:</strong> R$ {{subproduto.custo_total_linhas|floatformat:2}}<br />
-                <strong>Custo Dos SubProdutos Agregados:</strong> R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}<br />
-                <span class="badge badge-success">Custo Total: R$ {{subproduto.custo|floatformat:2}}</span><br />
+                <h2>Custos Totais</h2>
+                <span class="label label-info">Linhas de Componente:</span> R$ {{subproduto.custo_total_linhas|floatformat:2}}<br />
+                <span class="label label-success">SubProdutos Agregados:</span> R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}<br />
+                <span class="badge">R$ {{subproduto.custo|floatformat:2}}</span><br />
                 <h3>Custo Internacional</h3>
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
                 
@@ -99,7 +99,7 @@
         
         {% endif %}
 
-        <table class="table table-condensed table-striped table-rounded">
+        <table class="table table-condensed table-hover table-rounded">
             <thead>
                        <tr>
                            <th>Item</th>
@@ -115,7 +115,7 @@
             <tbody>
                {% for linha in subproduto.linhasubproduto_set.all %}
                <tr>
-                   <td>{{forloop.counter}}</td>
+                   <td class="alert-info" id="linha-id-{{linha.id}}"><h4>{{forloop.counter}}</h4></td>
                    <td>{{linha.tag}}</td>
                    <td><span class="badge badge-warning">{{linha.opcaolinhasubproduto_set.count}}</span></td>
                    <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}}</td>
@@ -161,17 +161,30 @@
     </div>
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
-        {% if request.user.perfilacessoproducao.gerente %}
-        <h1>Agregar um Sub Produto</h1>
-        <form method="POST" action="#sub-produtos-agregados">
-            {% csrf_token %}
-            {{form_agregar_subproduto.as_p}}
+        
+        <div id="modal-agregar-subproduto" class="modal hide fade">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Agregar um Sub produto</h3>
+          </div>
+          <div class="modal-body">
+              <form method="POST" action="#sub-produtos-agregados">
+                  {% csrf_token %}
+                  {{form_agregar_subproduto.as_p}}              
+            
+          </div>
+          <div class="modal-footer">
+            <a href="#" class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Fechar</a>
             <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar">Agregar Sub Produto</button>
-        </form>
-        {% endif %}
+            </form>
+          </div>
+        </div>
+        
+        
+        <button type="button" data-toggle="modal" data-target="#modal-agregar-subproduto" class="btn btn-success">Agregar Sub Produto</button>
         
         <h2>Sub Produtos Agregados</h2>            
-        <table class="table table-condensed table-striped table-rounded">
+        <table class="table table-condensed table-hover table-rounded">
             <thead>
                        <tr>
                            <th>Item</th>
@@ -184,7 +197,7 @@
             <tbody>
                 {% for linha in subproduto.linhasubprodutos_agregados.all %}
                 <tr>
-                    <td>{{forloop.counter}}</td>
+                    <td id="linha-id-{{linha.id}}" class="alert-success"><h4>{{forloop.counter}}</h4></td>
                     <td>{{linha.quantidade}}</td>
                     <td>{{linha.subproduto_agregado}}</td>
                     <td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
@@ -246,7 +259,7 @@
         {% endif %}
         <hr />
         {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
-        <span class="label label-info">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+        <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
         {% if request.user.perfilacessoproducao.gerente %}
         <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
         {% endif %}
@@ -264,13 +277,17 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 $(document).ready(function() {
 	$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
     var activeTab = $('[href=' + location.hash + ']');
     activeTab && activeTab.tab('show');
-    
+    {% if form_agregar_subproduto.errors %}
+        $('#modal-agregar-subproduto').modal('show')
+    {% endif %}
 });
 </script>
 {% endaddtoblock %}

@@ -37,14 +37,22 @@
            <tbody>
                {% for opcao in linha.opcaolinhasubproduto_set.all %}
                <tr>
-                   <td>#{{opcao.id}} / {% if opcao.padrao %}<span class="badge badge-success">Sim</span>{%else%}Não{%endif%}</td>
+                   <td>#{{opcao.id}} {% if opcao.padrao %}/ <span class="badge badge-success"> <i class="icon-check"></i> Padrão</span>{%endif%}</td>
                    <td>{{opcao.quantidade}}</td>
                    <td>{{opcao.componente.part_number}}</td>
                    <td>{{opcao.componente.descricao}}</td>
                    <td>R$ {{opcao.custo|floatformat:2}}</td>
                    <td>
                        {% if request.user.perfilacessoproducao.gerente %}
-                           {% if not opcao.padrao %}<a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success"><i class="icon-check"></i> tornar padrão</a>{% endif %} <a href="" class="btn btn-danger"><i class="icon-trash"></i> remover</a>
+                           
+                           {% if not opcao.padrao %}
+                           <a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success">
+                               <i class="icon-check"></i> padrão</a>
+                               <a href="{% url "producao:apagar_opcao_linha_subproduto" opcao.linha.subproduto.id opcao.linha.id opcao.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')">
+                                   <i class="icon-trash"></i> 
+                               </a>
+                            {% endif %}
+                           
                        {% endif %}
                </tr>
                

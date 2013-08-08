@@ -16,6 +16,9 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 <script>
 $(document).ready(function() {
 	$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
