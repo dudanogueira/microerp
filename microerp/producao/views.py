@@ -911,7 +911,7 @@ def adicionar_subproduto(request):
         if form.is_valid():
             subproduto = form.save()
             messages.success(request, u"SubProduto %s Adicionado com sucesso!" % subproduto )
-            return redirect(reverse("ver_subproduto", args=[subproduto.id]))
+            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
     else:
         form = SubProdutoForm()
     return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)

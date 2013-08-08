@@ -69,7 +69,7 @@ class EstoqueFisico(models.Model):
     '''Estoque fisico onde se armazena componentes'''
     ativo = models.BooleanField(default=True)
     nome = models.CharField(blank=True, max_length=100)
-    identificacao = models.SlugField()
+    identificacao = models.SlugField(u"Abreviação", help_text=u"Abreviação para diretórios e urls")
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -111,7 +111,7 @@ class ComponenteTipo(models.Model):
     def __unicode__(self):
         return "%s - %s" % (self.slug, self.nome)
     
-    slug = models.SlugField(u"Abreviação", max_length=3, unique=True)
+    slug = models.SlugField(u"Abreviação", max_length=3, unique=True, help_text=u"Abreviação para diretórios e urls")
     nome = models.CharField(u"Descrição", blank=False, null=False, max_length=100, unique=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
@@ -566,8 +566,8 @@ class SubProduto(models.Model):
 
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
-    slug = models.SlugField(blank=True, null=True, unique=True)
-    descricao = models.TextField(blank=True)
+    slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")
+    descricao = models.TextField(u"Descrição", blank=True)
     possui_tags = models.BooleanField(default=True, help_text="Se este campo for marcado, as Linhas do Sub Produto deverão ser alocadas para uma TAG única.")
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
