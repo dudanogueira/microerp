@@ -12,7 +12,7 @@
 <form method="POST">
     {% csrf_token %}
     {{form.as_p}}
-    <button class="btn btn-primary"><i class="icon-pencil"></i> Alterar Linha</button>
+    <button class="btn btn-primary"><i class="icon-pencil"></i> Salvar Linha</button>
 </form>
 {% endif %}
 <hr />
@@ -27,8 +27,8 @@
            <thead>
                <tr>
                    <th>#ID / Padrão</th>
-                   <th>Quantidade</th>
                    <th>Componente</th>
+                   <th>Quantidade</th>
                    <th>Descrição</th>
                    <th>Custo</th>
                    <th>Ações</th>
@@ -38,8 +38,8 @@
                {% for opcao in linha.opcaolinhasubproduto_set.all %}
                <tr>
                    <td>#{{opcao.id}} {% if opcao.padrao %}/ <span class="badge badge-success"> <i class="icon-check"></i> Padrão</span>{%endif%}</td>
-                   <td>{{opcao.quantidade}}</td>
                    <td>{{opcao.componente.part_number}}</td>
+                   <td>{{opcao.quantidade}} {{opcao.componente.get_medida_display}}</td>
                    <td>{{opcao.componente.descricao}}</td>
                    <td>R$ {{opcao.custo|floatformat:2}}</td>
                    <td>

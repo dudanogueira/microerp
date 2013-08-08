@@ -17,7 +17,7 @@
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
     <li>
         <a href="#linhas-componente" data-toggle="tab">
-            Linhas de Componente 
+            Linhas de Componentes 
             {% if subproduto.linhasubproduto_set.count %}
             <span class="badge badge-info">{{subproduto.linhasubproduto_set.count}}</span>
         
@@ -105,8 +105,8 @@
                            <th>Item</th>
                            <th>TAG</th>
                            <th>Opções</th>
-                           <th>Padrão:QTD</th>
                            <th>Padrão:COMPONENTE</th>
+                           <th>Padrão:QTD</th>
                            <th>Padrão:DESCRIÇÃO</th>
                            <th>Custo</th>
                            <th>Ação</th>
@@ -115,11 +115,12 @@
             <tbody>
                {% for linha in subproduto.linhasubproduto_set.all %}
                <tr>
-                   <td class="alert-info" id="linha-id-{{linha.id}}"><h4>{{forloop.counter}}</h4></td>
+                   <td class="alert-info" id="linha-id-{{linha.id}}">{{forloop.counter}}</td>
                    <td>{{linha.tag}}</td>
                    <td><span class="badge badge-warning">{{linha.opcaolinhasubproduto_set.count}}</span></td>
+                   <td>{{linha.opcao_padrao.componente.part_number}}</td>
                    <td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.get_medida_display}}</td>
-                    <td>{{linha.opcao_padrao.componente.part_number}}</td>
+                    
                     <td>{{linha.opcao_padrao.componente.descricao}}</td>
                     <td><span class="label">R$ {{linha.custo|floatformat:2}}</span>
                    <td>
@@ -181,15 +182,16 @@
         </div>
         
         
-        <button type="button" data-toggle="modal" data-target="#modal-agregar-subproduto" class="btn btn-success">Agregar Sub Produto</button>
+        <button type="button" data-toggle="modal" data-target="#modal-agregar-subproduto" class="btn btn-success"><i class="icon-plus"></i> Agregar Sub Produto</button>
         
         <h2>Sub Produtos Agregados</h2>            
         <table class="table table-condensed table-hover table-rounded">
             <thead>
                        <tr>
                            <th>Item</th>
-                           <th>Quantidade</th>
                            <th>SubProduto</th>
+                           <th>Quantidade</th>
+                           <th>Descrição</th>
                            <th>Custo</th>
                            <th>Ações</th>
                        </tr>
@@ -197,9 +199,10 @@
             <tbody>
                 {% for linha in subproduto.linhasubprodutos_agregados.all %}
                 <tr>
-                    <td id="linha-id-{{linha.id}}" class="alert-success"><h4>{{forloop.counter}}</h4></td>
+                    <td id="linha-id-{{linha.id}}" class="alert-success">{{forloop.counter}}</td>
+                    <td><a href={% url "producao:ver_subproduto" linha.subproduto_agregado.id %} %}"">{{linha.subproduto_agregado}}</a></td>
                     <td>{{linha.quantidade}}</td>
-                    <td>{{linha.subproduto_agregado}}</td>
+                    <td>{{linha.descricao}}</td>
                     <td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
                     <td>
                         {% if request.user.perfilacessoproducao.gerente %}
