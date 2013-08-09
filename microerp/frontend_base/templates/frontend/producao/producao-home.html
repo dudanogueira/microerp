@@ -7,6 +7,66 @@
 
 <h1><i class="icon-th"></i> <i class="icon-dropbox"></i> Produção</h1>
 
+<div class="row-fluid">
+    <div class="span2">
+        <h6>Componentes</h6>
+        <div class="alert alert-success">
+            <h5>{{componentes_total}}</h5>
+        </div>
+    </div>
+    <div class="span2">
+        <h6>SubProdutos</h6>
+        <div class="alert alert-warning">
+            <h5>{{subprodutos_total}}</h5>
+        </div>
+    </div>
+    <div class="span2">
+        <h6>Produtos</h6>
+        <div class="alert alert-danger">
+            <h5>{{produtos_total}}</h5>
+        </div>
+    </div>
+    <div class="span2">
+        <h6>Notas Fiscais</h6>
+        <div class="well well-small">
+            <h5>{{notas_total}}</h5>
+        </div>
+    </div>
+    <div class="span2">
+        <h6>Fornecedores</h6>
+        <div class="alert alert-info">
+            <h5>{{fornecedores_total}}</h5>
+        </div>
+    </div>    
+</div>
+
+<h4>Estoque</h4>
+
+<div class="row-fluid">
+    
+
+    
+    {% for estoque in estoques %}
+    <div class="span2">
+        <h6>{% if estoque.nome %}
+        {{estoque.nome}}
+        {% else %}
+        {{estoque.identificacao|capfirst}}
+        {% endif %}</h6>
+        <form method="POST" action="{% url "producao:listar_estoque" %}">
+            {% csrf_token %}
+            <input type="hidden" name="componente" value="">
+            <input type="hidden" name="estoque" value="{{estoque.id}}">
+            
+            <button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+            
+
+        </form>
+
+        
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}
 
 {% block auxiliar-menu %}

@@ -66,20 +66,35 @@
                                 <tr>
                                     <th>Estoque</th>
                                     <th>Quantidade</th>
+                                    <th>Valor</th>
                                     <th>Data</th>
                                 </tr>
                             </thead>
                             </tbody>
                             {% for posicao in posicoes_estoque %}
                             <tr>
-                                <td>{% if posicao.estoque.nome %}{{posicao.estoque.nome}}{% else %}{{posicao.estoque}}{% endif %}</td>
-                                <td>{{posicao.quantidade}}</td>
-                                <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                                <td>{% if posicao.0.estoque.nome %}{{posicao.0.estoque.nome}}{% else %}{{posicao.0.estoque.identificacao|capfirst}}{% endif %}</td>
+                                <td>{{posicao.0.quantidade}}</td>
+                                <td>R$ {{posicao.1|floatformat:2}}
+                        <td>{{posicao.0.criado|date:"SHORT_DATE_FORMAT"}}</td>
+
                             </tr>
                             {% endfor %}
 
                             </tbody>
                         </table>
+                        <p>
+                            <form method="POST" action="{% url "producao:listar_estoque" %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="componente" value="{{componente.id}}">
+                                <input type="hidden" name="estoque" value="">
+            
+                                <button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+            
+
+                            </form>
+                        </p>    
+                        
                     </div>
                 </div>
             </div>

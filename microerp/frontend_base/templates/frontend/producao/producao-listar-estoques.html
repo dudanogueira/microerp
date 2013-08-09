@@ -28,7 +28,8 @@
                      <h3>Componente {{componente_consultado.part_number}}</h3>
                      <h4>No Estoque: {{estoque_consultado}}</h4>
                      <div class="well">
-                         <strong>Quantidade</strong>: {{posicaoestoque}} ({{componente_consultado.get_medida_display}})
+                         <strong>Quantidade</strong>: {{posicaoestoque}} ({{componente_consultado.get_medida_display}})<br />
+                         <strong>Valor</strong>: R$ {{valor_no_estoque|floatformat:2}}
                      </div>
                      <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
                  </div>
@@ -44,15 +45,17 @@
                             <tr>
                                 <th>Estoque</th>
                                 <th>Quantidade</th>
+                                <th>Valor</th>
                                 <th>Data da Última Alteração</th>
                             </tr>
                         </thead>
                         </tbody>
                         {% for posicao in posicoes_estoque %}
                         <tr>
-                            <td>{% if posicao.estoque.nome %}{{posicao.estoque.nome}}{% else %}{{posicao.estoque}}{% endif %}</td>
-                            <td>{{posicao.quantidade}} ({{posicao.componente.get_medida_display}})</td>
-                            <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                            <td>{% if posicao.0.estoque.nome %}{{posicao.0.estoque.nome}}{% else %}{{posicao.0.estoque}}{% endif %}</td>
+                            <td>{{posicao.0.quantidade}} ({{posicao.0.componente.get_medida_display}})</td>
+                            <td>R$ {{posicao.1|floatformat:2}}</td>
+                            <td>{{posicao.criado|date:"SHORT_DATE_FORMAT"}}</td>
                         </tr>
                         {% endfor %}
 
@@ -74,20 +77,29 @@
                                 <th>Componente</th>
                                 <th>Descrição</th>
                                 <th>Quantidade</th>
+                                <th>Valor</th>
                                 <th>Data da Última Alteração</th>
                             </tr>
                         </thead>
                         </tbody>
                         {% for posicao in posicoes_estoque %}
                         <tr>
-                            <td>{{posicao.componente.part_number}}</td>
+                            <td>{{posicao.0.componente.part_number}}</td>
                                                             
-                            <td>{{posicao.componente.descricao}}</td>
-                            <td>{{posicao.quantidade}} ({{posicao.componente.get_medida_display}})</td>
-                            <td>{{posicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+                            <td>{{posicao.0.componente.descricao}}</td>
+                            <td>{{posicao.0.quantidade}} ({{posicao.0.componente.get_medida_display}})</td>
+                            <td>R$ {{posicao.1|floatformat:2}}</td>
+                            <td>{{posicao.0.criado|date:"SHORT_DATE_FORMAT"}}</td>
                         </tr>
                         {% endfor %}
-
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td><span class="badge badge-success">R$ {{total_geral|floatformat:2}}</span>
+                            </td>
+                            <td></td>
+                        </tr>
                         </tbody>
                     </table>
 

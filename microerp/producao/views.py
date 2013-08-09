@@ -26,6 +26,7 @@ from producao.models import LinhaSubProduto
 from producao.models import OpcaoLinhaSubProduto
 from producao.models import DocumentoTecnicoSubProduto
 from producao.models import LinhaSubProdutoAgregado
+from producao.models import ProdutoFinal
 
 
 from django import forms
@@ -44,6 +45,12 @@ def possui_perfil_acesso_producao(user, login_url="/"):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def home(request):
+    componentes_total = Componente.objects.all().count()
+    subprodutos_total = SubProduto.objects.all().count()
+    produtos_total = ProdutoFinal.objects.all().count()
+    fornecedores_total = NotaFiscal.objects.all().values('fabricante_fornecedor').distinct().count()
+    notas_total = NotaFiscal.objects.all().count()
+    estoques = EstoqueFisico.objects.all()
     return render_to_response('frontend/producao/producao-home.html', locals(), context_instance=RequestContext(request),)
     
     
@@ -520,7 +527,8 @@ def ver_componente(request, componente_id):
         except:
             posicao = None
         if posicao:
-            posicoes_estoque.append(posicao)
+            valor = posicao.quantidade * posicao.componente.preco_liquido_unitario_real
+            posicoes_estoque.append((posicao, valor))
     # Anexos
     if request.POST:
         if request.POST.get('anexar-documento', None):
@@ -680,9 +688,14 @@ class ConsultaEstoque(forms.Form):
         self.fields['estoque'].widget.attrs.update({'class' : 'select2'})
 
 class MoverEstoque(forms.Form):
-    
     def __init__(self, *args, **kwargs):
+        componente_consultado = kwargs.pop('componente_consultado', None)
+        estoque_origem = kwargs.pop('estoque_origem', None)
         super(MoverEstoque, self).__init__(*args, **kwargs)
+        if componente_consultado:
+                self.fields['componente'].initial = componente_consultado
+        if estoque_origem:
+            self.fields['estoque_origem'].initial = estoque_origem
         self.fields['componente'].widget.attrs.update({'class' : 'select2'})
     
     
@@ -716,8 +729,14 @@ class MoverEstoque(forms.Form):
 class AlterarEstoque(forms.Form):
     
     def __init__(self, *args, **kwargs):
+        estoque = kwargs.pop('estoque', None)
+        componente = kwargs.pop('componente', None)
         super(AlterarEstoque, self).__init__(*args, **kwargs)
         self.fields['componente'].widget.attrs.update({'class' : 'select2'})
+        if estoque:
+            self.fields['estoque'].initial = estoque
+        if componente:
+            self.fields['componente'].initial = componente
     
     
     def clean(self):
@@ -757,10 +776,21 @@ def listar_estoque(request):
                 if not componente_consultado and not estoque_consultado:
                     messages.error(request, "Erro! Deve selecionar pelo menos uma opção!")
                     consultado = False
+                # consulta dupla
                 elif estoque_consultado and componente_consultado:
+                    historicos = historicos.filter(estoque=estoque_consultado, componente=componente_consultado)
                     consulta_dupla = True
                     posicaoestoque = componente_consultado.posicao_no_estoque(estoque_consultado)
+                    if posicaoestoque and componente_consultado.preco_liquido_unitario_real:
+                        valor_no_estoque = posicaoestoque * componente_consultado.preco_liquido_unitario_real
+                    else:
+                        valor_no_estoque = None
+                    # define os forms já sugeridos
+                    form_mover_estoque = MoverEstoque(componente_consultado=componente_consultado, estoque_origem=estoque_consultado)
+                    form_alterar_estoque = AlterarEstoque(estoque=estoque_consultado, componente=componente_consultado)
+                # consulta somente componente
                 if componente_consultado and not estoque_consultado:
+                    historicos = historicos.filter(componente=componente_consultado)
                     consulta_componente = True
                     posicoes_estoque = []
                     for estoque in EstoqueFisico.objects.all():
@@ -768,10 +798,15 @@ def listar_estoque(request):
                             posicao = estoque.posicaoestoque_set.filter(componente=componente_consultado).order_by('-data_entrada')[0]
                         except:
                             posicao = None
-                        if posicao:
-                            posicoes_estoque.append(posicao)
-
+                        if posicao and posicao.quantidade:
+                            valor = posicao.quantidade * posicao.componente.preco_liquido_unitario_real
+                            posicoes_estoque.append((posicao, valor))
+                    form_mover_estoque = MoverEstoque(componente_consultado=componente_consultado)
+                    form_alterar_estoque = AlterarEstoque(componente=componente_consultado)
+                    
+                # consulta só estoque
                 if not componente_consultado and estoque_consultado:
+                    historicos = historicos.filter(estoque=estoque_consultado)
                     consulta_estoque = True
                     posicoes_estoque = []
                     for componente_ver in Componente.objects.all():
@@ -780,7 +815,13 @@ def listar_estoque(request):
                         except:
                             posicao = None
                         if posicao:
-                            posicoes_estoque.append(posicao)
+                            valor = posicao.quantidade * posicao.componente.preco_liquido_unitario_real
+                            posicoes_estoque.append((posicao, valor))
+                    total_geral = 0
+                    for posicao in posicoes_estoque:
+                        total_geral += posicao[1]
+                    form_mover_estoque = MoverEstoque(estoque_origem=estoque_consultado)
+                    form_alterar_estoque = AlterarEstoque(estoque=estoque_consultado)
             
                     
                 

@@ -60,11 +60,25 @@ class PerfilAcessoProducao(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-
 class EstoqueFisico(models.Model):
     
     def __unicode__(self):
         return u"%s (identificador: %s)" % (self.nome, self.identificacao)
+    
+    def posicao_valor_componente(self, componente=None):
+        if componente:
+            try:
+                ultima_posicao_componente = self.posicaoestoque_set.filter(componente=componente).order_by('data_entrada')[0]
+            except:
+                ultima_posicao_componente = 0
+            if ultima_posicao_componente.quantidade == 0:
+                valor = ultima_posicao_componente.quantidade
+            else:
+                valor = ultima_posicao_componente.quantidade * ultima_posicao_componente.componente.preco_liquido_unitario_real
+            return valor
+        else:
+            return 0
+    
     
     '''Estoque fisico onde se armazena componentes'''
     ativo = models.BooleanField(default=True)
