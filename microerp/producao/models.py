@@ -155,7 +155,7 @@ class Componente(models.Model):
     
     def __unicode__(self):
         if self.part_number:
-            return "%s - %s" % (self.part_number, self.descricao)
+            return u"%s - %s" % (self.part_number, self.descricao)
         else:
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
             return u"%s-%s%s %s" % (pn_prepend, self.tipo.slug.upper(), "%05d" % self.identificador, self.descricao)
@@ -166,6 +166,28 @@ class Componente(models.Model):
             if not self.part_number:
                 self.part_number = u"%s-%s%s" % (pn_prepend, self.tipo.slug.upper(), "%05d" % self.identificador)
             super(Componente, self).save(*args, **kwargs)    
+    
+    def total_participacao_avulsa_produto(self):
+        valor = 0
+        linhas = self.linhacomponenteavulsodoproduto_set.all()
+        for linha in linhas:
+            if linha.quantidade:
+                valor += linha.quantidade
+        return valor
+    
+    def total_participacao_subproduto(self):
+        valor = 0
+        linhas = self.opcaolinhasubproduto_set.all()
+        for linha in linhas:
+            if linha.quantidade:
+                valor += linha.quantidade
+        return valor
+    
+    def total_unico_participacoes(self):
+        return self.opcaolinhasubproduto_set.count() + self.linhacomponenteavulsodoproduto_set.count()
+        
+        
+
 
     
     class Meta:
@@ -601,7 +623,7 @@ class LinhaSubProdutoAgregado(models.Model):
     def custo(self):
         return self.quantidade * self.subproduto_agregado.custo_total_linhas()
     
-    quantidade = models.IntegerField(help_text="Numero Inteiro", blank=True, null=True, default=0)
+    quantidade = models.IntegerField(help_text=u"Número Inteiro", blank=True, null=True, default=1)
     subproduto_principal = models.ForeignKey('SubProduto', related_name="linhasubprodutos_agregados")
     subproduto_agregado = models.ForeignKey('SubProduto', related_name="linhasubproutos_escolhidos")
 
@@ -672,7 +694,7 @@ def subproduto_local_documentos(instance, filename):
 class DocumentoTecnicoSubProduto(models.Model):
     
     def __unicode__(self):
-        return u"Documento Técnico %s do SubProduto %s" % (self.subproduto, self.arquivo)
+        return u"Documento Técnico %s do SubProduto %s" % (self.arquivo, self.subproduto)
     
     class Meta:
         verbose_name = u"Documento Técnico do Sub Produto"
@@ -692,18 +714,90 @@ class ProdutoFinal(models.Model):
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-PRO%s %s" % (pn_prepend, "%05d" % self.id, self.nome)
+
+    def custo_total_linha_subprodutos(self):
+        valor = 0
+        for linha in self.linhasubprodutodoproduto_set.all():
+            if linha.quantidade:
+                valor += linha.custo()
+        return valor
+
+    def custo_total_linha_produtos_avulsos(self):
+        valor = 0
+        for linha in self.linhacomponenteavulsodoproduto_set.all():
+            if linha.quantidade:
+                valor += linha.custo()
+        return valor
+
+    def save(self):
+        """Auto-populate an empty slug field from the MyModel name and
+        if it conflicts with an existing slug then append a number and try
+        saving again.
+        """
+
+        if not self.slug:
+            self.slug = slugify(self.nome)
+
+        while True:
+            try:
+                super(ProdutoFinal, self).save()
+            # Assuming the IntegrityError is due to a slug fight
+            except IntegrityError:
+                match_obj = re.match(r'^(.*)-(\d+)$', self.slug)
+                if match_obj:
+                    next_int = int(match_obj.group(2)) + 1
+                    self.slug = match_obj.group(1) + '-' + str(next_int)
+                else:
+                    self.slug += '-2'
+            else:
+                break
     
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
-    nome = models.CharField(blank=True, max_length=100)
+    nome = models.CharField(blank=False, max_length=100)
+    slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")
     descricao = models.TextField(u"Descrição", blank=True)
     
-    subprodutos = models.ManyToManyField('SubProduto')
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
+class LinhaSubProdutodoProduto(models.Model):    
+    
+    class Meta:
+        verbose_name = "Linha de Sub Produto do Produto"
+        verbose_name_plural = "Linhas Sub Produto do Produto"
+        ordering = ('-criado', '-id')
+        unique_together = (('produto', 'subproduto'),)
+    
+    def custo(self):
+        return self.subproduto.custo() * self.quantidade
+    
+    def clean(self):
+        if self.quantidade == 0:
+            raise ValidationError(u'Quantidade não pode ser 0')
+    
+    produto = models.ForeignKey('ProdutoFinal')
+    quantidade = models.IntegerField(blank=False, null=False, default=1)
+    subproduto = models.ForeignKey('SubProduto')
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
 
-class LinhaProdutoAvulso(models.Model):
+class LinhaComponenteAvulsodoProduto(models.Model):
+    
+    def __unicode__(self):
+        return u"Participação de %s Unidades Avulsas do Componente %s no Produto %s" % (self.quantidade, self.componente, self.produto)
+    
+    def custo(self):
+        valor = 0
+        if self.quantidade:
+            valor = self.quantidade * self.componente.preco_liquido_unitario_real
+        return valor
+    
+    def clean(self):
+        if self.quantidade == 0:
+            raise ValidationError(u"Erro! Quantidade deve ser maior que 0")
     
     class Meta:
         verbose_name = "Linha de Componente Avulso do Produto"
@@ -711,8 +805,7 @@ class LinhaProdutoAvulso(models.Model):
     
     produto = models.ForeignKey('ProdutoFinal')
     componente = models.ForeignKey('Componente')
-    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
-    tag = models.CharField("TAG", blank=True, max_length=100)
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -720,18 +813,20 @@ class LinhaProdutoAvulso(models.Model):
 
 def produto_local_documentos(instance, filename):
     return os.path.join(
-        'produto/', str(instance.subproduto.id), 'documento', str(instance.id), filename
+        'produto/', str(instance.produto.slug), 'documento', filename
       )
 
 class DocumentoTecnicoProduto(models.Model):
+    
+    def __unicode__(self):
+        return u"Documento Técnico %s do Produto %s" % (self.arquivo, self.produto)
+    
     
     class Meta:
         verbose_name = u"Documento Técnico do Sub Produto"
         verbose_name_plural = u"Documentos Técnicos do Sub Produto"
     
     produto = models.ForeignKey('ProdutoFinal')
-    titulo = models.CharField(blank=True, max_length=100)
-    descricao = models.TextField(u"Descrição", blank=True)
     arquivo = models.FileField(upload_to=produto_local_documentos)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

@@ -1,37 +1,31 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 
-<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Produção - Produto{% endblock %}</title>
 
 {% block content %}
-<h1>Fabricantes e Fornecedores</h1>
+<h1><i class="icon-th"></i> <i class="icon-windows"></i>   Produtos</h1>
 
 {% if request.user.perfilacessoproducao.gerente %}
 <p>
-    <a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Fabricante / Fornecedor</a>
+    <a href="{% url "producao:adicionar_produto" %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Produto</a>
 </p>
 {% endif %}
 <div class="well well-small">
-    <h2>Buscar Fabricantes e Fornecedores</h2>
+    <h2>Buscar</h2>
     
     <form class="form-search">
-      <input type="text" class="input-medium search-query" name="q_fab_for", id="busca_fab_for" {% if q_fab_for %}value="{{q_fab_for}}"{% endif %}>
+      <input type="text" class="input-medium search-query" name="q_produto", id="busca_produto" {% if q_produto %}value="{{q_produto}}"{% endif %}>
 
-      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Fabricantes / Fornecedor</button>
-      <a class="btn btn-success" href="?q_fab_for=todos">Listar Todos</a>
-            <br /><small><strong>Campos: Nome e CNPJ</strong></small>
+      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Produto</button>
+      <a class="btn btn-success" href="?q_produto=todos">Listar Todos</a>
     </form>
 </div>
 
-{% if q_fab_for %}
-<p>
-<h5>Listar Somente:</h5>
-{% for tipo in tipos_possiveis %}{% if not forloop.first %} | {% endif %}{% ifnotequal tipo.0 q_tipo %}<a href="?q_fab_for={{q_fab_for}}&q_tipo={{tipo.0}}">{% endifnotequal %}{{tipo.1}}{% ifnotequal tipo.0 q_tipo %}</a>{% endifnotequal %}{% endfor %}
-</p>
-<hr />
+{% if q_produto %}
 
-{% for fab_for in fab_for_encontrados %}
-    <a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="icon-building"></i> {{fab_for}}, Tipo: {{fab_for.tipo}}</a>
+{% for produto in produtos_encontrados %}
+    <a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a>
     <hr />
 {% endfor %}
 {% endif %}
@@ -42,8 +36,8 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-	$("#menu-producao-fabricantes-fornecedores, #top-menu-producao").addClass("active");
-    $("#busca_fab_for").focus()
+	$("#menu-producao-produtos, #top-menu-producao").addClass("active");
+    $("#busca_produto").focus()
 });
 </script>
 {% endaddtoblock %}

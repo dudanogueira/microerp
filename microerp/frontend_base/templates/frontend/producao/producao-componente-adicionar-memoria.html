@@ -5,6 +5,8 @@
 
 {% block content %}
 
+<a href="{% url "producao:ver_componente" componente.id %}#memorias"><i class="icon-arrow-left"></i> Voltar ao Componente {{componente.part_number}}</a>
+
 {% if form.errors %}
     {{form.errors}}
 {% endif %}

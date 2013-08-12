@@ -3,13 +3,8 @@
     <li class="nav-header"><i class="icon icon-dropbox icon-3x"></i>Produção</li>
     <li id="menu-producao-home"><a href="{% url "producao:home" %}"><i class="icon-th"></i> Início > Produção</a></li>
     <li id="menu-producao-componentes"><a href="{% url "producao:listar_componentes" %}">
-            {% if componente %}
-                <i class="icon-stop"></i>
-                Componente > {{componente}}
-            {%else%}
                 <i class="icon-stop"></i>
                 Componentes
-            {%endif%}
     </a></li>
     
     <li id="menu-producao-subprodutos">
@@ -20,7 +15,7 @@
     </li>
     
     <li id="menu-producao-produtos">
-        <a href="{% url "producao:home" %}">
+        <a href="{% url "producao:listar_produtos" %}">
             <i class="icon-windows"></i>
             Produtos
         </a>

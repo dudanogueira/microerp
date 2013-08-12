@@ -4,14 +4,14 @@
 <title>{%block title %}{{block.super}} - Produção - Adicionar Opção à Linha do Sub Produto{% endblock %}</title>
 
 {% block content %}
-<h3><i class="icon-th"></i> <i class="icon-list-ul"></i> Adicionando Opção Linha {{linha.peso}} do SubProduto {{subproduto}}</h3>
+<h3><i class="icon-th"></i> <i class="icon-list-ul"></i> Adicionando Opção na Linha #{{linha.id}} do SubProduto {{subproduto}}</h3>
 
+<a href="{% url "producao:editar_linha_subproduto" linha.subproduto.id linha.id %}"><i class="icon-arrow-left"></i> Voltar à Linha #{{linha.id}} do Subproduto {{linha.subproduto}}</a>
 <form method="POST">
     {% csrf_token %}
     {{form.as_p}}
     <button class="btn btn-primary"><i class="icon-plus"></i> Adicionar Opção à  Linha {{linha}}</button>
 </form>
-
 {% endblock %}
 
 {% block auxiliar-menu %}

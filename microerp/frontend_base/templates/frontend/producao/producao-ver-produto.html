@@ -1,0 +1,313 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ver Produto{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-windows"></i>   Produtos - Ver {{produto}}</h1>
+
+{% if request.user.perfilacessoproducao.gerente %}
+<p>
+    <a class="btn btn-primary" href="{% url "producao:editar_produto" produto.id %}"><i class="icon-pencil"></i> Editar Produto</a>
+</p>
+{% endif %}
+
+
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
+    <li><a href="#linhas-subprodutos" data-toggle="tab">
+            Linhas de Sub Produtos 
+            {% if produto.linhasubprodutodoproduto_set.count %}
+            <span class="badge badge-info">{{produto.linhasubprodutodoproduto_set.count}}</span>
+        
+            {% endif %}
+        </a>
+    </li>
+    <li><a href="#componentes-avulsos" data-toggle="tab">
+            Componentes Avulsos
+            {% if produto.linhacomponenteavulsodoproduto_set.count %}
+            <span class="badge badge-success">{{produto.linhacomponenteavulsodoproduto_set.count}}</span>
+            {% endif %}
+        </a>
+    </li>
+    <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
+        {% if subproduto.documentotecnicosubproduto_set.count %}
+        <span class="badge badge">{{subproduto.documentotecnicosubproduto_set.count}}</span>
+        {% endif %}
+    
+    </a></li>
+    <li><a href="#relatórios" data-toggle="tab">Relatórios</a></li>
+    
+</ul>
+
+<div id="myTabContent" class="tab-content">
+    
+    <div class="tab-pane fade in active" id="informacoes">
+        
+        <div class="row-fluid">
+            <div class="span6">
+                <h2>Geral</h2>
+                <strong>Nome</strong>: {{produto.nome}}<br />
+                <strong>Descrição</strong>: {{produto.descricao}}<br />
+            </div>
+
+            <div clas="span6">
+                {% if produto.imagem %}
+                <a href="{{produto.imagem.url}}">
+                    
+                    {% thumbnail produto.imagem "200" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                    {% endthumbnail %}
+
+                </a>
+                {% endif %}
+                
+            </div>
+            
+        </div>
+
+    </div>
+
+    <div class="tab-pane fade in" id="linhas-subprodutos">
+        <h2>Linha de Sub Produtos</h2>
+
+        {% if request.user.perfilacessoproducao.gerente %}
+        
+        <!-- Button to trigger modal -->
+        <a href="#modal-adicionar-linha-subproduto" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Sub Produto</a>
+        {% endif %}
+
+
+        <table class="table table-condensed table-hover table-rounded">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantidade</th>
+                    <th>SubProduto</th>
+                    <th>Nome e Descrição</th>
+                    <th>Custo</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linha in produto.linhasubprodutodoproduto_set.all %}                
+                <tr>
+                    <td class="alert alert-info"><strong>{{forloop.counter}}</strong></td>
+                    <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
+                    <td><a href="{% url "producao:ver_subproduto" linha.subproduto.id %}">{{linha.subproduto}}</a></td>
+                    <td><strong>{{linha.subproduto.nome}}</strong> {{linha.subproduto.descricao}}</td>
+                    <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>
+                    <td>
+                        {% if request.user.perfilacessoproducao.gerente %}
+                        <a href="{% url "producao:apagar_linha_subproduto_de_produto" produto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="label label-success">Total: R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span></td>
+                    <td></td>
+                </tr>
+                
+            </tbody>
+        </table>
+
+        
+        
+        
+    </div>
+    
+    <div class="tab-pane fade in" id="componentes-avulsos">
+        <h2>Componentes Avulsos</h2>
+        
+        {% if request.user.perfilacessoproducao.gerente %}
+        
+        <!-- Button to trigger modal -->
+        <a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Componente Avulso</a>
+        {% endif %}
+        
+        
+        
+        <table class="table table-condensed table-hover table-rounded">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantidade</th>
+                    <th>Componente</th>
+                    <th>Descrição</th>
+                    <th>Custo</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for linha in produto.linhacomponenteavulsodoproduto_set.all %}                
+                <tr>
+                    <td class="alert alert-success"><strong>{{forloop.counter}}</strong></td>
+                    <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
+                    <td><a href="{% url "producao:ver_componente" linha.componente.id %}">{{linha.componente.part_number}}</a></td>
+                    <td>{{linha.componente.descricao}}</td>
+                    
+                    <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>
+                    <td>
+                        {% if request.user.perfilacessoproducao.gerente %}
+                        <a href="{% url "producao:apagar_linha_componente_avulso_de_produto" linha.produto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                
+                {% endfor %}
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td><span class="label label-success">Total: R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}</span></td>
+                    <td></td>
+                </tr>
+                
+            </tbody>
+        </table>
+        
+        
+        
+    </div>
+    
+
+    
+    <div class="tab-pane fade in" id="arquivos">
+        
+        <h2>Imagem</h2>
+        <div class="row-fluid">
+            <div class="span6">
+                {% if produto.imagem %}
+                <a href="{{produto.imagem.url}}">
+                    {% thumbnail produto.imagem "400" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                    {% endthumbnail %}
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="span6">
+                {% if request.user.perfilacessoproducao.gerente %}
+                <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form_imagem.as_p}}
+                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        <h2>Documentos Técnicos</h2>
+
+        {% if request.user.perfilacessoproducao.gerente %}
+        <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{form_anexos}}
+            <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
+
+        </form>
+        {% endif %}
+        <hr />
+        {% for anexo in produto.documentotecnicoproduto_set.all %}
+        <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+        {% if request.user.perfilacessoproducao.gerente %}
+        <a href="{% url "producao:ver_produto_apagar_anexo" produto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+        {% endif %}
+        <hr />
+        {% empty %}
+        Nenhum arquivo anexo.
+        {% endfor %}
+
+    </div>
+
+        
+    </div>
+    
+    
+</div>
+
+
+<!-- Modal Adicionar Linha ao Sub Produto-->
+<div id="modal-adicionar-linha-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Adicionar Linha de Sub Produto</h3>
+    </div>
+    <div class="modal-body">
+        <form method="POST" action="#linhas-subprodutos">
+            {% csrf_token %}
+            {{form_adicionar_linha_subproduto.as_p}}
+    
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" type="button" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+            <button type="submit" name="btn-adicionar-linha-subproduto" value="adicionar" class="btn btn-primary">
+                <i class="icon-plus"></i> Adicionar
+            </button>
+    
+    
+    
+        </form>
+    </div>
+</div>
+
+<!-- Modal Adicionar Linha ao Sub Produto-->
+<div id="modal-adicionar-linha-componentes-avulsos" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Adicionar Linha de Componentes Avulsos</h3>
+    </div>
+    <div class="modal-body">
+        <form method="POST" action="#linhas-subprodutos">
+            {% csrf_token %}
+            {{form_adicionar_linha_componentes_avulsos.as_p}}
+    
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" type="button" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+            <button type="submit" name="btn-adicionar-componentes-avulsos" value="adicionar" class="btn btn-primary">
+                <i class="icon-plus"></i> Adicionar
+            </button>
+    
+    
+    
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-produtos, #top-menu-producao").addClass("active");
+    $("#busca_produto").focus()
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.tab('show');
+    
+    {% if form_adicionar_linha_subproduto.errors %}
+    $('#modal-adicionar-linha-subproduto').modal('show')
+    {% endif %}
+
+    {% if form_adicionar_linha_componentes_avulsos.errors %}
+        $('#modal-adicionar-linha-componentes-avulsos').modal('show')
+    {% endif %}
+    
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

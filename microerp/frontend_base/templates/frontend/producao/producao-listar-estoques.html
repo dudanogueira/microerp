@@ -151,6 +151,14 @@
     {% endif %}
     
     <div class="tab-pane fade in" id="historico">
+        {% if consultado %}
+            {% if componente_consultado %}
+            <h4>Consultando Componente: {{componente_consultado}}</h4>
+            {% endif %}
+            {% if estoque_consultado %}
+            <h4>Consultando Estoque: {{estoque_consultado}}</h4>
+            {% endif %}
+        {% endif %}
         
         <table class="table table-condensed table-striped table-rounded">
             <thead>
@@ -169,7 +177,7 @@
                 <tr>
  <td>{{historico.data_entrada|date:"SHORT_DATETIME_FORMAT"}}</td>
                     <td>{{historico.estoque.identificacao}}</td>
-                    <td>{{historico.componente.part_number}}</td>
+                    <td><a href="{% url "producao:ver_componente"  historico.componente.id %}">{{historico.componente.part_number}}</a></td>
                     <td>{{historico.componente.descricao}}</td>
                     <td>{{historico.quantidade}} ({{historico.componente.medida}})</td>
                     <td>{{historico.quantidade_alterada}}</td>

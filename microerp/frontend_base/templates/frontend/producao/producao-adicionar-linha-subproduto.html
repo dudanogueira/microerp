@@ -4,7 +4,9 @@
 <title>{%block title %}{{block.super}} - Produção - Adicionar Linha do Sub Produto{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Adicionar Linha ao SubProduto {{subproduto}}</h1>
+<h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Adicionar Linha de Componentes ao SubProduto {{subproduto}}</h1>
+
+<a href="{% url "producao:ver_subproduto" subproduto.id %}#linhas-componente"><i class="icon-arrow-left"></i> Voltar ao SubProduto {{subproduto}}</a>
 
 <form method="POST">
     {% csrf_token %}

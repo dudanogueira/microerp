@@ -6,7 +6,7 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-list-ul"></i> Linha #{{linha.id}} do SubProduto {{subproduto}}</h1>
 <p>
-    <a href="{% url "producao:ver_subproduto" subproduto.id %}#linhas-componente"><i class="icon-arrow-left"></i> Voltar ao Produto {{subproduto}}</a>
+    <a href="{% url "producao:ver_subproduto" subproduto.id %}#linhas-componente"><i class="icon-arrow-left"></i> Voltar ao SubProduto {{subproduto}}</a>
 </p>
 {% if request.user.perfilacessoproducao.gerente %}
 <form method="POST">

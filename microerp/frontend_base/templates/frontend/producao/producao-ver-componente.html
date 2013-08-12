@@ -8,27 +8,37 @@
 <h1>Componente {{componente.part_number}}</h1>
 
 <ul class="nav nav-tabs">
-  <li class="active"><a href="#valores" data-toggle="tab">Valores</a></li>
-<li><a href="#participacao" data-toggle="tab">Participações</a></li>
-  <li><a href="#fornecimento" data-toggle="tab">Fornecimento
-      {% if componente.lancamentocomponente_set.count %}
-          <span class="badge badge-success">{{componente.lancamentocomponente_set.count}}</span>
+    <li class="active"><a href="#valores" data-toggle="tab">Valores</a></li>
+    <li><a href="#participacao" data-toggle="tab">Participações
+        
+        {% if componente.total_unico_participacoes %}
+            <span class="badge badge-important">{{componente.total_unico_participacoes}}</span>
+        {% endif %}
+
+    </a></li>
+    <li><a href="#fornecimento" data-toggle="tab">Fornecedores
+      {% if fornecedores.count %}
+          <span class="badge badge-success">{{fornecedores.count}}</span>
       {% endif %}
       
-      
-  </a></li>
-  <li><a href="#fabricacao" data-toggle="tab">Fabricação</a></li>
-  <li><a href="#memoria" data-toggle="tab">Memória
+    </a></li>
+    <li><a href="#fabricacao" data-toggle="tab">Fabricantes
+      {% if fabricantes.count %}
+          <span class="badge badge-info">{{fabricantes.count}}</span>
+      {% endif %}
+
+      </a></li>
+      <li><a href="#memoria" data-toggle="tab">Memória
       {% if componente.linhafornecedorfabricantecomponente_set.count %}
           <span class="badge badge-warning">{{componente.linhafornecedorfabricantecomponente_set.count}}</span>
       {% endif %}
       
-  </a></li>
-  <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos 
+      </a></li>
+      <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos 
       {% if componente.arquivoanexocomponente_set.count %}
           <span class="badge">{{componente.arquivoanexocomponente_set.count}}</span>
       {% endif %}
-  </a></li>
+      </a></li>
   
 </ul>
 
@@ -114,7 +124,7 @@
         <div class="tab-pane fade in" id="fornecimento">
             <h3>Fornecedores - Unidades fornecidas</h3>
             {% for fornecedor in fornecedores %}
-            <strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}} {{componente.get_medida_display}}{{fornecedor.total|pluralize}}<br />
+            <span class="badge badge-success"> {{forloop.counter}} </span> <strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}} {{componente.get_medida_display}}{{fornecedor.total|pluralize}}<br />
             {% empty %}
                 Nenhum Item Fornecido
             {% endfor %}
@@ -132,7 +142,7 @@
         <div class="tab-pane fade in" id="fabricacao">
             <h3>Fabricantes - Unidades fabricadas</h3>
             {% for fabricante in fabricantes %}
-            <strong>{{fabricante.fabricante__nome}}</strong>: {{fabricante.total}} {{componente.get_medida_display}}{{fabricante.total|pluralize}}<br />
+            <span class="badge badge-info"> {{forloop.counter}} </span> <strong>{% if fabricante.fabricante__nome %}{{fabricante.fabricante__nome}}{% else %}Desconhecido{% endif %}</strong>: {{fabricante.total}} {{componente.get_medida_display}}{{fabricante.total|pluralize}}<br />
             {% empty %}
                 Nenhuma Fabricação Indicada em Lançamento
             
@@ -141,7 +151,73 @@
         </div>
         
         <div class="tab-pane fade in" id="participacao">
-            Participação
+            <h2>Participação como Componente Avulso em Produtos</h2>
+            <table class="table table-condensed table-hover table-rounded">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade</th>
+                        <th>Produto</th>
+                        <th>Descrição</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participacao in componente.linhacomponenteavulsodoproduto_set.all %}
+                    <tr>
+                        <td>            <span class="badge badge-important"> {{forloop.counter}} </span>
+                        </td>
+                        <td><span class="badge badge-warning">{{participacao.quantidade}}</span></td>
+                        <td><a href="{% url "producao:ver_produto" participacao.produto.id %}">{{participacao.produto}}</a></td>
+                        <td>{{participacao.produto.descricao}}</td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td></td>
+                        <td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_avulsa_produto}}</span></strong>
+</td>
+                        <td></td>
+                    </tr>
+            </table>
+            
+            <h2>Participação como Opção em Linha de Sub Produto</h2>
+            <table class="table table-condensed table-hover table-rounded">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade</th>
+                        <th>Produto</th>
+                        <th>Descrição</th>
+                        <th># Linha</th>
+                        <th>Padrão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participacao in componente.opcaolinhasubproduto_set.all %}
+                    <tr>
+                        <td>            <span class="badge badge-important"> {{forloop.counter}} </span>
+                        </td>
+                        <td><span class="badge badge-warning">{{participacao.quantidade}}</span></td>
+                        <td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}">{{participacao.linha.subproduto}}</a></td>
+                        <td>{{participacao.linha.subproduto.descricao}}</td>
+                        <td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
+                        <td>{% if participacao.padrao %}
+                            <span class="badge badge-success"><i class="icon-check"></i> Padrão</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td></td>
+                        <td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_subproduto}}</span></strong>
+</td>
+                        <td></td>
+                    </tr>
+            </table>
+            
+            
+
+            
+            
         </div>
         
         <div class="tab-pane fade in" id="memoria">

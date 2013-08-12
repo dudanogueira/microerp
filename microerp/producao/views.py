@@ -27,6 +27,9 @@ from producao.models import OpcaoLinhaSubProduto
 from producao.models import DocumentoTecnicoSubProduto
 from producao.models import LinhaSubProdutoAgregado
 from producao.models import ProdutoFinal
+from producao.models import LinhaSubProdutodoProduto
+from producao.models import LinhaComponenteAvulsodoProduto
+from producao.models import DocumentoTecnicoProduto
 
 
 from django import forms
@@ -41,7 +44,6 @@ def possui_perfil_acesso_producao(user, login_url="/"):
             return True
     except:
         return False
-
 
 @user_passes_test(possui_perfil_acesso_producao)
 def home(request):
@@ -264,8 +266,11 @@ def adicionar_nota(request):
 @user_passes_test(possui_perfil_acesso_producao)
 def apagar_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
-    notafiscal.delete()
-    messages.success(request, u'Nota Fiscal Apagada com Sucesso!')
+    if request.user.perfilacessoproducao.gerente:
+        notafiscal.delete()
+        messages.success(request, u'Nota Fiscal Apagada com Sucesso!')
+    else:
+        messages.error(request, u"Somente gerente pode apagar")
     return redirect(reverse('producao:lancar_nota'))
 
 
@@ -1083,14 +1088,20 @@ def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_linha_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
-    if request.POST:
-        form = AdicionarLinhaSubProdutoForm(request.POST, subproduto=subproduto)
-        if form.is_valid():
-            linha = form.save()
-            messages.success(request, u"Sucesso! Linha Adicionada.")
-            return redirect(reverse("producao:editar_linha_subproduto_adicionar_opcao", args=[subproduto.id, linha.id]) + "#linhas-componente")
+    if subproduto.possui_tags:
+        if request.POST:
+            form = AdicionarLinhaSubProdutoForm(request.POST, subproduto=subproduto)
+            if form.is_valid():
+                linha = form.save()
+                messages.success(request, u"Sucesso! Linha Adicionada.")
+                return redirect(reverse("producao:editar_linha_subproduto_adicionar_opcao", args=[subproduto.id, linha.id]) + "#linhas-componente")
+        else:
+            form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
     else:
-        form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
+        linha = LinhaSubProduto.objects.create(subproduto=subproduto)
+        messages.success(request, u"Sucesso! Linha Criada.")
+        messages.info(request, u"Defina agora a composição de opções.")
+        return redirect(reverse("producao:editar_linha_subproduto_adicionar_opcao", args=[subproduto.id, linha.id]) + "#linhas-componente")
     return render_to_response('frontend/producao/producao-adicionar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
     
     
@@ -1134,6 +1145,16 @@ def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subpro
 def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subproduto_id, opcao_linha_subproduto_id):
     linha = get_object_or_404(LinhaSubProduto, subproduto__id=subproduto_id, pk=linha_subproduto_id)
     opcao = get_object_or_404(OpcaoLinhaSubProduto, linha=linha, pk=opcao_linha_subproduto_id)
+    # verifica se pode:
+    # só poderá tornar padrão se ainda não houver componente padrao em alguma das linhas
+    inedito = True
+    linhas = linha.subproduto.linhasubproduto_set.all()
+    for l in linhas:
+        if opcao.componente.id == l.opcao_padrao().componente.id:
+            inedito = False
+            messages.error(request, u"Impossível tornar esta opção como Padrão: Componente %s já identificado como padrão na Linha #%s" % (opcao.componente.part_number, linha.id))
+            return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
+    
     # transforma todas as opcoes da linha em nao padrao
     linha.opcaolinhasubproduto_set.all().update(padrao=None)
     # define a opcao escolhida como padrao
@@ -1141,6 +1162,7 @@ def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subprodut
     opcao.save()
     # retorna a exibição da linha
     messages.success(request, u"Sucesso! Nova opção padrão definida!")
+    
     return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
 
 def apagar_opcao_linha_subproduto(request, subproduto_id, linha_subproduto_id, opcao_linha_subproduto_id):
@@ -1160,10 +1182,196 @@ def subproduto_apagar_linha_subproduto_agregado(request, subproduto_id, linha_su
     messages.success(request, u"Sucesso! Linha de SubProduto Agregado ao Produto Principal %s Apagado!" % subproduto)
     return(redirect(reverse('producao:ver_subproduto', args=[subproduto.id,]) + "#sub-produtos-agregados"))
 
+#
 # PRODUTO
+#
+
+
+## FORMS
+
+class ProdutoFinalForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(ProdutoFinalForm, self).__init__(*args, **kwargs)
+        instance = getattr(self, 'instance', None)
+        if instance and instance.pk:
+            self.fields['slug'].widget.attrs['readonly'] = True
+    
+    
+    class Meta:
+        model = ProdutoFinal
+
+class AdicionarLinhaSubProdutoAoProdutoFinalForm(forms.ModelForm):
+    
+    
+    def __init__(self, *args, **kwargs):
+        produto = kwargs.pop('produto', None)
+        super(AdicionarLinhaSubProdutoAoProdutoFinalForm, self).__init__(*args, **kwargs)
+        if produto:
+            self.fields['produto'].initial = produto
+            self.fields['produto'].widget = forms.HiddenInput()    
+            self.fields['subproduto'].widget.attrs['class'] = 'select2'                  
+    
+    class Meta:
+        model = LinhaSubProdutodoProduto
+
+
+class AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(forms.ModelForm):
+    
+    
+    def __init__(self, *args, **kwargs):
+        produto = kwargs.pop('produto', None)
+        super(AdicionarLinhaComponenteAvulsoAoProdutoFinalForm, self).__init__(*args, **kwargs)
+        if produto:
+            self.fields['produto'].initial = produto
+            self.fields['produto'].widget = forms.HiddenInput()  
+            self.fields['componente'].widget.attrs['class'] = 'select2'          
+    
+    class Meta:
+        model = LinhaComponenteAvulsodoProduto
+
+class AlterarImagemProduto(forms.ModelForm):
+    
+    class Meta:
+        model = ProdutoFinal
+        fields = 'imagem',
+
+class ArquivoAnexoProdutoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        produto = kwargs.pop('produto')
+        super(ArquivoAnexoProdutoForm, self).__init__(*args, **kwargs)
+        self.fields['produto'].initial  = produto
+        self.fields['produto'].widget = forms.HiddenInput()
+
+
+    class Meta:
+        model = DocumentoTecnicoProduto
+        fields = 'arquivo', 'produto'
+    
+    
+
+## VIEWS
+##
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ver_produto_apagar_anexo(request, produto_id, anexo_id):
+    anexo = get_object_or_404(DocumentoTecnicoProduto, produto__pk=produto_id, pk=anexo_id)
+    try:
+        anexo.delete()
+        messages.success(request, u"Sucesso! Anexo %s Apagado!" % anexo)
+    except:
+        messages.error(request, u"Erro! Anexo %s não Apagado!" % anexo)
+    return(redirect(reverse('producao:ver_produto', args=[anexo.produto.id,]) + "#arquivos"))
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
+    if request.GET:
+        q_produto = request.GET.get('q_produto', True)
+        if q_produto:
+            if q_produto == "todos":
+                produtos_encontrados = ProdutoFinal.objects.all()
+            else:
+                produtos_encontrados = ProdutoFinal.objects.filter(
+                    Q(nome__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
+                )
         
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def adicionar_produto(request):
+    if request.POST:
+        form = ProdutoFinalForm(request.POST, request.FILES)
+        produto = form.save()
+        messages.success(request, u"Sucesso! Produto adicionado.")
+    else:
+        form = ProdutoFinalForm()
+    return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def editar_produto(request, produto_id):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    if request.POST:
+        form = ProdutoFinalForm(request.POST, request.FILES, instance=produto)
+        if form.is_valid():
+            produto = form.save()
+            messages.success(request, u"Sucesso! Produto %s editado." % produto)
+            return redirect(reverse("producao:ver_produto", args=[produto.id],))
+    else:
+        form = ProdutoFinalForm(instance=produto)
+    return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
+
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ver_produto(request, produto_id):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    if request.POST:
+        if request.POST.get('btn-adicionar-linha-subproduto', None):
+            form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(request.POST, produto=produto)
+            form_adicionar_linha_componentes_avulsos = AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(produto=produto)
+            form_imagem = AlterarImagemProduto(instance=produto)
+            form_anexos = ArquivoAnexoProdutoForm(produto=produto)
+            if form_adicionar_linha_subproduto.is_valid():
+                linha_nova = form_adicionar_linha_subproduto.save()
+                messages.success(request, u"Sucesso! Linha Adicionada: %s Unidade(s) de Subproduto %s" % (linha_nova.quantidade, linha_nova.subproduto))
+                return redirect(reverse("producao:ver_produto", args=[produto.id],) + "#linhas-subprodutos")
+        if request.POST.get('btn-adicionar-componentes-avulsos', None):
+            form_adicionar_linha_componentes_avulsos = AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(request.POST, produto=produto)
+            form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(produto=produto)
+            form_imagem = AlterarImagemProduto(instance=produto)
+            form_anexos = ArquivoAnexoProdutoForm(produto=produto)
+            if form_adicionar_linha_componentes_avulsos.is_valid():
+                linha_nova =  form_adicionar_linha_componentes_avulsos.save()
+                messages.success(request, u"Sucesso! Linha Adicionada: %s Unidade(s) de Componente %s" % (linha_nova.quantidade, linha_nova.componente))
+                return redirect(reverse("producao:ver_produto", args=[produto.id],) + "#componentes-avulsos")
+        if request.POST.get('anexar-imagem', None): 
+            form_imagem = AlterarImagemProduto(request.POST, request.FILES, instance=produto)
+            if form_imagem.is_valid():
+                try:
+                    anexo = form_imagem.save()
+                    messages.success(request, u"Sucesso! Imagem Alterada!")
+                except:
+                    raise
+                    messages.error(request, u"Erro! Imagem NÃO Alterada!")
+        if request.POST.get('anexar-documento', None):
+            form_anexos = ArquivoAnexoProdutoForm(request.POST, request.FILES, produto=produto)
+            if form_anexos.is_valid():
+                try:
+                    anexo = form_anexos.save()
+                    messages.success(request, u"Sucesso! Arquivo %s Anexado!" % anexo)
+                    return(redirect(reverse('producao:ver_produto', args=[anexo.produto.id,]) + "#arquivos"))
+                except:
+                    raise
+                    messages.error(request, u"Erro! Arquivo %s NÃO Anexado!" % anexo)
+        
+                
+    else:
+        form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(produto=produto)
+        form_adicionar_linha_componentes_avulsos = AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(produto=produto)
+        form_imagem = AlterarImagemProduto(instance=produto)
+        form_anexos = ArquivoAnexoProdutoForm(produto=produto)
+    return render_to_response('frontend/producao/producao-ver-produto.html', locals(), context_instance=RequestContext(request),)    
     
+@user_passes_test(possui_perfil_acesso_producao)    
+def apagar_linha_subproduto_de_produto(request, produto_id, linha_id):
+    linha = get_object_or_404(LinhaSubProdutodoProduto, pk=linha_id, produto__pk=produto_id)
+    produto = linha.produto
+    if request.user.perfilacessoproducao.gerente:
+        linha.delete()
+        messages.success(request, u"Linha de Sub Produto do Produto %s apagada." % produto)
+    else:
+        messages.error(request, u"Somente gerente pode apagar")
+    return redirect(reverse("producao:ver_produto", args=[produto.id])+ "#linhas-subprodutos")
+
+@user_passes_test(possui_perfil_acesso_producao)    
+def apagar_linha_componente_avulso_de_produto(request, produto_id, linha_id):
+    linha = get_object_or_404(LinhaComponenteAvulsodoProduto, pk=linha_id, produto__pk=produto_id)
+    produto = linha.produto
+    if request.user.perfilacessoproducao.gerente:
+        linha.delete()
+        messages.success(request, u"Linha de Sub Produto do Produto %s apagada." % produto)
+    else:
+        messages.error(request, u"Somente gerente pode apagar")
+    return redirect(reverse("producao:ver_produto", args=[produto.id])+ "#componentes-avulsos")
+ 

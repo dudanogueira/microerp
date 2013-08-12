@@ -16,13 +16,13 @@ from models import LinhaSubProduto
 from models import OpcaoLinhaSubProduto
 from models import DocumentoTecnicoSubProduto
 from models import ProdutoFinal
-from models import LinhaProdutoAvulso
+from models import LinhaComponenteAvulsodoProduto
 from models import LinhaFornecedorFabricanteComponente
 from models import DocumentoTecnicoProduto
 from models import PerfilAcessoProducao
 from models import LinhaSubProdutoAgregado
 from models import ArquivoAnexoComponente
-
+from models import LinhaSubProdutodoProduto
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -103,8 +103,8 @@ class DocumentoTecnicoSubProdutoInline(admin.StackedInline):
 class SubProdutoAdmin(admin.ModelAdmin):
     inlines = [LinhaSubProdutoAgregadoInLine, LinhaSubProdutoInline, DocumentoTecnicoSubProdutoInline]
 
-class LinhaProdutoAvulsoInline(admin.StackedInline):
-    model = LinhaProdutoAvulso
+class LinhaComponenteAvulsodoProdutoInline(admin.StackedInline):
+    model = LinhaComponenteAvulsodoProduto
     extra= 0
 
 ## PRODUTO
@@ -115,7 +115,7 @@ class DocumentoTecnicoProdutoInline(admin.StackedInline):
 
     
 class ProdutoAdmin(admin.ModelAdmin):
-    inlines = [LinhaProdutoAvulsoInline, DocumentoTecnicoProdutoInline]
+    inlines = [LinhaComponenteAvulsodoProdutoInline, DocumentoTecnicoProdutoInline]
 
 class LinhaFornecedorFabricanteComponenteAdmin(admin.ModelAdmin):
     list_filter = 'fornecedor', 'fabricante', 'componente',
@@ -141,6 +141,14 @@ class ComponenteTipoAdmin(admin.ModelAdmin):
 class ArquivoAnexoComponenteAdmin(admin.ModelAdmin):
     pass
 
+class LinhaSubProdutodoProdutoAdmin(admin.ModelAdmin):
+    pass
+
+class LinhaComponenteAvulsodoProdutoAdmin(admin.ModelAdmin):
+    list_display = "produto", 'quantidade', 'componente'
+    list_filter = 'produto', 'componente'
+    search_fields = 'produto__nome', 'produto__descricao', 'componente__part_number'
+
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
 admin.site.register(ComponenteTipo, ComponenteTipoAdmin)
@@ -154,6 +162,7 @@ admin.site.register(SubProduto, SubProdutoAdmin)
 admin.site.register(DocumentoTecnicoSubProduto, DocumentoTecnicoSubProdutoAdmin)
 admin.site.register(LinhaSubProduto, LinhaSubProdutoAdmin)
 admin.site.register(ProdutoFinal, ProdutoAdmin)
-admin.site.register(LinhaProdutoAvulso)
+admin.site.register(LinhaComponenteAvulsodoProduto, LinhaComponenteAvulsodoProdutoAdmin)
 admin.site.register(PerfilAcessoProducao)
 admin.site.register(ArquivoAnexoComponente, ArquivoAnexoComponenteAdmin)
+admin.site.register(LinhaSubProdutodoProduto, LinhaSubProdutodoProdutoAdmin)
