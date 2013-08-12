@@ -16,18 +16,19 @@
 
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
-    <li><a href="#linhas-subprodutos" data-toggle="tab">
-            Linhas de Sub Produtos 
-            {% if produto.linhasubprodutodoproduto_set.count %}
-            <span class="badge badge-info">{{produto.linhasubprodutodoproduto_set.count}}</span>
-        
+    <li><a href="#componentes-avulsos" data-toggle="tab">
+            Linhas de Componentes
+            {% if produto.linhacomponenteavulsodoproduto_set.count %}
+            <span class="badge badge-info">{{produto.linhacomponenteavulsodoproduto_set.count}}</span>
             {% endif %}
         </a>
     </li>
-    <li><a href="#componentes-avulsos" data-toggle="tab">
-            Componentes Avulsos
-            {% if produto.linhacomponenteavulsodoproduto_set.count %}
-            <span class="badge badge-success">{{produto.linhacomponenteavulsodoproduto_set.count}}</span>
+    
+    <li><a href="#linhas-subprodutos" data-toggle="tab">
+            Sub Produtos Agregados
+            {% if produto.linhasubprodutodoproduto_set.count %}
+            <span class="badge badge-success">{{produto.linhasubprodutodoproduto_set.count}}</span>
+        
             {% endif %}
         </a>
     </li>
@@ -52,10 +53,14 @@
                 <strong>Descrição</strong>: {{produto.descricao}}<br />
                 <h2>Custos Totais</h2>
                 <span class="label label-info">Linhas de SubProduto:</span> R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}<br />
-                <span class="label label-success">Componentes Avulsos:</span> R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}<br />
+                <span class="label label-success">Linhas de Componentes:</span> R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}<br />
                 <span class="badge">R$ {{produto.custo|floatformat:2}}</span><br />
                 <h2>Custo Internacional</h2>
                 USD {{produto.custo_internacional|floatformat:2}}
+                <h2>Produção</h2>
+                <strong>Total Produzido</strong><br />
+                <strong>Quantidade Máxima de Produção</strong><br />
+                <strong>Quantidade Estimada de Produção Semanal</strong><br />
             </div>
 
             <div clas="span6">
@@ -76,12 +81,12 @@
     </div>
 
     <div class="tab-pane fade in" id="linhas-subprodutos">
-        <h2>Linha de Sub Produtos</h2>
+        <h2>Sub Produtos Agregados</h2>
 
         {% if request.user.perfilacessoproducao.gerente %}
         
         <!-- Button to trigger modal -->
-        <a href="#modal-adicionar-linha-subproduto" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Sub Produto</a>
+        <a href="#modal-adicionar-linha-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Sub Produto</a>
         {% endif %}
 
 
@@ -99,7 +104,7 @@
             <tbody>
                 {% for linha in produto.linhasubprodutodoproduto_set.all %}                
                 <tr>
-                    <td class="alert alert-info"><strong>{{forloop.counter}}</strong></td>
+                    <td class="alert alert-success"><strong>{{forloop.counter}}</strong></td>
                     <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
                     <td><a href="{% url "producao:ver_subproduto" linha.subproduto.id %}">{{linha.subproduto}}</a></td>
                     <td><strong>{{linha.subproduto.nome}}</strong> {{linha.subproduto.descricao}}</td>
@@ -130,12 +135,12 @@
     </div>
     
     <div class="tab-pane fade in" id="componentes-avulsos">
-        <h2>Componentes Avulsos</h2>
+        <h2>Linhas de Componentes</h2>
         
         {% if request.user.perfilacessoproducao.gerente %}
         
         <!-- Button to trigger modal -->
-        <a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Componente Avulso</a>
+        <a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Componente</a>
         {% endif %}
         
         
@@ -154,7 +159,7 @@
             <tbody>
                 {% for linha in produto.linhacomponenteavulsodoproduto_set.all %}                
                 <tr>
-                    <td class="alert alert-success"><strong>{{forloop.counter}}</strong></td>
+                    <td class="alert alert-info"><strong>{{forloop.counter}}</strong></td>
                     <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
                     <td><a href="{% url "producao:ver_componente" linha.componente.id %}">{{linha.componente.part_number}}</a></td>
                     <td>{{linha.componente.descricao}}</td>
