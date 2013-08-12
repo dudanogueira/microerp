@@ -96,7 +96,8 @@
                     <th>Item</th>
                     <th>Quantidade</th>
                     <th>SubProduto</th>
-                    <th>Nome e Descrição</th>
+                    <th>Nome</th>
+                    <th>Descrição</th>
                     <th>Custo</th>
                     <th>Ação</th>
                 </tr>
@@ -106,8 +107,9 @@
                 <tr>
                     <td class="alert alert-success"><strong>{{forloop.counter}}</strong></td>
                     <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
-                    <td><a href="{% url "producao:ver_subproduto" linha.subproduto.id %}">{{linha.subproduto}}</a></td>
-                    <td><strong>{{linha.subproduto.nome}}</strong> {{linha.subproduto.descricao}}</td>
+                    <td><a href="{% url "producao:ver_subproduto" linha.subproduto.id %}">{{linha.subproduto.part_number}}</a></td>
+                    <td>{{linha.subproduto.nome}}</td>
+                    <td>{{linha.subproduto.descricao}}</td>
                     <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>
                     <td>
                         {% if request.user.perfilacessoproducao.gerente %}

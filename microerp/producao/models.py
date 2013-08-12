@@ -540,7 +540,12 @@ class SubProduto(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
+        return "%s-SUB%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+
+    def part_number(self):
+        pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-SUB%s" % (pn_prepend, "%05d" % self.id)
+        
 
     def save(self):
         """Auto-populate an empty slug field from the MyModel name and
@@ -713,7 +718,7 @@ class ProdutoFinal(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        return "%s-PRO%s %s" % (pn_prepend, "%05d" % self.id, self.nome)
+        return "%s-PRO%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
 
     def custo_total_linha_subprodutos(self):
         valor = 0
