@@ -729,6 +729,19 @@ class ProdutoFinal(models.Model):
                 valor += linha.custo()
         return valor
 
+    def custo(self):
+        return self.custo_total_linha_subprodutos() + self.custo_total_linha_produtos_avulsos()
+
+    def custo_internacional(self):
+        valor = 0
+        for linha in self.linhasubprodutodoproduto_set.all():
+            if linha.quantidade:
+                valor += linha.quantidade * linha.subproduto.custo_dolar_componentes_internacionais()
+        for linha in self.linhacomponenteavulsodoproduto_set.filter(componente__nacionalidade='i').all():
+            if linha.quantidade:
+                valor += linha.quantidade * linha.componente.preco_liquido_unitario_dolar
+        return valor
+
     def save(self):
         """Auto-populate an empty slug field from the MyModel name and
         if it conflicts with an existing slug then append a number and try
@@ -804,8 +817,9 @@ class LinhaComponenteAvulsodoProduto(models.Model):
         verbose_name_plural = "Linhas de Componentes Avulsos do Produto"
     
     produto = models.ForeignKey('ProdutoFinal')
-    componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    componente = models.ForeignKey('Componente')
+    
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

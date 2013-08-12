@@ -137,96 +137,94 @@
                     </td>
                     <td>
                         <span class="label">R$ {{linha.custo|floatformat:2}}</span>
-                    <td>
-                        {% if request.user.perfilacessoproducao.gerente %}
+                        <td>
+                            {% if request.user.perfilacessoproducao.gerente %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
                                 <i class="icon-pencil"></i>
                             </a>
                             <a class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" href="{% url "producao:apagar_linha_subproduto" subproduto.id linha.id %}">
                                 <i class="icon-trash"></i>
                             </a>
-                        {% else %}
+                            {% else %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
                                 <i class="icon-eye-open"></i>
                             </a>                   
-                        {% endif %}
-                    </td>
-                </tr>
+                            {% endif %}
+                        </td>
+                    </tr>
            
-                {% empty %}
-                <tr>
-                    <td>
-                        Nenhuma Linha Encontrada.
-                    </td>
-                </tr>
-                {% endfor %}
-                <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>
-                        <span class="badge badge-success">Total: R$ {{subproduto.custo_total_linhas|floatformat:2}}</span>
-                    </td>
-                    <td></td>
-                </tr>
-            </tbody>
-        </table>
+                    {% empty %}
+                    <tr>
+                        <td>
+                            Nenhuma Linha Encontrada.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                            <span class="badge badge-success">Total: R$ {{subproduto.custo_total_linhas|floatformat:2}}</span>
+                        </td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
 
-    </div>
+        </div>
         
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
-
-                         
         
         
-                <!-- Button to trigger modal -->
-                <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Agregar Sub Produto</a>
+        <!-- Button to trigger modal -->
+        <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Agregar Sub Produto</a>
  
-                <!-- Modal -->
-                <div id="modal-agregar-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-                  <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                    <h3 id="myModalLabel">Agregar Sub Produto</h3>
-                  </div>
-                  <div class="modal-body">
-                    
-                      <form method="POST" action="#sub-produtos-agregados">
-                          {% csrf_token %}   
-                      
-                      {{form_agregar_subproduto.as_p}} 
-                    
-                    
-                  </div>
-                  <div class="modal-footer">
+        <!-- Modal -->
+        <div id="modal-agregar-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">Agregar Sub Produto</h3>
+            </div>
+            <div class="modal-body">
+                
+                <form method="POST" action="#sub-produtos-agregados">
+                    {% csrf_token %}   
+                  
+                    {{form_agregar_subproduto.as_p}} 
+                
+                
+                </div>
+                <div class="modal-footer">
                     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
                     <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar"><i class="icon-plus"></i> Agregar Sub Produto</button>
                 </form>
-                    
-                  </div>
-                </div>
+                
+            </div>
+        </div>
         
         
-                <h2>Sub Produtos Agregados</h2>            
-                <table class="table table-condensed table-hover table-rounded">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Quantidade</th>
-                            <th>SubProduto</th>
-                            <th>Nome e Desrição</th>
-                            <th>Custo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for linha in subproduto.linhasubprodutos_agregados.all %}
-                        <tr>
-                            <td id="linha-id-{{linha.id}}" class="alert-success">{{forloop.counter}}</td>
-                                                                                                                <td><span class="badge badge-warning">{{linha.quantidade}}</td>
+        <h2>Sub Produtos Agregados</h2>            
+        <table class="table table-condensed table-hover table-rounded">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantidade</th>
+                        <th>SubProduto</th>
+                        <th>Nome e Desrição</th>
+                        <th>Custo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in subproduto.linhasubprodutos_agregados.all %}
+                    <tr>
+                        <td id="linha-id-{{linha.id}}" class="alert-success">{{forloop.counter}}</td>
+                        <td><span class="badge badge-warning">{{linha.quantidade}}</td>
                             <td><a href="{% url "producao:ver_subproduto" linha.subproduto_agregado.id %}">{{linha.subproduto_agregado}}</a></td>
                             <td><strong>{{linha.subproduto_agregado.nome}}</strong>: {{linha.subproduto_agregado.descricao}}</td>
 
@@ -236,91 +234,90 @@
                                     <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
                                     {% endif %}
                                 </td>
-                            </tr>
-                            {% endfor %}
-                            <tr>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td><span class="badge badge-success">Total: R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
-                            </tr>
-                
-                        </tbody>
-                    </table>
-        
-                </div>
-    
-                <div class="tab-pane fade in" id="arquivos">
-        
-                    <h2>Imagem</h2>
-                    <div class="row-fluid">
-                        <div class="span6">
-                            {% if subproduto.imagem %}
-                            <a href="{{subproduto.imagem.url}}">
-                                {% thumbnail subproduto.imagem "400" crop="center" as im %}
-                                <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-                                {% endthumbnail %}
-                            </a>
-                            {% endif %}
-                        </div>
-            
-                        <div class="span6">
-                            {% if request.user.perfilacessoproducao.gerente %}
-                            <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
-                                {% csrf_token %}
-                                {{form_imagem.as_p}}
-                                <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
-            
-                            </form>
-                            {% endif %}
-                        </div>
-                    </div>
-        
-        
-                    <h2>Documentos Técnicos</h2>
-
-                    {% if request.user.perfilacessoproducao.gerente %}
-                    <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        {{form_anexos}}
-                        <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
-            
-                    </form>
-                    {% endif %}
-                    <hr />
-                    {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
-                    <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
-                    {% if request.user.perfilacessoproducao.gerente %}
-                    <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
-                    {% endif %}
-                    <hr />
-                    {% empty %}
-                    Nenhum arquivo anexo.
+                    </tr>
                     {% endfor %}
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><span class="badge badge-success">Total: R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
+                    </tr>
+                
+                </tbody>
+        </table>
         
-                </div>
+    </div>
     
-            </div>
-
-
-            {% endblock %}
-
-            {% block auxiliar-menu %}
-            {% addtoblock "js" %}
-            <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-            <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-
-            <script>
-            $(document).ready(function() {
-                $("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
-                var activeTab = $('[href=' + location.hash + ']');
-                activeTab && activeTab.tab('show');
-                {% if form_agregar_subproduto.errors %}
-                $('#modal-agregar-subproduto').modal('show')
+    <div class="tab-pane fade in" id="arquivos">
+        
+        <h2>Imagem</h2>
+        <div class="row-fluid">
+            <div class="span6">
+                {% if subproduto.imagem %}
+                <a href="{{subproduto.imagem.url}}">
+                    {% thumbnail subproduto.imagem "400" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                    {% endthumbnail %}
+                </a>
                 {% endif %}
-            });
-            </script>
-            {% endaddtoblock %}
-            {% include "frontend/producao/producao-menu.html" %}
-            {% endblock%}
+            </div>
+            
+            <div class="span6">
+                {% if request.user.perfilacessoproducao.gerente %}
+                <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form_imagem.as_p}}
+                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        
+        
+            <h2>Documentos Técnicos</h2>
+
+            {% if request.user.perfilacessoproducao.gerente %}
+            <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form_anexos}}
+                <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
+    
+            </form>
+            {% endif %}
+            <hr />
+            {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
+            <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+            {% if request.user.perfilacessoproducao.gerente %}
+            <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+            {% endif %}
+            <hr />
+            {% empty %}
+            Nenhum arquivo anexo.
+            {% endfor %}
+        
+    </div>
+</div>
+    
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.tab('show');
+    {% if form_agregar_subproduto.errors %}
+    $('#modal-agregar-subproduto').modal('show')
+    {% endif %}
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

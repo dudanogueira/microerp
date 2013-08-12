@@ -1285,6 +1285,7 @@ def adicionar_produto(request):
         form = ProdutoFinalForm(request.POST, request.FILES)
         produto = form.save()
         messages.success(request, u"Sucesso! Produto adicionado.")
+        return redirect(reverse("producao:ver_produto", args=[produto.id],))
     else:
         form = ProdutoFinalForm()
     return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
