@@ -60,16 +60,19 @@
                   </div>
                   <div class="modal-body">
                       {% for comentario in lancamento.observacaolancamento_set.all %}
-                      <div class="row-fluid well well-small">
-                          <div class="span5">
-                              <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
-                              <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
-                          </div>
-                          
-                          <div class="span7">
-                              <i class="icon-comment"></i> {{comentario.texto}}
-                          </div>
+                      <div class="well well-small">
+                          <div class="row-fluid">
+                                  
+                            <div class="span5">
+                                    <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
+                                    <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
+                                      
+                                </div>
+                            <div class="span7">
+                                    <i class="icon-comment"></i> {{comentario.texto}}
+                                </div>
 
+                          </div>
                       </div>
                       {% endfor %}
                     
@@ -176,7 +179,7 @@
                   </div>
                   <div class="modal-body">
                       {% for comentario in lancamento.observacaolancamento_set.all %}
-                      <div class="row-fluid well well-small">
+                      <div class="row-fluid">
                           <div class="span5">
                               <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
                               <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
