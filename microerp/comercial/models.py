@@ -201,6 +201,7 @@ class ContratoFechado(models.Model):
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado')
     categoria = models.ForeignKey('CategoriaContratoFechado')
+    objeto = models.TextField(blank=False)
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)

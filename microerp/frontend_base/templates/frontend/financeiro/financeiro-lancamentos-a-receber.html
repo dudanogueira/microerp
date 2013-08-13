@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load phonenumber_br %}
 
 <title>{%block title %}{{block.super}} - Financeiro{% endblock %}</title>
 
@@ -23,7 +24,21 @@
         {% for lancamento in lancamentos_pendentes %}
         <tr>
             <td class="alert {% if lancamento.antecipado %}alert-warning{% else %}alert-danger{% endif %}">{{lancamento.id}}</td>
-            <td>{{lancamento.contrato.cliente}}<br />
+            <td><button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.cliente.nome}}" data-html="true" data-content='
+                
+
+                {{lancamento.contrato.cliente.get_tipo_display}}<br />
+                {% if lancamento.contrato.cliente.telefone_fixo %}
+                    <small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
+                {% endif %}
+                {% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
+<small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
+{% endif %}
+    
+                
+                
+                
+                '>{{lancamento.contrato.cliente.nome}}</button><br />
                 <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
                 <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
@@ -75,7 +90,6 @@
                           </div>
                       </div>
                       {% endfor %}
-                    
                   </div>
                   <div class="modal-footer">
                     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
@@ -143,7 +157,21 @@
                 {% endif %}
             {% endif %}
             "><strong>#{{lancamento.id}}</strong></td>
-            <td>{{lancamento.contrato.cliente}}<br />
+            <td><button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.cliente.nome}}" data-html="true" data-content='
+                
+
+                {{lancamento.contrato.cliente.get_tipo_display}}<br />
+                {% if lancamento.contrato.cliente.telefone_fixo %}
+                    <small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
+                {% endif %}
+                {% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
+<small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
+{% endif %}
+    
+                
+                
+                
+                '>{{lancamento.contrato.cliente.nome}}</button><br />
                 <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
                 <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
@@ -179,17 +207,21 @@
                   </div>
                   <div class="modal-body">
                       {% for comentario in lancamento.observacaolancamento_set.all %}
-                      <div class="row-fluid">
-                          <div class="span5">
-                              <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
-                              <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
-                          </div>
-                          
-                          <div class="span7">
-                              <i class="icon-comment"></i> {{comentario.texto}}
-                          </div>
+                      <div class="well well-small">
+                          <div class="row-fluid">
+                                  
+                            <div class="span5">
+                                    <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
+                                    <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
+                                      
+                                </div>
+                            <div class="span7">
+                                    <i class="icon-comment"></i> {{comentario.texto}}
+                                </div>
 
+                          </div>
                       </div>
+
                       {% endfor %}
                     
                   </div>
@@ -279,6 +311,8 @@ $(document).ready(function() {
         dateFormat: "dd/mm/yy"
         
 	});
+    
+    $('.popover-items').popover()
     
     $(".btn-comentar").click(function(e){
         e.preventDefault();
