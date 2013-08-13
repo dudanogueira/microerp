@@ -94,17 +94,19 @@ class AdicionarLancamentoForm(forms.ModelForm):
         contrato = kwargs.pop('contrato')
         proximo_peso = kwargs.pop('proximo_peso')
         super(AdicionarLancamentoForm, self).__init__(*args, **kwargs)
+        self.fields['valor_mao_de_obra'].required = True
+        self.fields['valor_materiais'].required = True
         if contrato:
             self.fields['contrato'].widget = forms.HiddenInput()
+            self.fields['peso'].widget = forms.HiddenInput()
             self.fields['contrato'].initial = contrato.id
             self.fields['data_cobranca'].widget.attrs['class'] = 'datepicker'
-            self.fields['data_recebido'].widget.attrs['class'] = 'datepicker'
-            self.fields['data_recebido_em_conta'].widget.attrs['class'] = 'datepicker'
         if proximo_peso:
             self.fields['peso'].initial = proximo_peso
-    
+        
     class Meta:
         model = Lancamento
+        fields = 'contrato', 'peso', 'data_cobranca', 'modo_recebido', 'valor_mao_de_obra', 'valor_materiais', 'notas_fiscais'
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def realizar_lancamento(request, contrato_id):

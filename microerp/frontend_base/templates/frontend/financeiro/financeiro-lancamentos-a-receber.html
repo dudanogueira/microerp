@@ -27,18 +27,31 @@
             <td><button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.cliente.nome}}" data-html="true" data-content='
                 
 
-                {{lancamento.contrato.cliente.get_tipo_display}}<br />
+                {% if lancamento.contrato.cliente.tipo == "pf" %}
+                                                <span class="label">{{lancamento.contrato.cliente.get_tipo_display}}</span>
+                                            {% else %}
+                                                <span class="label label-success">{{lancamento.contrato.cliente.get_tipo_display}}</span> 
+                                            {% endif %}<br />
                 {% if lancamento.contrato.cliente.telefone_fixo %}
                     <small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
                 {% endif %}
                 {% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
 <small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
 {% endif %}
+{% if lancamento.contrato.cliente.contato %}
+<br />
+    <i class="icon-user"></i> {{lancamento.contrato.cliente.contato}}
+{% endif %}
+
     
                 
                 
                 
-                '>{{lancamento.contrato.cliente.nome}}</button><br />
+                '>{% if lancamento.contrato.cliente.tipo == "pf" %}
+                                <span class="label">{{lancamento.contrato.cliente.tipo|upper}}</span>
+                            {% else %}
+                                <span class="label label-success">{{lancamento.contrato.cliente.tipo|upper}}</span> 
+                            {% endif %} {{lancamento.contrato.cliente.nome}}</button><br />
                 <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
                 <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
@@ -160,18 +173,30 @@
             <td><button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.cliente.nome}}" data-html="true" data-content='
                 
 
-                {{lancamento.contrato.cliente.get_tipo_display}}<br />
+                {% if lancamento.contrato.cliente.tipo == "pf" %}
+                                                <span class="label">{{lancamento.contrato.cliente.get_tipo_display}}</span>
+                                            {% else %}
+                                                <span class="label label-success">{{lancamento.contrato.cliente.get_tipo_display}}</span> 
+                                            {% endif %}<br />
                 {% if lancamento.contrato.cliente.telefone_fixo %}
                     <small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
                 {% endif %}
                 {% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
 <small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
 {% endif %}
+    {% if lancamento.contrato.cliente.contato %}
+    <br />
+        <i class="icon-user"></i> {{lancamento.contrato.cliente.contato}}
+    {% endif %}
     
                 
                 
                 
-                '>{{lancamento.contrato.cliente.nome}}</button><br />
+                '>{% if lancamento.contrato.cliente.tipo == "pf" %}
+                                <span class="label">{{lancamento.contrato.cliente.tipo|upper}}</span>
+                            {% else %}
+                                <span class="label label-success">{{lancamento.contrato.cliente.tipo|upper}}</span> 
+                            {% endif %} {{lancamento.contrato.cliente.nome}}</button><br />
                 <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
                 <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
                 <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}

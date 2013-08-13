@@ -80,6 +80,11 @@ class Lancamento(models.Model):
     def clean(self):
         if self.data_recebido and not self.modo_recebido:
             raise ValidationError(u"Erro. Para receber o valor, é preciso especificar o modo recebido")
+        
+        # contrato aberto, valor_cobrado deve ser igual a soma
+        # da mao de obra e materiais
+        if self.contrato.tipo == 'aberto' and self.valor_mao_de_obra and self.valor_materiais:
+            self.valor_cobrado = self.valor_mao_de_obra + self.valor_materiais
     
     class Meta:
         unique_together = (('contrato', 'peso'),)
@@ -144,6 +149,10 @@ class Lancamento(models.Model):
     data_antecipado = models.DateField(u"Data da Antecipação", blank=True, null=True)
     antecipado = models.BooleanField(default=False)
     antecipado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="lancamento_antecipado_set", blank=True, null=True)
+    # contrato aberto
+    valor_mao_de_obra = models.DecimalField("Valor da Mão de Obra", max_digits=10, decimal_places=2, blank=True, null=True)
+    valor_materiais = models.DecimalField("Valor de Materiais", max_digits=10, decimal_places=2, blank=True, null=True)
+    notas_fiscais = models.TextField(blank=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
