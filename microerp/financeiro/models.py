@@ -31,6 +31,7 @@ __version__ = '0.0.1'
 from comercial.models import CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 LANCAMENTO_MODO_RECEBIDO_CHOICES = CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 
+from django.conf import settings
 
 LANCAMENTO_SITUACAO_CHOICES = (
     ('a','Aberto'),
@@ -117,7 +118,12 @@ class Lancamento(models.Model):
                 return self.valor_recebido
             else:
                 return self.valor_cobrado
-            
+
+    def antecipavel(self):
+        if self.modo_recebido in settings.TIPOS_LANCAMENTOS_ANTECIPAVEIS and not self.pendente():
+            return True
+        else:
+            return False
     
     contrato = models.ForeignKey('comercial.ContratoFechado')
     peso = models.IntegerField(blank=False, null=False, default=1)
@@ -141,3 +147,19 @@ class Lancamento(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class ObservacaoLancamento(models.Model):
+    
+    def __unicode__(self):
+        return u"Observação ao lançamento %s: %s" % (self.lancamento, self.texto)
+    
+    class Meta:
+        ordering = ('-criado',)
+    
+    lancamento = models.ForeignKey('Lancamento')
+    texto = models.TextField(blank=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, null=False)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    

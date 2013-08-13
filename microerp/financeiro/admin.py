@@ -24,6 +24,7 @@ from django.contrib import admin
 from financeiro.models import PerfilAcessoFinanceiro
 from financeiro.models import Lancamento
 from financeiro.models import ContaBancaria
+from financeiro.models import ObservacaoLancamento
 
 class PerfilAcessoFinanceiroAdmin(admin.ModelAdmin):
     pass
@@ -33,7 +34,10 @@ class LancamentoAdmin(admin.ModelAdmin):
     list_filter = 'conta', 'situacao', 'antecipado','data_cobranca', 'modo_recebido', 'peso', 'contrato__categoria'
     date_hierarchy = 'data_cobranca'
     
+class ObservacaoLancamentoAdmin(admin.ModelAdmin):
+    pass
 
 admin.site.register(PerfilAcessoFinanceiro, PerfilAcessoFinanceiroAdmin)
 admin.site.register(Lancamento, LancamentoAdmin)
 admin.site.register(ContaBancaria)
+admin.site.register(ObservacaoLancamento, ObservacaoLancamentoAdmin)

@@ -14,4 +14,5 @@ urlpatterns = patterns('',
     url(r'^lancamentos/a-receber$', 'financeiro.views.lancamentos_a_receber', name='lancamentos_a_receber'),
     url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/receber$', 'financeiro.views.lancamentos_a_receber_receber', name='lancamentos_a_receber_receber'),
     url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/antecipar$', 'financeiro.views.lancamentos_a_receber_antecipar', name='lancamentos_a_receber_antecipar'),
+    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/comentar$', 'financeiro.views.lancamentos_a_receber_comentar', name='lancamentos_a_receber_comentar'),
 )

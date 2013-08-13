@@ -29,7 +29,7 @@
                 <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
             </td>
             <td>
-                <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span>
+                <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span> <span class="label">{{lancamento.modo_recebido}}</span>
                 {% if lancamento.antecipado %}
                 <br />
                 <span class="badge badge-warning">Antecipado R$ {{lancamento.valor_recebido}} em {{lancamento.data_antecipado|date:"SHORT_DATE_FORMAT"}}</span>
@@ -43,9 +43,49 @@
                 </small>
                 {% endif %}
             </td>
-            <td><strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>(<strong>{{lancamento.data_cobranca|timesince}} atrasado</strong>)</small></td>
             <td>
-                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Receber</a>
+                <strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>(<strong>{{lancamento.data_cobranca|timesince}} atrasado</strong>)</small>
+                
+                {% if lancamento.observacaolancamento_set.count %}
+                <!-- Button to trigger modal -->
+                <p>
+                <a href="#modal-lancamento-{{lancamento.id}}" role="button" class="btn" data-toggle="modal">{{lancamento.observacaolancamento_set.count}} <i class="icon-comment"></i></a>
+                </p>
+ 
+                <!-- Modal -->
+                <div id="modal-lancamento-{{lancamento.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">Comentários do Lançamneto #{{lancamento.id}}</h3>
+                  </div>
+                  <div class="modal-body">
+                      {% for comentario in lancamento.observacaolancamento_set.all %}
+                      <div class="row-fluid well well-small">
+                          <div class="span5">
+                              <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
+                              <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
+                          </div>
+                          
+                          <div class="span7">
+                              <i class="icon-comment"></i> {{comentario.texto}}
+                          </div>
+
+                      </div>
+                      {% endfor %}
+                    
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+                  </div>
+                </div>
+                {% endif %}
+                
+            </td>
+            <td>
+                <p class="btn-group">
+                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" data-placement="bottom" class="tooltip-items btn btn-primary" data-toggle="tooltip" title="Receber"><i class="icon-thumbs-up"></i> </a>
+                <a href="{% url "financeiro:lancamentos_a_receber_comentar" lancamento.id %}"   class="btn btn-success btn-comentar tooltip-items" data-toggle="tooltip" title="Comentar" data-placement="bottom"><i class="icon-comment"></i> </a>
+            </p>
             </td>
         </tr>
         
@@ -110,6 +150,7 @@
                 {% if lancamento.antecipado %}
                 <span class="label label-warning"><strong>Antecipado</strong>: R$ {{lancamento.valor_recebido}}</span>
                 {% endif %}
+                <span class="label">{{lancamento.modo_recebido}}</span>
             </td>
             <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}
                 {% if lancamento.pendente %}
@@ -120,24 +161,65 @@
                     <span class="badge badge-warning">Antecipado em: {{lancamento.data_antecipado|date:"SHORT_DATE_FORMAT"}}</span>
                     {% endif %}
                 {% endif %}
-            </td>
-            <td>
-                {% if lancamento.antecipado %}
-                <a href="" class="btn btn-warning disabled">
-                    <i class="icon-usd"></i> Antecipado</a>
-                </a>
-                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Acusar Pagamento</a>
                 
-                {% else %}
-                    <a href="{% url "financeiro:lancamentos_a_receber_antecipar" lancamento.id %}" class="btn btn-danger">
-                        <i class="icon-arrow-left"></i> Antecipar
-                    </a>
-                    <br />
-                    <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary" ><i class="icon-thumbs-up"></i> Receber</a>
+                {% if lancamento.observacaolancamento_set.count %}
+                <!-- Button to trigger modal -->
+                <p>
+                <a href="#modal-lancamento-{{lancamento.id}}" role="button" class="btn" data-toggle="modal">{{lancamento.observacaolancamento_set.count}} <i class="icon-comment"></i></a>
+            </p>
+ 
+                <!-- Modal -->
+                <div id="modal-lancamento-{{lancamento.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">Comentários do Lançamneto #{{lancamento.id}}</h3>
+                  </div>
+                  <div class="modal-body">
+                      {% for comentario in lancamento.observacaolancamento_set.all %}
+                      <div class="row-fluid well well-small">
+                          <div class="span5">
+                              <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
+                              <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
+                          </div>
+                          
+                          <div class="span7">
+                              <i class="icon-comment"></i> {{comentario.texto}}
+                          </div>
+
+                      </div>
+                      {% endfor %}
                     
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+                  </div>
+                </div>
                 {% endif %}
                 
+            </td>
+            <td>
+                <p class="btn-group">
+                {% if lancamento.antecipado %}
+                <a href="" class="tooltip-items btn btn-warning disabled" data-toggle="tooltip" title="Antecipado" data-placement="bottom">
+                    <i class="icon-usd"></i> </a>
+                </a>
+                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary tooltip-items" data-toggle="tooltip" title="Receber" data-placement="bottom"><i class="icon-thumbs-up"></i></a>
                 
+                {% else %}
+
+                    {% if lancamento.antecipavel %}
+                    <a href="{% url "financeiro:lancamentos_a_receber_antecipar" lancamento.id %}" class="btn btn-danger tooltip-items" data-toggle="tooltip" title="Antecipar" data-placement="bottom">
+                        <i class="icon-arrow-left"></i> 
+                    </a>
+                    {% endif %}
+                    <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="tooltip-items  btn btn-primary" data-toggle="tooltip" title="Receber" data-placement="bottom"><i class="icon-thumbs-up"></i> </a>
+                
+                    
+                {% endif %}
+                <a href="{% url "financeiro:lancamentos_a_receber_comentar" lancamento.id %}"   class="btn btn-success btn-comentar tooltip-items" data-toggle="tooltip" title="Comentar" data-placement="bottom"><i class="icon-comment"></i> </a>
+                
+                
+                </p>
             </td>
             
         </tr>
@@ -161,6 +243,24 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div id="modal-comentar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Comentar Lançamento</h3>
+  </div>
+  <div class="modal-body">
+      <form method="POST" id="form-comentar-lancamento">
+          {% csrf_token %}
+          <textarea name="comentario"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button class="btn btn-primary" type="submit"><i class="icon-comment"> </i>Comentar</button>
+    </form>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block auxiliar-menu %}
@@ -176,6 +276,13 @@ $(document).ready(function() {
         dateFormat: "dd/mm/yy"
         
 	});
+    
+    $(".btn-comentar").click(function(e){
+        e.preventDefault();
+        $("#form-comentar-lancamento").get(0).setAttribute('action', this.href);
+        $("#modal-comentar-lancamento").modal();
+        
+    })
     
     
 	$("#menu-financeiro-lancamentos-a-receber, #top-menu-financeiro").addClass("active");

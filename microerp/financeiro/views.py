@@ -228,4 +228,18 @@ def lancamentos_a_receber_antecipar(request, lancamento_id):
     else:
         form = AnteciparLancamentoForm(instance=lancamento)
     return render_to_response('frontend/financeiro/financeiro-lancamentos-antecipar.html', locals(), context_instance=RequestContext(request),)
-    
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def lancamentos_a_receber_comentar(request, lancamento_id):
+    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    if request.POST:
+        comentario = request.POST.get('comentario', None)
+        if comentario:
+            lancamento.observacaolancamento_set.create(texto=comentario, criado_por=request.user)
+            messages.success(request, u"Sucesso! Comentário Registrado com Sucesso!")
+        else:
+            messages.error(request, u"Erro! Campo comentário não pode ser vazio.")
+    else:
+        messages.error(request, u"Erro! Não dever ser acessado diretamente")
+    return(redirect("financeiro:lancamentos_a_receber"))
+        

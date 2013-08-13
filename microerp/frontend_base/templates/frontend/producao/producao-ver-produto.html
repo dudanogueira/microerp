@@ -162,7 +162,7 @@
                 {% for linha in produto.linhacomponenteavulsodoproduto_set.all %}                
                 <tr>
                     <td class="alert alert-info"><strong>{{forloop.counter}}</strong></td>
-                    <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
+                    <td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida}}</span></td>
                     <td><a href="{% url "producao:ver_componente" linha.componente.id %}">{{linha.componente.part_number}}</a></td>
                     <td>{{linha.componente.descricao}}</td>
                     
