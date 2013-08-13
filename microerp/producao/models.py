@@ -13,7 +13,7 @@ from django.template.defaultfilters import slugify
 
 
 COMPONENTE_UNIDADE_MEDIDA = (
-    ('un', 'Unidade'),
+    ('und', 'Unidade'),
     ('m', 'Metro'),
 )
 
