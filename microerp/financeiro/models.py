@@ -125,7 +125,9 @@ class Lancamento(models.Model):
                 return self.valor_cobrado
 
     def antecipavel(self):
-        if self.modo_recebido in settings.TIPOS_LANCAMENTOS_ANTECIPAVEIS and not self.pendente():
+        
+        antecipaveis = getattr(settings, 'TIPOS_LANCAMENTOS_ANTECIPAVEIS', ('boleto', 'cheque', 'credito'))
+        if self.modo_recebido in antecipaveis and not self.pendente():
             return True
         else:
             return False
