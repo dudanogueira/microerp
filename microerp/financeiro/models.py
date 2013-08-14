@@ -177,7 +177,7 @@ class ObservacaoLancamento(models.Model):
 class ProcessoAntecipacao(models.Model):
     
     def __unicode__(self):
-        return "Processo de Antecipação #%s criado por %s no dia %s" % (self.id, self.antecipado_por.funcionario, self.criado)
+        return u"Processo de Antecipação #%s criado por %s no dia %s" % (self.id, self.antecipado_por.funcionario, self.criado)
     
     valor_inicial = models.DecimalField(u"Valor Inicial dos Lançamentos Antecipados", max_digits=10, decimal_places=2, blank=False, null=False)
     percentual_abatido = models.DecimalField(u"Percentual Abatido do Valor", max_digits=10, decimal_places=2, blank=False, null=False)
