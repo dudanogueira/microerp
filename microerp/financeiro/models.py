@@ -70,7 +70,7 @@ class Lancamento(models.Model):
     
     def __unicode__(self):
         if self.data_recebido:
-            return u"Lançamento #%s de peso %d RECEBIDO em %s do Contrato #%d, Cliente %s de R$%s para %s" % (self.id, self.peso, self.data_recebido, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
+            return u"Lançamento #%s de peso %d RECEBIDO em %s por %s do Contrato #%d, Cliente %s de R$%s para %s" % (self.id, self.peso, self.data_recebido, self.recebido_por.funcionario, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
         else:
             if self.antecipado:
                 return u"Lançamento #%s de peso %d  Já ANTECIPADO do Contrato #%d, Cliente %s de R$%s para %s" % (self.id, self.peso, self.contrato.id, self.contrato.cliente, self.valor_cobrado, self.data_cobranca)
@@ -173,4 +173,19 @@ class ObservacaoLancamento(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class ProcessoAntecipacao(models.Model):
+    
+    def __unicode__(self):
+        return "Processo de Antecipação #%s criado por %s no dia %s" % (self.id, self.antecipado_por.funcionario, self.criado)
+    
+    valor_inicial = models.DecimalField(u"Valor Inicial dos Lançamentos Antecipados", max_digits=10, decimal_places=2, blank=False, null=False)
+    percentual_abatido = models.DecimalField(u"Percentual Abatido do Valor", max_digits=10, decimal_places=2, blank=False, null=False)
+    valor_abatido = models.DecimalField(u"Valor Abatido dos Lançamentos Antecipados", max_digits=10, decimal_places=2, blank=False, null=False)
+    lancamentos = models.ManyToManyField('Lancamento')
+    antecipado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, null=False)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+     
     

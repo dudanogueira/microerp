@@ -25,6 +25,7 @@ from financeiro.models import PerfilAcessoFinanceiro
 from financeiro.models import Lancamento
 from financeiro.models import ContaBancaria
 from financeiro.models import ObservacaoLancamento
+from financeiro.models import ProcessoAntecipacao
 
 class PerfilAcessoFinanceiroAdmin(admin.ModelAdmin):
     pass
@@ -37,7 +38,11 @@ class LancamentoAdmin(admin.ModelAdmin):
 class ObservacaoLancamentoAdmin(admin.ModelAdmin):
     pass
 
+class ProcessoAntecipacaoAdmin(admin.ModelAdmin):
+    filter_horizontal = ('lancamentos',)
+
 admin.site.register(PerfilAcessoFinanceiro, PerfilAcessoFinanceiroAdmin)
 admin.site.register(Lancamento, LancamentoAdmin)
 admin.site.register(ContaBancaria)
 admin.site.register(ObservacaoLancamento, ObservacaoLancamentoAdmin)
+admin.site.register(ProcessoAntecipacao, ProcessoAntecipacaoAdmin)

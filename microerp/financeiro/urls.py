@@ -5,14 +5,16 @@ from django.conf.urls import patterns, include, url
 urlpatterns = patterns('',
     url(r'^$', 'financeiro.views.home', name='home'),
     # Contratos
-    url(r'^contratos-a-lancar$', 'financeiro.views.contratos_a_lancar', name='contratos_a_lancar'),
-    url(r'^contrato/(?P<contrato_id>[0-9]+)/ver$', 'financeiro.views.ver_contrato', name='ver_contrato'),
-    url(r'^contrato/(?P<contrato_id>[0-9]+)/realizar-lancamento$', 'financeiro.views.realizar_lancamento', name='realizar_lancamento'),
-    url(r'^contrato/(?P<contrato_id>[0-9]+)/adicionar-lancamento$', 'financeiro.views.contrato_adicionar_lancamento', name='contrato_adicionar_lancamento'),
-    url(r'^contrato/(?P<contrato_id>[0-9]+)/fechar-contrato$', 'financeiro.views.contrato_fechar', name='contrato_fechar'),
+    url(r'^contratos-a-lancar/$', 'financeiro.views.contratos_a_lancar', name='contratos_a_lancar'),
+    url(r'^contrato/(?P<contrato_id>[0-9]+)/ver/$', 'financeiro.views.ver_contrato', name='ver_contrato'),
+    url(r'^contrato/(?P<contrato_id>[0-9]+)/realizar-lancamento/$', 'financeiro.views.realizar_lancamento', name='realizar_lancamento'),
+    url(r'^contrato/(?P<contrato_id>[0-9]+)/adicionar-lancamento/$', 'financeiro.views.contrato_adicionar_lancamento', name='contrato_adicionar_lancamento'),
+    url(r'^contrato/(?P<contrato_id>[0-9]+)/fechar-contrato/$', 'financeiro.views.contrato_fechar', name='contrato_fechar'),
     # lancamentos
-    url(r'^lancamentos/a-receber$', 'financeiro.views.lancamentos_a_receber', name='lancamentos_a_receber'),
-    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/receber$', 'financeiro.views.lancamentos_a_receber_receber', name='lancamentos_a_receber_receber'),
-    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/antecipar$', 'financeiro.views.lancamentos_a_receber_antecipar', name='lancamentos_a_receber_antecipar'),
-    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/comentar$', 'financeiro.views.lancamentos_a_receber_comentar', name='lancamentos_a_receber_comentar'),
+    url(r'^lancamentos/a-receber/$', 'financeiro.views.lancamentos_a_receber', name='lancamentos_a_receber'),
+    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/receber/$', 'financeiro.views.lancamentos_a_receber_receber', name='lancamentos_a_receber_receber'),
+    url(r'^lancamentos/a-receber/(?P<lancamento_id>[0-9]+)/comentar/$', 'financeiro.views.lancamentos_a_receber_comentar', name='lancamentos_a_receber_comentar'),
+    # processo de antecipacao
+    url(r'^lancamentos/a-receber/antecipar/$', 'financeiro.views.lancamentos_a_receber_antecipar', name='lancamentos_a_receber_antecipar'),
+    
 )

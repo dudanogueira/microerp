@@ -31,10 +31,13 @@ from django import forms
 
 from django.db.models import Sum
 
+from django.conf import settings
+
 from rh.utils import get_weeks
 
 from comercial.models import ContratoFechado
 from financeiro.models import Lancamento
+from financeiro.models import ProcessoAntecipacao
 
 import datetime
 
@@ -158,10 +161,18 @@ def lancamentos_a_receber_receber(request, lancamento_id):
 
             return(redirect("financeiro:lancamentos_a_receber"))
     else:
+        
+        # se lancamento ja não possuir o campo preenchido, sugerir com
+        # o padrao do contrato
+        if lancamento.modo_recebido:
+            modo_receber_sugerido = lancamento.modo_recebido
+        else:
+            modo_receber_sugerido = lancamento.contrato.forma_pagamento
+        
         form = FormIdentificarRecebido(instance=lancamento, initial = {
             'data_recebido' : datetime.date.today(),
             'valor_recebido' : lancamento.total_pendente(),
-            'modo_recebido' : lancamento.contrato.forma_pagamento,
+            'modo_recebido' : modo_receber_sugerido,
             
             })
         
@@ -214,21 +225,61 @@ class AnteciparLancamentoForm(forms.ModelForm):
         fields = 'valor_recebido', 'modo_recebido', 'data_antecipado', 'conta', 
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
-def lancamentos_a_receber_antecipar(request, lancamento_id):
-    lancamento = get_object_or_404(Lancamento, pk=lancamento_id, antecipado=False)
-    lancamento.atencipado=True
-    if request.POST:
-        form = AnteciparLancamentoForm(request.POST, instance=lancamento)
-        if form.is_valid():
-            lancamento = form.save(commit=False)
-            lancamento.situacao = "t"
-            lancamento.antecipado_por = request.user
-            lancamento.antecipado=True
-            lancamento.save()
-            messages.success(request, "Sucesso! Lançamento Antecipado!" )
-            return(redirect("financeiro:lancamentos_a_receber"))
+def lancamentos_a_receber_antecipar(request):
+    antecipaveis = getattr(settings, 'TIPOS_LANCAMENTOS_ANTECIPAVEIS', ('boleto', 'cheque', 'credito'))
+    lancamentos_antecipaveis = Lancamento.objects.filter(modo_recebido__in=antecipaveis, data_cobranca__gte=datetime.date.today())
+    if request.POST.get('confirmar'):
+        # confirmado, criar a antecipacao e vincular aos pagamentos
+        confirmado = True
+        lancamentos_id = request.POST.getlist('lancamento')
+        lancamentos_a_antecipar = lancamentos_antecipaveis.filter(id__in=lancamentos_id)
+        # marca todos os lancamentos como antecipados
+        lancamentos_a_antecipar.update(antecipado=True, situacao="t")
+        # calcula o valor total e registra o processo de antecipacao
+        try:
+            percentual = request.POST.get('percentual', 0)
+            valor_total = lancamentos_a_antecipar.aggregate(total=Sum('valor_cobrado'))
+            valor_percentual = float(valor_total['total']) * float(percentual) / 100
+            resultado_final = float(valor_total['total']) - float(valor_percentual)
+            processo = ProcessoAntecipacao.objects.create(
+                valor_inicial=valor_total['total'],
+                percentual_abatido=percentual,
+                valor_abatido=resultado_final,
+                antecipado_por=request.user,
+            )
+            processo.lancamentos.add(*lancamentos_a_antecipar.all())
+            for lancamento in lancamentos_a_antecipar.all():
+                lancamento.valor_recebido = lancamento.valor_cobrado - float(lancamento.valor_cobrado) * float(percentual) / 100
+                lancamento.save()
+            
+            messages.success(request, u"Sucesso! Antecipação Realizada!")
+        except:
+            raise
+            messages.error(request, u"Erro ao antecipar!")
+        
     else:
-        form = AnteciparLancamentoForm(instance=lancamento)
+        if request.POST:
+            if request.POST.get('calcular-antecipacao'):
+                calcular = True
+                lancamentos_id = request.POST.getlist('lancamentos-a-antecipar', None)
+                percentual = request.POST.get('percentual', 0)
+                if lancamentos_id:
+                    lancamentos_a_antecipar = lancamentos_antecipaveis.filter(id__in=lancamentos_id)
+                    valor_total = lancamentos_a_antecipar.aggregate(total=Sum('valor_cobrado'))
+                    valor_percentual = float(valor_total['total']) * float(percentual) / 100
+                    resultado_final = float(valor_total['total']) - float(valor_percentual)
+                else:
+                    calcular = False
+                    messages.error(request, u"Erro! Deve ser marcado pelo menos um Lançamento")
+        else:
+            if request.GET.get('lancamento'):
+                try:
+                    lancamento_sugerido = int(request.GET.get('lancamento'))
+                except: 
+                    lancamento_sugerido = 0
+            # exibe os processos de antecipacao
+            processos = ProcessoAntecipacao.objects.all()
+                
     return render_to_response('frontend/financeiro/financeiro-lancamentos-antecipar.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
@@ -244,4 +295,3 @@ def lancamentos_a_receber_comentar(request, lancamento_id):
     else:
         messages.error(request, u"Erro! Não dever ser acessado diretamente")
     return(redirect("financeiro:lancamentos_a_receber"))
-        

@@ -268,7 +268,7 @@
                 {% else %}
 
                     {% if lancamento.antecipavel %}
-                    <a href="{% url "financeiro:lancamentos_a_receber_antecipar" lancamento.id %}" class="btn btn-danger tooltip-items" data-toggle="tooltip" title="Antecipar" data-placement="bottom">
+                    <a href="{% url "financeiro:lancamentos_a_receber_antecipar" %}?lancamento={{lancamento.id}}" class="btn btn-danger tooltip-items" data-toggle="tooltip" title="Antecipar" data-placement="bottom">
                         <i class="icon-arrow-left"></i> 
                     </a>
                     {% endif %}
