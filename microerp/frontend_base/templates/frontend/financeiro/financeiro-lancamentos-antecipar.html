@@ -9,7 +9,15 @@
 <h1><i class="icon-th"></i> <i class="icon-arrow-left"></i> Antecipações</h1>
 {% if confirmado %}
 Confirmado!
-{{lancamentos}}
+total:{{valor_total}}
+percentual: {{valor_percentual}} ({{percentual}}%)
+final: {{valor_final}}
+<h2>Lançamentos afetados</h2>
+<ul>
+    {% for lancamento in lancamentos_a_antecipar %}
+        <li>{{lancamento}}</li>
+    {% endfor %}
+</ul>
 {% endif %}
 
 {% if calcular %}

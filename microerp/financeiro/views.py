@@ -227,35 +227,41 @@ class AnteciparLancamentoForm(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_antecipar(request):
     antecipaveis = getattr(settings, 'TIPOS_LANCAMENTOS_ANTECIPAVEIS', ('boleto', 'cheque', 'credito'))
-    lancamentos_antecipaveis = Lancamento.objects.filter(modo_recebido__in=antecipaveis, data_cobranca__gte=datetime.date.today())
+    lancamentos_antecipaveis = Lancamento.objects.filter(modo_recebido__in=antecipaveis, data_cobranca__gte=datetime.date.today()).exclude(antecipado=True, situacao="t")
     if request.POST.get('confirmar'):
         # confirmado, criar a antecipacao e vincular aos pagamentos
         confirmado = True
         lancamentos_id = request.POST.getlist('lancamento')
         lancamentos_a_antecipar = lancamentos_antecipaveis.filter(id__in=lancamentos_id)
-        # marca todos os lancamentos como antecipados
-        lancamentos_a_antecipar.update(antecipado=True, situacao="t")
         # calcula o valor total e registra o processo de antecipacao
-        try:
-            percentual = request.POST.get('percentual', 0)
-            valor_total = lancamentos_a_antecipar.aggregate(total=Sum('valor_cobrado'))
-            valor_percentual = float(valor_total['total']) * float(percentual) / 100
-            resultado_final = float(valor_total['total']) - float(valor_percentual)
-            processo = ProcessoAntecipacao.objects.create(
-                valor_inicial=valor_total['total'],
-                percentual_abatido=percentual,
-                valor_abatido=resultado_final,
-                antecipado_por=request.user,
-            )
-            processo.lancamentos.add(*lancamentos_a_antecipar.all())
-            for lancamento in lancamentos_a_antecipar.all():
-                lancamento.valor_recebido = float(lancamento.valor_cobrado) - float(lancamento.valor_cobrado) * float(percentual) / 100
-                lancamento.save()
-            
-            messages.success(request, u"Sucesso! Antecipação Realizada!")
-        except:
-            raise
-            messages.error(request, u"Erro ao antecipar!")
+        percentual = request.POST.get('percentual', 0)
+        valor_total = lancamentos_a_antecipar.aggregate(total=Sum('valor_cobrado'))['total'] or 0
+        valor_percentual = float(valor_total) * float(percentual) / 100
+        valor_final = float(valor_total) - float(valor_percentual)
+        # cria o processo de antecipacao
+        processo = ProcessoAntecipacao.objects.create(
+            valor_inicial=valor_total,
+            percentual_abatido=percentual,
+            valor_abatido=valor_final,
+            antecipado_por=request.user,
+        )
+        processo.lancamentos.add(*lancamentos_a_antecipar.all())
+        # altera o lancamento
+        # marca todos os lancamentos como antecipados, e da as providencias
+        for lancamento in lancamentos_a_antecipar.all():
+            valor_percentual = float(lancamento.valor_cobrado) * float(percentual) / 100
+            lancamento.valor_recebido = float(lancamento.valor_cobrado) - float(valor_percentual)
+            lancamento.data_antecipado = datetime.date.today()
+            lancamento.antecipado_por = request.user
+            lancamento.situacao = "t"
+            lancamento.antecipado = True
+            lancamento.save()
+            messages.info(request, u"Lançamento #%s marcado como antecipado: R$ %s" % (lancamento.id, lancamento.valor_recebido))
+        messages.success(request, u"Sucesso! Antecipação Realizada!")
+        redirect(reverse("financeiro"))
+        
+        
+
         
     else:
         if request.POST:
