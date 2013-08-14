@@ -23,6 +23,7 @@ class SolicitacaoResolvidaForm(forms.ModelForm):
         fields = 'resolucao_final',
 
 def home(request):
+    next = request.GET.get('next', None)
     if request.user.is_authenticated():
         try:
             funcionario = request.user.funcionario
