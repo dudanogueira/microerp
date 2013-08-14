@@ -258,7 +258,7 @@ def lancamentos_a_receber_antecipar(request):
             lancamento.save()
             messages.info(request, u"Lançamento #%s marcado como antecipado: R$ %s" % (lancamento.id, lancamento.valor_recebido))
         messages.success(request, u"Sucesso! Antecipação Realizada!")
-        redirect(reverse("financeiro"))
+        redirect(reverse("financeiro:lancamentos_a_receber_antecipar"))
         
         
 
@@ -268,15 +268,21 @@ def lancamentos_a_receber_antecipar(request):
             if request.POST.get('calcular-antecipacao'):
                 calcular = True
                 lancamentos_id = request.POST.getlist('lancamentos-a-antecipar', None)
-                percentual = request.POST.get('percentual', 0)
-                if lancamentos_id:
-                    lancamentos_a_antecipar = lancamentos_antecipaveis.filter(id__in=lancamentos_id)
-                    valor_total = lancamentos_a_antecipar.aggregate(total=Sum('valor_cobrado'))
-                    valor_percentual = float(valor_total['total']) * float(percentual) / 100
-                    resultado_final = float(valor_total['total']) - float(valor_percentual)
-                else:
-                    calcular = False
-                    messages.error(request, u"Erro! Deve ser marcado pelo menos um Lançamento")
+                try:
+                    percentual = request.POST.get('percentual', 0)
+                    if lancamentos_id:
+                        lancamentos_a_antecipar = lancamentos_antecipaveis.filter(id__in=lancamentos_id)
+                        valor_total = lancamentos_a_antecipar.aggregate(total=Sum('valor_cobrado'))
+                        valor_percentual = float(valor_total['total']) * float(percentual) / 100
+                        resultado_final = float(valor_total['total']) - float(valor_percentual)
+                    else:
+                        calcular = False
+                        messages.error(request, u"Erro! Deve ser marcado pelo menos um Lançamento")
+                    
+                except:
+                    messages.error(request, u"Erro! Percentual deve ser um número inteiro!")
+                    return redirect(reverse("financeiro:lancamentos_a_receber_antecipar"))
+                    
         else:
             if request.GET.get('lancamento'):
                 try:
