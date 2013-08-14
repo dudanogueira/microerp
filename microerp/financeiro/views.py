@@ -249,7 +249,7 @@ def lancamentos_a_receber_antecipar(request):
             )
             processo.lancamentos.add(*lancamentos_a_antecipar.all())
             for lancamento in lancamentos_a_antecipar.all():
-                lancamento.valor_recebido = lancamento.valor_cobrado - float(lancamento.valor_cobrado) * float(percentual) / 100
+                lancamento.valor_recebido = float(lancamento.valor_cobrado) - float(lancamento.valor_cobrado) * float(percentual) / 100
                 lancamento.save()
             
             messages.success(request, u"Sucesso! Antecipação Realizada!")
