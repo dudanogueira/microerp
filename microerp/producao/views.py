@@ -526,6 +526,8 @@ def ver_componente(request, componente_id):
     fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
     fabricantes = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('fabricante__nome').annotate(total=Sum('quantidade'))
     posicoes_estoque = []
+    participacoes_linha_componente_padrao = componente.opcaolinhasubproduto_set.filter(padrao=True)
+    participacoes_linha_componente_alternativo = componente.opcaolinhasubproduto_set.exclude(padrao=True)
     for estoque in EstoqueFisico.objects.all():
         try:
             posicao = estoque.posicaoestoque_set.filter(componente=componente).order_by('-data_entrada')[0]

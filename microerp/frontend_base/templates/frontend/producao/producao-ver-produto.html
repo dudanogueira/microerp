@@ -94,8 +94,8 @@
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Quantidade</th>
                     <th>SubProduto</th>
+										<th>Quantidade</th>
                     <th>Nome</th>
                     <th>Descrição</th>
                     <th>Custo</th>
@@ -106,8 +106,9 @@
                 {% for linha in produto.linhasubprodutodoproduto_set.all %}                
                 <tr>
                     <td class="alert alert-success"><strong>{{forloop.counter}}</strong></td>
-                    <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
                     <td><a href="{% url "producao:ver_subproduto" linha.subproduto.id %}">{{linha.subproduto.part_number}}</a></td>
+                    <td><span class="badge badge-warning">{{linha.quantidade}}</span></td>
+										
                     <td>{{linha.subproduto.nome}}</td>
                     <td>{{linha.subproduto.descricao}}</td>
                     <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>
@@ -151,8 +152,8 @@
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>Quantidade</th>
                     <th>Componente</th>
+										<th>Quantidade</th>
                     <th>Descrição</th>
                     <th>Custo</th>
                     <th>Ação</th>
@@ -162,8 +163,9 @@
                 {% for linha in produto.linhacomponenteavulsodoproduto_set.all %}                
                 <tr>
                     <td class="alert alert-info"><strong>{{forloop.counter}}</strong></td>
-                    <td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida}}</span></td>
                     <td><a href="{% url "producao:ver_componente" linha.componente.id %}">{{linha.componente.part_number}}</a></td>
+                    <td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida}}</span></td>
+										
                     <td>{{linha.componente.descricao}}</td>
                     
                     <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>

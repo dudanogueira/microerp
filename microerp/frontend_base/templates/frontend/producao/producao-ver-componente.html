@@ -151,13 +151,14 @@
         </div>
         
         <div class="tab-pane fade in" id="participacao">
-            <h2>Participação como Componente Avulso em Produtos</h2>
+            <h2>Participação como Componente de Produtos</h2>
             <table class="table table-condensed table-hover table-rounded">
                 <thead>
                     <tr>
                         <th>Item</th>
-                        <th>Quantidade</th>
                         <th>Produto</th>
+												<th>Quantidade</th>
+												<th>Nome</th>
                         <th>Descrição</th>
                     </tr>
                 </thead>
@@ -166,13 +167,16 @@
                     <tr>
                         <td>            <span class="badge badge-important"> {{forloop.counter}} </span>
                         </td>
-                        <td><span class="badge badge-warning">{{participacao.quantidade}}</span></td>
-                        <td><a href="{% url "producao:ver_produto" participacao.produto.id %}">{{participacao.produto}}</a></td>
+                        <td><a href="{% url "producao:ver_produto" participacao.produto.id %}">{{participacao.produto.part_number}}</a></td>
+												                        <td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+												<td>{{participacao.produto.nome}}</td>
                         <td>{{participacao.produto.descricao}}</td>
+
                     </tr>
                     {% endfor %}
                     <tr>
                         <td></td>
+												<td></td>
                         <td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_avulsa_produto}}</span></strong>
 </td>
                         <td></td>
@@ -180,26 +184,30 @@
                     </tr>
             </table>
             
-            <h2>Participação como Opção em Linha de Sub Produto</h2>
+            <h2>Participação como PADRÃO em Linha de Sub Produto</h2>
             <table class="table table-condensed table-hover table-rounded">
                 <thead>
                     <tr>
                         <th>Item</th>
-                        <th>Quantidade</th>
-                        <th>Produto</th>
+                        <th>SubProduto</th>
+												<th>Quantidade</th>
+												<th>Nome</th>
                         <th>Descrição</th>
                         <th># Linha</th>
                         <th>Padrão</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for participacao in componente.opcaolinhasubproduto_set.all %}
+                    {% for participacao in participacoes_linha_componente_padrao %}
                     <tr>
                         <td>            <span class="badge badge-important"> {{forloop.counter}} </span>
                         </td>
-                        <td><span class="badge badge-warning">{{participacao.quantidade}}</span></td>
-                        <td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}">{{participacao.linha.subproduto}}</a></td>
+                        <td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}">{{participacao.linha.subproduto.part_number}}</a></td>
+                        <td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+												
+												<td>{{participacao.linha.subproduto.nome}}</td>
                         <td>{{participacao.linha.subproduto.descricao}}</td>
+												
                         <td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
                         <td>{% if participacao.padrao %}
                             <span class="badge badge-success"><i class="icon-check"></i> Padrão</span>
@@ -209,7 +217,51 @@
                     {% endfor %}
                     <tr>
                         <td></td>
-                        <td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_subproduto}}</span></strong>
+												<td></td>
+                        <td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_padrao_subproduto}}</span></strong>
+</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+            </table>
+            
+
+            <h2>Participação como ALTERNATIVO em Linha de Sub Produto</h2>
+            <table class="table table-condensed table-hover table-rounded">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>SubProduto</th>
+												<th>Quantidade</th>
+												<th>Nome</th>
+                        <th>Descrição</th>
+                        <th># Linha</th>
+                        <th>Padrão</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participacao in participacoes_linha_componente_alternativo %}
+                    <tr>
+                        <td>            <span class="badge badge-important"> {{forloop.counter}} </span>
+                        </td>
+                        <td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}">{{participacao.linha.subproduto.part_number}}</a></td>
+                        <td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+												
+												<td>{{participacao.linha.subproduto.nome}}</td>
+                        <td>{{participacao.linha.subproduto.descricao}}</td>
+												
+                        <td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
+                        <td>{% if participacao.padrao %}
+                            <span class="badge badge-success"><i class="icon-check"></i> Padrão</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <td></td>
+												<td></td>
+                        <td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_alternativo_subproduto}}</span></strong>
 </td>
                         <td></td>
                         <td></td>
@@ -217,7 +269,6 @@
                         <td></td>
                     </tr>
             </table>
-            
             
 
             

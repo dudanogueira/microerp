@@ -182,6 +182,24 @@ class Componente(models.Model):
             if linha.quantidade:
                 valor += linha.quantidade
         return valor
+
+    def total_participacao_padrao_subproduto(self):
+        valor = 0
+        linhas = self.opcaolinhasubproduto_set.filter(padrao=True)
+        for linha in linhas:
+            if linha.quantidade:
+                valor += linha.quantidade
+        return valor
+        
+    def total_participacao_alternativo_subproduto(self):
+        valor = 0
+        linhas = self.opcaolinhasubproduto_set.exclude(padrao=True)
+        for linha in linhas:
+            if linha.quantidade:
+                valor += linha.quantidade
+        return valor
+    
+
     
     def total_unico_participacoes(self):
         return self.opcaolinhasubproduto_set.count() + self.linhacomponenteavulsodoproduto_set.count()
@@ -746,6 +764,11 @@ class ProdutoFinal(models.Model):
             if linha.quantidade:
                 valor += linha.quantidade * linha.componente.preco_liquido_unitario_dolar
         return valor
+
+    def part_number(self):
+        pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
+        return "%s-PRO%s" % (pn_prepend, "%05d" % self.id,)
+        
 
     def save(self):
         """Auto-populate an empty slug field from the MyModel name and

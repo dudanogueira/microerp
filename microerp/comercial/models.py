@@ -223,4 +223,25 @@ class TipodeContratoFechado(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+
+class Marca(models.Model):
     
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
+
+class Modelo(models.Model):
+    
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
+
+
+class QuantidadeDeMarca(models.Model):
+    contratofechado = models.ForeignKey('ContratoFechado')
+    quantidade = models.IntegerField(blank=False, null=False)
+    marca = models.ForeignKey('Marca', blank=True, null=True)
+    modelo = models.ForeignKey('Modelo', blank=False, null=False)

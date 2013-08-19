@@ -103,9 +103,11 @@
             <thead>
                 <tr>
                     <th>Item</th>
+										{% if subproduto.possui_tags %}
                     <th>TAG</th>
-                    <th>Opções</th>
+										{% endif %}
                     <th>Padrão:COMPONENTE</th>
+										<th>Opções</th>
                     <th>Padrão:QTD</th>
                     <th>Padrão:DESCRIÇÃO</th>
                     <th>Custo</th>
@@ -116,12 +118,11 @@
                 {% for linha in subproduto.linhasubproduto_set.all %}
                 <tr>
                     <td class="alert-info" id="linha-id-{{linha.id}}">{{forloop.counter}}</td>
+										{% if subproduto.possui_tags %}
                     <td>
                         {{linha.tag}}
                     </td>
-                    <td>
-                        <span class="badge badge-warning">{{linha.opcaolinhasubproduto_set.count}}</span>
-                    </td>
+										{% endif %}
                     <td>
                         <a href="
                         {% if linha.opcao_padrao %}
@@ -130,14 +131,22 @@
                         ">{{linha.opcao_padrao.componente.part_number}}</a>
                     </td>
                     <td>
+                        <span class="badge badge-info">{{linha.opcaolinhasubproduto_set.count}}</span>
+                    </td>
+										
+                    <td>{% if linha.opcao_padrao %}
+											<span class="badge badge-warning">
                         {{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida}}
+											</span>
+											{% endif %}
                     </td>
                     <td>
                         {{linha.opcao_padrao.componente.descricao}}
                     </td>
                     <td>
                         <span class="label">R$ {{linha.custo|floatformat:2}}</span>
-                        <td>
+										</td>
+										<td>
                             {% if request.user.perfilacessoproducao.gerente %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
                                 <i class="icon-pencil"></i>
@@ -151,31 +160,32 @@
                             </a>                   
                             {% endif %}
                         </td>
-                    </tr>
+								</tr>
            
-                    {% empty %}
-                    <tr>
-                        <td>
-                            Nenhuma Linha Encontrada.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>
-                            <span class="badge badge-success">Total: R$ {{subproduto.custo_total_linhas|floatformat:2}}</span>
-                        </td>
-                        <td></td>
-                    </tr>
-                </tbody>
-            </table>
-
-        </div>
+                  {% empty %}
+                  <tr>
+                      <td>
+                          Nenhuma Linha Encontrada.
+                      </td>
+                  </tr>
+                  {% endfor %}
+                  <tr>
+                      <td></td>
+											{% if subproduto.possui_tags %}
+                      <td></td>
+											{% endif %}
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                          <span class="badge badge-success">Total: R$ {{subproduto.custo_total_linhas|floatformat:2}}</span>
+                      </td>
+                      <td></td>
+                  </tr>
+            </tbody>
+				</table>
+		</div>
         
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
@@ -215,8 +225,8 @@
                 <thead>
                     <tr>
                         <th>Item</th>
-                        <th>Quantidade</th>
                         <th>SubProduto</th>
+												<th>Quantidade</th>
                         <th>Nome</th>
                         <th>Descrição</th>
                         <th>Custo</th>
@@ -227,8 +237,9 @@
                     {% for linha in subproduto.linhasubprodutos_agregados.all %}
                     <tr>
                         <td id="linha-id-{{linha.id}}" class="alert-success">{{forloop.counter}}</td>
-                        <td><span class="badge badge-warning">{{linha.quantidade}}</td>
                             <td><a href="{% url "producao:ver_subproduto" linha.subproduto_agregado.id %}">{{linha.subproduto_agregado.part_number}}</a></td>
+		                        <td><span class="badge badge-warning">{{linha.quantidade}}</td>
+														
                             <td>{{linha.subproduto_agregado.nome}}</td>
                             <td>{{linha.subproduto_agregado.descricao}}</td>
                             <td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
@@ -244,7 +255,9 @@
                         <td></td>
                         <td></td>
                         <td></td>
+												<td></td>
                         <td><span class="badge badge-success">Total: R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
+												<td></td>
                     </tr>
                 
                 </tbody>
