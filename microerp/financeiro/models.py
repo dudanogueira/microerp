@@ -135,6 +135,7 @@ class Lancamento(models.Model):
     contrato = models.ForeignKey('comercial.ContratoFechado')
     peso = models.IntegerField(blank=False, null=False, default=1)
     situacao = models.CharField(blank=False, default="a", choices=LANCAMENTO_SITUACAO_CHOICES, max_length=1)
+    informacoes_pagamento = models.TextField(u"Informações sobre o Pagamento", blank=True)
     # cobranca
     data_cobranca = models.DateField(default=datetime.datetime.today)
     valor_cobrado = models.DecimalField("Valor Cobrado", max_digits=10, decimal_places=2)

@@ -38,6 +38,7 @@ from rh.utils import get_weeks
 from comercial.models import ContratoFechado
 from financeiro.models import Lancamento
 from financeiro.models import ProcessoAntecipacao
+from cadastro.models import Cliente
 
 import datetime
 
@@ -147,7 +148,13 @@ def contrato_fechar(request, contrato_id):
     contrato.save()
     return(redirect("financeiro:contratos_a_lancar"))
 
-# Lancamentos a Receber
+# Lancamentos
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def lancamentos(request):
+    return render_to_response('frontend/financeiro/financeiro-lancamentos.html', locals(), context_instance=RequestContext(request),)
+
+
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_receber(request, lancamento_id):
     lancamento = get_object_or_404(Lancamento, pk=lancamento_id, data_recebido=None)
@@ -159,7 +166,7 @@ def lancamentos_a_receber_receber(request, lancamento_id):
             lancamento.recebido_por = request.user
             lancamento.save()
 
-            return(redirect("financeiro:lancamentos_a_receber"))
+            return(redirect("financeiro:lancamentos"))
     else:
         
         # se lancamento ja não possuir o campo preenchido, sugerir com
@@ -192,9 +199,90 @@ class FormIdentificarRecebido(forms.ModelForm):
         model = Lancamento
         fields = ('valor_recebido', 'modo_recebido', 'data_recebido','conta')
 
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def ajax_lancamento_informacao_pagamento(request, lancamento_id):
+    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    if request.POST:
+        infos = request.POST.get('informacoes-pagamento', None)
+        lancamento.informacoes_pagamento = infos
+        lancamento.save()
+        messages.success(request, "Sucesso! Informação sobre pagamento aleterado.")
+        return redirect(reverse("financeiro:lancamentos"))
+    else:
+        return render_to_response('frontend/financeiro/financeiro-include-informacoes-pagamento-lancamento.html', locals(), context_instance=RequestContext(request),)
+    
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def ajax_lancamento_comentarios(request, lancamento_id):
+    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    return render_to_response('frontend/financeiro/financeiro-include-comentarios-modal.html', locals(), context_instance=RequestContext(request),)
+
+class SelecionarClienteForm(forms.Form):
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
+    cliente.widget.attrs['class'] = 'select2'
+    
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def ajax_lancamento_buscar(request):
+    inicio_busca = datetime.date.today()
+    fim_busca = datetime.date.today() + datetime.timedelta(days=30)
+    if request.POST:
+        buscado = True
+        if request.POST.get('numero-contrato', None):
+            try:
+                id_contrato = int(request.POST.get('numero-contrato'))
+                lancamentos_exibir = Lancamento.objects.filter(contrato__pk=id_contrato)
+            except:
+                id_contrato = 0
+        if request.POST.get('numero-lancamento', None):
+            try:
+                id_lancamento = int(request.POST.get('numero-lancamento'))
+                lancamentos_exibir = Lancamento.objects.filter(pk=id_lancamento)
+            except:
+                id_lancamento = 0
+        if request.POST.get('data-inicio', None) and request.POST.get('data-fim', None):
+            try:
+                data_inicio = datetime.datetime.strptime(request.POST.get('data-inicio', None), "%d/%m/%Y")
+                data_fim = datetime.datetime.strptime(request.POST.get('data-fim', None), "%d/%m/%Y")
+                lancamentos_exibir = Lancamento.objects.filter(data_cobranca__range=(data_inicio, data_fim))
+            except:
+                raise
+                
+                
+        
+    return render_to_response('frontend/financeiro/financeiro-include-lancamentos-buscar.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
+def ajax_lancamentos_receber(request, busca_tipo, offset):
+    try:
+        offset = int(offset)
+    except:
+        offset = 0
+    
+    if busca_tipo == "semana":
+        semana = get_weeks()
+        semana_exibir = semana[offset]
+        inicio_semana = semana_exibir[0]
+        fim_semana = semana_exibir[-1]
+        lancamentos_exibir = Lancamento.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
+    elif busca_tipo == "dia":
+        hoje = datetime.date.today()
+        dia_buscado =  hoje + datetime.timedelta(days=offset)
+        lancamentos_exibir = Lancamento.objects.filter(data_recebido=None, data_cobranca=dia_buscado)
+    elif busca_tipo == "pendentes":
+        pendentes = True
+        lancamentos_exibir = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+    soma_lancamentos_futuro = lancamentos_exibir.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
+    soma_lancamentos_antecipados = lancamentos_exibir.filter(antecipado=True).aggregate(Sum('valor_recebido'))['valor_recebido__sum'] or 0
+    
+    return render_to_response('frontend/financeiro/financeiro-include-linha-lancamento-futuro.html', locals(), context_instance=RequestContext(request),)
+
+
+
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber(request):
-    lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+    
     lancamentos_pendentes_total =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))
     total_com_juros_e_multa = 0
     for lancamento in lancamentos_pendentes:
@@ -306,4 +394,5 @@ def lancamentos_a_receber_comentar(request, lancamento_id):
             messages.error(request, u"Erro! Campo comentário não pode ser vazio.")
     else:
         messages.error(request, u"Erro! Não dever ser acessado diretamente")
-    return(redirect("financeiro:lancamentos_a_receber"))
+    return(redirect("financeiro:lancamentos"))
+
