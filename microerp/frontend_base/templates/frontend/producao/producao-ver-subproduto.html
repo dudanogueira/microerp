@@ -62,10 +62,40 @@
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
                 
                 <h2>Produção</h2>
-                <h3>Situação de Testes</h3>
-                <strong>Montado:</strong><br />
-                <strong>Testando:</strong><br />
-                <strong>Funcionando:</strong><br />
+                <h3>Situação de Testes e Produção</h3>
+								
+				        <table class="table table-condensed table-hover table-rounded">
+				            <thead>
+				                <tr>
+				                    <th>Situação</th>
+														<th>Quantidade</th>
+				                    <th>Ação</th>
+				                </tr>
+				            </thead>
+				            <tbody>
+											
+											<tr>
+												<td>Montado</td>
+												<td>{{subproduto.total_montado}}</td>
+												<td><a href="#" class="btn btn-info">Enviar para teste</a></td>
+											</tr>
+											<tr>
+												<td>Em Teste</td>
+												<td>{{subproduto.total_testando}}</td>
+												<td><a href="#" class="btn btn-success">Definir como Funcional</a></td>
+											</tr>
+											<tr>
+												<td>Funcional</td>
+												<td>{{subproduto.total_funcional}}</td>
+												<td></td>
+											</tr>
+											
+											
+											
+										</tbody>
+								</table>
+								
+								
                 <h3>Quantidades de Produção</h3>
                 <strong>Quantidade Máxima de Produção:</strong><br />
                 <strong>Quantidade Estimada de Produção Semanal:</strong><br />

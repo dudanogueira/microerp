@@ -1,0 +1,179 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load phonenumber_br %}
+
+<title>{%block title %}{{block.super}} - Financeiro{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-paperclip"></i> Lançamentos</h1>
+
+<h2>A Receber</h2>
+
+<div class="row-fluid">
+  <ul class="nav nav-tabs" id="lancamentos-tab">
+    <li class="active firstload"><a class="ajaxtab" href="#hoje" data-url="{% url "financeiro:ajax_lancamentos_receber" "dia" "0" %}">Hoje</a></li>
+    <li><a class="ajaxtab" href="#pendentes" data-url="{% url "financeiro:ajax_lancamentos_receber" "pendentes" "1" %}">Pendentes</a></li>
+		
+    <li><a class="ajaxtab" href="#nesta-semana" data-url="{% url "financeiro:ajax_lancamentos_receber" "semana" "0" %}">Nesta Semana</a></li>
+    <li><a class="ajaxtab" href="#proxima-semana" data-url="{% url "financeiro:ajax_lancamentos_receber" "semana" "1" %}">Próxima Semana</a></li>
+		
+    <li><a class="ajaxtab" class="buscar-filtrar" href="#buscar-filtrar" data-url="{% url "financeiro:ajax_lancamento_buscar" %}">Buscar / Filtrar</a></li>
+		
+  </ul>
+  
+  <div class="tab-content">
+    <div class="tab-pane active" id="hoje"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+		
+    <div class="tab-pane" id="nesta-semana"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+    <div class="tab-pane" id="proxima-semana"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+		
+    <div class="tab-pane" id="pendentes"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+	
+<div class="tab-pane" id="buscar-filtrar">
+	{% include "frontend/financeiro/financeiro-include-lancamentos-buscar.html" %}
+	
+</div>
+		
+		
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}	
+
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+
+$(document).ready(function() {
+
+	// carrega primeiro conteudo
+	// ou redireciona se for pedido
+	
+	if (window.location.hash != ""){
+				$('a[href="' + window.location.hash + '"]').click();
+		}else{
+			$('#hoje').load($('.firstload a').attr("data-url"),function(result){
+			  $('.firstload a').tab('show');
+			});
+		}
+	 
+	// set menu
+	$("#menu-financeiro-lancamentos, #top-menu-financeiro").addClass("active");
+});
+
+$('.nav-tabs').on("click", '.ajaxtab', function(e){
+	e.preventDefault();
+	var url = $(this).attr("data-url");
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	// ajax load from data-url
+	$(href).load(url)
+	$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	pane.tab('show');		
+	
+})
+
+$('.tab-content').on("hover", ".popover-items", function (e) {
+	$(this).popover("show");
+});
+
+$('.tab-content').on("hover", ".tooltip-items", function (e) {
+	$(this).tooltip("show");
+});
+
+$('.tab-content').on("click", "a.btn-informacoes-pagamento", function (e) {
+ 	e.preventDefault();
+	$("#modal-informacoes-pagamento").load(this.href);
+	$("#modal-informacoes-pagamento").modal('show');
+});
+
+$('.tab-content').on("click", "a.btn-comentar", function (e) {
+	e.preventDefault();
+	$("#form-comentar-lancamento").get(0).setAttribute('action', this.href);
+  $("#modal-comentar-lancamento").modal("show");
+});
+	 
+$('.tab-content').on("click", "a.btn-lancamento-comentarios", function(e){
+		 e.preventDefault();
+		 var url = $(this).attr('href');
+		 $.get(url, function(data) {
+			 
+			 $('<div class="modal hide fade">' + data + '</div>').modal();
+		 }).success(function() { $('input:text:visible:first').focus(); });
+});
+	 
+$('.tab-content').on("click", ".datepicker", function(e){
+	 	$( this ).datepicker({
+	 		inline: true,
+	         dateFormat: "dd/mm/yy"
+	 	});
+		$( this ).datepicker('show');
+		
+});
+	
+$('.tab-content').on("click", "#btn-buscar-por-numero-contrato", function(e){
+	e.preventDefault();
+	$.post('{% url "financeiro:ajax_lancamento_buscar" %}', $("#form-buscar-por-numero-contrato").serialize(), function(data) {
+	  $('#buscar-filtrar').empty().html(data);
+	});
+});
+
+$('.tab-content').on("click", "#btn-buscar-por-numero-lancamento", function(e){
+	e.preventDefault();
+	$.post('{% url "financeiro:ajax_lancamento_buscar" %}', 
+	
+	$("#form-buscar-por-numero-lancamento").serialize(), function(data) {
+	  $('#buscar-filtrar').empty().html(data);
+	});
+});
+
+$('.tab-content').on("click", "#btn-buscar-por-periodo", function(e){
+	e.preventDefault();
+	$.post('{% url "financeiro:ajax_lancamento_buscar" %}', 
+	
+	$("#form-buscar-por-periodo").serialize(), function(data) {
+	  $('#buscar-filtrar').empty().html(data);
+	});
+});
+
+$('.tab-content').on("click", "#btn-submit-info-pagamento", function(e){
+	alert();
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/financeiro/financeiro-menu.html" %}
+
+
+<!-- Modal Comentario -->
+<div id="modal-comentar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Comentar Lançamento</h3>
+  </div>
+  <div class="modal-body">
+      <form method="POST" id="form-comentar-lancamento">
+          {% csrf_token %}
+          <textarea name="comentario"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button class="btn btn-primary" type="submit"><i class="icon-comment"> </i>Comentar</button>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal Informacoes Pagamento -->
+<div id="modal-informacoes-pagamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+</div>
+
+{% endblock%}
