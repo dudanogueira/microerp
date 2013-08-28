@@ -45,6 +45,12 @@ OPCAO_LINHA_SUBPRODUTO_PADRAO = (
     (False, u'Não'),
 )
 
+TIPO_DE_TESTES_SUBPRODUTO = (
+    (0,  u'Não Necessita de testes'),
+    (1, "Teste Simples"),
+    (2, "Teste Composto"),
+)
+
 
 class PerfilAcessoProducao(models.Model):
     '''Perfil de Acesso à Produção'''
@@ -65,17 +71,13 @@ class EstoqueFisico(models.Model):
     def __unicode__(self):
         return u"%s (identificador: %s)" % (self.nome, self.identificacao)
     
-    def posicao_valor_componente(self, componente=None):
+    def posicao_componente(self, componente=None):
         if componente:
             try:
-                ultima_posicao_componente = self.posicaoestoque_set.filter(componente=componente).order_by('data_entrada')[0]
+                ultima_posicao_componente = self.posicaoestoque_set.filter(componente=componente).order_by('-data_entrada')[0].quantidade
             except:
                 ultima_posicao_componente = 0
-            if ultima_posicao_componente.quantidade == 0:
-                valor = ultima_posicao_componente.quantidade
-            else:
-                valor = ultima_posicao_componente.quantidade * ultima_posicao_componente.componente.preco_liquido_unitario_real
-            return valor
+            return ultima_posicao_componente
         else:
             return 0
     
@@ -84,6 +86,7 @@ class EstoqueFisico(models.Model):
     ativo = models.BooleanField(default=True)
     nome = models.CharField(blank=True, max_length=100)
     identificacao = models.SlugField(u"Abreviação", help_text=u"Abreviação para diretórios e urls")
+    local_fisico = models.TextField(blank=True, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -99,6 +102,7 @@ class PosicaoEstoque(models.Model):
     
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
     nota_referencia = models.ForeignKey('NotaFiscal', blank=True, null=True, on_delete=models.PROTECT)
+    ordem_producao_subproduto_referencia = models.ForeignKey('OrdemProducaoSubProduto', null=True, blank=True)
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
@@ -559,11 +563,162 @@ class SubProduto(models.Model):
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-SUB%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+    
+    def quantidade_maxima_de_producao_atual(self):
+        '''
+        calcula a quantidade maxima de producao deste subproduto
+        considerando o estoque de producao
+        '''
+    
+    def produzivel(self, quantidade=1):
+        # descobre os componentes deste sub produto
+        produzivel = True
+        componentes = self.get_componentes()
+        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+        
+        for item in componentes.items():
+            if type(item[0]) == long:
+                # componente, verificar estoque
+                posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                valor_a_produzir = float(item[1]) * float(quantidade)
+                if posicao_em_estoque_produtor < valor_a_produzir:
+                    return False
+            elif type(item[0]) == str:
+                # subproduto
+                id_subproduto = item[0].split('-')[1]
+                subproduto = SubProduto.objects.values('total_funcional').get(id=id_subproduto)
+                valor_a_produzir = float(item[1]) * float(quantidade)
+                if subproduto['total_funcional'] < valor_a_produzir:
+                    return False
+        return True
+        
+        
+                
+    
+    def get_componentes(self, dic=None, conf=None, multiplicador=1):
+        # componentes
+        # se tiver configurado, calcular configurado
+        if not dic:
+            dic = {}
+        if conf:
+            # calcula a quantidade de componentes conforme a configuracao
+            for k,v in conf.items():
+                id_linha = k
+                opcao = OpcaoLinhaSubProduto.objects.get(pk=v)
+                try:
+                    valor_atual = dic[opcao.componente.id]
+                except:
+                    valor_atual = 0
+                # valor atual resgatado
+                dic[opcao.componente.id] = float(valor_atual) + (float(opcao.quantidade) * float(multiplicador))
+        # caso contrario,
+        else:
+            # monta dicionario com o padrao
+            for linha in self.linhasubproduto_set.all():
+                opcao_padrao = linha.opcao_padrao()
+                componente = opcao_padrao.componente
+                quantidade_necessaria = float(opcao_padrao.quantidade)
+                # soma ao montante
+                try:
+                    quantidade_atual = dic[opcao_padrao.componente.id]
+                except:
+                    quantidade_atual = 0
+                dic[opcao_padrao.componente.id] = float(quantidade_atual) + (float(quantidade_necessaria) * float(multiplicador))
+
+        
+        # agora pro SUBPRODUTO
+        # pega os subprodutos
+        for linha_subproduto in self.linhasubprodutos_agregados.all():
+            # para cada linha de subproduto
+            # pega os componentes dele, somente se nao exigir testes
+            if linha_subproduto.subproduto_agregado.tipo_de_teste:
+                try:
+                    valor_atual = dic['subproduto-%s']
+                except:
+                    valor_atual = 0
+                dic['subproduto-%s' % str(linha_subproduto.subproduto_agregado.id)] = float(linha_subproduto.quantidade) * float(multiplicador) + float(valor_atual)
+                
+            else:
+                dic = linha_subproduto.subproduto_agregado.get_componentes(dic=dic, multiplicador=linha_subproduto.quantidade*multiplicador)
+            # avanca sobre os subprodutos
+        return dic
+        
+    
+    def dicionario_quantidades_componentes_nos_subprodutos(self, dic=None, multiplicador=1):
+        '''
+            sempre recebe o dicionario de quantidades
+            agrega os componentes do subproduto atual
+            agrega todos os componentes dos subprodutos agregados
+        '''
+        if not dic:
+            dic = {}
+        # para cada linha de subproduto agregado, buscar quantidades
+        for linha_agregados in self.linhasubprodutos_agregados.all():
+            # pegar os componentes do agregado
+            multiplicador = linha_agregados.quantidade * multiplicador
+            dic = linha_agregados.subproduto_agregado.dicionario_quantidades_componentes(dic, multiplicador=linha_agregados.quantidade)
+        return dic
+    
+    def dicionario_quantidades_componentes(self, dic=None, conf=None, multiplicador=1):
+        '''
+            recebe a configuracao da linha em dicionario
+            calcula as quantidades de componentes
+            retorna dicionario de componentesXquantidades
+        '''
+        if not dic:
+            # primeira execucao
+            dic = {}
+        if conf:
+            # calcula a quantidade de componentes conforme a configuracao
+            for k,v in conf.items():
+                id_linha = k
+                opcao = OpcaoLinhaSubProduto.objects.get(pk=v)
+                try:
+                    valor_atual = dic[opcao.componente.id]
+                except:
+                    valor_atual = 0
+                # valor atual resgatado
+                dic[opcao.componente.id] = float(valor_atual) + (float(opcao.quantidade) * float(multiplicador))
+        else:
+            for linha in self.linhasubproduto_set.all():
+                opcao_padrao = linha.opcao_padrao()
+                componente = opcao_padrao.componente
+                quantidade_necessaria = float(opcao_padrao.quantidade)
+                # soma ao montante
+                try:
+                    quantidade_atual = dic[opcao_padrao.componente.id]
+                except:
+                    quantidade_atual = 0
+                dic[opcao_padrao.componente.id] = float(quantidade_atual) + (float(quantidade_necessaria) * float(multiplicador))
+        return dic            
+    
+    def dicionario_quantidades_utilizadas_padrao(self, dic=None, fator_multiplicador=1):
+        '''retorna um dicionario de todos os componentes utilizados por padrão'''
+        if not dic:
+            dic_componentes={}
+        else:
+            dic_componentes = dic
+        #primeiro, considerar os componentes
+        for linha in self.linhasubproduto_set.all():
+            opcao_padrao = linha.opcao_padrao()
+            componente = opcao_padrao.componente
+            quantidade_necessaria = float(opcao_padrao.quantidade)
+            # soma ao montante
+            try:
+                quantidade_atual = dic_componentes[str(opcao_padrao.componente.id)]
+            except:
+                quantidade_atual = 0
+            dic_componentes[str(opcao_padrao.componente.id)] = float(quantidade_atual) + (float(quantidade_necessaria) * float(fator_multiplicador))
+
+        #segundo, considerar subprodutos
+        for linha in self.linhasubprodutos_agregados.all():
+            dic_componentes = linha.subproduto_agregado.dicionario_quantidades_utilizadas_padrao(dic_componentes, fator_multiplicador=linha.quantidade)
+        return dic_componentes
 
     def part_number(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-SUB%s" % (pn_prepend, "%05d" % self.id)
-        
 
     def save(self):
         """Auto-populate an empty slug field from the MyModel name and
@@ -622,18 +777,73 @@ class SubProduto(models.Model):
                     valor = padrao.quantidade * padrao.componente.preco_liquido_unitario_dolar
                     total_parcial += valor
         return total_parcial        
+    
+    def total_disponivel(self):
+        # subproduto com tipo de teste nulo, ou seja
+        # total disponível é direto no estoque
+        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+        if not self.tipo_de_teste:
+            # este valor deverá ser calculado automaticamente,
+            # pois o produto não precisa de teste e pode ser criado na hora
+            # retornar a maior quantidade possível que
+            # pode ser produzido deste SubProduto
+            pode_produzir = 1
+            increase = True
+            #while increase==True:
+            # para cada linha de componente
+            
+            componentes = self.get_componentes()
+            modulos = []
+            
+            for item in componentes.items():
+                if type(item[0]) == long:
+                    posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                    diferenca = float(posicao_em_estoque_produtor) / float(item[1])
+                    modulos.append(diferenca)
+                elif type(item[0]) == str:
+                    # subproduto
+                    id_subproduto = item[0].split('-')[1]
+                    subproduto = SubProduto.objects.values('total_funcional').get(id=id_subproduto)
+                    diferenca = float(subproduto['total_funcional']) / float(item[1])
+                    modulos.append(diferenca)
+            
+            if modulos:
+                x = min(float(s) for s in modulos)
+                return int(x)
+            else:
+                return 0
+                    
+            
+        
+        # subproduto com teste, deve ser produzido, testado,
+        # e depois armazenado em total_funcional
+        else:
+            return self.total_funcional
 
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
     slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")
     descricao = models.TextField(u"Descrição", blank=True)
     possui_tags = models.BooleanField(default=True, help_text="Se este campo for marcado, as Linhas do Sub Produto deverão ser alocadas para uma TAG única.")
+    tipo_de_teste = models.IntegerField(blank=False, null=False, default=0, choices=TIPO_DE_TESTES_SUBPRODUTO)
+    # totalizadores de teste
+    total_montado = models.IntegerField(blank=False, null=False, default=0)
+    total_testando = models.IntegerField(blank=False, null=False, default=0)
+    total_funcional = models.IntegerField(blank=False, null=False, default=0)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
 class LinhaSubProdutoAgregado(models.Model):
     ''' linha com os subprodutos e suas quantidades agregadas'''
+    
+    def __unicode__(self):
+        return "%s Unidades do SubProduto %s Agregado ao %s" % (self.quantidade, self.subproduto_agregado.part_number(), self.subproduto_principal.part_number())
+    
+    
+    def linha_produzivel(self):
+        return self.subproduto_agregado.produzivel(quantidade=self.quantidade)
     
     class Meta:
         verbose_name = "Linha Sub Produto Agregado"
@@ -645,6 +855,13 @@ class LinhaSubProdutoAgregado(models.Model):
     
     def custo(self):
         return self.quantidade * self.subproduto_agregado.custo_total_linhas()
+    
+    def disponivel_estoque(self):
+        if self.quantidade > self.subproduto_agregado.total_funcional:
+            return True
+        else:
+            return False
+        
     
     quantidade = models.IntegerField(help_text=u"Número Inteiro", blank=True, null=True, default=1)
     subproduto_principal = models.ForeignKey('SubProduto', related_name="linhasubprodutos_agregados")
@@ -694,9 +911,17 @@ class LinhaSubProduto(models.Model):
 
 class OpcaoLinhaSubProduto(models.Model):
 
+    def __unicode__(self):
+        if self.padrao:
+            padrao = u"(Padrão)"
+        else:
+            padrao = ''
+        return "%s %s de %s %s" % (self.quantidade, self.componente.medida, self.componente, padrao)
+
     class Meta:
         verbose_name = u"Opção para a Linha do SubProduto"
         unique_together = (('linha', 'padrao'))
+        ordering = '-padrao',
     
     def custo(self):
         valor = 0
@@ -871,5 +1096,14 @@ class DocumentoTecnicoProduto(models.Model):
     produto = models.ForeignKey('ProdutoFinal')
     arquivo = models.FileField(upload_to=produto_local_documentos)
     # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class OrdemProducaoSubProduto(models.Model):
+    subproduto = models.ForeignKey('SubProduto')
+    quantidade = models.IntegerField(blank=False, null=False)
+    string_producao = models.TextField(blank=False)
+    # meta
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

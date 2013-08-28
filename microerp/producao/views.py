@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+import datetime, urllib
 from xml.dom import minidom
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
@@ -30,6 +30,7 @@ from producao.models import ProdutoFinal
 from producao.models import LinhaSubProdutodoProduto
 from producao.models import LinhaComponenteAvulsodoProduto
 from producao.models import DocumentoTecnicoProduto
+from producao.models import OrdemProducaoSubProduto
 
 
 from django import forms
@@ -519,7 +520,7 @@ def adicionar_componentes(request):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_componente(request, componente_id):
-    componente = get_object_or_404(Componente, pk=componente_id)
+    componente = get_object_or_404(Componente.objects.select_related(), pk=componente_id)
     lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-nota__data_lancado_estoque')
     # memorias: LinhaFornecedorFabricanteComponente
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(componente=componente)
@@ -1378,3 +1379,208 @@ def apagar_linha_componente_avulso_de_produto(request, produto_id, linha_id):
         messages.error(request, u"Somente gerente pode apagar")
     return redirect(reverse("producao:ver_produto", args=[produto.id])+ "#componentes-avulsos")
  
+ #
+ # ORDEM DE PRODUCAO
+ #
+ 
+class SelecionarSubProdutoForm(forms.Form):
+    quantidade = forms.IntegerField(initial=10)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.all(), empty_label=None)
+    subproduto.widget.attrs['class'] = 'select2'
+
+
+class SelecionarProdutoForm(forms.Form):
+    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all())
+    produto.widget.attrs['class'] = 'select2'
+ 
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_producao(request):
+    form_subproduto = SelecionarSubProdutoForm()
+    form_produto = SelecionarProdutoForm()
+    if request.POST.get('bt-form-subproduto', None):
+        form_subproduto = SelecionarSubProdutoForm(request.POST)
+        if form_subproduto.is_valid():
+            subproduto = get_object_or_404(SubProduto.objects.select_related(), pk=form_subproduto.cleaned_data['subproduto'].id)
+            quantidade = form_subproduto.cleaned_data['quantidade']
+            return redirect(reverse("producao:ordem_de_producao_subproduto", args=[subproduto.id, quantidade]))
+    if request.POST.get('bt-form-produto', None):
+        form_produto = SelecionarProdutoForm(request.POST)
+        if form_produto.is_valid():
+            produto = get_object_or_404(ProdutoFinal.objects.select_related(), pk=form_produto.cleaned_data['produto'].id)
+            return redirect(reverse("producao:ordem_de_producao_produto", args=[produto.id, quantidade]))
+    
+        
+    return render_to_response('frontend/producao/producao-ordem-de-producao.html', locals(), context_instance=RequestContext(request),)    
+
+class FormConfiguradorSubProduto(forms.Form):
+    def __init__(self, *args, **kwargs):
+        subproduto = kwargs.pop('subproduto', None)
+        super(FormConfiguradorSubProduto, self).__init__(*args, **kwargs)
+        if subproduto:
+            for linha in subproduto.linhasubproduto_set.all():
+                opcao_padrao = linha.opcao_padrao()
+                if opcao_padrao:
+                    opcao_id = opcao_padrao.id
+                else:
+                    opcao_id = None
+                self.fields['linha-%s' % linha.id] = forms.ModelChoiceField(queryset=linha.opcaolinhasubproduto_set.all(), required=False, initial=opcao_id, label="Linha #%s" % linha.id)
+                self.fields['linha-%s' % linha.id].widget.attrs['class'] = 'select2'
+                self.fields['linha-%s' % linha.id].required = True
+                self.fields['linha-%s' % linha.id].empty_label = None
+    
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_solicitada):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+    estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+    #extra configuracao
+    if request.POST.get('configuracao', None):
+        configuracao = request.POST.get('configuracao', None)
+        import ast
+        conf = ast.literal_eval(configuracao)
+        componentes = subproduto.get_componentes(conf=conf, multiplicador=float(quantidade_solicitada))
+        # registra a ordem de producao
+        ordem_producao_subproduto = OrdemProducaoSubProduto.objects.create(
+            subproduto=subproduto,
+            quantidade=quantidade_solicitada,
+            string_producao=componentes,
+            criado_por=request.user, 
+        )
+        messages.success(request, "Ordem de Produção criada")
+        # dar baixa em todos os items do componentes
+        for item in componentes.items():
+            # longo ou inteiro, é componente
+            if type(item[0]) == long:
+                #descobre posicao atual do componente no estoque produtor
+                posicao_atual = estoque_produtor.posicao_componente(item[0])
+                # remove da posicao atual
+                nova_quantidade = float(posicao_atual) - float(item[1])
+                nova_posicao = PosicaoEstoque.objects.create(
+                    componente_id=int(item[0]),
+                    estoque=estoque_produtor,
+                    quantidade=nova_quantidade,
+                    criado_por=request.user,
+                    justificativa='Ordem #%s de Produção de Subproduto' % ordem_producao_subproduto.id,
+                    quantidade_alterada=componentes,
+                    ordem_producao_subproduto_referencia=ordem_producao_subproduto
+                )
+                messages.success(request, u"Nova posição em Estoque de Produção para %s: %s->%s" % (nova_posicao.componente, posicao_atual, nova_posicao.quantidade))
+            elif type(item[0]) == str:
+                # descobre o subproduto
+                id_subproduto = item[0].split('-')[1]
+                subproduto_remover = SubProduto.objects.get(id=id_subproduto)
+                posicao_atual = subproduto_remover.total_funcional
+                nova_posicao = posicao_atual - float(float(item[1]))
+                # remove a quantidade de subproduto funcional
+                subproduto_remover.total_funcional = nova_posicao 
+                subproduto_remover.save()
+                messages.success(request, u"Removido do Total Funcional do Subproduto %s: %s -> %s" % (subproduto_remover, posicao_atual, nova_posicao))
+        # incrementa o subproduto como funcional
+        total_anterior = subproduto.total_funcional
+        novo_total = total_anterior + int(quantidade_solicitada)
+        subproduto.total_funcional = novo_total
+        messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s -> %s" % (subproduto, total_anterior, novo_total))
+        subproduto.save()
+        
+        
+            
+        
+    return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    if request.POST:
+        subproduto_produzivel = subproduto.produzivel(quantidade=quantidade_solicitada)
+        linhas = []
+        form_configurador_subproduto = FormConfiguradorSubProduto(request.POST, subproduto=subproduto)
+        if form_configurador_subproduto.is_valid():
+            # pega estoque de producao
+            slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+            estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+            # calcular
+            
+            # cria dicionario de configuracao das linhas deste subproduto
+            conf = {}
+            for linha_field in form_configurador_subproduto.fields:
+                opcao = form_configurador_subproduto.cleaned_data[linha_field]
+                try:
+                    valor = conf[linha.id]
+                except:
+                    valor = 0
+                conf[opcao.linha.id] = opcao.id
+            
+            # passa a configuracao para gerar o dicionario de componentes
+            # deste subproduto
+            get_componentes = subproduto.get_componentes(conf=conf, multiplicador=float(quantidade_solicitada))
+            # aplicar multiplicador de quantidade_solicitada
+            
+            # assume producao liberada
+            producao_liberada = True
+            # verifica se no total, possui estoque para fazer todos os produtos
+            # presentes em get_componentes
+            
+            for item in get_componentes.items():
+                if type(item[0]) == long:
+                    # verifica se possui a quantidade total deste componente em estoque
+                    qtd_componente = item[1]
+                    posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                    # quantiade no estoque insuficiente
+                    if qtd_componente > posicao_em_estoque_produtor:
+                        producao_liberada = False
+                        componente = Componente.objects.get(pk=int(item[0]))
+                        messages.error(request, "Quantidade Indisponível de Componente ID %s" % componente)
+                elif type(item[0] == str):
+                    subproduto_id = item[0].split("-")[1]
+                    subproduto = SubProduto.objects.get(id=id_subproduto)
+                    qtd_subprouto = item[1]
+                    quantidade_disponivel = subproduto.total_funcional
+                    # quantidade de subprodutos funcionais é menor, esta indisponível
+                    if qtd_subprouto > quantidade_disponivel: 
+                        producao_liberada = False
+                        messages.error(request, "Quantidade Indisponível de SubProduto %s" % item[0])
+                    
+            
+            calculado = True
+            quantidades_componente = {}
+            quantidades_configuradas = {}
+            for linha_field in form_configurador_subproduto.fields:
+                linha = form_configurador_subproduto.cleaned_data[linha_field]
+                try:
+                    quantidade_usada = quantidades_componente[linha.componente.id][1]
+                except:
+                    quantidade_usada = 0
+                # calcula a quantidade de componentes na linha
+                quantidade_usada += float(linha.quantidade) * float(quantidade_solicitada)
+                # puxa a posicao no estoque
+                posicao_em_estoque_produtor = estoque_produtor.posicao_componente(linha.componente)
+                # marca se é possível produzir, conforme estoque produtor
+                if quantidade_usada > posicao_em_estoque_produtor:
+                    pode = False
+                    producao_liberada = False
+                else:
+                    pode = True
+                quantidades_componente[linha.componente.id] = (linha, quantidade_usada, posicao_em_estoque_produtor, pode)
+
+            # calcula os subprodutos agregados
+            quantidades_agregados = {}
+            for linha in subproduto.linhasubprodutos_agregados.all():
+                quantidade_usada = float(linha.quantidade) * float(quantidade_solicitada)
+                if quantidade_usada > linha.subproduto_agregado.total_disponivel():
+                    pode = False
+                    producao_liberada = False
+                else:
+                    pode = True
+                quantidades_agregados = []
+                quantidades_agregados.append((linha, quantidade_usada, linha.subproduto_agregado.total_disponivel(), pode))
+        if producao_liberada:
+            for field in form_configurador_subproduto.fields:
+                form_configurador_subproduto[field].widget = forms.HiddenInput()
+
+    else:
+        form_configurador_subproduto = FormConfiguradorSubProduto(subproduto=subproduto)
+    return render_to_response('frontend/producao/producao-ordem-de-producao-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_producao_produto(request, produto_id, quantidade):
+    return render_to_response('frontend/producao/producao-ordem-de-producao-produto.html', locals(), context_instance=RequestContext(request),)

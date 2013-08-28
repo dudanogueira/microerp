@@ -1,0 +1,42 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="icon-list-ul"></i> Produzir Sub Produto</h2>
+	<div class="well">
+		<form method="post">
+			{% csrf_token %}
+			{{form_subproduto.as_p}}
+			<button class="btn" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> Produzir SubProduto</button>
+		</form>
+	</div>
+	
+	<h2><i class="icon-windows"></i> Produzir Produto</h2>
+	<div class="well">
+		<form method="post">
+			{% csrf_token %}
+			{{form_produto.as_p}}
+			<button class="btn" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> Produzir Produto</button>
+			
+		</form>
+	</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

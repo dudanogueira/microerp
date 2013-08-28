@@ -62,6 +62,11 @@
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
                 
                 <h2>Produção</h2>
+								{% if subproduto.tipo_de_teste == 0 %}
+								<strong>Não precisa de testes.</strong><br />
+								Capacidade de Produção conforme Estoque: {{subproduto.total_disponivel}}
+								{% else %}
+								
                 <h3>Situação de Testes e Produção</h3>
 								
 				        <table class="table table-condensed table-hover table-rounded">
@@ -94,7 +99,9 @@
 											
 										</tbody>
 								</table>
+									
 								
+								{% endif %}								
 								
                 <h3>Quantidades de Produção</h3>
                 <strong>Quantidade Máxima de Produção:</strong><br />

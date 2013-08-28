@@ -23,6 +23,7 @@ from models import PerfilAcessoProducao
 from models import LinhaSubProdutoAgregado
 from models import ArquivoAnexoComponente
 from models import LinhaSubProdutodoProduto
+from models import OrdemProducaoSubProduto
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -149,6 +150,7 @@ class LinhaComponenteAvulsodoProdutoAdmin(admin.ModelAdmin):
     list_filter = 'produto', 'componente'
     search_fields = 'produto__nome', 'produto__descricao', 'componente__part_number'
 
+admin.site.register(OrdemProducaoSubProduto)
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
 admin.site.register(ComponenteTipo, ComponenteTipoAdmin)

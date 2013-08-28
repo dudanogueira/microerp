@@ -1,0 +1,158 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção de SubProduto{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="icon-list-ul"></i> Produzir Sub Produto {{subproduto.part_number}}</h2>
+	<h1 class="alert alert-info">{{quantidade_solicitada}} Unidades</h1>
+
+	{{get_componentes}}
+	
+	{% if calculado %}
+	<div id="calculado">
+		<h2>Calculo de Produção</h2>
+		<h3>Componentes</h3>
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>Componente</th>
+					<th>Qtd Consumida</th>
+					<th>Em Estoque Produção</th>
+				</tr>
+			</thead>
+			<tbody>
+					{% for k,linha in quantidades_componente.items %}
+					<tr class="
+					{% if linha.3 %}
+					alert alert-success
+					{%else%}
+					alert alert-danger
+					{% endif %}
+					">
+						<td>
+							{{linha.0.componente.part_number}}
+						</td>
+						<td>
+							{{linha.1}} {{linha.0.medida}}
+						</td>
+						<td>
+							{{linha.2}} {{linha.0.medida}}
+						</td>
+					</tr>
+			{% endfor %}				
+			</tbody>	
+		</table>
+		 
+		<h3>Sub Produtos Agregados</h3>
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>Sub Produto</th>
+					<th>Qtd Consumida</th>
+					<th>Disponível</th>
+				</tr>
+			</thead>		
+			<tbody>
+					{% for linha in quantidades_agregados %}
+					{{subproduto_agregado.0}}
+					<tr class="
+					{% if linha.3 %}
+					alert alert-success
+					{%else%}
+					alert alert-danger
+					{% endif %}
+					">
+						<td>
+							{{linha.0.subproduto_agregado.part_number}} {{linha.0.subproduto_agregado.get_componentes}} {{linha.0.linha_produzivel}}
+						</td>
+						<td>
+							{{linha.1}} unidades
+						</td>
+						<td>
+							{{linha.2}} ({{linha.0.subproduto_agregado.get_tipo_de_teste_display}})
+						</td>
+					</tr>
+			{% endfor %}				
+			</tbody>	
+		</table>
+
+		{% if producao_liberada %}
+		
+		<h2>Produção Liberada</h2>
+		<form method="POST" name="confirmar-produto" action="{% url "producao:ordem_de_producao_subproduto_confirmar" subproduto.id quantidade_solicitada %}">
+			{% csrf_token %}
+			<input type="hidden" name="configuracao" value="{{conf}}">
+			<button class="btn btn-danger" type="submit">Confirmar Produção!</button>
+		</form>
+		
+		{% endif %}
+
+	</div>		
+	{% else %}
+		<div id="configurar">
+		<h2>Linhas de Componentes</h2>
+		<form method="post" name="configurador_produto" id="configurador_produto">
+			{% csrf_token %}
+			{{form_configurador_subproduto}}
+		</form>
+	
+		<h2>SubProdutos Agregados</h2>
+	
+	  <table class="table table-condensed table-hover table-rounded">
+	      <thead>
+	          <tr>
+	              <th>Item Agregado</th>
+	              <th>SubProduto</th>
+								<th>Quantidade Consumida</th>
+	              <th>Quantidade Estoque</th>
+	          </tr>
+	      </thead>
+	      <tbody>
+				
+				
+				
+				
+				
+					{% for linha in subproduto.linhasubprodutos_agregados.all %}
+					<tr class="{% if linha.quantidade > linha.subproduto_agregado.total_disponivel %}
+						
+							alert alert-danger
+							{% else %}
+							alert alert-info
+							{% endif %}"
+	>
+						<td>
+						
+							{{forloop.counter}}</td>
+						<td>{{linha.subproduto_agregado.part_number}}</td>
+						<td>{{linha.quantidade}}</td>
+						<td>{{linha.subproduto_agregado.total_disponivel}}</td>
+					</tr>
+					{% endfor %}
+				
+				</tbody>
+		</table>
+	
+		<button form="configurador_produto">
+			Verificar Disponibilidade para Produção
+		</button>
+	</div>
+	{% endif %}
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

@@ -49,5 +49,11 @@ urlpatterns = patterns('',
     url(r'^produto/(?P<produto_id>[0-9]+)/linha-subproduto/(?P<linha_id>[0-9]+)/apagar$', 'producao.views.apagar_linha_subproduto_de_produto', name='apagar_linha_subproduto_de_produto'),
     url(r'^produto/(?P<produto_id>[0-9]+)/linha-componente-avulso/(?P<linha_id>[0-9]+)/apagar$', 'producao.views.apagar_linha_componente_avulso_de_produto', name='apagar_linha_componente_avulso_de_produto'),
     url(r'^produto/(?P<produto_id>[0-9]+)/anexo/(?P<anexo_id>[0-9]+)/apagar$', 'producao.views.ver_produto_apagar_anexo', name='ver_produto_apagar_anexo'),
+    # ordem de producao
+    url(r'^ordem-de-producao/$', 'producao.views.ordem_de_producao', name='ordem_de_producao'),
+    url(r'^ordem-de-producao/subproduto/(?P<subproduto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/$', 'producao.views.ordem_de_producao_subproduto', name='ordem_de_producao_subproduto'),
+    url(r'^ordem-de-producao/subproduto/(?P<subproduto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/confirmar/$', 'producao.views.ordem_de_producao_subproduto_confirmar', name='ordem_de_producao_subproduto_confirmar'),
+    url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/$', 'producao.views.ordem_de_producao_produto', name='ordem_de_producao_produto'),
+    url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/$', 'producao.views.ordem_de_producao_produto', name='ordem_de_producao_produto'),
     
 )
