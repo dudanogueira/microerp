@@ -1539,7 +1539,8 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     # quantidade de subprodutos funcionais é menor, esta indisponível
                     if qtd_subprouto > quantidade_disponivel: 
                         producao_liberada = False
-                        messages.error(request, "Quantidade Indisponível de SubProduto %s" % item[0])
+                        faltou = qtd_subprouto - quantidade_disponivel
+                        messages.error(request, "Quantidade Indisponível (FALTOU: %s) de SubProduto %s" % (faltou, item[0]))
                     
             
             calculado = True
