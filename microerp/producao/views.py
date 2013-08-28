@@ -1527,12 +1527,13 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
                     # quantiade no estoque insuficiente
                     if qtd_componente > posicao_em_estoque_produtor:
+                        faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
                         producao_liberada = False
                         componente = Componente.objects.get(pk=int(item[0]))
-                        messages.error(request, "Quantidade Indisponível de Componente ID %s" % componente)
+                        messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
                 elif type(item[0] == str):
                     subproduto_id = item[0].split("-")[1]
-                    subproduto = SubProduto.objects.get(id=id_subproduto)
+                    subproduto = SubProduto.objects.get(id=subproduto_id)
                     qtd_subprouto = item[1]
                     quantidade_disponivel = subproduto.total_funcional
                     # quantidade de subprodutos funcionais é menor, esta indisponível
