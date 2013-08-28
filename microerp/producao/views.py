@@ -1565,15 +1565,15 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                 quantidades_componente[linha.componente.id] = (linha, quantidade_usada, posicao_em_estoque_produtor, pode)
 
             # calcula os subprodutos agregados
-            quantidades_agregados = {}
+            quantidades_agregados = []
             for linha in subproduto.linhasubprodutos_agregados.all():
                 quantidade_usada = float(linha.quantidade) * float(quantidade_solicitada)
                 if quantidade_usada > linha.subproduto_agregado.total_disponivel():
                     pode = False
                     producao_liberada = False
+                    faltou = quantidade_usada - linha.subproduto_agregado.total_disponivel()
                 else:
                     pode = True
-                quantidades_agregados = []
                 quantidades_agregados.append((linha, quantidade_usada, linha.subproduto_agregado.total_disponivel(), pode))
 
         if producao_liberada:
