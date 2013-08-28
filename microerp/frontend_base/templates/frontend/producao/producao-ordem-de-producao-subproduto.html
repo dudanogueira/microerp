@@ -47,36 +47,36 @@
 		</table>
 		 
 		<h3>Sub Produtos Agregados</h3>
-		<table class="table table-condensed table-hover table-rounded">
-			<thead>
-				<tr>
-					<th>Sub Produto</th>
-					<th>Qtd Consumida</th>
-					<th>Disponível</th>
-				</tr>
-			</thead>		
-			<tbody>
-					{% for linha in quantidades_agregados %}
-					{{subproduto_agregado.0}}
-					<tr class="
-					{% if linha.3 %}
-					alert alert-success
-					{%else%}
-					alert alert-danger
-					{% endif %}
-					">
+	  <table class="table table-condensed table-hover table-rounded">
+	      <thead>
+	          <tr>
+	              <th>Item Agregado</th>
+	              <th>SubProduto</th>
+								<th>Quantidade Consumida</th>
+	              <th>Quantidade Estoque</th>
+	          </tr>
+	      </thead>
+	      <tbody>
+			
+			
+					{% for linha in subproduto.linhasubprodutos_agregados.all %}
+					<tr class="{% if linha.quantidade > linha.subproduto_agregado.total_disponivel %}
+					
+							alert alert-danger
+							{% else %}
+							alert alert-success
+							{% endif %}"
+	>
 						<td>
-							{{linha.0.subproduto_agregado.part_number}} {{linha.0.subproduto_agregado.get_componentes}} {{linha.0.linha_produzivel}}
-						</td>
-						<td>
-							{{linha.1}} unidades
-						</td>
-						<td>
-							{{linha.2}} ({{linha.0.subproduto_agregado.get_tipo_de_teste_display}})
-						</td>
+					
+							{{forloop.counter}}</td>
+						<td>{{linha.subproduto_agregado.part_number}}</td>
+						<td>{{quantidade_solicitada}} X {{linha.quantidade}} X {{linha.subproduto_agregado.get_componentes}}</td>
+						<td>{{linha.subproduto_agregado.total_disponivel}} ({{linha.subproduto_agregado.get_tipo_de_teste_display}})</td>
 					</tr>
-			{% endfor %}				
-			</tbody>	
+					{% endfor %}
+			
+				</tbody>
 		</table>
 
 		{% if producao_liberada %}
@@ -93,53 +93,50 @@
 	</div>		
 	{% else %}
 		<div id="configurar">
-		<h2>Linhas de Componentes</h2>
-		<form method="post" name="configurador_produto" id="configurador_produto">
-			{% csrf_token %}
-			{{form_configurador_subproduto}}
-		</form>
+			<h2>Linhas de Componentes</h2>
+			<form method="post" name="configurador_produto" id="configurador_produto">
+				{% csrf_token %}
+				{{form_configurador_subproduto}}
+			</form>
 	
-		<h2>SubProdutos Agregados</h2>
+			<h2>SubProdutos Agregados</h2>
 	
-	  <table class="table table-condensed table-hover table-rounded">
-	      <thead>
-	          <tr>
-	              <th>Item Agregado</th>
-	              <th>SubProduto</th>
-								<th>Quantidade Consumida</th>
-	              <th>Quantidade Estoque</th>
-	          </tr>
-	      </thead>
-	      <tbody>
+		  <table class="table table-condensed table-hover table-rounded">
+		      <thead>
+		          <tr>
+		              <th>Item Agregado</th>
+		              <th>SubProduto</th>
+									<th>Quantidade Consumida</th>
+		              <th>Quantidade Estoque</th>
+		          </tr>
+		      </thead>
+		      <tbody>
 				
 				
-				
-				
-				
-					{% for linha in subproduto.linhasubprodutos_agregados.all %}
-					<tr class="{% if linha.quantidade > linha.subproduto_agregado.total_disponivel %}
+						{% for linha in subproduto.linhasubprodutos_agregados.all %}
+						<tr class="{% if linha.quantidade > linha.subproduto_agregado.total_disponivel %}
 						
-							alert alert-danger
-							{% else %}
-							alert alert-info
-							{% endif %}"
-	>
-						<td>
+								alert alert-danger
+								{% else %}
+								alert alert-info
+								{% endif %}"
+		>
+							<td>
 						
-							{{forloop.counter}}</td>
-						<td>{{linha.subproduto_agregado.part_number}}</td>
-						<td>{{linha.quantidade}}</td>
-						<td>{{linha.subproduto_agregado.total_disponivel}}</td>
-					</tr>
-					{% endfor %}
+								{{forloop.counter}}</td>
+							<td>{{linha.subproduto_agregado.part_number}}</td>
+							<td>{{linha.quantidade}}</td>
+							<td>{{linha.subproduto_agregado.total_disponivel}}</td>
+						</tr>
+						{% endfor %}
 				
-				</tbody>
-		</table>
+					</tbody>
+			</table>
 	
-		<button form="configurador_produto">
-			Verificar Disponibilidade para Produção
-		</button>
-	</div>
+			<button form="configurador_produto">
+				Verificar Disponibilidade para Produção
+			</button>
+		</div>
 	{% endif %}
 {% endblock %}
 

@@ -1533,9 +1533,9 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                         messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
                 elif type(item[0] == str):
                     subproduto_id = item[0].split("-")[1]
-                    subproduto = SubProduto.objects.get(id=subproduto_id)
+                    subproduto_usado = SubProduto.objects.get(id=subproduto_id)
                     qtd_subprouto = item[1]
-                    quantidade_disponivel = subproduto.total_funcional
+                    quantidade_disponivel = subproduto_usado.total_funcional
                     # quantidade de subprodutos funcionais é menor, esta indisponível
                     if qtd_subprouto > quantidade_disponivel: 
                         producao_liberada = False
@@ -1574,6 +1574,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     pode = True
                 quantidades_agregados = []
                 quantidades_agregados.append((linha, quantidade_usada, linha.subproduto_agregado.total_disponivel(), pode))
+
         if producao_liberada:
             for field in form_configurador_subproduto.fields:
                 form_configurador_subproduto[field].widget = forms.HiddenInput()
