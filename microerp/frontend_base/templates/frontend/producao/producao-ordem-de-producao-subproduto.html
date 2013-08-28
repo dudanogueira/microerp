@@ -33,7 +33,7 @@
 					{% endif %}
 					">
 						<td>
-							{{linha.0.componente.part_number}}
+							{{linha.0.componente.part_number}} ({{linha.0.componente.id}})
 						</td>
 						<td>
 							{{linha.1}} {{linha.0.medida}}
@@ -67,7 +67,10 @@
 					{% endif %}
 					">
 						<td>
-							{{linha.0.subproduto_agregado.part_number}} {{linha.0.subproduto_agregado.get_componentes}} {{linha.0.linha_produzivel}}
+							{{linha.0.subproduto_agregado.part_number}}
+							{% if not linha.0.subproduto_agregado.tipo_de_teste %} 				
+							{{linha.0.subproduto_agregado.get_componentes}}
+							{% endif %}
 						</td>
 						<td>
 							{{linha.1}} unidades
