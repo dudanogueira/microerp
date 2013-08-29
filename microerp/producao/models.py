@@ -640,10 +640,10 @@ class SubProduto(models.Model):
             # pega os componentes dele, somente se nao exigir testes
             if linha_subproduto.subproduto_agregado.tipo_de_teste:
                 try:
-                    valor_atual = dic['subproduto-%s']
+                    valor_atual = dic['subproduto-%s' % str(linha_subproduto.subproduto_agregado.id)]
                 except:
                     valor_atual = 0
-                dic['subproduto-%s' % str(linha_subproduto.subproduto_agregado.id)] = float(linha_subproduto.quantidade) * float(multiplicador) + float(valor_atual)
+                dic['subproduto-%s' % str(linha_subproduto.subproduto_agregado.id)] = float(valor_atual) + (float(linha_subproduto.quantidade) * float(multiplicador))
                 
             else:
                 dic = linha_subproduto.subproduto_agregado.get_componentes(dic=dic, multiplicador=linha_subproduto.quantidade*multiplicador)

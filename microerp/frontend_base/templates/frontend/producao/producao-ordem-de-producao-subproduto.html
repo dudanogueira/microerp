@@ -6,11 +6,23 @@
 
 {% block content %}
 	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Produzir Sub Produto {{subproduto.part_number}}</h2>
-	<h1 class="alert alert-info">{{quantidade_solicitada}} Unidades</h1>
-	<h4>{{subproduto.get_tipo_de_teste_display}}</h4>
+	<h2><i class="icon-list-ul"></i> Sub Produto {{subproduto.part_number}}</h2>
+	<div class="row-fluid">
+		
+		<div class="span7">
+			{% if subproduto.tipo_de_teste %}
+			<strong>Total Montado</strong>: <span class="badge">{{subproduto.total_montado}}</span><br />
+			<strong>Total Testando</strong>: <span class="badge badge-info">{{subproduto.total_testando}}</span><br />
+			<strong>Total Funcional</strong>: <span class="badge badge-success">{{subproduto.total_funcional}}</span><br />
+			{% endif %}
+		</div>
 
-	Notação de Produção: {{get_componentes}}
+		<div class="span5">
+				<h2 class="alert alert-info">{{quantidade_solicitada}} Unidades</h2>
+					<h4>{{subproduto.get_tipo_de_teste_display}}</h4>
+		</div>
+	</div>
+
 	
 	{% if calculado %}
 	<div id="calculado">
@@ -143,6 +155,8 @@
 			</button>
 		</div>
 	{% endif %}
+	{% if get_componentes %}<strong>Notação de Produção</strong>: {{get_componentes}}<br />{% endif %}
+	
 {% endblock %}
 
 {% block auxiliar-menu %}
