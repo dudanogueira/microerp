@@ -8,8 +8,9 @@
 	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
 	<h2><i class="icon-list-ul"></i> Produzir Sub Produto {{subproduto.part_number}}</h2>
 	<h1 class="alert alert-info">{{quantidade_solicitada}} Unidades</h1>
+	<h4>{{subproduto.get_tipo_de_teste_display}}</h4>
 
-	{{get_componentes}}
+	Notação de Produção: {{get_componentes}}
 	
 	{% if calculado %}
 	<div id="calculado">

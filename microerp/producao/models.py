@@ -1107,3 +1107,22 @@ class OrdemProducaoSubProduto(models.Model):
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class RegistroEnvioDeTesteSubProduto(models.Model):
+    quantidade = models.IntegerField(blank=False, null=False)
+    subproduto = models.ForeignKey('SubProduto')
+    funcionario = models.ForeignKey('rh.Funcionario')
+    # meta
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class RegistroSaidaDeTesteSubProduto(models.Model):
+    quantidade = models.IntegerField(blank=False, null=False)
+    subproduto = models.ForeignKey('SubProduto')
+    funcionario = models.ForeignKey('rh.Funcionario')
+    # meta
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+

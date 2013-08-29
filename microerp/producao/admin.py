@@ -24,6 +24,8 @@ from models import LinhaSubProdutoAgregado
 from models import ArquivoAnexoComponente
 from models import LinhaSubProdutodoProduto
 from models import OrdemProducaoSubProduto
+from models import RegistroEnvioDeTesteSubProduto
+from models import RegistroSaidaDeTesteSubProduto
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -150,6 +152,15 @@ class LinhaComponenteAvulsodoProdutoAdmin(admin.ModelAdmin):
     list_filter = 'produto', 'componente'
     search_fields = 'produto__nome', 'produto__descricao', 'componente__part_number'
 
+class RegistroEnvioDeTesteSubProdutoAdmin(admin.ModelAdmin):
+    list_filter = 'funcionario', 'subproduto'
+    list_display = 'funcionario', 'quantidade', 'subproduto', 'criado', 'criado_por'
+
+class RegistroSaidaDeTesteSubProdutoAdmin(admin.ModelAdmin):
+    list_filter = 'funcionario', 'subproduto'
+    list_display = 'funcionario', 'quantidade', 'subproduto', 'criado', 'criado_por'
+
+
 admin.site.register(OrdemProducaoSubProduto)
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
@@ -168,3 +179,5 @@ admin.site.register(LinhaComponenteAvulsodoProduto, LinhaComponenteAvulsodoProdu
 admin.site.register(PerfilAcessoProducao)
 admin.site.register(ArquivoAnexoComponente, ArquivoAnexoComponenteAdmin)
 admin.site.register(LinhaSubProdutodoProduto, LinhaSubProdutodoProdutoAdmin)
+admin.site.register(RegistroEnvioDeTesteSubProduto, RegistroEnvioDeTesteSubProdutoAdmin)
+admin.site.register(RegistroSaidaDeTesteSubProduto, RegistroSaidaDeTesteSubProdutoAdmin)

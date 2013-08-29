@@ -68,8 +68,8 @@
 								{% else %}
 								
                 <h3>Situação de Testes e Produção</h3>
-								
-				        <table class="table table-condensed table-hover table-rounded">
+								<div id="situacao-testes">
+				        	<table class="table table-condensed table-hover table-rounded">
 				            <thead>
 				                <tr>
 				                    <th>Situação</th>
@@ -82,16 +82,63 @@
 											<tr>
 												<td>Montado</td>
 												<td>{{subproduto.total_montado}}</td>
-												<td><a href="#" class="btn btn-info">Enviar para teste</a></td>
+												<td>
+													
+													<!-- Button to trigger modal -->
+													<a href="#enviar-para-teste" data-max-control="{{subproduto.total_montado}}" role="button" class="btn btn-info" data-toggle="modal">Enviar para teste</a>
+ 
+													<!-- Modal Enviar para Teste -->
+													<div id="enviar-para-teste" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Enviar para Teste</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-enviar-para-teste">
+																{% csrf_token %}
+															{{form_enviar_para_teste.as_p}}
+														</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-enviar-para-teste" class="btn btn-info" name="enviar-subproduto-teste-btn" value="enviado">Enviar para Testes</button>
+													  </div>
+													</div>
+													
+												</td>
 											</tr>
 											<tr>
 												<td>Em Teste</td>
-												<td>{{subproduto.total_testando}}</td>
-												<td><a href="#" class="btn btn-success">Definir como Funcional</a></td>
+												<td><span class="badge badge-info">{{subproduto.total_testando}}</span></td>
+												<td>
+													
+													<!-- Button to trigger modal -->
+													<a href="#enviar-para-funcional" role="button" class="btn btn-success" data-toggle="modal">Enviar para Funcional</a>
+ 
+													<!-- Modal Enviar para Funcional -->
+													<div id="enviar-para-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Enviar para Funcional</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-enviar-para-funcional">
+																{% csrf_token %}
+															{{form_enviar_para_funcional.as_p}}
+														</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-enviar-para-funcional" class="btn btn-success" name="enviar-subproduto-funcional-btn" value="enviado">Enviar para Funcional</button>
+													  </div>
+													</div>
+													
+													
+												</td>
 											</tr>
 											<tr>
 												<td>Funcional</td>
-												<td>{{subproduto.total_funcional}}</td>
+												<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
 												<td></td>
 											</tr>
 											
@@ -99,7 +146,7 @@
 											
 										</tbody>
 								</table>
-									
+								</div>
 								
 								{% endif %}								
 								
@@ -233,7 +280,7 @@
         <!-- Button to trigger modal -->
         <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Sub Produto</a>
  
-        <!-- Modal -->
+        <!-- Modal Agregar Sub produto -->
         <div id="modal-agregar-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -255,7 +302,8 @@
                 
             </div>
         </div>
-        
+
+
         
 
         <table class="table table-condensed table-hover table-rounded">
@@ -367,9 +415,22 @@ $(document).ready(function() {
     var activeTab = $('[href=' + location.hash + ']');
     activeTab && activeTab.tab('show');
     {% if form_agregar_subproduto.errors %}
-    $('#modal-agregar-subproduto').modal('show')
+    $('#modal-agregar-subproduto').modal('show');
     {% endif %}
+		
+    {% if form_enviar_para_teste.errors %}
+    $('#enviar-para-teste').modal('show');
+    {% endif %}
+
+
+    {% if form_enviar_para_funcional.errors %}
+    $('#enviar-para-funcional').modal('show');
+    {% endif %}
+		
+
 });
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

@@ -31,6 +31,10 @@ from producao.models import LinhaSubProdutodoProduto
 from producao.models import LinhaComponenteAvulsodoProduto
 from producao.models import DocumentoTecnicoProduto
 from producao.models import OrdemProducaoSubProduto
+from producao.models import RegistroEnvioDeTesteSubProduto
+from producao.models import RegistroSaidaDeTesteSubProduto
+
+from rh.models import Funcionario
 
 
 from django import forms
@@ -988,6 +992,36 @@ def editar_subproduto(request, subproduto_id):
     return render_to_response('frontend/producao/producao-editar-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 
+class FormEnviarSubProdutoParaTeste(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        quantidade_maxima_permitida = kwargs.pop('quantidade_maxima')
+        subproduto = kwargs.pop('subproduto', None)
+        super(FormEnviarSubProdutoParaTeste, self).__init__(*args, **kwargs)
+        self.fields['quantidade_maxima_permitida'] = forms.IntegerField(initial=quantidade_maxima_permitida)
+        self.fields['quantidade_maxima_permitida'].widget = forms.HiddenInput()
+        self.fields['quantidade_preenchida'].initial = quantidade_maxima_permitida
+        self.fields['quantidade_preenchida'].label = u"Quantidade para enviar para teste"
+        self.fields['subproduto'].initial=subproduto
+        self.fields['subproduto'].widget = forms.HiddenInput()
+        self.fields['funcionario'].label= u"Funcionário"
+        
+
+    def clean_quantidade_preenchida(self):
+        cleaned_data = super(FormEnviarSubProdutoParaTeste, self).clean()
+        quantidade_preenchida = cleaned_data.get("quantidade_preenchida")
+        quantidade_permitida = cleaned_data.get("quantidade_maxima_permitida")
+        if quantidade_preenchida == 0:
+            raise forms.ValidationError("Impossível mover 0 :)")
+        if int(quantidade_preenchida) > int(quantidade_permitida):
+            raise forms.ValidationError("Quantidade máxima permitida: %s" % quantidade_permitida)
+        return quantidade_preenchida
+
+    quantidade_maxima_permitida = forms.IntegerField(required=True)
+    quantidade_preenchida = forms.IntegerField(required=True)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.all(), empty_label=None)
+    funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=True)
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto(request, subproduto_id):
@@ -1019,13 +1053,73 @@ def ver_subproduto(request, subproduto_id):
                 linha_sub_agregado = form_agregar_subproduto.save()
                 messages.success(request, u"Sucesso! Sub Produto %s agregado %s vezes no SubProduto Principal %s" % (linha_sub_agregado.subproduto_agregado, linha_sub_agregado.quantidade, linha_sub_agregado.subproduto_principal))
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
-                
+        
+        if request.POST.get('enviar-subproduto-teste-btn', None):
+            form_enviar_para_teste = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto)
+            if form_enviar_para_teste.is_valid():
+                # OK, pode fazer a operacao
+                # primeiro, mover as quantidades
+                quantidade_preenchida = form_enviar_para_teste.cleaned_data['quantidade_preenchida']
+                funcionario = form_enviar_para_teste.cleaned_data['funcionario']
+                # remove do montado
+                valor_atual_montado = subproduto.total_montado
+                valor_alterado_montado = float(valor_atual_montado) - float(quantidade_preenchida)
+                subproduto.total_montado = valor_alterado_montado
+                messages.info(request, "Removido de Montado: %s -> %s" % (valor_atual_montado, valor_alterado_montado))
+                # adiciona ao em teste
+                valor_atual_teste = subproduto.total_testando
+                valor_alterado_testando = float(valor_atual_teste) + float(quantidade_preenchida)
+                subproduto.total_testando = valor_alterado_testando
+                messages.info(request, "Adicionado em Testando: %s -> %s" % (valor_atual_teste, valor_alterado_testando))
+                subproduto.save()
+                messages.success(request, u"Sucesso! Movido de Montado para Em Teste: %s" % quantidade_preenchida)
+                # cria o registro da entrada
+                registro = RegistroEnvioDeTesteSubProduto.objects.create(
+                    quantidade=quantidade_preenchida,
+                    subproduto=subproduto,
+                    funcionario=funcionario,
+                    criado_por=request.user,
+                )
+                messages.success(request, u"Sucesso! Criado o Registro de Teste de SubProduto #%s " % registro.id)
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+        
         
                 
+        
+        if request.POST.get('enviar-subproduto-funcional-btn', None):
+            form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto)
+            if form_enviar_para_funcional.is_valid():
+                quantidade_preenchida = form_enviar_para_funcional.cleaned_data['quantidade_preenchida']
+                funcionario = form_enviar_para_funcional.cleaned_data['funcionario']
+                # remove do testando
+                valor_atual_testando = subproduto.total_testando
+                valor_alterado_testando = float(valor_atual_testando) - float(quantidade_preenchida)
+                subproduto.total_testando = valor_alterado_testando
+                messages.info(request, "Removido de Testando: %s -> %s" % (valor_atual_testando, valor_alterado_testando))
+                # adiciona ao em funcional
+                valor_atual_funcional = subproduto.total_funcional
+                valor_alterado_funcional = float(valor_atual_funcional) + float(quantidade_preenchida)
+                subproduto.total_funcional = valor_alterado_funcional
+                messages.info(request, "Adicionado em Funcional: %s -> %s" % (valor_atual_funcional, valor_alterado_funcional))
+                subproduto.save()
+                messages.success(request, u"Sucesso! Movido de Testando para Funcional: %s" % quantidade_preenchida)
+                # cria o registro de saida de teste
+                registro = RegistroSaidaDeTesteSubProduto.objects.create(
+                    quantidade=quantidade_preenchida,
+                    subproduto=subproduto,
+                    funcionario=funcionario,
+                    criado_por=request.user,
+                )
+                messages.success(request, u"Sucesso! Criado o Registro Saída de Teste de SubProduto #%s " % registro.id)
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+            
+            
     else:
         form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
         form_imagem = ImagemSubprodutoForm(instance=subproduto)
         form_agregar_subproduto = AgregarSubProdutoForm(subproduto_principal=subproduto)
+        form_enviar_para_teste = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_montado, subproduto=subproduto)
+        form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto)
         
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
@@ -1475,11 +1569,22 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
                 subproduto_remover.total_funcional = nova_posicao 
                 subproduto_remover.save()
                 messages.success(request, u"Removido do Total Funcional do Subproduto %s: %s -> %s" % (subproduto_remover, posicao_atual, nova_posicao))
-        # incrementa o subproduto como funcional
-        total_anterior = subproduto.total_funcional
-        novo_total = total_anterior + int(quantidade_solicitada)
-        subproduto.total_funcional = novo_total
-        messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s -> %s" % (subproduto, total_anterior, novo_total))
+        # incrementa o subproduto como funcional ou montado
+        if subproduto.tipo_de_teste == 1:
+            # tipo de teste simples, vai direto pro funcional
+            total_anterior = subproduto.total_funcional
+            novo_total = total_anterior + int(quantidade_solicitada)
+            subproduto.total_funcional = novo_total
+            messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s -> %s" % (subproduto, total_anterior, novo_total))
+        elif subproduto.tipo_de_teste == 2:
+            # tipo de teste composto, vai pra seção de montados pra depois testar
+            total_anterior = subproduto.total_montado
+            novo_total = total_anterior + int(quantidade_solicitada)
+            subproduto.total_montado = novo_total
+            messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s -> %s" % (subproduto, total_anterior, novo_total))
+            
+            
+        
         subproduto.save()
         
         
