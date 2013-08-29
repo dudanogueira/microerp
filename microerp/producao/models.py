@@ -564,11 +564,17 @@ class SubProduto(models.Model):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-SUB%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
     
-    def quantidade_maxima_de_producao_atual(self):
+    def subprodutos_agregados_id(self, lista=None):
         '''
-        calcula a quantidade maxima de producao deste subproduto
-        considerando o estoque de producao
+        retorna uma lista com os ids de todos os subprodutos abaixo, recursivamente
         '''
+        if not lista:
+            lista = []
+        # para cada subproduto agregado
+        for linha in self.linhasubprodutos_agregados.all().select_related():
+            lista.append(int(linha.subproduto_agregado.id))
+            lista = linha.subproduto_agregado.subprodutos_agregados_id(lista=lista)
+        return lista
     
     def produzivel(self, quantidade=1):
         # descobre os componentes deste sub produto

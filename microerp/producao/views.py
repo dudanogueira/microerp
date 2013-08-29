@@ -945,6 +945,16 @@ class AgregarSubProdutoForm(forms.ModelForm):
         self.fields['subproduto_agregado'].queryset = self.fields['subproduto_agregado'].queryset.exclude(id=subproduto_principal.id)
         self.fields['subproduto_agregado'].widget.attrs['class'] = 'select2'
     
+    
+    def clean_subproduto_agregado(self):
+        cleaned_data = super(AgregarSubProdutoForm, self).clean()
+        subproduto_agregado = cleaned_data.get("subproduto_agregado")
+        subproduto_principal = cleaned_data.get("subproduto_principal")
+        agregados_internos = subproduto_agregado.subprodutos_agregados_id()
+        if int(subproduto_principal.id) in agregados_internos:
+            raise forms.ValidationError(u"Impossível: Recursividade! Confira a composição deste produto.")
+        return subproduto_agregado
+    
     class Meta:
         model = LinhaSubProdutoAgregado
 
