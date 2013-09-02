@@ -1588,7 +1588,7 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
             total_anterior = subproduto.total_funcional
             novo_total = total_anterior + int(quantidade_solicitada)
             subproduto.total_funcional = novo_total
-            messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s + %s = " % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
+            messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
         elif subproduto.tipo_de_teste == 2:
             # tipo de teste composto, vai pra seção de montados pra depois testar
             total_anterior = subproduto.total_montado
