@@ -38,7 +38,7 @@
         {% endif %}
     
     </a></li>
-    <li><a href="#relatórios" data-toggle="tab">Relatórios</a></li>
+    <li><a href="#relatorios" data-toggle="tab">Relatórios</a></li>
     
 </ul>
 
@@ -238,10 +238,15 @@
         {% empty %}
         Nenhum arquivo anexo.
         {% endfor %}
-
     </div>
 
-        
+     
+	 <div class="tab-pane fade in" id="relatorios">
+		 
+		 <p class="btn-group">
+			 <a class="btn btn-large" href="{% url "producao:ver_produto_relatorios_composicao" produto.id %}"><i class='icon-print'></i> Impressão da Composição deste Produto</a>
+		 </p>
+		 
     </div>
     
     

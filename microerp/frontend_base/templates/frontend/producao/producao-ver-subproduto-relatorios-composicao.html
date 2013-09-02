@@ -1,0 +1,53 @@
+{% extends "frontend/base.html" %}
+{% load sekizai_tags %}
+{% block content %}
+<div class="container-fluid">
+	<h1>Composição de Sub Produto</h1>
+	
+	<div class="well">
+		<h2>Sub Produto: {{subproduto}}</h2>
+		<h3>Componentes</h3>
+		{% if subproduto.linhasubproduto_set.all %}
+		<ul>
+		{% for linha in subproduto.linhasubproduto_set.all %}
+			<li>{{linha.opcao_padrao.quantidade}} - {{linha.opcao_padrao.componente.get_medida_display}}{{linha.opcao_padrao.quantidade|pluralize}} de {{linha.opcao_padrao.componente}}</li>
+		{% endfor %}
+		</ul>
+		{% endif %}
+		<h3>Sub Produtos Agregados</h3>
+		<ul>
+		{% for linha in subproduto.linhasubprodutos_agregados.all %}
+			<li>{{linha.quantidade}} Unidade{{linha.quantidade|pluralize}} de {{linha.subproduto_agregado}}</li>
+		{% empty %}
+		<small><i>nenhum</i></small>
+		{% endfor %}
+		</ul>		
+	</div>
+		<h1>Composição de Sub Produtos Agregados</h1>
+		{% for subproduto in subprodutos_abaixo %}
+			<div class="well well-small">
+			<h2>{{subproduto}}</h2>
+			<h3>Componentes</h3>
+			{% if subproduto.linhasubproduto_set.all %}
+			<ul>
+			{% for linha in subproduto.linhasubproduto_set.all %}
+				<li>{{linha.opcao_padrao.quantidade}} - {{linha.opcao_padrao.componente.get_medida_display}}{{linha.opcao_padrao.quantidade|pluralize}} de {{linha.opcao_padrao.componente}}</li>
+			{% endfor %}
+			</ul>
+			{% endif %}
+			<h3>Sub Produtos Agregados</h3>
+			<ul>
+			{% for linha in subproduto.linhasubprodutos_agregados.all %}
+				<li>{{linha.quantidade}} Unidade{{linha.quantidade|pluralize}} de {{linha.subproduto_agregado}}</li>
+			{% empty %}
+			<small><i>nenhum</i></small>
+			{% endfor %}
+			</ul>
+			</div>
+		{% endfor %}
+		
+		
+	
+	
+</div>
+{% endblock %}

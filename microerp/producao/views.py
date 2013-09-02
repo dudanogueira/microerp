@@ -950,7 +950,7 @@ class AgregarSubProdutoForm(forms.ModelForm):
         cleaned_data = super(AgregarSubProdutoForm, self).clean()
         subproduto_agregado = cleaned_data.get("subproduto_agregado")
         subproduto_principal = cleaned_data.get("subproduto_principal")
-        agregados_internos = subproduto_agregado.subprodutos_agregados_id()
+        agregados_internos = subproduto_agregado.subprodutos_agregados()
         if int(subproduto_principal.id) in agregados_internos:
             raise forms.ValidationError(u"Impossível: Recursividade! Confira a composição deste produto.")
         return subproduto_agregado
@@ -1289,6 +1289,18 @@ def subproduto_apagar_linha_subproduto_agregado(request, subproduto_id, linha_su
     messages.success(request, u"Sucesso! Linha de SubProduto Agregado ao Produto Principal %s Apagado!" % subproduto)
     return(redirect(reverse('producao:ver_subproduto', args=[subproduto.id,]) + "#sub-produtos-agregados"))
 
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ver_subproduto_relatorios_composicao(request, subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    subprodutos_abaixo = []
+    # subprodutos internos de cada subproduto agregado
+    subprodutos_abaixo = subproduto.subprodutos_agregados(lista=subprodutos_abaixo, retorna_objeto=True)
+    # os subprodutos deste produto
+    subprodutos_abaixo = set(subprodutos_abaixo)
+    return render_to_response('frontend/producao/producao-ver-subproduto-relatorios-composicao.html', locals(), context_instance=RequestContext(request),)    
+
+
 #
 # PRODUTO
 #
@@ -1411,7 +1423,6 @@ def editar_produto(request, produto_id):
         form = ProdutoFinalForm(instance=produto)
     return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
 
-
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_produto(request, produto_id):
     produto = get_object_or_404(ProdutoFinal, pk=produto_id)
@@ -1461,7 +1472,7 @@ def ver_produto(request, produto_id):
         form_imagem = AlterarImagemProduto(instance=produto)
         form_anexos = ArquivoAnexoProdutoForm(produto=produto)
     return render_to_response('frontend/producao/producao-ver-produto.html', locals(), context_instance=RequestContext(request),)    
-    
+
 @user_passes_test(possui_perfil_acesso_producao)    
 def apagar_linha_subproduto_de_produto(request, produto_id, linha_id):
     linha = get_object_or_404(LinhaSubProdutodoProduto, pk=linha_id, produto__pk=produto_id)
@@ -1483,6 +1494,18 @@ def apagar_linha_componente_avulso_de_produto(request, produto_id, linha_id):
     else:
         messages.error(request, u"Somente gerente pode apagar")
     return redirect(reverse("producao:ver_produto", args=[produto.id])+ "#componentes-avulsos")
+ 
+@user_passes_test(possui_perfil_acesso_producao)
+def ver_produto_relatorios_composicao(request, produto_id):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    subprodutos_abaixo = []
+    # subprodutos internos de cada subproduto agregado
+    for linha in produto.linhasubprodutodoproduto_set.all():
+        subprodutos_abaixo = linha.subproduto.subprodutos_agregados(lista=subprodutos_abaixo, retorna_objeto=True)
+    # os subprodutos deste produto
+    subprodutos_abaixo = produto.subprodutos_agregados(lista=subprodutos_abaixo, retorna_objeto=True)
+    subprodutos_abaixo = set(subprodutos_abaixo)
+    return render_to_response('frontend/producao/producao-ver-produto-relatorios-composicao.html', locals(), context_instance=RequestContext(request),)    
  
  #
  # ORDEM DE PRODUCAO

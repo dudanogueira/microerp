@@ -564,16 +564,19 @@ class SubProduto(models.Model):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-SUB%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
     
-    def subprodutos_agregados_id(self, lista=None):
+    def subprodutos_agregados(self, lista=None, retorna_objeto=False):
         '''
-        retorna uma lista com os ids de todos os subprodutos abaixo, recursivamente
+        retorna uma lista com os ids ou objetos de todos os subprodutos abaixo, recursivamente
         '''
         if not lista:
             lista = []
         # para cada subproduto agregado
         for linha in self.linhasubprodutos_agregados.all().select_related():
-            lista.append(int(linha.subproduto_agregado.id))
-            lista = linha.subproduto_agregado.subprodutos_agregados_id(lista=lista)
+            if retorna_objeto:
+                lista.append(linha.subproduto_agregado)
+            else:
+                lista.append(int(linha.subproduto_agregado.id))
+            lista = linha.subproduto_agregado.subprodutos_agregados(lista=lista, retorna_objeto=retorna_objeto)
         return lista
     
     def produzivel(self, quantidade=1):
@@ -968,6 +971,22 @@ class ProdutoFinal(models.Model):
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-PRO%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+
+    def subprodutos_agregados(self, lista=None, retorna_objeto=False):
+        '''
+        retorna uma lista com os ids ou objetos de todos os subprodutos abaixo, recursivamente
+        '''
+        if not lista:
+            lista = []
+        # para cada subproduto agregado
+        for linha in self.linhasubprodutodoproduto_set.all().select_related():
+            if retorna_objeto:
+                lista.append(linha.subproduto)
+            else:
+                lista.append(int(linha.subproduto.id))
+            lista = linha.subproduto.subprodutos_agregados(lista=lista, retorna_objeto=retorna_objeto)
+        return lista
+
 
     def custo_total_linha_subprodutos(self):
         valor = 0
