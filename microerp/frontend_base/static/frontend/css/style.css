@@ -38,7 +38,7 @@ ul.errorlist {
 }
 
 .auxiliar-menu li{
-    line-height: 35px;
+    line-height: 25px;
     font-size: 15px;
 }
 
@@ -244,4 +244,12 @@ textarea{
 
 .select2-container {
     width: 100%;
+}
+
+h1 {
+font-size: 28.5px;
+}
+
+h2 {
+font-size: 21.5px;
 }

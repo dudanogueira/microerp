@@ -6,24 +6,58 @@
 
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Produzir Sub Produto</h2>
-	<div class="well">
-		<form method="post">
-			{% csrf_token %}
-			{{form_subproduto.as_p}}
-			<button class="btn" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> Produzir SubProduto</button>
-		</form>
+	
+	<ul class="nav nav-tabs">
+	    <li class="active"><a href="#produzir" data-toggle="tab">Produzir</a></li>
+	    <li>
+	        <a href="#totalizadores-producao" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:totalizador_de_producao" %}">
+						Totalizadores de Produção
+	        </a>
+	    </li>
+	    <li>
+	        <a href="#producao-combinada" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:producao_combinada" %}">
+	            Produção Combinada
+	        </a>
+	    </li>
+    
+	</ul>
+	
+	
+	<div id="tab-content-ordem-producao" class="tab-content">
+		
+		<div class="tab-pane fade in active" id="produzir">
+			<h2><i class="icon-list-ul"></i> Produzir Sub Produto</h2>
+			<div class="well">
+				<form method="post">
+					{% csrf_token %}
+					{{form_subproduto.as_p}}
+					<button class="btn" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> Produzir SubProduto</button>
+				</form>
+			</div>
+	
+			<h3><i class="icon-windows"></i> Produzir Produto</h3>
+			<div class="well">
+				<form method="post">
+					{% csrf_token %}
+					{{form_produto.as_p}}
+					<button class="btn" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> Produzir Produto</button>
+			
+				</form>
+			</div>	
+		</div>
+		
+		<div class="tab-pane fade in" id="totalizadores-producao">
+			Totalizador
+		</div>
+		
+		<div class="tab-pane fade in" id="producao-combinada">
+			producao
+		</div>
+		
+		
 	</div>
 	
-	<h2><i class="icon-windows"></i> Produzir Produto</h2>
-	<div class="well">
-		<form method="post">
-			{% csrf_token %}
-			{{form_produto.as_p}}
-			<button class="btn" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> Produzir Produto</button>
-			
-		</form>
-	</div>
+	
 
 {% endblock %}
 
@@ -35,7 +69,26 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.click();
+		
 });
+
+$('.nav-tabs').on("click", '.ajaxtab', function(e){
+	e.preventDefault();
+	var url = $(this).attr("data-url");
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	// ajax load from data-url
+	$(href).load(url)
+	$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	pane.tab('show');		
+})
+
+
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

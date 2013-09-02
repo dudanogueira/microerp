@@ -46,9 +46,9 @@ OPCAO_LINHA_SUBPRODUTO_PADRAO = (
 )
 
 TIPO_DE_TESTES_SUBPRODUTO = (
-    (0,  u'Não Necessita de testes'),
-    (1, "Teste Simples"),
-    (2, "Teste Composto"),
+    (0,  u'Nulo'),
+    (1, "Simples"),
+    (2, "Composto"),
 )
 
 
@@ -986,6 +986,36 @@ class ProdutoFinal(models.Model):
     def custo(self):
         return self.custo_total_linha_subprodutos() + self.custo_total_linha_produtos_avulsos()
 
+    def get_componentes_produto(self, dic=None, multiplicador=1):
+        if not dic:
+            dic = {}
+        # contabiliza os componentes do próprio produto
+        for linha in self.linhacomponenteavulsodoproduto_set.all():
+            componente = linha.componente
+            quantidade_necessaria = float(linha.quantidade)
+            # soma ao montante
+            try:
+                quantidade_atual = dic[linha.componente.id]
+            except:
+                quantidade_atual = 0
+            dic[linha.componente.id] = float(quantidade_atual) + (float(quantidade_necessaria) * float(multiplicador))
+
+        # contabiliza os componentes de cada subproduto
+        for linha in self.linhasubprodutodoproduto_set.all():
+            # tipo de teste existe
+            # somente incrementar a quantidade
+            if linha.subproduto.tipo_de_teste:
+                try:
+                    valor_atual = dic['subproduto-%s' % str(linha.subproduto.id)]
+                except:
+                    valor_atual = 0
+                dic['subproduto-%s' % str(linha.subproduto.id)] = float(valor_atual) + (float(linha.quantidade) * float(multiplicador))
+            else:
+                # nao existe teste, pegar direto os componentes ou subprodutos na mesma situacao
+                dic = linha.subproduto.get_componentes(dic=dic, multiplicador=float(linha.quantidade) * float(multiplicador))
+            
+        return dic
+
     def custo_internacional(self):
         valor = 0
         for linha in self.linhasubprodutodoproduto_set.all():
@@ -1028,7 +1058,8 @@ class ProdutoFinal(models.Model):
     nome = models.CharField(blank=False, max_length=100)
     slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")
     descricao = models.TextField(u"Descrição", blank=True)
-    
+    total_produzido = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_estimada_producao_semanal = models.IntegerField(u"Quantidade Estimada de Produção Semanal", blank=False, null=False)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

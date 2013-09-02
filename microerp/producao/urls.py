@@ -55,5 +55,13 @@ urlpatterns = patterns('',
     url(r'^ordem-de-producao/subproduto/(?P<subproduto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/confirmar/$', 'producao.views.ordem_de_producao_subproduto_confirmar', name='ordem_de_producao_subproduto_confirmar'),
     url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/$', 'producao.views.ordem_de_producao_produto', name='ordem_de_producao_produto'),
     url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/$', 'producao.views.ordem_de_producao_produto', name='ordem_de_producao_produto'),
-    
+    # ajax auxs
+    url(r'^ordem-de-producao/ajax/totalizador-de-producao/$', 'producao.views.totalizador_de_producao', name='totalizador_de_producao'),
+    url(r'^ordem-de-producao/ajax/producao-combinada/$', 'producao.views.producao_combinada', name='producao_combinada'),
+    url(r'^ordem-de-producao/ajax/producao-combinada/calcular$', 'producao.views.producao_combinada_calcular', name='producao_combinada_calcular'),
+    # arvore de produtos
+    url(r'^arvore-de-produto/$', 'producao.views.arvore_de_produto', name='arvore_de_produto'),
+    url(r'^arvore-de-produto/ajax/subproduto/(?P<subproduto_id>[0-9]+)/parente/(?P<parente>[0-9]+)/$', 'producao.views.arvore_de_produto_ajax_subproduto', name='arvore_de_produto_ajax_subproduto'),
+    # registro de testes
+    url(r'^registro-de-testes/$', 'producao.views.registro_de_testes', name='registro_de_testes'),
 )

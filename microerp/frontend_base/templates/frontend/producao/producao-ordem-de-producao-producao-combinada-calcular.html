@@ -1,0 +1,76 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção - Produção Combinada{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
+<h2>Produção Combinada</h2>
+<p>
+<strong>Notação de Produção</strong>: {{get_componentes}}
+</p>
+
+<p>
+<strong>Quantidades Analisadas</strong>
+<ul>
+{% for quantidade in quantidade_analisada %}
+	<li><span class="badge badge-warning">{{quantidade.1}}</span> de {{quantidade.0}}</li>
+{% endfor %}
+</ul>
+</p>
+
+<h2>Relatório de Faltas</h2>
+
+<table class="table table-condensed table-hover table-rounded">
+	<thead>
+		<tr>
+			<th>Item</th>
+			<th>Descrição</th>
+			<th>Qtd Atual</th>
+			<th>Posição em Estoque</th>
+			<th>Faltante</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for relatorio in relatorio_producao %}
+		<tr class="{% if relatorio.5 %}alert alert-success{% else %}alert alert-error{% endif %}">
+			<td>{{relatorio.0.part_number}}</td>
+			<td>{{relatorio.1}}</td>
+			<td>{{relatorio.2}}</td>
+			<td>{{relatorio.3}}</td>
+			<td>{{relatorio.4}}</td>
+			
+		</tr>
+		
+		{% endfor %}
+		
+	</tbody>
+</table>
+
+
+
+{% if producao_liberada %}
+<h5 class="alert alert-success">PRODUÇÃO LIBERADA!</h5>
+{% else %}
+<h5 class="alert alert-error">PRODUÇÃO INVIÁVEL!</h5>
+{% endif %}
+
+<p>
+<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}#producao-combinada">Nova Consulta de Produção Combinada</a>
+</p>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+		
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

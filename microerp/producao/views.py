@@ -865,7 +865,7 @@ def listar_estoque(request):
                 # nova posicao no destino
                 nova_posicao_destino = antiga_posicao_destino + quantidade
                 PosicaoEstoque.objects.create(componente=componente, estoque=estoque_destino, quantidade=nova_posicao_destino, criado_por=request.user, justificativa=justificativa,  quantidade_alterada="+ %s" % quantidade)
-                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_origem))
+                messages.warning(request, u"Nova posição no Estoque Destino %s: %s -> %s" % (estoque_destino, componente.part_number, nova_posicao_destino))
                 # resultado final
                 messages.success(request, u"Movido %s %s de Estoque Origem %s para Estoque Destino %s" % (quantidade, componente.part_number, estoque_origem, estoque_destino))
                 return redirect(reverse("producao:listar_estoque"))
@@ -1075,12 +1075,12 @@ def ver_subproduto(request, subproduto_id):
                 valor_atual_montado = subproduto.total_montado
                 valor_alterado_montado = float(valor_atual_montado) - float(quantidade_preenchida)
                 subproduto.total_montado = valor_alterado_montado
-                messages.info(request, "Removido de Montado: %s -> %s" % (valor_atual_montado, valor_alterado_montado))
+                messages.info(request, "Removido de Montado: %s - %s = %s" % (valor_atual_montado, float(quantidade_preenchida), valor_alterado_montado))
                 # adiciona ao em teste
                 valor_atual_teste = subproduto.total_testando
                 valor_alterado_testando = float(valor_atual_teste) + float(quantidade_preenchida)
                 subproduto.total_testando = valor_alterado_testando
-                messages.info(request, "Adicionado em Testando: %s -> %s" % (valor_atual_teste, valor_alterado_testando))
+                messages.info(request, "Adicionado em Testando: %s + %s = %s" % (valor_atual_teste, float(quantidade_preenchida), valor_alterado_testando))
                 subproduto.save()
                 messages.success(request, u"Sucesso! Movido de Montado para Em Teste: %s" % quantidade_preenchida)
                 # cria o registro da entrada
@@ -1105,12 +1105,12 @@ def ver_subproduto(request, subproduto_id):
                 valor_atual_testando = subproduto.total_testando
                 valor_alterado_testando = float(valor_atual_testando) - float(quantidade_preenchida)
                 subproduto.total_testando = valor_alterado_testando
-                messages.info(request, "Removido de Testando: %s -> %s" % (valor_atual_testando, valor_alterado_testando))
+                messages.info(request, "Removido de Testando: %s - %s = %s" % (valor_atual_testando, float(quantidade_preenchida), valor_alterado_testando))
                 # adiciona ao em funcional
                 valor_atual_funcional = subproduto.total_funcional
                 valor_alterado_funcional = float(valor_atual_funcional) + float(quantidade_preenchida)
                 subproduto.total_funcional = valor_alterado_funcional
-                messages.info(request, "Adicionado em Funcional: %s -> %s" % (valor_atual_funcional, valor_alterado_funcional))
+                messages.info(request, "Adicionado em Funcional: %s + %s = %s" % (valor_atual_funcional, float(quantidade_preenchida), valor_alterado_funcional))
                 subproduto.save()
                 messages.success(request, u"Sucesso! Movido de Testando para Funcional: %s" % quantidade_preenchida)
                 # cria o registro de saida de teste
@@ -1307,6 +1307,7 @@ class ProdutoFinalForm(forms.ModelForm):
     
     class Meta:
         model = ProdutoFinal
+        fields = ('imagem', 'nome', 'slug', 'descricao', 'quantidade_estimada_producao_semanal')
 
 class AdicionarLinhaSubProdutoAoProdutoFinalForm(forms.ModelForm):
     
@@ -1488,13 +1489,14 @@ def apagar_linha_componente_avulso_de_produto(request, produto_id, linha_id):
  #
  
 class SelecionarSubProdutoForm(forms.Form):
-    quantidade = forms.IntegerField(initial=10)
-    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.all(), empty_label=None)
+    quantidade = forms.IntegerField(required=True)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.exclude(tipo_de_teste=0), empty_label=None)
     subproduto.widget.attrs['class'] = 'select2'
 
 
 class SelecionarProdutoForm(forms.Form):
-    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all())
+    quantidade = forms.IntegerField(required=True)
+    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all(), empty_label=None)
     produto.widget.attrs['class'] = 'select2'
  
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1511,6 +1513,7 @@ def ordem_de_producao(request):
         form_produto = SelecionarProdutoForm(request.POST)
         if form_produto.is_valid():
             produto = get_object_or_404(ProdutoFinal.objects.select_related(), pk=form_produto.cleaned_data['produto'].id)
+            quantidade = form_produto.cleaned_data['quantidade']
             return redirect(reverse("producao:ordem_de_producao_produto", args=[produto.id, quantidade]))
     
         
@@ -1565,10 +1568,10 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
                     quantidade=nova_quantidade,
                     criado_por=request.user,
                     justificativa='Ordem #%s de Produção de Subproduto' % ordem_producao_subproduto.id,
-                    quantidade_alterada=componentes,
+                    quantidade_alterada="-%s (%s)" % (float(item[1]), componentes),
                     ordem_producao_subproduto_referencia=ordem_producao_subproduto
                 )
-                messages.success(request, u"Nova posição em Estoque de Produção para %s: %s->%s" % (nova_posicao.componente, posicao_atual, nova_posicao.quantidade))
+                messages.success(request, u"Nova posição em Estoque de Produção para %s: %s - %s = %s" % (nova_posicao.componente, posicao_atual, float(item[1]), nova_posicao.quantidade))
             elif type(item[0]) == str:
                 # descobre o subproduto
                 id_subproduto = item[0].split('-')[1]
@@ -1578,20 +1581,20 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
                 # remove a quantidade de subproduto funcional
                 subproduto_remover.total_funcional = nova_posicao 
                 subproduto_remover.save()
-                messages.success(request, u"Removido do Total Funcional do Subproduto %s: %s -> %s" % (subproduto_remover, posicao_atual, nova_posicao))
+                messages.success(request, u"Removido do Total Funcional do Subproduto %s: %s - %s = %s" % (subproduto_remover, posicao_atual, float(item[1]), nova_posicao))
         # incrementa o subproduto como funcional ou montado
         if subproduto.tipo_de_teste == 1:
             # tipo de teste simples, vai direto pro funcional
             total_anterior = subproduto.total_funcional
             novo_total = total_anterior + int(quantidade_solicitada)
             subproduto.total_funcional = novo_total
-            messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s -> %s" % (subproduto, total_anterior, novo_total))
+            messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s + %s = " % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
         elif subproduto.tipo_de_teste == 2:
             # tipo de teste composto, vai pra seção de montados pra depois testar
             total_anterior = subproduto.total_montado
             novo_total = total_anterior + int(quantidade_solicitada)
             subproduto.total_montado = novo_total
-            messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s -> %s" % (subproduto, total_anterior, novo_total))
+            messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
             
             
         
@@ -1606,15 +1609,14 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
 def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     if request.POST:
-        subproduto_produzivel = subproduto.produzivel(quantidade=quantidade_solicitada)
         linhas = []
         form_configurador_subproduto = FormConfiguradorSubProduto(request.POST, subproduto=subproduto)
         if form_configurador_subproduto.is_valid():
+            subproduto_produzivel = subproduto.produzivel(quantidade=quantidade_solicitada)
             # pega estoque de producao
             slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
             estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
             # calcular
-            
             # cria dicionario de configuracao das linhas deste subproduto
             conf = {}
             for linha_field in form_configurador_subproduto.fields:
@@ -1635,7 +1637,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             # verifica se no total, possui estoque para fazer todos os produtos
             # presentes em get_componentes
             
-            for item in get_componentes.items():
+            for item in get_componentes.items():    
                 if type(item[0]) == long:
                     # verifica se possui a quantidade total deste componente em estoque
                     qtd_componente = item[1]
@@ -1649,12 +1651,12 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                 elif type(item[0] == str):
                     subproduto_id = item[0].split("-")[1]
                     subproduto_usado = SubProduto.objects.get(id=subproduto_id)
-                    qtd_subprouto = item[1]
+                    qtd_subproduto = item[1]
                     quantidade_disponivel = subproduto_usado.total_funcional
                     # quantidade de subprodutos funcionais é menor, esta indisponível
-                    if qtd_subprouto > quantidade_disponivel: 
+                    if qtd_subproduto > quantidade_disponivel: 
                         producao_liberada = False
-                        faltou = qtd_subprouto - quantidade_disponivel
+                        faltou = float(qtd_subproduto) - float(quantidade_disponivel)
                         messages.error(request, "Quantidade Indisponível (FALTOU: %s) de SubProduto %s" % (faltou, item[0]))
                     
             
@@ -1682,11 +1684,12 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             # calcula os subprodutos agregados
             quantidades_agregados = []
             for linha in subproduto.linhasubprodutos_agregados.all():
+                total_disponivel = linha.subproduto_agregado.total_disponivel()
                 quantidade_usada = float(linha.quantidade) * float(quantidade_solicitada)
-                if quantidade_usada > linha.subproduto_agregado.total_disponivel():
+                if quantidade_usada > total_disponivel:
                     pode = False
                     producao_liberada = False
-                    faltou = quantidade_usada - linha.subproduto_agregado.total_disponivel()
+                    faltou = float(quantidade_usada) - float(linha.subproduto_agregado.total_disponivel())
                 else:
                     pode = True
                 quantidades_agregados.append((linha, quantidade_usada, linha.subproduto_agregado.total_disponivel(), pode))
@@ -1700,5 +1703,166 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
     return render_to_response('frontend/producao/producao-ordem-de-producao-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
-def ordem_de_producao_produto(request, produto_id, quantidade):
+def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    get_componentes = produto.get_componentes_produto(multiplicador=quantidade_solicitada)
+    if request.POST:
+        if request.POST.get('confirmado', None):
+            pass
+            #executar
+        elif request.POST.get('verificar-producao', None):
+            producao_liberada = True
+            slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+            estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+            #verifica toda a produção conforme a notação de componentes
+            for item in get_componentes.items():
+                if type(item[0]) == long:
+                    # verifica se possui a quantidade total deste componente em estoque
+                    qtd_componente = item[1]
+                    posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                    # quantiade no estoque insuficiente
+                    if qtd_componente > posicao_em_estoque_produtor:
+                        faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
+                        producao_liberada = False
+                        componente = Componente.objects.get(pk=int(item[0]))
+                        messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
+                elif type(item[0] == str):
+                    subproduto_id = item[0].split("-")[1]
+                    subproduto_usado = SubProduto.objects.get(id=subproduto_id)
+                    qtd_subproduto = item[1]
+                    # aqui eh quantidade funcional, pois o subproduto sem teste vem como
+                    # inteiro acima, junto aos compontentes.
+                    quantidade_disponivel = subproduto_usado.total_funcional
+                    # quantidade de subprodutos funcionais é menor, esta indisponível
+                    if qtd_subproduto > quantidade_disponivel:
+                        producao_liberada = False
+                        faltou = float(qtd_subproduto) - float(quantidade_disponivel)
+                        messages.error(request, "Quantidade Indisponível (FALTOU: %s) de SubProduto %s" % (faltou, item[0]))
+
+            # verifica individualmente, cada componente
+            quantidades_componente = {}
+            for linha in produto.linhacomponenteavulsodoproduto_set.all():
+                try:
+                    quantidade_usada = quantidades_componente[linha.componente.id][1]
+                except:
+                    quantidade_usada = 0
+                # calcula a quantidade de componentes na linha
+                quantidade_usada += float(linha.quantidade) * float(quantidade_solicitada)
+                # puxa a posicao no estoque
+                posicao_em_estoque_produtor = estoque_produtor.posicao_componente(linha.componente)
+                # marca se é possível produzir, conforme estoque produtor
+                if quantidade_usada > posicao_em_estoque_produtor:
+                    pode = False
+                    producao_liberada = False
+                else:
+                    pode = True
+                quantidades_componente[linha.componente.id] = (linha, quantidade_usada, posicao_em_estoque_produtor, pode)
+            
+            # calcula os subprodutos agregados
+            quantidades_agregados = []
+            for linha in produto.linhasubprodutodoproduto_set.all():
+                total_disponivel = linha.subproduto.total_disponivel()
+                quantidade_usada = float(linha.quantidade) * float(quantidade_solicitada)
+                if quantidade_usada > total_disponivel:
+                    pode = False
+                    producao_liberada = False
+                    faltou = float(quantidade_usada) - float(linha.subproduto.total_disponivel())
+                else:
+                    pode = True
+                quantidades_agregados.append((linha, quantidade_usada, linha.subproduto.total_disponivel(), pode))
+            
+            calculado = True
+    # contabilizar todos os componentes deste produto
     return render_to_response('frontend/producao/producao-ordem-de-producao-produto.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def arvore_de_produto(request):
+    produtos = ProdutoFinal.objects.all()
+    return render_to_response('frontend/producao/producao-arvore-de-produto.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def arvore_de_produto_ajax_subproduto(request, subproduto_id, parente):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    return render_to_response('frontend/producao/producao-arvore-de-produto-ajax-subproduto.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def registro_de_testes(request):
+    return render_to_response('frontend/producao/producao-registro-de-testes.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def totalizador_de_producao(request):
+    produtos = ProdutoFinal.objects.all().order_by('-total_produzido')
+    subprodutos = SubProduto.objects.all().order_by('-total_funcional')
+    return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-totalizador-producao.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def producao_combinada(request):
+    produtos = ProdutoFinal.objects.all().order_by('-total_produzido')
+    subprodutos = SubProduto.objects.all().order_by('-total_funcional')
+    return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def producao_combinada_calcular(request):
+    if request.POST:
+        teste = []
+        producao_liberada = True
+        dic = {}
+        # para cada um, descobrir se produto ou subproduto
+        quantidade_analisada = []
+        for key, value in request.POST.iteritems():
+            try:
+                if key != "csrfmiddlewaretoken" and int(value) != 0:
+                    tipo = key.split("-")[0]
+                    tipo_id = key.split("-")[1]
+                    print "TIPO",tipo
+                    print "ID",tipo_id
+                    print "VALOR", value
+                    if tipo in ['produto', 'subproduto']:
+                        if tipo == 'produto':
+                            produto = ProdutoFinal.objects.get(pk=tipo_id)
+                            dic = produto.get_componentes_produto(dic=dic, multiplicador=value)
+                            quantidade_analisada.append((produto, value))
+                        if tipo == 'subproduto':
+                            subproduto = SubProduto.objects.get(pk=tipo_id)
+                            dic = subproduto.get_componentes(dic=dic, multiplicador=value)
+                            quantidade_analisada.append((subproduto, value))
+            except:
+                raise
+        # verificar cada uma dessas quantidades
+        #verifica toda a produção conforme a notação de componentes
+        get_componentes = dic
+        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+        relatorio_producao = []
+        for item in get_componentes.items():
+            if type(item[0]) == long:
+                # verifica se possui a quantidade total deste componente em estoque
+                qtd_componente = item[1]
+                posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                componente = Componente.objects.get(pk=int(item[0]))
+                # quantiade no estoque insuficiente
+                pode = True
+                faltou = None
+                if float(qtd_componente) > float(posicao_em_estoque_produtor):
+                    faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
+                    producao_liberada = False
+                    pode = False
+                    # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
+                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque_produtor, faltou, pode))
+            elif type(item[0] == str):
+                subproduto_id = item[0].split("-")[1]
+                subproduto_usado = SubProduto.objects.get(id=subproduto_id)
+                qtd_subproduto = item[1]
+                # aqui eh quantidade funcional, pois o subproduto sem teste vem como
+                # inteiro acima, junto aos compontentes.
+                quantidade_disponivel = subproduto_usado.total_funcional
+                # quantidade de subprodutos funcionais é menor, esta indisponível
+                pode = True
+                faltou = None
+                if int(qtd_subproduto) > int(quantidade_disponivel):
+                    producao_liberada = False
+                    faltou = float(qtd_subproduto) - float(quantidade_disponivel)
+                    pode = False
+                    relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode))
+             
+    return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)

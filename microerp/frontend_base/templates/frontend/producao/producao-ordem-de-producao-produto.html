@@ -2,24 +2,23 @@
 {% load sekizai_tags %}
 {% load thumbnail %}
 
-<title>{%block title %}{{block.super}} - Produção - Ordem de Produção de SubProduto{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção de Produto{% endblock %}</title>
 
 {% block content %}
 	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Sub Produto {{subproduto.part_number}}</h2>
+	<h2><i class="icon-windows"></i> Produto {{produto.part_number}}</h2>
+	
+	
 	<div class="row-fluid">
 		
 		<div class="span7">
-			{% if subproduto.tipo_de_teste %}
-			<strong>Total Montado</strong>: <span class="badge">{{subproduto.total_montado}}</span><br />
-			<strong>Total Testando</strong>: <span class="badge badge-info">{{subproduto.total_testando}}</span><br />
-			<strong>Total Funcional</strong>: <span class="badge badge-success">{{subproduto.total_funcional}}</span><br />
+			{% if produto.tipo_de_teste %}
+			<strong>Total Produzido</strong>: <span class="badge badge-success">{{produto.total_produzido}}</span><br />
 			{% endif %}
 		</div>
 
 		<div class="span5">
 				<h2 class="alert alert-info">{{quantidade_solicitada}} Unidades</h2>
-					<h4>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</h4>
 		</div>
 	</div>
 
@@ -62,7 +61,6 @@
 		</table>
 		 
 		<h3>Sub Produtos Agregados</h3>
-		
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
 				<tr>
@@ -84,9 +82,9 @@
 					{% endif %}
 					">
 						<td>
-							{{linha.0.subproduto_agregado.part_number}}
-							{% if not linha.0.subproduto_agregado.tipo_de_teste %} 				
-							{{linha.0.subproduto_agregado.get_componentes}}
+							{{linha.0.subproduto.part_number}}
+							{% if not linha.0.subproduto.tipo_de_teste %} 				
+							{{linha.0.subproduto.get_componentes}}
 							{% endif %}
 						</td>
 						<td>{{linha.0.quantidade}}</td>
@@ -97,7 +95,7 @@
 							{{linha.2}}
 						</td>
 						<td>
-							{{linha.0.subproduto_agregado.get_tipo_de_teste_display}}
+							{{linha.0.subproduto.get_tipo_de_teste_display}}
 						</td>
 					</tr>
 			{% endfor %}				
@@ -107,7 +105,7 @@
 		{% if producao_liberada %}
 		
 		<h2>Produção Liberada</h2>
-		<form method="POST" name="confirmar-produto" action="{% url "producao:ordem_de_producao_subproduto_confirmar" subproduto.id quantidade_solicitada %}">
+		<form method="POST" name="confirmar-produto" action="">
 			{% csrf_token %}
 			<input type="hidden" name="configuracao" value="{{conf}}">
 			<button class="btn btn-danger" type="submit">Confirmar Produção!</button>
@@ -118,10 +116,12 @@
 	</div>		
 	{% else %}
 		<div id="configurar">
-			
-			<button class="btn btn-primary" form="configurador_produto">
+			<form method="POST">
+				{% csrf_token %}
+			<button class="btn btn-primary" name="verificar-producao" value="verificar">
 				<i class="icon-search"></i> Verificar Disponibilidade para Produção
 			</button>
+		</form>
 			
 			
 			<h2>SubProdutos Agregados</h2>
@@ -138,21 +138,20 @@
 		      <tbody>
 				
 				
-						{% for linha in subproduto.linhasubprodutos_agregados.all %}
-						<tr class="{% if linha.quantidade > linha.subproduto_agregado.total_disponivel %}
+						{% for linha in produto.linhasubprodutodoproduto_set.all %}
+						<tr class="{% if linha.quantidade > linha.subproduto.total_disponivel %}
 						
 								alert alert-danger
 								{% else %}
 								alert alert-info
-								{% endif %}"
-		>
+								{% endif %}">
 							<td>
 						
 								{{forloop.counter}}</td>
-							<td>{{linha.subproduto_agregado.part_number}}</td>
+							<td>{{linha.subproduto.part_number}} {{linha.subproduto.get_componentes}}</td>
 							<td>{{linha.quantidade}}</td>
-							<td>{{linha.subproduto_agregado.total_disponivel}}</td>
-							<td>{{linha.subproduto_agregado.get_tipo_de_teste_display}}</td>
+							<td>{{linha.subproduto.total_disponivel}}</td>
+							<td>{{linha.subproduto.get_tipo_de_teste_display}}</td>
 						</tr>
 						{% endfor %}
 				
@@ -160,10 +159,30 @@
 			</table>
 	
 			<h2>Linhas de Componentes</h2>
-			<form method="post" name="configurador_produto" id="configurador_produto">
-				{% csrf_token %}
-				{{form_configurador_subproduto}}
-			</form>
+			
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Componente</th>
+						<th>Quantidade</th>
+						<th>Descrição</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
+					<tr>
+						<td>{{linha.componente.part_number}}</td>
+						<td>{{linha.quantidade}} {{linha.opcao_padrao.componente.medida}}</td>
+						<td>{{linha.componente.descricao}}</td>
+					</tr>
+					{% empty %}
+					<tr>Nenhum Componente</tr>
+			
+					{% endfor %}
+				</tbody>
+			</table>
+			
+			
 	
 	
 	
@@ -181,7 +200,24 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.tab('show');
 });
+
+$('.nav-tabs').on("click", '.ajaxtab', function(e){
+	e.preventDefault();
+	var url = $(this).attr("data-url");
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	// ajax load from data-url
+	$(href).load(url)
+	$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	pane.tab('show');		
+	
+})
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}
