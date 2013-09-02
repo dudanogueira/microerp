@@ -2,7 +2,10 @@
 {% load sekizai_tags %}
 {% block content %}
 <div class="container-fluid">
-	<h1>Composição de Produto</h1>
+	<h1>            {% if logo_empresa %}
+            <img src="{{logo_empresa}}">
+            {% endif %}
+Composição de Produto</h1>
 	<div class="well well-small">
 	<h2>Produto:: {{produto.part_number}}</h2>
 	<h3>Componentes:</h3>
