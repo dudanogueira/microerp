@@ -26,7 +26,7 @@
 				  <div class="accordion-group">
 				    <div class="accordion-heading">
 				      <a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
-				        <span class="badge badge-warning">{{linha.quantidade}}</span> Unidade{{linha.quantidade|pluralize}} de {{linha.subproduto}}
+				        <span class="badge badge-warning">{{linha.quantidade}} Und</span>  de {{linha.subproduto}}
 				      </a>
 				    </div>
 
@@ -57,7 +57,7 @@
 						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
 							<tr>
 								<td>{{linha.componente.part_number}}</td>
-								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.get_medida_display}}{{linha.quantidade|pluralize}}</span></td>
+								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida}}</span></td>
 								<td>{{linha.componente.descricao}}</td>
 								<td>{{linha.componente.get_nacionalidade_display}}</td>
 								<td>{{linha.componente.lead_time}}</td>
