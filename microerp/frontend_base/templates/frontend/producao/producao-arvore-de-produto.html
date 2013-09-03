@@ -12,7 +12,7 @@
   <div class="accordion-group">
     <div class="accordion-heading">
       <a class="accordion-toggle" data-toggle="collapse"  href="#collapse{{produto.id}}">
-        {{produto}}
+        <i class="icon-windows"></i> {{produto}}
       </a>
     </div>
     <div id="collapse{{produto.id}}" class="accordion-body collapse in">
@@ -23,7 +23,7 @@
 				  <div class="accordion-group">
 				    <div class="accordion-heading">
 				      <a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
-				        <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}
+				        <i class="icon-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}
 				      </a>
 				    </div>
 
