@@ -26,7 +26,7 @@
 				  <div class="accordion-group">
 				    <div class="accordion-heading">
 				      <a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
-				        <span class="badge badge-warning">{{linha.quantidade}} Und</span>  de {{linha.subproduto}}
+				        <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}
 				      </a>
 				    </div>
 
@@ -44,24 +44,24 @@
       	<table class="table table-condensed table-hover table-rounded">
           <thead>
               <tr>
+									<th>TAG</th>
                   <th>Componente</th>
 									<th>Quantidade</th>
 									<th>Descrição</th>
-									<th>Nacionalidade</th>
-									<th>Lead Time (semanas)</th>
-									<th>TAG</th>
+									<th>I/N</th>
+									<th>LT (s)</th>
 									<th>Preço</th>
               </tr>
           </thead>
           <tbody>
 						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
 							<tr>
+								<td>{{linha.componente.tag|upper}}</td>
 								<td>{{linha.componente.part_number}}</td>
-								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida}}</span></td>
+								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida||upper}}</span></td>
 								<td>{{linha.componente.descricao}}</td>
-								<td>{{linha.componente.get_nacionalidade_display}}</td>
+								<td>{{linha.componente.nacionalidade}}</td>
 								<td>{{linha.componente.lead_time}}</td>
-								<td>{{linha.componente.tag}}</td>
 								<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
 							</tr>
 						{% endfor %}
