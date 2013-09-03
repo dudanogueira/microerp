@@ -271,3 +271,12 @@ border: 1px solid #000;
 width: 100%;
 margin-bottom: 0px;
 }
+
+#arvore-de-produtos .table-condensed th, .table-condensed td {
+padding: 0px 5px;
+}
+
+#arvore-de-produtos .accordion-inner {
+padding: 2px 15px;
+border-top: 1px solid #e5e5e5;
+}
