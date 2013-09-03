@@ -1,5 +1,5 @@
 <div class="accordion-inner">
-
+	{% if subproduto.linhasubproduto_set.all %}
 	<table class="table table-condensed table-hover table-rounded">
 		<thead>
 			<tr>
@@ -23,16 +23,12 @@
 				<td>{{linha.opcao_padrao.componente.lead_time}}</td>
 				<td>R$  {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
 			</tr>
-			{% empty %}
-			<tr>
-				<td>
-					<i>Nenhum Componente</i>
-				</td>
-			</tr>
-			
 			{% endfor %}
 		</tbody>
 	</table>
+	{% else %}
+	<i>Nenhum Componente</i>
+	{% endif %}
 
 	<div class="accordion" id="accordion2">
 		{% for subproduto_agregado in subproduto.linhasubprodutos_agregados.all %}

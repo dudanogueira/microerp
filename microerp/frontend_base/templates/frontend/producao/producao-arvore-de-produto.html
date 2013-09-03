@@ -9,63 +9,62 @@
 
 <div class="accordion" id="arvore-de-produtos">
 	{% for produto in produtos %}
-  <div class="accordion-group">
-    <div class="accordion-heading">
-      <a class="accordion-toggle" data-toggle="collapse"  href="#collapse{{produto.id}}">
-        <i class="icon-windows"></i> {{produto}}
-      </a>
-    </div>
-    <div id="collapse{{produto.id}}" class="accordion-body collapse">
-      <div class="accordion-inner">
+	<div class="accordion-group">
+		<div class="accordion-heading">
+			<a class="accordion-toggle" data-toggle="collapse"  href="#collapse{{produto.id}}">
+				<i class="icon-windows"></i> {{produto}}
+			</a>
+		</div>
+		<div id="collapse{{produto.id}}" class="accordion-body collapse">
+			<div class="accordion-inner">
 				
-				
-      	<table class="table table-condensed table-hover table-rounded">
-          <thead>
-              <tr>
-									<th>TAG</th>
-                  <th>Componente</th>
-									<th>Quantidade</th>
-									<th>Descrição</th>
-									<th>I/N</th>
-									<th>LT (s)</th>
-									<th>Preço</th>
-              </tr>
-          </thead>
-          <tbody>
+				{% if produto.linhacomponenteavulsodoproduto_set.all %}
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>TAG</th>
+							<th>Componente</th>
+							<th>Quantidade</th>
+							<th>Descrição</th>
+							<th>I/N</th>
+							<th>LT (s)</th>
+							<th>Preço</th>
+						</tr>
+					</thead>
+					<tbody>
 						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
-							<tr>
-								<td>{{linha.componente.tag|upper}}</td>
-								<td><i class="icon-stop"></i> {{linha.componente.part_number}}</td>
-								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida|upper}}</span></td>
-								<td>{{linha.componente.descricao}}</td>
-								<td>{{linha.componente.nacionalidade|upper}}</td>
-								<td>{{linha.componente.lead_time}}</td>
-								<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
-							</tr>
-							{% empty %}
-							<tr>
-								<td><i>Nenhum Componente</i></td>
-							</tr>
+						<tr>
+							<td>{{linha.componente.tag|upper}}</td>
+							<td><i class="icon-stop"></i> {{linha.componente.part_number}}</td>
+							<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida|upper}}</span></td>
+							<td>{{linha.componente.descricao}}</td>
+							<td>{{linha.componente.nacionalidade|upper}}</td>
+							<td>{{linha.componente.lead_time}}</td>
+							<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
+						</tr>
 						{% endfor %}
 												
 					</tbody>
 				</table>
+				{% else %}
+				<i>Nenhum Componente</i>
+				{% endif %}
 				
 				<div class="accordion" id="accordion-subproduto-{{produto.id}}">
 					{% for linha in produto.linhasubprodutodoproduto_set.all %}
-				  <div class="accordion-group">
-				    <div class="accordion-heading">
-				      <a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
-				        <i class="icon-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}
-				      </a>
-				    </div>
+					<div class="accordion-group">
+						<div class="accordion-heading">
+							<a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
+								<i class="icon-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}
+							</a>
+						</div>
 
-				    <div id="collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-body collapse">
-				      <div class="accordion-inner">
-				        <i class='icon-spinner icon-spin icon-large icon-3x'></i>
-				      </div>
-				    </div>
-				  </div>
+						<div id="collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-body collapse">
+							<div class="accordion-inner">
+								<i class='icon-spinner icon-spin icon-large icon-3x'></i>
+							</div>
+						</div>
+					</div>
 					{% empty %}
 					<i>Nenhum Sub Produto</i>
 					{% endfor %}
@@ -75,9 +74,9 @@
       	
 				
 
-      </div>
-    </div>
-  </div>
+			</div>
+		</div>
+	</div>
 	<hr />
 	{% endfor %}
 </div>
@@ -92,18 +91,18 @@
 
 <script>
 $(document).ready(function() {
-    $("#menu-producao-arvore-de-produto, #top-menu-producao").addClass("active");
-	});
+	$("#menu-producao-arvore-de-produto, #top-menu-producao").addClass("active");
+});
 	
 
 $(document).on("click", ".accordion-toggle", function(e){
 	e.preventDefault();
-  var $this = $(this);
-  if($this.attr('data-href'));
-  {
+	var $this = $(this);
+	if($this.attr('data-href'));
+	{
 		$($this.attr('data-target')).load($this.attr('data-href'));
 		//alert($this.attr('data-target'));
-  }
+	}
 	
 	
 });
