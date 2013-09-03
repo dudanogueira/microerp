@@ -15,7 +15,7 @@
         <i class="icon-windows"></i> {{produto}}
       </a>
     </div>
-    <div id="collapse{{produto.id}}" class="accordion-body collapse in">
+    <div id="collapse{{produto.id}}" class="accordion-body collapse">
       <div class="accordion-inner">
 				
 				
@@ -42,6 +42,10 @@
 								<td>{{linha.componente.lead_time}}</td>
 								<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
 							</tr>
+							{% empty %}
+							<tr>
+								<td><i>Nenhum Componente</i></td>
+							</tr>
 						{% endfor %}
 												
 					</tbody>
@@ -62,6 +66,8 @@
 				      </div>
 				    </div>
 				  </div>
+					{% empty %}
+					<i>Nenhum Sub Produto</i>
 					{% endfor %}
 					
 				</div>
