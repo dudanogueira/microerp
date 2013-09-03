@@ -43,7 +43,7 @@
 				<td>{{linha.opcao_padrao.componente.part_number}}</td>
 				<td><span class="badge badge-warning">{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida}}</span></td>
 				<td>{{linha.opcao_padrao.componente.descricao}}</td>
-				<td>{{linha.opcao_padrao.componente.nacionalidade}}</td>
+				<td>{{linha.opcao_padrao.componente.nacionalidade|upper}}</td>
 				<td>{{linha.opcao_padrao.componente.lead_time}}</td>
 				<td>R$  {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
 			</tr>
