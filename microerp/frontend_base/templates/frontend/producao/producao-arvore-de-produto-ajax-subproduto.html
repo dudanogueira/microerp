@@ -1,26 +1,5 @@
 <div class="accordion-inner">
 
-	<div class="accordion" id="accordion2">
-		{% for subproduto_agregado in subproduto.linhasubprodutos_agregados.all %}
-		<div class="accordion-group">
-			<div class="accordion-heading">
-				<a class="accordion-toggle" data-target="#collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" subproduto_agregado.subproduto_agregado.id subproduto.id %}" data-toggle="collapse"  href="#collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}}">
-					<i class="icon-list-ul"></i> <span class="badge badge-warning"> {{subproduto_agregado.quantidade}} UND</span>  {{subproduto_agregado.subproduto_agregado}}
-				</a>
-			</div>
-			<div id="collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}" class="accordion-body collapse">
-				<div class="accordion-inner">
-					
-				</div>
-			</div>
-		</div>
-		{% empty %}
-		<i>Nenhum Sub Produto</i>
-		{% endfor %}
-		
-
-	</div>
-	
 	<table class="table table-condensed table-hover table-rounded">
 		<thead>
 			<tr>
@@ -50,6 +29,29 @@
 			{% endfor %}
 		</tbody>
 	</table>
+
+	<div class="accordion" id="accordion2">
+		{% for subproduto_agregado in subproduto.linhasubprodutos_agregados.all %}
+		<div class="accordion-group">
+			<div class="accordion-heading">
+				<a class="accordion-toggle" data-target="#collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" subproduto_agregado.subproduto_agregado.id subproduto.id %}" data-toggle="collapse"  href="#collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}}">
+					<i class="icon-list-ul"></i> <span class="badge badge-warning"> {{subproduto_agregado.quantidade}} UND</span>  {{subproduto_agregado.subproduto_agregado}}
+				</a>
+			</div>
+			<div id="collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}" class="accordion-body collapse">
+				<div class="accordion-inner">
+					
+				</div>
+			</div>
+		</div>
+		{% empty %}
+		<i>Nenhum Sub Produto</i>
+		{% endfor %}
+		
+
+	</div>
+	
+	
 	
 
 </div>
