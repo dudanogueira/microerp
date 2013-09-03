@@ -1834,20 +1834,34 @@ def producao_combinada_calcular(request):
         quantidade_analisada = []
         for key, value in request.POST.iteritems():
             try:
-                if key != "csrfmiddlewaretoken" and int(value) != 0:
+                considerar_subprodutos = request.POST.get('conseridar_subprodutos_funcionais', False)
+                considerar_produtos = request.POST.get('conseridar_produtos_produzidos', False)
+                if key != "csrfmiddlewaretoken" and value != "on" and value.isdigit():
                     tipo = key.split("-")[0]
                     tipo_id = key.split("-")[1]
-                    print "TIPO",tipo
-                    print "ID",tipo_id
-                    print "VALOR", value
                     if tipo in ['produto', 'subproduto']:
+                        # analise do produto
                         if tipo == 'produto':
                             produto = ProdutoFinal.objects.get(pk=tipo_id)
-                            dic = produto.get_componentes_produto(dic=dic, multiplicador=value)
+                            # se for pra considerar os produtos já produzidos,
+                            # reduzir
+                            if considerar_produtos == "on":
+                                valor_multiplicador = int(value) - produto.total_produzido
+                            else:
+                                valor_multiplicador = value
+                            if valor_multiplicador > 0:
+                                dic = produto.get_componentes_produto(dic=dic, multiplicador=valor_multiplicador)
                             quantidade_analisada.append((produto, value))
+                        # analise do subproduto
                         if tipo == 'subproduto':
                             subproduto = SubProduto.objects.get(pk=tipo_id)
-                            dic = subproduto.get_componentes(dic=dic, multiplicador=value)
+                            if considerar_subprodutos == "on":
+                                valor_multiplicador = int(value) - subproduto.total_funcional
+                            else:
+                                valor_multiplicador = value
+                            # se valor encontrado for maior que 0, calcular
+                            if valor_multiplicador > 0:
+                                dic = subproduto.get_componentes(dic=dic, multiplicador=valor_multiplicador)
                             quantidade_analisada.append((subproduto, value))
             except:
                 raise

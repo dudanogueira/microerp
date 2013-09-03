@@ -19,27 +19,6 @@
     </div>
     <div id="collapse{{produto.id}}" class="accordion-body collapse in">
       <div class="accordion-inner">
-        <h4 class="alert alert-success">Componentes</h4>
-				
-      	<table class="table table-condensed table-hover table-rounded">
-          <thead>
-              <tr>
-                  <th>Componente</th>
-									<th>Quantidade</th>
-									<th>Descrição</th>
-              </tr>
-          </thead>
-          <tbody>
-						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
-							<tr>
-								<td>{{linha.componente.part_number}}</td>
-								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida}}</span></td>
-								<td>{{linha.componente.descricao}}</td>
-							</tr>
-						{% endfor %}
-												
-					</tbody>
-				</table>
 				
 				<h4 class="alert alert-info">Sub Produtos</h4>
 				<div class="accordion" id="accordion-subproduto-{{produto.id}}">
@@ -47,7 +26,7 @@
 				  <div class="accordion-group">
 				    <div class="accordion-heading">
 				      <a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
-				        <span class="badge badge-warning">{{linha.quantidade}}</span> X {{linha.subproduto}}
+				        <span class="badge badge-warning">{{linha.quantidade}}</span> Unidade{{linha.quantidade|pluralize}} de {{linha.subproduto}}
 				      </a>
 				    </div>
 
@@ -60,6 +39,32 @@
 					{% endfor %}
 					
 				</div>
+				
+        <h4 class="alert alert-success">Componentes</h4>
+      	<table class="table table-condensed table-hover table-rounded">
+          <thead>
+              <tr>
+                  <th>Componente</th>
+									<th>Quantidade</th>
+									<th>Descrição</th>
+									<th>Nacionalidade</th>
+									<th>Lead Time (semanas)</th>
+              </tr>
+          </thead>
+          <tbody>
+						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
+							<tr>
+								<td>{{linha.componente.part_number}}</td>
+								<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.get_medida_display}}{{linha.quantidade|pluralize}}</span></td>
+								<td>{{linha.componente.descricao}}</td>
+								<td>{{linha.componente.get_nacionalidade_display}}</td>
+								<td>{{linha.componente.lead_time}}</td>
+							</tr>
+						{% endfor %}
+												
+					</tbody>
+				</table>
+				
 
       </div>
     </div>
