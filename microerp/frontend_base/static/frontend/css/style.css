@@ -253,3 +253,16 @@ font-size: 28.5px;
 h2 {
 font-size: 21.5px;
 }
+
+#arvore-de-produtos .accordion-heading .accordion-toggle {
+display: block;
+padding: 3px 5px;
+}
+
+#arvore-de-produtos .accordion {
+margin-bottom: 10px;
+}
+
+#arvore-de-produtos .accordion-group {
+border: 1px solid #000;
+}

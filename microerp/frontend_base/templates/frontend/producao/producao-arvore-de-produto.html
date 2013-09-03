@@ -7,8 +7,6 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-code-fork"></i>  Árvore de Produtos</h1>
 
-
-
 <div class="accordion" id="arvore-de-produtos">
 	{% for produto in produtos %}
   <div class="accordion-group">
@@ -20,7 +18,6 @@
     <div id="collapse{{produto.id}}" class="accordion-body collapse in">
       <div class="accordion-inner">
 				
-				<h4 class="alert alert-info">Sub Produtos</h4>
 				<div class="accordion" id="accordion-subproduto-{{produto.id}}">
 					{% for linha in produto.linhasubprodutodoproduto_set.all %}
 				  <div class="accordion-group">
@@ -40,7 +37,6 @@
 					
 				</div>
 				
-        <h4 class="alert alert-success">Componentes</h4>
       	<table class="table table-condensed table-hover table-rounded">
           <thead>
               <tr>
