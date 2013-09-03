@@ -33,6 +33,7 @@
 				<th>Nacionalidade</th>
 				<th>Lead Time (semanas)</th>
 				<th>TAG</th>
+				<th>Preço</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -44,6 +45,7 @@
 				<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
 				<td>{{linha.opcao_padrao.componente.lead_time}}</td>
 				<td>{{linha.tag|upper}}</td>
+				<td>R$  {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
 			</tr>
 			{% empty %}
 			<tr>Nenhum Componente</tr>

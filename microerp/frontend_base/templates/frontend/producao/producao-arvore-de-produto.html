@@ -49,6 +49,8 @@
 									<th>Descrição</th>
 									<th>Nacionalidade</th>
 									<th>Lead Time (semanas)</th>
+									<th>TAG</th>
+									<th>Preço</th>
               </tr>
           </thead>
           <tbody>
@@ -59,6 +61,8 @@
 								<td>{{linha.componente.descricao}}</td>
 								<td>{{linha.componente.get_nacionalidade_display}}</td>
 								<td>{{linha.componente.lead_time}}</td>
+								<td>{{linha.componente.tag}}</td>
+								<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
 							</tr>
 						{% endfor %}
 												
