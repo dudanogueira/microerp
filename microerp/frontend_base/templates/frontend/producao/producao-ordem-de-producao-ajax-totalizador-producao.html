@@ -37,11 +37,10 @@
 		<tr>
 			<th>Sub Produto</th>
 			<th>Nome</th>
-			<th>Descrição</th>
-			<th class="alert alert-success">Total Funcional</th>
-			<th class="alert alert-info">Total Testando</th>
-			<th class="alert">Total Montado</th>
-			<th>Total Disponivel</th>
+			<th class="alert alert-success">Total Func.</th>
+			<th class="alert alert-info">Total Test.</th>
+			<th class="alert">Total Mont.</th>
+			<th>Max Prod.</th>
 			<th>Teste</th>
 			<th>Custo</th>
 		</tr>
@@ -52,7 +51,6 @@
 		<tr {% if not subproduto.tipo_de_teste %}class="alert alert-danger"{%endif%}>
 			<td>{{subproduto.part_number}}</td>
 			<td>{{subproduto.nome}}</td>
-			<td>{{subproduto.descricao}}</td>
 			<td class="alert alert-success">
 				{% if subproduto.tipo_de_teste %}
 				{{subproduto.total_funcional}}
