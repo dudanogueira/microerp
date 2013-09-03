@@ -260,9 +260,14 @@ padding: 3px 5px;
 }
 
 #arvore-de-produtos .accordion {
-margin-bottom: 10px;
+margin-bottom: 0px;
 }
 
 #arvore-de-produtos .accordion-group {
 border: 1px solid #000;
+}
+
+#arvore-de-produtos .table{
+width: 100%;
+margin-bottom: 0px;
 }
