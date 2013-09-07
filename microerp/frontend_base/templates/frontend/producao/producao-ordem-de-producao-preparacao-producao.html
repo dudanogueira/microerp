@@ -1,0 +1,27 @@
+<h2>Preparo de Produção</h2>
+<form method="POST" action="{% url "producao:producao_combinada_calcular" %}" class="form-inline">
+	{% csrf_token %}
+
+	<h5>Configurações</h5>
+	<p>
+	<input type="text" name="margem_componentes" id="margem_componentes" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')" value="10"><strong>%</strong> <label for="margem_componentes" >Margem de Segurança de Componentes</label>
+	</p>
+
+
+<h2><i class="icon-windows"></i> Produtos</h2>
+
+<ul>
+{% for produto in produtos %}
+	<li><input type="text" name="produto-{{produto.id}}" value="{{produto.quantidade_estimada_producao_semanal}}" class="input-mini" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,'')"> {{produto}}</li>
+{% endfor %}
+</ul>
+
+<h2><i class="icon-list-ul"></i> Sub Produtos</h2>
+<ul>
+{% for subproduto in subprodutos %}
+	<li><input type="text" name="subproduto-{{subproduto.id}}" value="0" class="input-mini"> {{subproduto}}</li>
+{% endfor %}
+</ul>
+
+<button type="submit" class="btn btn-primary"><i class="icon-search"></i> Preparar Produção</button>
+</form>

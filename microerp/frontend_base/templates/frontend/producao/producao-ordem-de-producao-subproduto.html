@@ -85,9 +85,7 @@
 					">
 						<td>
 							{{linha.0.subproduto_agregado.part_number}}
-							{% if not linha.0.subproduto_agregado.tipo_de_teste %} 				
 							{{linha.0.subproduto_agregado.get_componentes}}
-							{% endif %}
 						</td>
 						<td>{{linha.0.quantidade}}</td>
 						<td>
@@ -169,7 +167,10 @@
 	
 		</div>
 	{% endif %}
-	{% if get_componentes %}<strong>Notação de Produção</strong>: {{get_componentes}}<br />{% endif %}
+	{% if get_componentes %}
+	<strong>Notação de Produção Abreviada</strong>: {{get_componentes}}<br />
+	<strong>Notação de Produção Completa Não Agrupada</strong>: {{get_componentes_nao_agrupados}}<br />
+	{% endif %}
 	
 {% endblock %}
 

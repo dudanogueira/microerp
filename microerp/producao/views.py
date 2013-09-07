@@ -31,11 +31,12 @@ from producao.models import LinhaSubProdutodoProduto
 from producao.models import LinhaComponenteAvulsodoProduto
 from producao.models import DocumentoTecnicoProduto
 from producao.models import OrdemProducaoSubProduto
+from producao.models import OrdemProducaoProduto
 from producao.models import RegistroEnvioDeTesteSubProduto
 from producao.models import RegistroSaidaDeTesteSubProduto
+from producao.models import RegistroValorEstoque
 
 from rh.models import Funcionario
-
 
 from django import forms
 
@@ -776,6 +777,7 @@ class AlterarEstoque(forms.Form):
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_estoque(request):
     historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')
+    totalizadores = RegistroValorEstoque.objects.all()
     if request.POST:
         if request.POST.get('consulta-estoque'):
             form_mover_estoque = MoverEstoque()
@@ -1618,14 +1620,8 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
             novo_total = total_anterior + int(quantidade_solicitada)
             subproduto.total_montado = novo_total
             messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
-            
-            
-        
         subproduto.save()
-        
-        
-            
-        
+
     return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1653,6 +1649,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             # passa a configuracao para gerar o dicionario de componentes
             # deste subproduto
             get_componentes = subproduto.get_componentes(conf=conf, multiplicador=float(quantidade_solicitada))
+            get_componentes_nao_agrupados = subproduto.get_componentes(conf=conf, multiplicador=float(quantidade_solicitada), agrega_subproduto_sem_teste=False)
             # aplicar multiplicador de quantidade_solicitada
             
             # assume producao liberada
@@ -1671,7 +1668,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                         producao_liberada = False
                         componente = Componente.objects.get(pk=int(item[0]))
                         messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
-                elif type(item[0] == str):
+                elif type(item[0]) == str:
                     subproduto_id = item[0].split("-")[1]
                     subproduto_usado = SubProduto.objects.get(id=subproduto_id)
                     qtd_subproduto = item[1]
@@ -1726,14 +1723,66 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
     return render_to_response('frontend/producao/producao-ordem-de-producao-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicitada):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    get_componentes = produto.get_componentes_produto(multiplicador=quantidade_solicitada)
+    # pega o estoque produto padrao
+    slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+    estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+    # cria a ordem de producao
+    ordem_producao_produto = OrdemProducaoProduto.objects.create(
+        produto=produto,
+        quantidade=quantidade_solicitada,
+        string_producao=get_componentes,
+        criado_por=request.user, 
+    )
+    
+    for item in get_componentes.items():
+        # para cada item, verificar tipo (se componente ou subproduto)
+        # dar baixa no estoque (para componente) ou total funcional (para subproduto)
+        # e incremental o total_produzido do produto com a quantidade solicitada
+        # longo ou inteiro, é componente
+        # registra a ordem de producao do Produto
+        if type(item[0]) == long:
+            #descobre posicao atual do componente no estoque produtor
+            posicao_atual = estoque_produtor.posicao_componente(item[0])
+            # remove da posicao atual
+            nova_quantidade = float(posicao_atual) - float(item[1])
+            nova_posicao = PosicaoEstoque.objects.create(
+                componente_id=int(item[0]),
+                estoque=estoque_produtor,
+                quantidade=nova_quantidade,
+                criado_por=request.user,
+                justificativa='Ordem #%s de Produção de Produto' % ordem_producao_produto.id,
+                quantidade_alterada="-%s (%s)" % (float(item[1]), get_componentes),
+                ordem_producao_produto_referencia=ordem_producao_produto
+            )
+            messages.success(request, u"Nova posição em Estoque de Produção para %s: %s - %s = %s" % (nova_posicao.componente, posicao_atual, float(item[1]), nova_posicao.quantidade))
+        elif type(item[0]) == str:
+            # descobre o subproduto
+            id_subproduto = item[0].split('-')[1]
+            subproduto_remover = SubProduto.objects.get(id=id_subproduto)
+            posicao_atual = subproduto_remover.total_funcional
+            nova_posicao = posicao_atual - float(float(item[1]))
+            # remove a quantidade de subproduto funcional
+            subproduto_remover.total_funcional = nova_posicao 
+            subproduto_remover.save()
+            messages.success(request, u"Removido do Total Funcional do Subproduto %s: %s - %s = %s" % (subproduto_remover, posicao_atual, float(item[1]), nova_posicao))
+
+    # incrementa o produto em seu total_produzido
+    produto_total_produzido = produto.total_produzido
+    novo_valor = int(produto_total_produzido) + int(quantidade_solicitada)
+    produto.total_produzido = novo_valor
+    produto.save()
+    messages.success(request, u"Novo Valor para Total Produzido do Produto %s: %s -> %s" % (produto.part_number(), produto_total_produzido, novo_valor))
+    return redirect(reverse("producao:ordem_de_producao"))
+        
+@user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
     produto = get_object_or_404(ProdutoFinal, pk=produto_id)
     get_componentes = produto.get_componentes_produto(multiplicador=quantidade_solicitada)
     if request.POST:
-        if request.POST.get('confirmado', None):
-            pass
-            #executar
-        elif request.POST.get('verificar-producao', None):
+        if request.POST.get('verificar-producao', None):
             producao_liberada = True
             slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
             estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
@@ -1749,7 +1798,7 @@ def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
                         producao_liberada = False
                         componente = Componente.objects.get(pk=int(item[0]))
                         messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
-                elif type(item[0] == str):
+                elif type(item[0]) == str:
                     subproduto_id = item[0].split("-")[1]
                     subproduto_usado = SubProduto.objects.get(id=subproduto_id)
                     qtd_subproduto = item[1]
@@ -1860,6 +1909,7 @@ def producao_combinada_calcular(request):
                             else:
                                 valor_multiplicador = value
                             # se valor encontrado for maior que 0, calcular
+                            # se for menor, significa que a quantidade em estoque / funcional é superior ao planejado de produção, nem precisa calcular
                             if valor_multiplicador > 0:
                                 dic = subproduto.get_componentes(dic=dic, multiplicador=valor_multiplicador)
                             quantidade_analisada.append((subproduto, value))
@@ -1886,7 +1936,7 @@ def producao_combinada_calcular(request):
                     pode = False
                     # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
                     relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque_produtor, faltou, pode))
-            elif type(item[0] == str):
+            elif type(item[0]) == str:
                 subproduto_id = item[0].split("-")[1]
                 subproduto_usado = SubProduto.objects.get(id=subproduto_id)
                 qtd_subproduto = item[1]
@@ -1903,3 +1953,74 @@ def producao_combinada_calcular(request):
                     relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode))
              
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def qeps_componentes(request):
+    '''
+    Contabilizar a quantidade de componentes de todos os produtos com o
+    multiplicador sendo o QEPS. Para cada subproduto com teste encontrado,
+    dimunir sua quantidade de total_funcional se faltar, contabilizar os
+    componentes do subproduto faltante, considerando o multiplicador o valor
+    faltado.
+    Depois de descobrir a quantidade  total para cumprir o QEPS de TODOS os
+    produtos cadastrados e ativos, multiplicar essa quantidade pelo valor de
+    lead time, encontrando a quantidade mínima de esotque do componente,
+    que deve ser armazenado no componente, juntamente com a hora do calculo.
+    Após o calculo, exibir uma tabela, com componente, quantidade mínima
+    para QEPS, quantidade em estoque produtor, e diferença desses dois
+    ultimos valores
+    '''
+    dic = {}
+    slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+    estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+    for produto in ProdutoFinal.objects.filter(ativo=True):
+        # para cada produto
+        if produto.quantidade_estimada_producao_semanal:
+            dic = produto.get_componentes_produto(
+                multiplicador=produto.quantidade_estimada_producao_semanal,
+                dic=dic,
+            )
+    # dic ficou com todas as quantidades necessarias para QEPS do produto
+    for item in dic.items():
+        # verificar subprodutos já produzidos
+        if type(item[0]) == str:
+            subproduto_id = item[0].split("-")[1]
+            subproduto_usado = SubProduto.objects.get(id=subproduto_id)
+            print "SUBPRODUTO USADO", subproduto_usado
+            qtd_disponivel = subproduto_usado.total_funcional
+            qtd_subproduto = item[1]
+            # remove o subproduto
+            print "SUBPRODUTO %s REMOVIDO DA NOTAÇÃO" % subproduto_usado
+            del dic[item[0]]
+            # qtd faltante = qtd_usado = qtd_disponivel
+            quantidade_faltante = qtd_disponivel - qtd_subproduto
+            if quantidade_faltante < 0:
+                # ex: 20 - 30 = -10, faltou 10
+                # faltou componente, é preciso calcular a quantidade de componentes
+                #necessarios para fabricar faltantes
+                quantidade_faltante = -quantidade_faltante
+                dic = subproduto_usado.get_componentes(multiplicador=quantidade_faltante, agrega_subproduto_sem_teste=False, dic=dic)
+    
+    # calcula a tabelas de leadtime
+    tabela_items = []
+    for item in dic.items():
+        if type(item[0]) == long:
+            qtd_componente = item[1]
+            posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+            componente = Componente.objects.get(pk=int(item[0]))
+            quantidade_lead_time = item[1] * componente.lead_time
+            diferenca = float(posicao_em_estoque_produtor) - float(quantidade_lead_time)
+            if diferenca > 0:
+                ok = True
+            else:
+                ok = False
+            tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok))
+            
+    return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-qeps-componentes.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def preparar_producao_semanal(request):
+    produtos = ProdutoFinal.objects.all().order_by('-total_produzido')
+    subprodutos = SubProduto.objects.all().order_by('-total_funcional')
+    return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao.html', locals(), context_instance=RequestContext(request),)
+    

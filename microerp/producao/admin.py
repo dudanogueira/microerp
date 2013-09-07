@@ -26,6 +26,7 @@ from models import LinhaSubProdutodoProduto
 from models import OrdemProducaoSubProduto
 from models import RegistroEnvioDeTesteSubProduto
 from models import RegistroSaidaDeTesteSubProduto
+from models import RegistroValorEstoque
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -181,3 +182,4 @@ admin.site.register(ArquivoAnexoComponente, ArquivoAnexoComponenteAdmin)
 admin.site.register(LinhaSubProdutodoProduto, LinhaSubProdutodoProdutoAdmin)
 admin.site.register(RegistroEnvioDeTesteSubProduto, RegistroEnvioDeTesteSubProdutoAdmin)
 admin.site.register(RegistroSaidaDeTesteSubProduto, RegistroSaidaDeTesteSubProdutoAdmin)
+admin.site.register(RegistroValorEstoque)

@@ -37,9 +37,9 @@
 		<tr>
 			<th>Sub Produto</th>
 			<th>Nome</th>
-			<th class="alert alert-success">Total Func.</th>
-			<th class="alert alert-info">Total Test.</th>
 			<th class="alert">Total Mont.</th>
+			<th class="alert alert-info">Total Test.</th>
+			<th class="alert alert-success">Total Func.</th>
 			<th>Max Prod.</th>
 			<th>Teste</th>
 			<th>Custo</th>
@@ -51,24 +51,6 @@
 		<tr {% if not subproduto.tipo_de_teste %}class="alert alert-danger"{%endif%}>
 			<td>{{subproduto.part_number}}</td>
 			<td>{{subproduto.nome}}</td>
-			<td class="alert alert-success">
-				{% if subproduto.tipo_de_teste %}
-				{{subproduto.total_funcional}}
-				{% else %}
-					-
-				{% endif %}
-			</td>
-			<td class="alert alert-info">
-				{% if subproduto.tipo_de_teste %}
-					{% ifequal subproduto.tipo_de_teste  2 %}
-					{{subproduto.total_testando}}
-					{% else %}
-					-
-					{% endifequal %}
-				{% else %}
-					-
-				{% endif %}
-			</td>
 			
 			<td class="alert">
 				{% if subproduto.tipo_de_teste %}
@@ -82,7 +64,29 @@
 				{% endif %}
 			</td>
 			
-			<td {% if not subproduto.tipo_de_teste %}class="alert-success alert"{%endif%}>{{subproduto.total_disponivel}}</td>
+
+			<td class="alert alert-info">
+				{% if subproduto.tipo_de_teste %}
+					{% ifequal subproduto.tipo_de_teste  2 %}
+					{{subproduto.total_testando}}
+					{% else %}
+					-
+					{% endifequal %}
+				{% else %}
+					-
+				{% endif %}
+			</td>
+			
+			
+			<td class="alert alert-success">
+				{% if subproduto.tipo_de_teste %}
+				{{subproduto.total_funcional}}
+				{% else %}
+					-
+				{% endif %}
+			</td>
+			
+			<td {% if not subproduto.tipo_de_teste %}class="alert-success alert"{%endif%}>{{subproduto.maximo_produzivel_agrupado}}</td>
 			<td>{{subproduto.get_tipo_de_teste_display}}</td>
 			<td>R$ {{subproduto.custo|floatformat:2}}</td>
 		</tr>

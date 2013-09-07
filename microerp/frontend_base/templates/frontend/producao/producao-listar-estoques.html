@@ -12,7 +12,8 @@
   <li><a href="#movimentar" data-toggle="tab">Movimentar</a></li>
   <li><a href="#alterar" data-toggle="tab">Alterar</a></li>
   {% endif %}
-  <li><a href="#historico" data-toggle="tab">Histórico</a></li>
+  <li><a href="#historico" data-toggle="tab">Histórico de Movimentação</a></li>
+	<li><a href="#historico-totalizador" data-toggle="tab">Histórico de Totalizador</a></li>
 </ul>
 
 <div id="myTabContent" class="tab-content">
@@ -202,6 +203,28 @@
         
     </div>
     
+		<div class="tab-pane fade in" id="historico-totalizador">
+			
+      <table class="table table-condensed table-striped table-rounded">
+          <thead>
+              <tr>
+                  <th>Data</th>
+									<th>Valor</th>
+              </tr>
+          </thead>
+          <tbody>
+						{% for totalizador in totalizadores %}
+						<tr>
+							<td>{{totalizador.data}}</td>
+							<td>R$ {{totalizador.valor|floatformat:2}}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			
+			
+		</div>
+		
 </div>
 
 

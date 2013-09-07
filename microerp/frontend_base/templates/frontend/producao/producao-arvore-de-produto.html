@@ -7,6 +7,10 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-code-fork"></i>  Árvore de Produtos</h1>
 
+<p>
+	<a href="" id="imprimir" class="btn btn-large"><i class="icon-print"></i> imprimir</a>
+</p>
+
 <div class="accordion" id="arvore-de-produtos">
 	{% for produto in produtos %}
 	<div class="accordion-group">
@@ -104,8 +108,18 @@ $(document).on("click", ".accordion-toggle", function(e){
 		//alert($this.attr('data-target'));
 	}
 	
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	alert();
+	$(this).hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
 	
 });
+
 
 </script>
 {% endaddtoblock %}

@@ -103,6 +103,7 @@ class PosicaoEstoque(models.Model):
     data_entrada = models.DateTimeField(blank=True, default=datetime.datetime.now)
     nota_referencia = models.ForeignKey('NotaFiscal', blank=True, null=True, on_delete=models.PROTECT)
     ordem_producao_subproduto_referencia = models.ForeignKey('OrdemProducaoSubProduto', null=True, blank=True)
+    ordem_producao_produto_referencia = models.ForeignKey('OrdemProducaoProduto', null=True, blank=True)
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
@@ -208,9 +209,6 @@ class Componente(models.Model):
     def total_unico_participacoes(self):
         return self.opcaolinhasubproduto_set.count() + self.linhacomponenteavulsodoproduto_set.count()
         
-        
-
-
     
     class Meta:
         unique_together = (('identificador', 'tipo'))
@@ -603,9 +601,9 @@ class SubProduto(models.Model):
         return True
         
         
-                
     
-    def get_componentes(self, dic=None, conf=None, multiplicador=1):
+    
+    def get_componentes(self, dic=None, conf=None, multiplicador=1, agrega_subproduto_sem_teste=True):
         # componentes
         # se tiver configurado, calcular configurado
         if not dic:
@@ -641,7 +639,7 @@ class SubProduto(models.Model):
         for linha_subproduto in self.linhasubprodutos_agregados.all():
             # para cada linha de subproduto
             # pega os componentes dele, somente se nao exigir testes
-            if linha_subproduto.subproduto_agregado.tipo_de_teste:
+            if linha_subproduto.subproduto_agregado.tipo_de_teste and agrega_subproduto_sem_teste:
                 try:
                     valor_atual = dic['subproduto-%s' % str(linha_subproduto.subproduto_agregado.id)]
                 except:
@@ -649,7 +647,7 @@ class SubProduto(models.Model):
                 dic['subproduto-%s' % str(linha_subproduto.subproduto_agregado.id)] = float(valor_atual) + (float(linha_subproduto.quantidade) * float(multiplicador))
                 
             else:
-                dic = linha_subproduto.subproduto_agregado.get_componentes(dic=dic, multiplicador=linha_subproduto.quantidade*multiplicador)
+                dic = linha_subproduto.subproduto_agregado.get_componentes(dic=dic, multiplicador=linha_subproduto.quantidade*multiplicador, agrega_subproduto_sem_teste=agrega_subproduto_sem_teste)
             # avanca sobre os subprodutos
         return dic
         
@@ -787,6 +785,45 @@ class SubProduto(models.Model):
                     total_parcial += valor
         return total_parcial        
     
+    def maximo_produzivel_agrupado(self, agrega_subproduto_sem_teste=True):
+        return self.maximo_produzivel(agrega_subproduto_sem_teste=agrega_subproduto_sem_teste)
+    
+    def maximo_produzivel(self, agrega_subproduto_sem_teste=False):
+        modulos = []
+        # pega todos os componentes, sem agregar subprodutos sem teste
+        componentes = self.get_componentes(agrega_subproduto_sem_teste=agrega_subproduto_sem_teste)
+        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+        for item in componentes.items():
+            if type(item[0]) == long:
+                posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                print "Item Componente: %s" % item[0]
+                print "Posicao em estoque: %s" % posicao_em_estoque_produtor
+                print "Quantidade necessaria de producao: %s" % item[1]
+                diferenca = float(posicao_em_estoque_produtor) / float(item[1])
+                print "Diferença: %s" % diferenca
+                print "####"*10
+                modulos.append(diferenca)
+            elif type(item[0]) == str:
+                # subproduto
+                id_subproduto = item[0].split('-')[1]
+                subproduto = SubProduto.objects.values('total_funcional').get(id=id_subproduto)
+                diferenca = float(subproduto['total_funcional']) / float(item[1])
+                print "Item SubProduto: %s" % item[0]
+                print "Quantidade Funcional: %s" % subproduto['total_funcional']
+                print "Quantidade necessaria de producao: %s" % item[1]
+                print "Diferença: %s" % diferenca
+                print "####"*10
+                modulos.append(diferenca)
+        
+        if modulos:
+            print modulos
+            x = min(float(s) for s in modulos)
+            return int(x)
+        else:
+            return 0
+        
+    
     def total_disponivel(self):
         # subproduto com tipo de teste nulo, ou seja
         # total disponível é direto no estoque
@@ -796,12 +833,7 @@ class SubProduto(models.Model):
             # este valor deverá ser calculado automaticamente,
             # pois o produto não precisa de teste e pode ser criado na hora
             # retornar a maior quantidade possível que
-            # pode ser produzido deste SubProduto
-            pode_produzir = 1
-            increase = True
-            #while increase==True:
-            # para cada linha de componente
-            
+            # pode ser produzido deste SubProduto            
             componentes = self.get_componentes()
             modulos = []
             
@@ -1005,7 +1037,7 @@ class ProdutoFinal(models.Model):
     def custo(self):
         return self.custo_total_linha_subprodutos() + self.custo_total_linha_produtos_avulsos()
 
-    def get_componentes_produto(self, dic=None, multiplicador=1):
+    def get_componentes_produto(self, dic=None, multiplicador=1, agrega_subproduto_sem_teste=True):
         if not dic:
             dic = {}
         # contabiliza os componentes do próprio produto
@@ -1023,7 +1055,7 @@ class ProdutoFinal(models.Model):
         for linha in self.linhasubprodutodoproduto_set.all():
             # tipo de teste existe
             # somente incrementar a quantidade
-            if linha.subproduto.tipo_de_teste:
+            if linha.subproduto.tipo_de_teste and agrega_subproduto_sem_teste:
                 try:
                     valor_atual = dic['subproduto-%s' % str(linha.subproduto.id)]
                 except:
@@ -1031,7 +1063,7 @@ class ProdutoFinal(models.Model):
                 dic['subproduto-%s' % str(linha.subproduto.id)] = float(valor_atual) + (float(linha.quantidade) * float(multiplicador))
             else:
                 # nao existe teste, pegar direto os componentes ou subprodutos na mesma situacao
-                dic = linha.subproduto.get_componentes(dic=dic, multiplicador=float(linha.quantidade) * float(multiplicador))
+                dic = linha.subproduto.get_componentes(dic=dic, multiplicador=float(linha.quantidade) * float(multiplicador), agrega_subproduto_sem_teste=agrega_subproduto_sem_teste)
             
         return dic
 
@@ -1073,6 +1105,7 @@ class ProdutoFinal(models.Model):
             else:
                 break
     
+    ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
     slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")
@@ -1164,6 +1197,16 @@ class OrdemProducaoSubProduto(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
+
+class OrdemProducaoProduto(models.Model):
+    produto = models.ForeignKey('ProdutoFinal')
+    quantidade = models.IntegerField(blank=False, null=False)
+    string_producao = models.TextField(blank=False)
+    # meta
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
 class RegistroEnvioDeTesteSubProduto(models.Model):
     quantidade = models.IntegerField(blank=False, null=False)
     subproduto = models.ForeignKey('SubProduto')
@@ -1182,3 +1225,14 @@ class RegistroSaidaDeTesteSubProduto(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
+class RegistroValorEstoque(models.Model):
+    
+    def __unicode__(self):
+        return "Registro de estoque em %s no valor de R$%s" % (self.data, self.valor)
+    
+    data = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    valor = models.DecimalField("Preço Líquido Unitário em Dólar", help_text="INSERIDO AUTOMATICAMENTE DA ULTIMA COMPRA", max_digits=10, decimal_places=2, default=0)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
