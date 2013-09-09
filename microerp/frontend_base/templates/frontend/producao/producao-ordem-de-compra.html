@@ -1,0 +1,106 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Compra{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-briefcase"></i>  Ordem de Compra</h1>
+
+<div id="lista-ordens">
+	
+	<div class="accordion" id="accordion-ordens-compra">
+		
+		{% for ordem in ordens %}
+	  <div class="accordion-group">
+	    <div class="accordion-heading">
+	      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion-ordens-compra"  href="#collapse-ordem-{{ordem.id}}">
+					{% if ordem.data_fechado %}
+						<span class="badge badge-success">FECHADO</span>
+					{% else %}
+						<span class="badge badge-important">ABERTO</span>
+					{% endif %}
+					
+					Ordem #{{ordem.id}}, no valor de R$ {{ordem.valor|floatformat:2}} por {{ordem.funcionario}} aberto no dia {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+	      </a>
+	    </div>
+	    <div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse {% if forloop.first %}in{%endif%}">
+	      <div class="accordion-inner">
+					{% if not ordem.data_fechado %}
+	        <a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
+	        <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-danger">X Fechar Ordem</a>
+					
+					{% endif %}
+					<h3>Atividades</h3>
+					{% for atividade in ordem.atividadedeordemdecompra_set.all %}
+						{% if atividade.data_fechado %}
+							<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
+						{% else %}
+						<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small> <a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a></li>
+						{% endif %}
+					{% empty %}
+					<small>Nenhuma Atividade. Edite a Ordem de Compra e Adicione uma nova atividade.</small>
+
+					{% endfor %}
+					
+	      </div>
+	    </div>
+	  </div>
+		{% endfor %}
+		
+		
+		
+	  
+	</div>
+	
+
+<div id="filtro-criar">
+	
+	<div class="row-fluid">
+		<div class="span6">
+			<h2><i class="icon-filter"></i> Filtrar</h2>
+			<form class="form-horizontal" method="POST">
+				{% csrf_token %}
+			{{form_filtro.as_p}}
+			<button type="submit" class="btn btn-primary" name="form-filtrar-ordem-de-compra" value="filtrar"><i class="icon-filter"></i> Filtrar</button>
+			</form>
+		</div>
+		<div class="span6">
+			<h2><i class="icon-plus"></i> Adicionar Ordem de Compra</h2>
+			<form method="POST">
+				{% csrf_token %}
+				{{form_adicionar_ordem_de_compra.as_p}}
+				<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" value="adicionar"><i class="icon-plus"></i> Adicionar</button>
+			</form>
+		</div>
+		
+	</div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+	$("#menu-producao-ordem-de-compra, #top-menu-producao").addClass("active");
+	
+	$( ".datepicker" ).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+        
+	});
+	
+	
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

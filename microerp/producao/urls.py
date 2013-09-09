@@ -68,4 +68,9 @@ urlpatterns = patterns('',
     url(r'^arvore-de-produto/ajax/subproduto/(?P<subproduto_id>[0-9]+)/parente/(?P<parente>[0-9]+)/$', 'producao.views.arvore_de_produto_ajax_subproduto', name='arvore_de_produto_ajax_subproduto'),
     # registro de testes
     url(r'^registro-de-testes/$', 'producao.views.registro_de_testes', name='registro_de_testes'),
+    # ordem de compra
+    url(r'^ordem-de-compra/$', 'producao.views.ordem_de_compra', name='ordem_de_compra'),
+    url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/editar/$', 'producao.views.ordem_de_compra_editar', name='ordem_de_compra_editar'),
+    url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/fechar/$', 'producao.views.ordem_de_compra_fechar', name='ordem_de_compra_fechar'),
+    url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/atividade/(?P<atividade_id>[0-9]+)/fechar/$', 'producao.views.ordem_de_compra_atividade_fechar', name='ordem_de_compra_atividade_fechar'),
 )

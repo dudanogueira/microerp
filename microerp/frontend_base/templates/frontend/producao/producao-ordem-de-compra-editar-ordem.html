@@ -1,0 +1,74 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Compra{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-briefcase"></i>  Ordem de Compra</h1>
+<h2>Ordem de Compra #{{ordem.id}}</h2>
+<a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-danger">X Fechar Ordem</a>
+
+<div class="row-fluid">
+	<div class="span6">
+		<h3>Editar Ordem</h3>
+		<form method="POST">
+			{% csrf_token %}
+			{{form_editar_ordem.as_p}}
+			<button type="submit" name="editar-ordem" value="editar" class="btn btn-primary"><i class="icon-pencil"></i> Editar</button>
+		</form>
+	</div>
+	<div class="span6">
+		<h3>Atividades</h3>
+		<ul>
+		{% for atividade in ordem.atividadedeordemdecompra_set.all %}
+			{% if atividade.data_fechado %}
+				<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
+			{% else %}
+			<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small> <a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a></li>
+			{% endif %}
+		
+			{% empty %}
+			<small>Nenhum Atividade. Adicione abaixo</small>
+
+		{% endfor %}
+	</ul>
+		
+		<h3>Adicionar Atividade</h3>
+		<form method="POST">
+			{% csrf_token %}
+		{{form_add_atividade.as_p}}
+		<button type="submit" name="adicionar-atividade" value="adicionar" class="btn btn-success"><i class="icon-plus"></i> Adicionar Atividade</button>
+		
+		
+	</form>
+			
+	</div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+	$("#menu-producao-ordem-de-compra, #top-menu-producao").addClass("active");
+	
+	$( ".datepicker" ).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+        
+	});
+	
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

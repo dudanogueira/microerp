@@ -1231,7 +1231,42 @@ class RegistroValorEstoque(models.Model):
         return "Registro de estoque em %s no valor de R$%s" % (self.data, self.valor)
     
     data = models.DateTimeField(blank=True, default=datetime.datetime.now)
-    valor = models.DecimalField("Preço Líquido Unitário em Dólar", help_text="INSERIDO AUTOMATICAMENTE DA ULTIMA COMPRA", max_digits=10, decimal_places=2, default=0)
+    valor = models.DecimalField("Valor do Estoque", help_text="Valor total do Estoque", max_digits=10, decimal_places=2, default=0)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class OrdemDeCompra(models.Model):
+    
+    def __unicode__(self):
+        if not self.data_fechado:
+            return u"Ordem de Compra #%s ABERTA por funcionário %s no valor de R$ %s em %s" % (self.id, self.funcionario, self.valor, self.data_aberto)
+        else:
+            return u"Ordem de Compra #%s FECHADA por funcionário %s no valor de R$ %s em %s" % (self.id, self.funcionario, self.valor, self.data_aberto)
+    
+    funcionario = models.ForeignKey('rh.Funcionario')
+    data_aberto = models.DateField(blank=True, default=datetime.datetime.now)
+    data_fechado = models.DateField(blank=True, null=True)
+    valor = models.DecimalField("Valor", max_digits=10, decimal_places=2, default=0)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class AtividadeDeOrdemDeCompra(models.Model):
+    ordem_de_compra = models.ForeignKey('OrdemDeCompra')
+    data = models.DateField(default=datetime.datetime.today)
+    descricao = models.TextField(u"Descrição", blank=True)
+    data_fechado = models.DateTimeField(blank=True, null=True)
+    fechado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class ComponentesDaOrdemDeCompra(models.Model):
+        
+    ordem_de_compra = models.ForeignKey('OrdemDeCompra')
+    quantidade_comprada = models.IntegerField(blank=False, null=False)
+    componente_comprado = models.ForeignKey('Componente')
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
