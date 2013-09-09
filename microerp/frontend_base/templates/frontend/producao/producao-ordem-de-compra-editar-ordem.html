@@ -10,7 +10,7 @@
 <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-danger">X Fechar Ordem</a>
 
 <div class="row-fluid">
-	<div class="span6">
+	<div class="span4">
 		<h3>Editar Ordem</h3>
 		<form method="POST">
 			{% csrf_token %}
@@ -18,12 +18,12 @@
 			<button type="submit" name="editar-ordem" value="editar" class="btn btn-primary"><i class="icon-pencil"></i> Editar</button>
 		</form>
 	</div>
-	<div class="span6">
+	<div class="span8">
 		<h3>Atividades</h3>
 		<ul>
-		{% for atividade in ordem.atividadedeordemdecompra_set.all %}
+			{% for atividade in ordem.atividadedeordemdecompra_set.all %}
 			{% if atividade.data_fechado %}
-				<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
+			<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
 			{% else %}
 			<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small> <a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a></li>
 			{% endif %}
@@ -31,20 +31,38 @@
 			{% empty %}
 			<small>Nenhum Atividade. Adicione abaixo</small>
 
-		{% endfor %}
-	</ul>
+			{% endfor %}
+		</ul>
 		
-		<h3>Adicionar Atividade</h3>
+		<h3>Adicionar Nova Atividade</h3>
 		<form method="POST">
 			{% csrf_token %}
-		{{form_add_atividade.as_p}}
-		<button type="submit" name="adicionar-atividade" value="adicionar" class="btn btn-success"><i class="icon-plus"></i> Adicionar Atividade</button>
+			{{form_add_atividade.as_p}}
+			<button type="submit" name="adicionar-atividade" value="adicionar" class="btn btn-success"><i class="icon-plus"></i> Adicionar Atividade</button>
 		
 		
-	</form>
+		</form>
 			
 	</div>
 </div>
+
+<hr />
+<h2>Componentes da Ordem de Compra</h2>
+<ul>
+	{% for vinculo in ordem.componentesdaordemdecompra_set.all %}
+	<li>{{vinculo.quantidade_comprada}} {{vinculo.componente_comprado.medida}} de {{vinculo.componente_comprado}} <a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculo.ordem_de_compra.id vinculo.id %}">X</a></li>
+	{% empty %}
+	<small>Nenhum Componente Vinculado a esta Ordem de Compra</small>
+	{% endfor %}
+</ul>
+
+
+<h2><i class="icon-link"></i> 	Vincular Componentes</h2>
+<form method="POST">
+	{% csrf_token %}
+{{form_add_componentes.as_p}}
+<button class="btn btn-primary" type="submit" name="vincular_componentes" value="vincular"><i class="icon-link"></i> Vincular</button>
+</form>
 
 {% endblock %}
 
@@ -62,12 +80,12 @@ $(document).ready(function() {
 	
 	$( ".datepicker" ).datepicker({
 		inline: true,
-        dateFormat: "dd/mm/yy"   
+		dateFormat: "dd/mm/yy"   
 	});
 	
-  $(".nopoint").keyup(function() {
-          $(this).val($(this).val().replace(/[.]/g, ""));
-    });
+	$(".nopoint").keyup(function() {
+		$(this).val($(this).val().replace(/[.]/g, ""));
+	});
 	
 	
 });

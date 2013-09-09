@@ -1265,7 +1265,7 @@ class AtividadeDeOrdemDeCompra(models.Model):
 class ComponentesDaOrdemDeCompra(models.Model):
         
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
-    quantidade_comprada = models.IntegerField(blank=False, null=False)
+    quantidade_comprada = models.DecimalField(max_digits=15, decimal_places=2)
     componente_comprado = models.ForeignKey('Componente')
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

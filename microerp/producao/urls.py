@@ -73,4 +73,5 @@ urlpatterns = patterns('',
     url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/editar/$', 'producao.views.ordem_de_compra_editar', name='ordem_de_compra_editar'),
     url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/fechar/$', 'producao.views.ordem_de_compra_fechar', name='ordem_de_compra_fechar'),
     url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/atividade/(?P<atividade_id>[0-9]+)/fechar/$', 'producao.views.ordem_de_compra_atividade_fechar', name='ordem_de_compra_atividade_fechar'),
+    url(r'^ordem-de-compra/(?P<ordem_de_compra_id>[0-9]+)/componente-comprado/(?P<vinculacao_id>[0-9]+)/remover/$', 'producao.views.ordem_de_compra_componente_comprado_remover', name='ordem_de_compra_componente_comprado_remover'),
 )
