@@ -12,6 +12,8 @@ from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q, Sum, Count
 from django.conf import settings
 
+from django.core.mail import EmailMessage
+
 from producao.models import FabricanteFornecedor, FABRICANTE_FORNECEDOR_TIPO_CHOICES
 from producao.models import NotaFiscal
 from producao.models import LancamentoComponente
@@ -38,6 +40,8 @@ from producao.models import RegistroValorEstoque
 from producao.models import OrdemDeCompra
 from producao.models import AtividadeDeOrdemDeCompra
 from producao.models import ComponentesDaOrdemDeCompra
+from producao.models import RequisicaoDeCompra
+from producao.models import PerfilAcessoProducao
 
 from rh.models import Funcionario
 
@@ -2175,3 +2179,62 @@ def ordem_de_compra_componente_comprado_remover(request, ordem_de_compra_id, vin
     vinculo.delete()
     messages.success(request, u"Sucesso! Vínculação de Componente %s e Quantidade %s removido da %s" % (vinculo.componente_comprado, vinculo.quantidade_comprada, vinculo.ordem_de_compra))
     return redirect(reverse('producao:ordem_de_compra_editar', args=[vinculo.ordem_de_compra.id]))
+
+class AddRequisicaoDeCompra(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        solicitante = kwargs.pop('solicitante')
+        super(AddRequisicaoDeCompra, self).__init__(*args, **kwargs)
+        self.fields['solicitante'].initial  = solicitante
+        self.fields['solicitante'].widget = forms.HiddenInput()
+        self.fields['solicitado'].widget.attrs['class'] = 'select2'
+        self.fields['data_solicitado'].widget.attrs['class'] = 'datepicker'
+    
+    class Meta:
+        model = RequisicaoDeCompra
+        fields = 'solicitante', 'solicitado', 'data_solicitado', 'descricao'
+
+@user_passes_test(possui_perfil_acesso_producao)
+def requisicao_de_compra(request):
+    abertos = RequisicaoDeCompra.objects.filter(atendido=False)
+    fechados = RequisicaoDeCompra.objects.filter(atendido=True)
+    if request.POST:
+        form_add_requisicao_de_compra = AddRequisicaoDeCompra(request.POST, solicitante=request.user.funcionario)
+        if form_add_requisicao_de_compra.is_valid():
+            requisicao_compra = form_add_requisicao_de_compra.save()
+            # envia email
+            template = loader.get_template('template_de_email/nova-requisicao-de-compra.html')
+            d = locals()
+            c = Context(d)
+            content = template.render(c)
+            gerentes = PerfilAcessoProducao.objects.filter(gerente=True)
+            dest = []
+            for gerente in gerentes:
+                if gerente.user.email:
+                    dest.append(gerente.user.email)
+                if gerente.user.funcionario.email:
+                    dest.append(gerente.user.funcionario.email)
+                    
+            email = EmailMessage(
+                    'Requisição de Compra: #%s' % requisicao_compra.id, 
+                    content,
+                    'Sistema MicroERP',
+                    dest,
+                )
+            try:
+                email.send(fail_silently=False)
+                messages.success(request, u"Sucesso! Email enviado para os gerentes.")
+            except:
+                messages.error(request, u"Erro! Email não enviado.")
+            
+            
+    else:
+        form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
+    return render_to_response('frontend/producao/producao-requisicao-de-compra.html', locals(), context_instance=RequestContext(request),)
+
+def requisicao_de_compra_atendido(request, requisicao_id):
+    requisicao = get_object_or_404(RequisicaoDeCompra, pk=requisicao_id)
+    requisicao.atendido = True
+    requisicao.atendido_em = datetime.datetime.now()
+    requisicao.save()
+    return redirect(reverse('producao:requisicao_de_compra'))

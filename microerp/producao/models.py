@@ -1270,4 +1270,15 @@ class ComponentesDaOrdemDeCompra(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class RequisicaoDeCompra(models.Model):
     
+    atendido = models.BooleanField(default=False)
+    atendido_em = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    solicitante = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_solicitada")
+    solicitado = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_requerida", verbose_name="Funcioário Responsável")
+    data_solicitado = models.DateField(u"Data da Solicitação", default=datetime.datetime.today)
+    descricao = models.TextField(u"Descrição", blank=False)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

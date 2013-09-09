@@ -30,6 +30,7 @@ from models import RegistroValorEstoque
 from models import OrdemDeCompra
 from models import AtividadeDeOrdemDeCompra
 from models import ComponentesDaOrdemDeCompra
+from models import RequisicaoDeCompra
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -190,3 +191,4 @@ admin.site.register(RegistroValorEstoque)
 admin.site.register(OrdemDeCompra)
 admin.site.register(AtividadeDeOrdemDeCompra)
 admin.site.register(ComponentesDaOrdemDeCompra)
+admin.site.register(RequisicaoDeCompra)

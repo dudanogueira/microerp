@@ -1,0 +1,111 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Requisição de Compra{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-credit-card"></i> Requisição de Compra</h1>
+	
+<form method="POST">
+	{% csrf_token %}
+	{{form_add_requisicao_de_compra.as_p}}
+	<button type="submit" name="solicitar-compra" value="solicitar" class="btn btn-primary"><i class="icon-credit-card"></i> Solicitar Compra</button>
+</form>
+<hr />
+{% if request.user.perfilacessoproducao.gerente %}
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#abertos" data-toggle="tab">Requisições Abertas</a></li>
+		<li><a href="#fechados" data-toggle="tab">Requisições Atendidas</a></li>
+</ul>
+
+<div id="myTabContent" class="tab-content">
+
+    <div class="tab-pane fade in active" id="abertos">
+			
+			<table class="table table-condensed table-rounded table-hover">
+				<thead>
+					<tr>
+						<th>Atendido</th>
+						<th>Solicitante</th>
+						<th>Solicitado</th>
+						<th>Data para a Solicitação</th>
+						<th>Descrição</th>
+						<th>Criado em</th>
+						<th>Ação</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for solicitacao in abertos %}
+					<tr>
+						<td>{{solicitacao.atendido|yesno|capfirst}}</td>
+						<td>{{solicitacao.solicitante}}</td>
+						<td>{{solicitacao.solicitado}}</td>
+						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
+						<td>{{solicitacao.descricao}}</td>
+						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+						<td><a href="{% url "producao:requisicao_de_compra_atendido" solicitacao.id %}" class="btn btn-success"><i class="icon-check"></i></a></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			
+		</div>
+		
+    <div class="tab-pane fade active" id="fechados">
+			
+			<table class="table table-condensed table-rounded table-hover">
+				<thead>
+					<tr>
+						<th>Atendido</th>
+						<th>Solicitante</th>
+						<th>Solicitado</th>
+						<th>Data para a Solicitação</th>
+						<th>Descrição</th>
+						<th>Criado em</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for solicitacao in fechados %}
+					<tr>
+						<td>{{solicitacao.atendido|yesno|capfirst}}, em {{solicitacao.atendido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
+						<td>{{solicitacao.solicitante}}</td>
+						<td>{{solicitacao.solicitado}}</td>
+						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
+						<td>{{solicitacao.descricao}}</td>
+						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			
+		</div>
+		
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-requisicao-de-compra, #top-menu-producao").addClass("active");
+		$( ".datepicker" ).datepicker({
+			inline: true,
+	        dateFormat: "dd/mm/yy"
+        
+		});
+		
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}
