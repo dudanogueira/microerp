@@ -96,6 +96,10 @@ $(document).ready(function() {
         dateFormat: "dd/mm/yy"
         
 	});
+  $(".nopoint").keyup(function() {
+          $(this).val($(this).val().replace(/[.]/g, ""));
+    });
+	
 	
 	
 });

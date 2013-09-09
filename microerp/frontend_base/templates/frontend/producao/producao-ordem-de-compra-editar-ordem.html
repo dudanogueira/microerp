@@ -62,9 +62,13 @@ $(document).ready(function() {
 	
 	$( ".datepicker" ).datepicker({
 		inline: true,
-        dateFormat: "dd/mm/yy"
-        
+        dateFormat: "dd/mm/yy"   
 	});
+	
+  $(".nopoint").keyup(function() {
+          $(this).val($(this).val().replace(/[.]/g, ""));
+    });
+	
 	
 });
 
