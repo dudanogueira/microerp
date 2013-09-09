@@ -27,8 +27,10 @@
 	    <div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse {% if forloop.first %}in{%endif%}">
 	      <div class="accordion-inner">
 					{% if not ordem.data_fechado %}
+						{% if request.user.perfilacessoproducao.gerente %}
 	        <a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
 	        <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-danger">X Fechar Ordem</a>
+					{% endif %}
 					
 					{% endif %}
 					<h3>Atividades</h3>
@@ -36,7 +38,14 @@
 						{% if atividade.data_fechado %}
 							<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
 						{% else %}
-						<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small> <a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a></li>
+						<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
+							
+							{% if request.user.perfilacessoproducao.gerente %}
+							
+							<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a>
+							
+							{% endif %}
+					</li>
 						{% endif %}
 					{% empty %}
 					<small>Nenhuma Atividade. Edite a Ordem de Compra e Adicione uma nova atividade.</small>
@@ -66,12 +75,14 @@
 			</form>
 		</div>
 		<div class="span6">
-			<h2><i class="icon-plus"></i> Adicionar Ordem de Compra</h2>
-			<form method="POST">
-				{% csrf_token %}
-				{{form_adicionar_ordem_de_compra.as_p}}
-				<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" value="adicionar"><i class="icon-plus"></i> Adicionar</button>
-			</form>
+			{% if request.user.perfilacessoproducao.gerente %}
+				<h2><i class="icon-plus"></i> Adicionar Ordem de Compra</h2>
+				<form method="POST">
+					{% csrf_token %}
+					{{form_adicionar_ordem_de_compra.as_p}}
+					<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" value="adicionar"><i class="icon-plus"></i> Adicionar</button>
+				</form>
+			{% endif %}
 		</div>
 		
 	</div>

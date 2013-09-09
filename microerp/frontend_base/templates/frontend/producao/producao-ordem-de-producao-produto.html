@@ -105,8 +105,11 @@
 		{% if producao_liberada %}
 		
 		<h2>Produção Liberada</h2>
+			{% if request.user.perfilacessoproducao.gerente %}
 			<a class="btn btn-danger" href="{% url "producao:ordem_de_producao_produto_confirmar" produto_id quantidade_solicitada %}">Confirmar Produção!</a>
-		</form>
+			{% else %}
+			<h1>Somente o Gerente pode ordenar a produção!</h1>
+			{% endif %}
 		
 		{% endif %}
 

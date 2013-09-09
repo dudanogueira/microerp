@@ -105,11 +105,16 @@
 		{% if producao_liberada %}
 		
 		<h2>Produção Liberada</h2>
+		{% if request.user.perfilacessoproducao.gerente %}
 		<form method="POST" name="confirmar-produto" action="{% url "producao:ordem_de_producao_subproduto_confirmar" subproduto.id quantidade_solicitada %}">
 			{% csrf_token %}
+
 			<input type="hidden" name="configuracao" value="{{conf}}">
 			<button class="btn btn-danger" type="submit">Confirmar Produção!</button>
 		</form>
+		{% else %}
+		<h1>Somente o gerente pode ordenar produção!</h1>
+		{% endif %}
 		
 		{% endif %}
 
