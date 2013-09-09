@@ -2042,6 +2042,10 @@ class FormAdicionarOrdemDeCompra(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(FormAdicionarOrdemDeCompra, self).__init__(*args, **kwargs)
         self.fields['data_aberto'].widget.attrs['class'] = 'datepicker'
+        self.fields['valor'].localize=True
+        self.fields['valor'].widget.is_localized = True
+        self.fields['valor'].widget.attrs['class'] = 'nopoint'
+        
     
     class Meta:
         model = OrdemDeCompra
@@ -2128,7 +2132,7 @@ def ordem_de_compra_editar(request, ordem_de_compra_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_fechar(request, ordem_de_compra_id):
     ordem = get_object_or_404(OrdemDeCompra, pk=ordem_de_compra_id)
-    ordem.data_fechado = datetime.date.today()
+    ordem.data_fechado = datetime.datetime.now()
     ordem.save()
     messages.success(request, u"Sucesso! Ordem de Compra #%s Fechada!" % ordem.id)
     return redirect(reverse('producao:ordem_de_compra'))
@@ -2136,7 +2140,7 @@ def ordem_de_compra_fechar(request, ordem_de_compra_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_atividade_fechar(request, ordem_de_compra_id, atividade_id):
     atividade = get_object_or_404(AtividadeDeOrdemDeCompra, pk=atividade_id, ordem_de_compra__pk=ordem_de_compra_id)
-    atividade.data_fechado = datetime.date.today()
+    atividade.data_fechado = datetime.datetime.now()
     atividade.fechado_por = request.user
     atividade.save()
     messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s Fechada!" % (atividade.descricao, atividade.ordem_de_compra.id))
