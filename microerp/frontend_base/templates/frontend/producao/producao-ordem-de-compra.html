@@ -20,38 +20,64 @@
 					{% else %}
 						<span class="badge badge-important">ABERTO</span>
 					{% endif %}
-					
-					Ordem #{{ordem.id}}, no valor de R$ {{ordem.valor|floatformat:2}} por {{ordem.funcionario}} aberto no dia {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+					Ordem #{{ordem.id}}
 	      </a>
 	    </div>
 	    <div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse {% if forloop.first %}in{%endif%}">
 	      <div class="accordion-inner">
+					{# Informacoes da Ordem #}
+					<div class="row-fluid">
+						<div class="span3">
+							<div class="alert alert-info">Valor: R$ {{ordem.valor|floatformat:2}}</div>
+						</div>
+						<div class="span5">
+							<div class="alert alert-warning">
+								{{ordem.fornecedor}}
+							</div>
+						</div>
+						
+						<div class="span2">
+							Funcioário: {{ordem.funcionario}}
+						</div>
+						<div class="span2">
+							Data: {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+						</div>
+					</div>
+					
 					{% if not ordem.data_fechado %}
+					{# BOTOES PARA EDITAR, SE ABERTO #}
 						{% if request.user.perfilacessoproducao.gerente %}
-	        <a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
-	        <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-danger">X Fechar Ordem</a>
+						<div class="botoes-editar-fechar">
+			        <a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
+			        <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>	
+						</div>
+						{% endif %}
+					
+					{% else %}
+					<strong>Tempo que ficou aberto</strong>: {{ordem.data_aberto|timesince}}
 					{% endif %}
 					
-					{% endif %}
 					<h3>Atividades</h3>
-					{% for atividade in ordem.atividadedeordemdecompra_set.all %}
-						{% if atividade.data_fechado %}
-							<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
-						{% else %}
-						<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
-							
+					<div class="atividades-{{ordem.id}}">
+						<ul>
+							{% for atividade in ordem.atividadedeordemdecompra_set.all %}
+							{% if atividade.data_fechado %}
+							<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small>
+							</li>
+							{% else %}
+							<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
 							{% if request.user.perfilacessoproducao.gerente %}
 							
-							<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a>
+<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-success"><i class="icon-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
 							
 							{% endif %}
-					</li>
-						{% endif %}
-					{% empty %}
-					<small>Nenhuma Atividade. Edite a Ordem de Compra e Adicione uma nova atividade.</small>
-
-					{% endfor %}
-					
+							</li>
+							{% endif %}
+							{% empty %}
+							<small>Nenhuma Atividade. Edite a Ordem de Compra e Adicione uma nova atividade.</small>
+							{% endfor %}
+						</ul>
+					</div>
 	      </div>
 	    </div>
 	  </div>

@@ -7,25 +7,49 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-briefcase"></i>  Ordem de Compra</h1>
 <h2>Ordem de Compra #{{ordem.id}}</h2>
-<a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-danger">X Fechar Ordem</a>
+<p class="btn-group">
+<a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>
+
+<!-- Botao Modal Editar Ordem de Compra -->
+<a href="#EditarModal" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-pencil"></i> Editar Ordem de Compra</a>
+
+<!-- Botao Modal Add Atividade -->
+<a href="#FormAddAtividade" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Atividade</a>
+
+<!-- Botao Modal Vincular Componente -->
+<a href="#FormVincularComponente" role="button" class="btn btn-warning" data-toggle="modal"><i class="icon-link"></i> Vincular Componentes</a>
+
+</p>
 
 <div class="row-fluid">
-	<div class="span4">
-		<h3>Editar Ordem</h3>
-		<form method="POST">
-			{% csrf_token %}
-			{{form_editar_ordem.as_p}}
-			<button type="submit" name="editar-ordem" value="editar" class="btn btn-primary"><i class="icon-pencil"></i> Editar</button>
-		</form>
+	<div class="span3">
+		<div class="alert alert-info">Valor: R$ {{ordem.valor|floatformat:2}}</div>
 	</div>
-	<div class="span8">
+	<div class="span5">
+		<div class="alert alert-warning">
+			{{ordem.fornecedor}}
+		</div>
+	</div>
+	
+	<div class="span2">
+		Funcioário: {{ordem.funcionario}}
+	</div>
+	<div class="span2">
+		Data: {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+	</div>
+</div>
+
+<div class="row-fluid">
+	<div class="span12">
+		
+		
 		<h3>Atividades</h3>
 		<ul>
 			{% for atividade in ordem.atividadedeordemdecompra_set.all %}
 			{% if atividade.data_fechado %}
 			<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
 			{% else %}
-			<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small> <a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger">X</a></li>
+			<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small> <a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-success"><i class="icon-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger"><i class="icon-trash"></i></a></li>
 			{% endif %}
 		
 			{% empty %}
@@ -33,36 +57,86 @@
 
 			{% endfor %}
 		</ul>
-		
-		<h3>Adicionar Nova Atividade</h3>
-		<form method="POST">
-			{% csrf_token %}
-			{{form_add_atividade.as_p}}
-			<button type="submit" name="adicionar-atividade" value="adicionar" class="btn btn-success"><i class="icon-plus"></i> Adicionar Atividade</button>
-		
-		
-		</form>
 			
 	</div>
 </div>
 
 <hr />
-<h2>Componentes da Ordem de Compra</h2>
+<h2>Componentes Vinculados</h2>
 <ul>
 	{% for vinculo in ordem.componentesdaordemdecompra_set.all %}
-	<li>{{vinculo.quantidade_comprada}} {{vinculo.componente_comprado.medida}} de {{vinculo.componente_comprado}} <a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculo.ordem_de_compra.id vinculo.id %}">X</a></li>
+	<li>{{vinculo.quantidade_comprada}} {{vinculo.componente_comprado.medida}} de {{vinculo.componente_comprado}} no valor de R${{vinculo.valor|floatformat:2}} <a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculo.ordem_de_compra.id vinculo.id %}">X</a></li>
 	{% empty %}
 	<small>Nenhum Componente Vinculado a esta Ordem de Compra</small>
 	{% endfor %}
 </ul>
 
+<!-- Modal Vincular Componente-->
+<div id="FormVincularComponente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Vincular Componentes</h3>
+  </div>
+  <div class="modal-body">
 
-<h2><i class="icon-link"></i> 	Vincular Componentes</h2>
-<form method="POST">
-	{% csrf_token %}
-{{form_add_componentes.as_p}}
-<button class="btn btn-primary" type="submit" name="vincular_componentes" value="vincular"><i class="icon-link"></i> Vincular</button>
-</form>
+		<form method="POST" id="form-vincular-componente">
+			{% csrf_token %}
+		{{form_add_componentes.as_p}}
+		</form>
+
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		<button form="form-vincular-componente" class="btn btn-primary" type="submit" name="vincular_componentes" value="vincular"><i class="icon-link"></i> Vincular</button>
+    
+  </div>
+</div>
+
+<!-- Modal Editar Ordem de Compra -->
+<div id="EditarModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Editar Ordem de Compra</h3>
+  </div>
+  <div class="modal-body">
+
+		<form method="POST" id="form-editar-ordem">
+			{% csrf_token %}
+			{{form_editar_ordem.as_p}}
+		</form>
+
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    			<button type="submit" form="form-editar-ordem" name="editar-ordem" value="editar" class="btn btn-primary"><i class="icon-pencil"></i> Editar</button>
+  </div>
+</div>
+
+
+<!-- Modal Add Atividade-->
+<div id="FormAddAtividade" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Adicionar Nova Atividade</h3>
+  </div>
+  <div class="modal-body">
+
+		<form method="POST" id="form-add-atividade">
+			{% csrf_token %}
+			{{form_add_atividade.as_p}}
+		</form>
+
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		<button form="form-add-atividade" type="submit" name="adicionar-atividade" value="adicionar" class="btn btn-success"><i class="icon-plus"></i> Adicionar Atividade</button>
+    
+  </div>
+</div>
+
 
 {% endblock %}
 

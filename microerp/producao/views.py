@@ -2038,6 +2038,7 @@ class FormOrdemDeCompraFiltro(forms.Form):
         self.fields['data_fim'].widget.attrs['class'] = 'datepicker'
     
     funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=False)
+    fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
     mostrar_somente_abertos = forms.BooleanField(initial=True, required=False)
     data_inicio = forms.DateField(label=u"Data Início Abertura", initial=datetime.date.today(), required=True)
     data_fim = forms.DateField(label=u"Data Fim Abertura", initial=datetime.date.today()+datetime.timedelta(days=7), required=True)
@@ -2046,21 +2047,24 @@ class FormAdicionarOrdemDeCompra(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormAdicionarOrdemDeCompra, self).__init__(*args, **kwargs)
-        self.fields['data_aberto'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_aberto'].initial  = datetime.date.today()
+        self.fields['data_aberto'].widget = forms.HiddenInput()
         self.fields['valor'].localize=True
         self.fields['valor'].widget.is_localized = True
         self.fields['valor'].widget.attrs['class'] = 'nopoint'
+        self.fields['fornecedor'].widget.attrs['class'] = 'select2'
         
     
     class Meta:
         model = OrdemDeCompra
-        fields = ('data_aberto', 'valor')
+        fields = ('data_aberto', 'valor', 'descricao', 'fornecedor', 'notafiscal', 'criticidade')
 
 class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormAdicionarOrdemDeCompraFull, self).__init__(*args, **kwargs)
-        self.fields['data_aberto'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_aberto'].initial  = datetime.date.today()
+        self.fields['data_aberto'].widget = forms.HiddenInput()
         self.fields['data_fechado'].widget.attrs['class'] = 'datepicker'
         self.fields['valor'].localize=True
         self.fields['valor'].widget.is_localized = True
@@ -2078,6 +2082,7 @@ class FormAddAtividadeOrdemDeCompra(forms.ModelForm):
         self.fields['ordem_de_compra'].initial  = ordem_de_compra
         self.fields['ordem_de_compra'].widget = forms.HiddenInput()
         self.fields['data'].widget.attrs['class'] = 'datepicker'
+
     
     class Meta:
         model = AtividadeDeOrdemDeCompra
@@ -2092,6 +2097,7 @@ class FormAddComponentesDaOrdemDeCompra(forms.ModelForm):
         self.fields['ordem_de_compra'].widget = forms.HiddenInput()
         self.fields['quantidade_comprada'].widget.attrs['class'] = 'nopoint'
         self.fields['componente_comprado'].widget.attrs['class'] = 'select2'
+        
         
     class Meta:
         model = ComponentesDaOrdemDeCompra
@@ -2117,6 +2123,8 @@ def ordem_de_compra(request):
                     ordens = ordens.filter(data_fechado=None)
                 if form_filtro.cleaned_data['funcionario']:
                     ordens = ordens.filter(funcionario=form_filtro.cleaned_data['funcionario'])
+                if form_filtro.cleaned_data['fornecedor']:
+                    ordens = ordens.filter(fornecedor=form_filtro.cleaned_data['fornecedor'])
 
     else:
         form_filtro = FormOrdemDeCompraFiltro()
@@ -2159,10 +2167,15 @@ def ordem_de_compra_editar(request, ordem_de_compra_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_fechar(request, ordem_de_compra_id):
     ordem = get_object_or_404(OrdemDeCompra, pk=ordem_de_compra_id)
-    ordem.data_fechado = datetime.datetime.now()
-    ordem.save()
-    messages.success(request, u"Sucesso! Ordem de Compra #%s Fechada!" % ordem.id)
-    return redirect(reverse('producao:ordem_de_compra'))
+    atividades_abertas = ordem.atividadedeordemdecompra_set.filter(data_fechado=None).count()
+    if atividades_abertas:
+        messages.error(request, u"Erro! Existem %s Atividades abertas nesta ordem. É preciso fechar essas atividades antes de fechar a Ordem" % atividades_abertas)
+        return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
+    else:
+        ordem.data_fechado = datetime.datetime.now()
+        ordem.save()
+        messages.success(request, u"Sucesso! Ordem de Compra #%s Fechada!" % ordem.id)
+        return redirect(reverse('producao:ordem_de_compra'))
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_atividade_fechar(request, ordem_de_compra_id, atividade_id):
@@ -2172,6 +2185,14 @@ def ordem_de_compra_atividade_fechar(request, ordem_de_compra_id, atividade_id):
     atividade.save()
     messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s Fechada!" % (atividade.descricao, atividade.ordem_de_compra.id))
     return redirect(reverse('producao:ordem_de_compra_editar', args=[atividade.ordem_de_compra.id]))
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_compra_atividade_remover(request, ordem_de_compra_id, atividade_id):
+    atividade = get_object_or_404(AtividadeDeOrdemDeCompra, pk=atividade_id, ordem_de_compra__pk=ordem_de_compra_id)
+    atividade.delete()
+    messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s APAGADO!" % (atividade.descricao, atividade.ordem_de_compra.id))
+    return redirect(reverse('producao:ordem_de_compra_editar', args=[atividade.ordem_de_compra.id]))
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_componente_comprado_remover(request, ordem_de_compra_id, vinculacao_id):

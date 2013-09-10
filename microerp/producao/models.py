@@ -51,6 +51,11 @@ TIPO_DE_TESTES_SUBPRODUTO = (
     (2, "Composto"),
 )
 
+ORDEM_DE_COMPRA_CRITICIDADE_CHOICES = (
+    ('0', 'Baixa'),
+    ('1', 'Média'),
+    ('2', 'Urgente'),
+)
 
 class PerfilAcessoProducao(models.Model):
     '''Perfil de Acesso à Produção'''
@@ -1247,7 +1252,11 @@ class OrdemDeCompra(models.Model):
     funcionario = models.ForeignKey('rh.Funcionario')
     data_aberto = models.DateField(blank=True, default=datetime.datetime.now)
     data_fechado = models.DateField(blank=True, null=True)
-    valor = models.DecimalField("Valor", max_digits=10, decimal_places=2, default=0)
+    valor = models.DecimalField("Valor Total", max_digits=10, decimal_places=2, default=0)
+    descricao = models.TextField(u"Descrição", blank=False)
+    fornecedor = models.ForeignKey('FabricanteFornecedor')
+    notafiscal = models.CharField("Nota Fiscal", blank=False, max_length=100)
+    criticidade = models.CharField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1267,6 +1276,8 @@ class ComponentesDaOrdemDeCompra(models.Model):
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
     quantidade_comprada = models.DecimalField(max_digits=15, decimal_places=2)
     componente_comprado = models.ForeignKey('Componente')
+    valor = models.DecimalField("Valor", max_digits=10, decimal_places=2, default=0)
+    
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
