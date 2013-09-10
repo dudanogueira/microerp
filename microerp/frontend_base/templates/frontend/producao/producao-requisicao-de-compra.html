@@ -7,26 +7,34 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-credit-card"></i> Requisição de Compra</h1>
 	
-<form method="POST">
-	{% csrf_token %}
-	{{form_add_requisicao_de_compra.as_p}}
-	<button type="submit" name="solicitar-compra" value="solicitar" class="btn btn-primary"><i class="icon-credit-card"></i> Solicitar Compra</button>
-</form>
-<hr />
-{% if request.user.perfilacessoproducao.gerente %}
+
 <ul class="nav nav-tabs">
-    <li class="active"><a href="#abertos" data-toggle="tab">Requisições Abertas</a></li>
-		<li><a href="#fechados" data-toggle="tab">Requisições Atendidas</a></li>
+		<li class="active"><a href="#solicitar-compra-tab" data-toggle="tab">Solicitar Compra</a></li>
+		{% if request.user.perfilacessoproducao.gerente %}
+	    <li><a href="#abertos" data-toggle="tab">Requisições Abertas</a></li>
+			<li><a href="#fechados" data-toggle="tab">Requisições Atendidas</a></li>
+			{% endif %}
 </ul>
 
 <div id="myTabContent" class="tab-content">
 
-    <div class="tab-pane fade in active" id="abertos">
+		<div class="tab-pane fade in active" id="solicitar-compra-tab">
+			
+			<form method="POST">
+				{% csrf_token %}
+				{{form_add_requisicao_de_compra.as_p}}
+				<button type="submit" name="solicitar-compra" value="solicitar" class="btn btn-primary"><i class="icon-credit-card"></i> Solicitar Compra</button>
+			</form>
+			
+			
+		</div>
+
+    <div class="tab-pane fade in" id="abertos">
 			<p class="btn-group">
-				<a href="?" class="btn">Todos</a>
-				<a class="btn btn-success" href="?criticidade=0">Criticidade Baixa</a>
-			<a class="btn btn-warning"  href="?criticidade=1">Criticidade Média</a>
-			<a class="btn btn-danger"  href="?criticidade=2">Criticidade Urgente</a>
+				<a href="?#abertos" class="btn">Todos</a>
+				<a class="btn btn-success" href="?criticidade=0#abertos">Criticidade Baixa</a>
+			<a class="btn btn-warning"  href="?criticidade=1#abertos">Criticidade Média</a>
+			<a class="btn btn-danger"  href="?criticidade=2#abertos">Criticidade Urgente</a>
 		</p>
 			<table class="table table-condensed table-rounded table-hover">
 				<thead>
@@ -35,7 +43,7 @@
 						<th>Atendido</th>
 						<th>Usuário</th>
 						<th>Solicitante</th>
-						<th>Data para a Solicitação</th>
+						<th>Data para Atender</th>
 						<th>Descrição</th>
 						<th>Criado em</th>
 						<th>Criticidade</th>
@@ -53,14 +61,14 @@
 						<td>{{solicitacao.descricao}}</td>
 						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>
-							{% ifequal solicitacao.criticidade "0" %}
+							{% ifequal solicitacao.criticidade 0 %}
 								<span class="badge badge-success">
 							{% endifequal %}
-							{% ifequal solicitacao.criticidade "1" %}
+							{% ifequal solicitacao.criticidade 1 %}
 								<span class="badge badge-warning">
 							{% endifequal %}
-							{% ifequal solicitacao.criticidade "2" %}
-								<span class="badge badge-danger">
+							{% ifequal solicitacao.criticidade 2 %}
+								<span class="badge badge-important">
 							{% endifequal %}
 							{{solicitacao.get_criticidade_display}}
 								</span>
@@ -75,7 +83,7 @@
 			
 		</div>
 		
-    <div class="tab-pane fade active" id="fechados">
+    <div class="tab-pane fade" id="fechados">
 			
 			<table class="table table-condensed table-rounded table-hover">
 				<thead>
@@ -84,7 +92,7 @@
 						<th>Atendido</th>
 						<th>Usuário</th>
 						<th>Solicitante</th>
-						<th>Data para a Solicitação</th>
+						<th>Data para Atender</th>
 						<th>Descrição</th>
 						<th>Criado em</th>
 						<th>Criticidade</th>
@@ -94,21 +102,21 @@
 					{% for solicitacao in fechados %}
 					<tr>
 						<td>#{{solicitacao.id}}</td>
-						<td>{{solicitacao.atendido|yesno|capfirst}}, em {{solicitacao.atendido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
+						<td>em {{solicitacao.atendido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>{{solicitacao.solicitante}}</td>
 						<td>{{solicitacao.solicitado}}</td>
 						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
 						<td>{{solicitacao.descricao}}</td>
 						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>
-							{% ifequal solicitacao.criticidade "0" %}
+							{% ifequal solicitacao.criticidade 0 %}
 								<span class="badge badge-success">
 							{% endifequal %}
-							{% ifequal solicitacao.criticidade "1" %}
+							{% ifequal solicitacao.criticidade 1 %}
 								<span class="badge badge-warning">
 							{% endifequal %}
-							{% ifequal solicitacao.criticidade "2" %}
-								<span class="badge badge-danger">
+							{% ifequal solicitacao.criticidade 2 %}
+								<span class="badge badge-important">
 							{% endifequal %}
 							{{solicitacao.get_criticidade_display}}
 								</span>
@@ -122,7 +130,6 @@
 		</div>
 		
 </div>
-{% endif %}
 
 {% endblock %}
 
@@ -141,6 +148,9 @@ $(document).ready(function() {
 	        dateFormat: "dd/mm/yy"
         
 		});
+    var activeTab = $('[href=' + location.hash + ']');
+    activeTab && activeTab.tab('show');
+		
 		
 });
 

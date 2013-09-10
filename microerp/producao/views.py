@@ -2219,7 +2219,7 @@ class AddRequisicaoDeCompra(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_producao)
 def requisicao_de_compra(request):
     abertos = RequisicaoDeCompra.objects.filter(atendido=False)
-    fechados = RequisicaoDeCompra.objects.filter(atendido=True)
+    fechados = RequisicaoDeCompra.objects.filter(atendido=True).order_by('-atendido_em')
     if request.GET.get('criticidade', None):
             abertos = abertos.filter(criticidade=request.GET.get('criticidade', None))
     
@@ -2227,6 +2227,7 @@ def requisicao_de_compra(request):
         form_add_requisicao_de_compra = AddRequisicaoDeCompra(request.POST, solicitante=request.user.funcionario)
         if form_add_requisicao_de_compra.is_valid():
             requisicao_compra = form_add_requisicao_de_compra.save()
+            messages.success(request, u"Sucesso! Requisição de Compra #%s criada." % requisicao_compra.id)
             # envia email
             template = loader.get_template('template_de_email/nova-requisicao-de-compra.html')
             d = locals()
@@ -2248,7 +2249,7 @@ def requisicao_de_compra(request):
                 )
             try:
                 email.send(fail_silently=False)
-                messages.success(request, u"Sucesso! Email enviado para os gerentes.")
+                messages.info(request, u"Email enviado para os gerentes.")
             except:
                 messages.error(request, u"Erro! Email não enviado.")
             

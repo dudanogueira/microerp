@@ -52,9 +52,9 @@ TIPO_DE_TESTES_SUBPRODUTO = (
 )
 
 ORDEM_DE_COMPRA_CRITICIDADE_CHOICES = (
-    ('0', 'Baixa'),
-    ('1', 'Média'),
-    ('2', 'Urgente'),
+    (0, 'Baixa'),
+    (1, 'Média'),
+    (2, 'Urgente'),
 )
 
 class PerfilAcessoProducao(models.Model):
@@ -1256,7 +1256,7 @@ class OrdemDeCompra(models.Model):
     descricao = models.TextField(u"Descrição", blank=False)
     fornecedor = models.ForeignKey('FabricanteFornecedor')
     notafiscal = models.CharField("Nota Fiscal", blank=False, max_length=100)
-    criticidade = models.CharField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
+    criticidade = models.IntegerField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1284,13 +1284,16 @@ class ComponentesDaOrdemDeCompra(models.Model):
 
 class RequisicaoDeCompra(models.Model):
     
+    class Meta:
+        ordering = ['-criado']
+    
     atendido = models.BooleanField(default=False)
     atendido_em = models.DateTimeField(blank=True, default=datetime.datetime.now)
     solicitante = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_solicitada")
     solicitado = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_requerida", verbose_name="Funcioário Responsável")
-    data_solicitado = models.DateField(u"Data da Solicitação", default=datetime.datetime.today)
+    data_solicitado = models.DateField(u"Data para Atender", default=datetime.datetime.today)
     descricao = models.TextField(u"Descrição", blank=False)
-    criticidade = models.CharField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
+    criticidade = models.IntegerField(blank=False, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
