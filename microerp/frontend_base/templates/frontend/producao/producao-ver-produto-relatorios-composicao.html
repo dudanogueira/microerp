@@ -7,13 +7,13 @@
 		<h2>Produto: {{produto.part_number}}</h2>
 	
 		{% if produto.linhacomponenteavulsodoproduto_set.all %}
-		<h3>Componentes:</h3>
 		<table class="table table-condensed table-hover table-rounded">
 		  <thead>
 			
 			
 	      <tr>
-	          <th>Qantidade</th>
+						<th>Nacionalidade</th>
+	          <th>Quantidade</th>
 						<th>Componente</th>
 	          <th>Descrição</th>
 						<th>Lead Time</th>
@@ -25,11 +25,12 @@
 			
 				{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
 				<tr>
+					<td>{{linha.componente.get_nacionalidade_display}}</td>
 					<td>{{linha.quantidade}} {{linha.componente.medida}}</td>
-					<td>{{linha.componente}}</td>
+					<td>{{linha.componente.part_number}}</td>
 					<td>{{linha.componente.descricao}}</td>
 					<td>{{linha.componente.lead_time}}</td>
-					<td>{{linha.componente.preco_liquido_unitario_real|floatformat:2}}</td>
+					<td>R$ {{linha.componente.preco_liquido_unitario_real|floatformat:2}}</td>
 				</tr>
 				{% endfor %}
 			
@@ -40,7 +41,6 @@
 	
 	
 		{% if produto.linhasubprodutodoproduto_set.all %}
-		<h3>SubProdutos:</h3>
 		<table class="table table-condensed table-hover table-rounded">
       <thead>
           <tr>
@@ -72,7 +72,6 @@
 			<h2>{{subproduto}}</h2>
 
 			{% if subproduto.linhasubproduto_set.all %}
-			<h3>Componentes</h3>
 	  	<table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	          <tr>
@@ -91,7 +90,7 @@
 					<tr>
 						<td>{{linha.tag|upper}}</td>
 						<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
-						<td>{{linha.opcao_padrao.quantidade}}</td>
+						<td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida}}</td>
 						<td>{{linha.opcao_padrao.componente.part_number}}</td>
 						<td>{{linha.opcao_padrao.componente.descricao}}</td>
 						<td>{{linha.opcao_padrao.componente.lead_time}}</td>
@@ -105,7 +104,6 @@
 			
 
 			{% if subproduto.linhasubprodutos_agregados.all %}
-			<h3>Sub Produtos Agregados</h3>
 	  	<table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	          <tr>

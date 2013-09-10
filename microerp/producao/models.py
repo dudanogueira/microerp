@@ -1243,16 +1243,24 @@ class RegistroValorEstoque(models.Model):
 
 class OrdemDeCompra(models.Model):
     
+    class Meta:
+        ordering = ['-criado']
+    
     def __unicode__(self):
         if not self.data_fechado:
             return u"Ordem de Compra #%s ABERTA por funcionário %s no valor de R$ %s em %s" % (self.id, self.funcionario, self.valor, self.data_aberto)
         else:
             return u"Ordem de Compra #%s FECHADA por funcionário %s no valor de R$ %s em %s" % (self.id, self.funcionario, self.valor, self.data_aberto)
     
-    funcionario = models.ForeignKey('rh.Funcionario')
+    def dias_aberto(self):
+        if self.data_fechado:
+            dias = self.data_aberto - self.data_fechado
+            return dias.days
+    
+    funcionario = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário")
     data_aberto = models.DateField(blank=True, default=datetime.datetime.now)
-    data_fechado = models.DateField(blank=True, null=True)
-    valor = models.DecimalField("Valor Total", max_digits=10, decimal_places=2, default=0)
+    data_fechado = models.DateField("Data de Fechamento", blank=True, null=True)
+    valor = models.DecimalField("Valor Total (R$)", max_digits=10, decimal_places=2, default=0)
     descricao = models.TextField(u"Descrição", blank=False)
     fornecedor = models.ForeignKey('FabricanteFornecedor')
     notafiscal = models.CharField("Nota Fiscal", blank=False, max_length=100)
@@ -1263,8 +1271,8 @@ class OrdemDeCompra(models.Model):
 
 class AtividadeDeOrdemDeCompra(models.Model):
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
-    data = models.DateField(default=datetime.datetime.today)
-    descricao = models.TextField(u"Descrição", blank=True)
+    data = models.DateField("Data de Lembrete", default=datetime.datetime.today)
+    descricao = models.TextField(u"Descrição", blank=False)
     data_fechado = models.DateTimeField(blank=True, null=True)
     fechado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     # meta
@@ -1276,7 +1284,7 @@ class ComponentesDaOrdemDeCompra(models.Model):
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
     quantidade_comprada = models.DecimalField(max_digits=15, decimal_places=2)
     componente_comprado = models.ForeignKey('Componente')
-    valor = models.DecimalField("Valor", max_digits=10, decimal_places=2, default=0)
+    valor = models.DecimalField("Valor (R$)", max_digits=10, decimal_places=2, default=0)
     
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

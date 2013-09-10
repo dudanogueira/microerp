@@ -15,22 +15,10 @@
 	  <div class="accordion-group">
 	    <div class="accordion-heading">
 	      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion-ordens-compra"  href="#collapse-ordem-{{ordem.id}}">
-					{% if ordem.data_fechado %}
-						<span class="badge badge-success">FECHADO</span>
-					{% else %}
-						<span class="badge badge-important">ABERTO</span>
-					{% endif %}
-					Ordem #{{ordem.id}}
-	      </a>
-	    </div>
-	    <div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse {% if forloop.first %}in{%endif%}">
-	      <div class="accordion-inner">
-					{# Informacoes da Ordem #}
-					
-					
-					<table class="table table-condensed table-striped table-rounded">
+					<table class="table table-condensed table-striped table-rounded nomargin">
 					    <thead>
 					        <tr>
+											<th>Status</th>
 					            <th>ID</th>
 											<th>Valor</th>
 											<th>Descrição</th>
@@ -42,6 +30,12 @@
 					    </thead>
 					    <tbody>
 								<tr>
+									<td>					{% if ordem.data_fechado %}
+						<span class="badge badge-success">FECHADO</span>
+					{% else %}
+						<span class="badge badge-important">ABERTO</span>
+					{% endif %}</td>
+							
 									<td>{{ordem.id}}</td>
 									<td>R${{ordem.valor|floatformat:2}}</td>
 									<td>{{ordem.descricao}}</td>
@@ -52,6 +46,15 @@
 								</tr>
 							</tbody>
 					</table>					
+					
+	      </a>
+	    </div>
+	    <div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse {% if forloop.first %}in{%endif%}">
+	      <div class="accordion-inner">
+					{# Informacoes da Ordem #}
+					
+					
+					
 					
 					{% if not ordem.data_fechado %}
 					{# BOTOES PARA EDITAR, SE ABERTO #}

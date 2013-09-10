@@ -16,7 +16,7 @@
 	<div class="accordion-group">
 		<div class="accordion-heading">
 			<a class="accordion-toggle" data-toggle="collapse"  href="#collapse{{produto.id}}">
-				<i class="icon-windows"></i> {{produto}}
+				<i class="icon-windows"></i> {{produto}} - R$ {{produto.custo|floatformat:2}}
 			</a>
 		</div>
 		<div id="collapse{{produto.id}}" class="accordion-body collapse">

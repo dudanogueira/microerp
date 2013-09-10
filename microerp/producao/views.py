@@ -2098,6 +2098,10 @@ class FormAddComponentesDaOrdemDeCompra(forms.ModelForm):
         self.fields['ordem_de_compra'].widget = forms.HiddenInput()
         self.fields['quantidade_comprada'].widget.attrs['class'] = 'nopoint'
         self.fields['componente_comprado'].widget.attrs['class'] = 'select2'
+        self.fields['valor'].widget.attrs['class'] = 'nopoint'
+        self.fields['valor'].localize=True
+        self.fields['valor'].widget.is_localized = True
+        
         
         
     class Meta:
@@ -2105,7 +2109,7 @@ class FormAddComponentesDaOrdemDeCompra(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra(request):
-    ordens = OrdemDeCompra.objects.filter(data_fechado=None).order_by('data_aberto')
+    ordens = OrdemDeCompra.objects.filter(data_fechado=None)
     if request.POST:
         if request.POST.get("form-adicionar-ordem-de-compra", None):
             form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra(request.POST)
@@ -2144,6 +2148,7 @@ def ordem_de_compra_editar(request, ordem_de_compra_id):
             if form_editar_ordem.is_valid():
                 atividade = form_editar_ordem.save()
                 messages.success(request, u"Ordem de Compra %s alterada" % ordem)
+                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
         if request.POST.get('adicionar-atividade', None):
             form_editar_ordem = FormAdicionarOrdemDeCompraFull(instance=ordem)
             form_add_componentes = FormAddComponentesDaOrdemDeCompra(ordem_de_compra=ordem)
@@ -2151,6 +2156,7 @@ def ordem_de_compra_editar(request, ordem_de_compra_id):
             if form_add_atividade.is_valid():
                 atividade = form_add_atividade.save()
                 messages.success(request, u"Atividade #%s Adicionada à Ordem de Compra %s" % (atividade, ordem))
+                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
         if request.POST.get('vincular_componentes', None):
             form_add_componentes = FormAddComponentesDaOrdemDeCompra(request.POST, ordem_de_compra=ordem)
             form_editar_ordem = FormAdicionarOrdemDeCompraFull(instance=ordem)
@@ -2158,6 +2164,7 @@ def ordem_de_compra_editar(request, ordem_de_compra_id):
             if form_add_componentes.is_valid():
                 vinculacao = form_add_componentes.save()
                 messages.success(request, u"Componente %s com Quantidade %s vinculado à ordem de Compra %s" % (vinculacao.componente_comprado, vinculacao.quantidade_comprada, vinculacao.ordem_de_compra))
+                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
             
     else:
         form_editar_ordem = FormAdicionarOrdemDeCompraFull(instance=ordem)

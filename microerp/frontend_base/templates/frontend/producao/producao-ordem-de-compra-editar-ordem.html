@@ -21,7 +21,7 @@
 
 </p>
 
-<table class="table table-condensed table-striped table-rounded">
+<table class="table table-condensed table-striped table-rounded nomargin">
     <thead>
         <tr>
             <th>ID</th>
@@ -51,7 +51,7 @@
 	<div class="span12">
 		
 		
-		<h3>Atividades</h3>
+		<h2>Atividades</h2>
 		<ul>
 			{% for atividade in ordem.atividadedeordemdecompra_set.all %}
 			{% if atividade.data_fechado %}
@@ -68,8 +68,6 @@
 			
 	</div>
 </div>
-
-<hr />
 <h2>Componentes Vinculados</h2>
 <ul>
 	{% for vinculo in ordem.componentesdaordemdecompra_set.all %}
@@ -168,6 +166,18 @@ $(document).ready(function() {
 	$(".nopoint").keyup(function() {
 		$(this).val($(this).val().replace(/[.]/g, ""));
 	});
+	
+  {% if form_add_componentes.errors %}
+  $('#FormVincularComponente').modal('show');
+  {% endif %}
+
+  {% if form_add_atividade.errors %}
+  $('#FormAddAtividade').modal('show');
+  {% endif %}
+
+  {% if form_editar_ordem.errors %}
+  $('#EditarModal').modal('show');
+  {% endif %}
 	
 	
 });
