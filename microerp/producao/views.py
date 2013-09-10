@@ -1861,6 +1861,7 @@ def arvore_de_produto(request):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def arvore_de_produto_ajax_subproduto(request, subproduto_id, parente):
+    parent = request.GET.get('parent')
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     return render_to_response('frontend/producao/producao-arvore-de-produto-ajax-subproduto.html', locals(), context_instance=RequestContext(request),)
 
