@@ -21,23 +21,29 @@
 
 </p>
 
-<div class="row-fluid">
-	<div class="span3">
-		<div class="alert alert-info">Valor: R$ {{ordem.valor|floatformat:2}}</div>
-	</div>
-	<div class="span5">
-		<div class="alert alert-warning">
-			{{ordem.fornecedor}}
-		</div>
-	</div>
-	
-	<div class="span2">
-		Funcioário: {{ordem.funcionario}}
-	</div>
-	<div class="span2">
-		Data: {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
-	</div>
-</div>
+<table class="table table-condensed table-striped table-rounded">
+    <thead>
+        <tr>
+            <th>ID</th>
+						<th>Valor</th>
+						<th>Descrição</th>
+						<th>Fornecedor</th>
+						<th>Nota Fiscal</th>
+						<th>Criticidade</th>
+        </tr>
+    </thead>
+    <tbody>
+			<tr>
+				<td>{{ordem.id}}</td>
+				<td>R${{ordem.valor|floatformat:2}}</td>
+				<td>{{ordem.descricao}}</td>
+				<td>{{ordem.fornecedor}}</td>
+				<td>{{ordem.notafiscal}}</td>
+				<td>{{ordem.get_criticidade_display}}</td>
+			</tr>
+		</tbody>
+</table>
+
 
 <div class="row-fluid">
 	<div class="span12">
