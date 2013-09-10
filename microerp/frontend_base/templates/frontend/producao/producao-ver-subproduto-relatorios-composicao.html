@@ -1,56 +1,138 @@
 {% extends "frontend/base.html" %}
 {% load sekizai_tags %}
 {% block content %}
-<div class="container-fluid">
-	<h1>            {% if logo_empresa %}
-            <img src="{{logo_empresa}}">
-            {% endif %}
-Composição de Sub Produto</h1>
-	
-	<div class="well">
+<div class="container-fluid" id="relatorio-impressao-subproduto">
+
+	<h1>Composição de Sub Produto</h1>
+	<div class="well well-small">
 		<h2>Sub Produto: {{subproduto}}</h2>
+
+		{% if subproduto.linhasubproduto_set.all %}		
 		<h3>Componentes</h3>
-		{% if subproduto.linhasubproduto_set.all %}
-		<ul>
-		{% for linha in subproduto.linhasubproduto_set.all %}
-			<li>{{linha.opcao_padrao.quantidade}} - {{linha.opcao_padrao.componente.get_medida_display}}{{linha.opcao_padrao.quantidade|pluralize}} de {{linha.opcao_padrao.componente}}</li>
-		{% endfor %}
-		</ul>
+  	<table class="table table-condensed table-hover table-rounded">
+      <thead>
+          <tr>
+              <th>TAG</th>
+							<th>Nacionalidade</th>
+              <th>Quantidade</th>
+							<th>Componente</th>
+							<th>Descrição</th>
+							<th>Lead Time</th>
+							<th>Preço Unitário</th>
+          </tr>
+      </thead>
+      <tbody>
+				
+				{% for linha in subproduto.linhasubproduto_set.all %}
+				<tr>
+					<td>{{linha.tag|upper}}</td>
+					<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
+					<td>{{linha.opcao_padrao.quantidade}}</td>
+					<td>{{linha.opcao_padrao.componente.part_number}}</td>
+					<td>{{linha.opcao_padrao.componente.descricao}}</td>
+					<td>{{linha.opcao_padrao.componente.lead_time}}</td>
+					<td>R$ {{linha.opcao_padrao.componente.preco_liquido_unitario_real|floatformat:2}}</td>
+				</tr>
+				{% endfor %}
+				
+			</tbody>
+		</table>
 		{% endif %}
+		
+		{% if subproduto.linhasubprodutos_agregados.all %}
 		<h3>Sub Produtos Agregados</h3>
-		<ul>
-		{% for linha in subproduto.linhasubprodutos_agregados.all %}
-			<li>{{linha.quantidade}} Unidade{{linha.quantidade|pluralize}} de {{linha.subproduto_agregado}}</li>
-		{% empty %}
-		<small><i>nenhum</i></small>
-		{% endfor %}
-		</ul>		
+  	<table class="table table-condensed table-hover table-rounded">
+      <thead>
+          <tr>
+              <th>Quantidade</th>
+							<th>Subproduto</th>
+              <th>Descrição</th>
+							<th>Preço</th>
+          </tr>
+      </thead>
+      <tbody>
+				{% for linha in subproduto.linhasubprodutos_agregados.all %}
+				<tr>
+					<td>{{linha.quantidade}}</td>
+					<td>{{linha.subproduto_agregado.part_number}}</td>
+					<td>{{linha.subproduto_agregado.descricao}}</td>
+					<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
+				</tr>
+				{% endfor %}
+				
+			</tbody>
+		</table>
+		{% endif %}
+
+
+
+
 	</div>
-		<h1>Composição de Sub Produtos Agregados</h1>
+
+	<h1>Composição de Sub Produtos Agregados</h1>
 		{% for subproduto in subprodutos_abaixo %}
 			<div class="well well-small">
-			<h2>{{subproduto}}</h2>
-			<h3>Componentes</h3>
-			{% if subproduto.linhasubproduto_set.all %}
-			<ul>
-			{% for linha in subproduto.linhasubproduto_set.all %}
-				<li>{{linha.opcao_padrao.quantidade}} - {{linha.opcao_padrao.componente.get_medida_display}}{{linha.opcao_padrao.quantidade|pluralize}} de {{linha.opcao_padrao.componente}}</li>
-			{% endfor %}
-			</ul>
-			{% endif %}
-			<h3>Sub Produtos Agregados</h3>
-			<ul>
-			{% for linha in subproduto.linhasubprodutos_agregados.all %}
-				<li>{{linha.quantidade}} Unidade{{linha.quantidade|pluralize}} de {{linha.subproduto_agregado}}</li>
-			{% empty %}
-			<small><i>nenhum</i></small>
-			{% endfor %}
-			</ul>
+				<h2>{{subproduto}}</h2>
+
+				{% if subproduto.linhasubproduto_set.all %}
+				<h3>Componentes</h3>
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+	          <tr>
+	              <th>TAG</th>
+								<th>Nacionalidade</th>
+	              <th>Quantidade</th>
+								<th>Componente</th>
+								<th>Descrição</th>
+								<th>Lead Time</th>
+								<th>Preço Unitário</th>
+	          </tr>
+	     	 	</thead>
+					<tbody>
+				
+						{% for linha in subproduto.linhasubproduto_set.all %}
+						<tr>
+							<td>{{linha.tag|upper}}</td>
+							<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
+							<td>{{linha.opcao_padrao.quantidade}}</td>
+							<td>{{linha.opcao_padrao.componente.part_number}}</td>
+							<td>{{linha.opcao_padrao.componente.descricao}}</td>
+							<td>{{linha.opcao_padrao.componente.lead_time}}</td>
+							<td>R$ {{linha.opcao_padrao.componente.preco_liquido_unitario_real|floatformat:2}}</td>
+						</tr>
+						{% endfor %}
+				
+					</tbody>
+				</table>
+				{% endif %}
+			
+			
+				{% if subproduto.linhasubprodutos_agregados.all %}
+				<h3>Sub Produtos Agregados</h3>
+				<table class="table table-condensed table-hover table-rounded">
+			      <thead>
+			          <tr>
+			              <th>Quantidade</th>
+										<th>Subproduto</th>
+			              <th>Descrição</th>
+										<th>Preço</th>
+			          </tr>
+			      </thead>
+			      <tbody>
+							{% for linha in subproduto.linhasubprodutos_agregados.all %}
+							<tr>
+								<td>{{linha.quantidade}}</td>
+								<td>{{linha.subproduto_agregado.part_number}}</td>
+								<td>{{linha.subproduto_agregado.descricao}}</td>
+								<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
+							</tr>
+							{% endfor %}
+				
+						</tbody>
+					</table>
+				{% endif %}
 			</div>
 		{% endfor %}
-		
-		
-	
 	
 </div>
 {% endblock %}

@@ -284,3 +284,33 @@ border-top: 1px solid #e5e5e5;
 #arvore-de-produtos hr {
 margin: 10px 0;
 }
+
+#relatorio-impressao-subproduto h1, #relatorio-impressao-produto h1{
+ font-size: 20px;   
+ margin: 0;
+ padding: 0;
+}
+
+#relatorio-impressao-subproduto h2, #relatorio-impressao-produto h2{
+ font-size: 15px;   
+ margin: 0;
+ padding: 0;
+ 
+}
+
+#relatorio-impressao-subproduto h3, #relatorio-impressao-produto h3{
+ font-size: 13px;   
+ margin: 0;
+ padding: 0; 
+}
+
+#relatorio-impressao-subproduto .well-small, #relatorio-impressao-produto .well-small, #relatorio-impressao-produto .well, #relatorio-impressao-subproduto .well{
+    padding-bottom: 0;
+    margin-bottom: 5px;
+}
+#relatorio-impressao-subproduto ul, #relatorio-impressao-produto ul{
+    margin-bottom: 10px;
+}
+#relatorio-impressao-subproduto .table, #relatorio-impressao-produto .table {
+margin-bottom: 5px;
+}
