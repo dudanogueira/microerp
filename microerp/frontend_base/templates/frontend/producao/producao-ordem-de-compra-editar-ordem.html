@@ -30,6 +30,7 @@
 						<th>Fornecedor</th>
 						<th>Nota Fiscal</th>
 						<th>Criticidade</th>
+						<th>Data de Abertura</th>
         </tr>
     </thead>
     <tbody>
@@ -40,6 +41,7 @@
 				<td>{{ordem.fornecedor}}</td>
 				<td>{{ordem.notafiscal}}</td>
 				<td>{{ordem.get_criticidade_display}}</td>
+				<td>{{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}</td>
 			</tr>
 		</tbody>
 </table>

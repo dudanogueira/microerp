@@ -2213,12 +2213,15 @@ class AddRequisicaoDeCompra(forms.ModelForm):
     
     class Meta:
         model = RequisicaoDeCompra
-        fields = 'solicitante', 'solicitado', 'data_solicitado', 'descricao'
+        fields = 'solicitante', 'solicitado', 'data_solicitado', 'descricao', 'criticidade'
 
 @user_passes_test(possui_perfil_acesso_producao)
 def requisicao_de_compra(request):
     abertos = RequisicaoDeCompra.objects.filter(atendido=False)
     fechados = RequisicaoDeCompra.objects.filter(atendido=True)
+    if request.GET.get('criticidade', None):
+            abertos = abertos.filter(criticidade=request.GET.get('criticidade', None))
+    
     if request.POST:
         form_add_requisicao_de_compra = AddRequisicaoDeCompra(request.POST, solicitante=request.user.funcionario)
         if form_add_requisicao_de_compra.is_valid():

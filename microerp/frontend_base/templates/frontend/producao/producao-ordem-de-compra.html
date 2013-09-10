@@ -28,18 +28,19 @@
 					{# Informacoes da Ordem #}
 					
 					
-		      <table class="table table-condensed table-striped table-rounded">
-		          <thead>
-		              <tr>
-		                  <th>ID</th>
+					<table class="table table-condensed table-striped table-rounded">
+					    <thead>
+					        <tr>
+					            <th>ID</th>
 											<th>Valor</th>
 											<th>Descrição</th>
 											<th>Fornecedor</th>
 											<th>Nota Fiscal</th>
 											<th>Criticidade</th>
-		              </tr>
-		          </thead>
-		          <tbody>
+											<th>Data de Abertura</th>
+					        </tr>
+					    </thead>
+					    <tbody>
 								<tr>
 									<td>{{ordem.id}}</td>
 									<td>R${{ordem.valor|floatformat:2}}</td>
@@ -47,17 +48,19 @@
 									<td>{{ordem.fornecedor}}</td>
 									<td>{{ordem.notafiscal}}</td>
 									<td>{{ordem.get_criticidade_display}}</td>
+									<td>{{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}</td>
 								</tr>
 							</tbody>
-					</table>
-					
+					</table>					
 					
 					{% if not ordem.data_fechado %}
 					{# BOTOES PARA EDITAR, SE ABERTO #}
 						{% if request.user.perfilacessoproducao.gerente %}
 						<div class="botoes-editar-fechar">
+							<p class="btn-group">
 			        <a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
 			        <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>	
+							</p>
 						</div>
 						{% endif %}
 					

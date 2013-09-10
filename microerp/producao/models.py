@@ -1290,6 +1290,7 @@ class RequisicaoDeCompra(models.Model):
     solicitado = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_requerida", verbose_name="Funcioário Responsável")
     data_solicitado = models.DateField(u"Data da Solicitação", default=datetime.datetime.today)
     descricao = models.TextField(u"Descrição", blank=False)
+    criticidade = models.CharField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
