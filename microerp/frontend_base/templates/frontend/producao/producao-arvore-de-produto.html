@@ -58,8 +58,8 @@
 					{% for linha in produto.linhasubprodutodoproduto_set.all %}
 					<div class="accordion-group">
 						<div class="accordion-heading">
-							<a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}?parent=produto{{produto.id}}-linha{{linha.id}}">
-								<i class="icon-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}
+							<a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}?parent=produto{{produto.id}}-linha{{linha.id}}-forloop-{{forloop.counter}}-{{linha.subproduto.id}}">
+								<i class="icon-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span>  {{linha.subproduto}}a
 							</a>
 						</div>
 

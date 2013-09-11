@@ -43,6 +43,14 @@ from producao.models import ComponentesDaOrdemDeCompra
 from producao.models import RequisicaoDeCompra
 from producao.models import PerfilAcessoProducao
 
+ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
+    ('', '-----'),
+    (0, 'Baixa'),
+    (1, 'Média'),
+    (2, 'Urgente'),
+)
+
+
 from rh.models import Funcionario
 
 from django import forms
@@ -2032,17 +2040,27 @@ def preparar_producao_semanal(request):
     subprodutos = SubProduto.objects.all().order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao.html', locals(), context_instance=RequestContext(request),)
 
+
+
 class FormOrdemDeCompraFiltro(forms.Form):
     def __init__(self, *args, **kwargs):
         super(FormOrdemDeCompraFiltro, self).__init__(*args, **kwargs)
-        self.fields['data_inicio'].widget.attrs['class'] = 'datepicker'
-        self.fields['data_fim'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_inicio_abertura'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_fim_abertura'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_inicio_fechamento'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_fim_fechamento'].widget.attrs['class'] = 'datepicker'
+        self.fields['fornecedor'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
     
-    funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=False)
+    funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=False, label=u"Funcionário")
     fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
     mostrar_somente_abertos = forms.BooleanField(initial=True, required=False)
-    data_inicio = forms.DateField(label=u"Data Início Abertura", initial=datetime.date.today(), required=True)
-    data_fim = forms.DateField(label=u"Data Fim Abertura", initial=datetime.date.today()+datetime.timedelta(days=7), required=True)
+    criticidade = forms.ChoiceField(choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO, required=False)
+    data_inicio_abertura = forms.DateField(label=u"Data Início Abertura", required=False)
+    data_fim_abertura = forms.DateField(label=u"Data Fim Abertura", required=False)
+    data_inicio_fechamento = forms.DateField(label=u"Data Início Fechamento", required=False)
+    data_fim_fechamento = forms.DateField(label=u"Data Fim Fechamento", required=False)
+    
 
 class FormAdicionarOrdemDeCompra(forms.ModelForm):
     
@@ -2123,13 +2141,20 @@ def ordem_de_compra(request):
             form_filtro = FormOrdemDeCompraFiltro(request.POST)
             if form_filtro.is_valid():
                 # define o filtro
-                ordens = OrdemDeCompra.objects.filter(data_aberto__range=(form_filtro.cleaned_data['data_inicio'], form_filtro.cleaned_data['data_fim'])).order_by('data_aberto')
+                ordens = OrdemDeCompra.objects.all()
+                if form_filtro.cleaned_data['data_inicio_abertura'] and form_filtro.cleaned_data['data_fim_abertura']:
+                    ordens = OrdemDeCompra.objects.filter(data_aberto__range=(form_filtro.cleaned_data['data_inicio_abertura'], form_filtro.cleaned_data['data_fim_abertura'])).order_by('data_aberto')
+                if form_filtro.cleaned_data['data_inicio_fechamento'] and form_filtro.cleaned_data['data_fim_fechamento']:
+                    ordens = OrdemDeCompra.objects.filter(data_fechado__range=(form_filtro.cleaned_data['data_inicio_fechamento'], form_filtro.cleaned_data['data_fim_fechamento'])).order_by('data_aberto')
+                
                 if form_filtro.cleaned_data['mostrar_somente_abertos']:
                     ordens = ordens.filter(data_fechado=None)
                 if form_filtro.cleaned_data['funcionario']:
                     ordens = ordens.filter(funcionario=form_filtro.cleaned_data['funcionario'])
                 if form_filtro.cleaned_data['fornecedor']:
                     ordens = ordens.filter(fornecedor=form_filtro.cleaned_data['fornecedor'])
+                if form_filtro.cleaned_data['criticidade']:
+                    ordens = ordens.filter(criticidade=form_filtro.cleaned_data['criticidade'])
 
     else:
         form_filtro = FormOrdemDeCompraFiltro()

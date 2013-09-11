@@ -71,7 +71,7 @@
 <h2>Componentes Vinculados</h2>
 <ul>
 	{% for vinculo in ordem.componentesdaordemdecompra_set.all %}
-	<li>{{vinculo.quantidade_comprada}} {{vinculo.componente_comprado.medida}} de {{vinculo.componente_comprado}} no valor de R${{vinculo.valor|floatformat:2}} <a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculo.ordem_de_compra.id vinculo.id %}">X</a></li>
+	<li>{{vinculo.quantidade_comprada}} {{vinculo.componente_comprado.medida}} de {{vinculo.componente_comprado}} no valor de R${{vinculo.valor|floatformat:2}} <a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculo.ordem_de_compra.id vinculo.id %}"><i class="icon-trash"></i></a></li>
 	{% empty %}
 	<small>Nenhum Componente Vinculado a esta Ordem de Compra</small>
 	{% endfor %}

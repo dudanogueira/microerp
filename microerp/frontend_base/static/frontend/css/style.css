@@ -307,6 +307,7 @@ margin: 10px 0;
 #relatorio-impressao-subproduto .well-small, #relatorio-impressao-produto .well-small, #relatorio-impressao-produto div.well, #relatorio-impressao-subproduto div.well{
     margin-bottom: 5px;
     padding: 0 19px 0 19px;
+    border: 1px solid #000;
 }
 #relatorio-impressao-subproduto ul, #relatorio-impressao-produto ul{
     margin-bottom: 10px;
@@ -318,3 +319,4 @@ margin-bottom: 5px;
 .nomargin{
     margin:0;
 }
+
