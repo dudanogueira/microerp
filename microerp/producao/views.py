@@ -2280,6 +2280,8 @@ def requisicao_de_compra(request):
         form_add_requisicao_de_compra = AddRequisicaoDeCompra(request.POST, solicitante=request.user.funcionario)
         if form_add_requisicao_de_compra.is_valid():
             requisicao_compra = form_add_requisicao_de_compra.save()
+            # reinicia formulário
+            form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
             messages.success(request, u"Sucesso! Requisição de Compra #%s criada." % requisicao_compra.id)
             # envia email
             template = loader.get_template('template_de_email/nova-requisicao-de-compra.html')

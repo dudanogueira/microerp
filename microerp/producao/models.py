@@ -1301,7 +1301,7 @@ class RequisicaoDeCompra(models.Model):
     atendido = models.BooleanField(default=False)
     atendido_em = models.DateTimeField(blank=True, default=datetime.datetime.now)
     solicitante = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_solicitada")
-    solicitado = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_requerida", verbose_name="Funcioário Responsável")
+    solicitado = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_requerida", verbose_name="Funcionário Solicitante")
     data_solicitado = models.DateField(u"Data para Atender", default=datetime.datetime.today)
     descricao = models.TextField(u"Descrição", blank=False)
     criticidade = models.IntegerField(blank=False, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
