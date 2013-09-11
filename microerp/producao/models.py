@@ -229,9 +229,12 @@ class Componente(models.Model):
         pm = LancamentoComponente.objects.filter(componente=self).aggregate(avg=Avg('valor_unitario_final'))['avg']
         self.preco_medio_unitario = pm
         self.save()
-
-    def quem_fornece(self):
-        pass
+    
+    def total_em_estoques(self):
+        total_em_estoques = 0
+        for estoque in EstoqueFisico.objects.all():
+            total_em_estoques += self.posicao_no_estoque(estoque)
+        return total_em_estoques
         
     
     def componente_local_imagem(instance, filename):

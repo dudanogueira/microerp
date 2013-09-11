@@ -3,6 +3,7 @@
 		<tr>
 			<th>Componente</th>
 			<th>Descrição</th>
+			<th>Posição em Todos os Estoques</th>
 			<th>Posição em Estoque Produtor</th>
 			<th>Estoque Mínimo</th>
 			<th>Diferença</th>
@@ -13,6 +14,7 @@
 		<tr class="alert alert-{% if linha.4 %}success{% else %}danger{% endif %}">
 			<td><i class="icon-stop"></i> {{linha.0.part_number}}</td>
 			<td>{{linha.0.descricao}}</td>
+			<td>{{linha.0.total_em_estoques}}</td>
 			<td>{{linha.1}}</td>
 			<td>{{linha.2}}</td>
 			<td>{{linha.3}}</td>
