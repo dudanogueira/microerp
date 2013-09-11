@@ -534,8 +534,24 @@ def adicionar_componentes(request):
         # retorna à listagem
         messages.warning(request, u"Nenhuma ação tomada. É preciso escolher o tipo de Componente para adicionar")
         return redirect(reverse('producao:listar_componentes'))
-    
 
+class FormEditarComponente(forms.ModelForm):
+    class Meta:
+        model = Componente
+        fields = "descricao", "nacionalidade", 'ncm', 'lead_time', 'medida'
+
+@user_passes_test(possui_perfil_acesso_producao)
+def editar_componente(request, componente_id):
+    componente = get_object_or_404(Componente.objects.select_related(), pk=componente_id)
+    if request.POST:
+        editar_componente_form = FormEditarComponente(request.POST, instance=componente)
+        if editar_componente_form.is_valid():
+            editar_componente_form.save()
+            messages.success(request, u"Sucesso! Componente alterado.")
+            return redirect(reverse("producao:ver_componente", args=[componente.id]))
+    else:
+        editar_componente_form = FormEditarComponente(instance=componente)
+    return render_to_response('frontend/producao/producao-editar-componente.html', locals(), context_instance=RequestContext(request),)    
 
 
 @user_passes_test(possui_perfil_acesso_producao)

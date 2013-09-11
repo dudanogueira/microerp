@@ -6,6 +6,9 @@
 
 {% block content %}
 <h1>Componente {{componente.part_number}}</h1>
+<p>
+<a href="{% url "producao:editar_componente" componente.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar {{componente.part_number}}</a>
+</p>
 
 <ul class="nav nav-tabs">
 	<li class="active"><a href="#valores" data-toggle="tab">Valores</a></li>
