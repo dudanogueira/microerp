@@ -1239,7 +1239,7 @@ class RegistroValorEstoque(models.Model):
         return "Registro de estoque em %s no valor de R$%s" % (self.data, self.valor)
     
     data = models.DateTimeField(blank=True, default=datetime.datetime.now)
-    valor = models.DecimalField("Valor do Estoque", help_text="Valor total do Estoque", max_digits=10, decimal_places=2, default=0)
+    valor = models.DecimalField("Valor do Estoque", help_text="Valor total do Estoque", max_digits=20, decimal_places=2, default=0)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

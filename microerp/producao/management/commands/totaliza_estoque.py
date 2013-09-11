@@ -20,9 +20,11 @@ class Command(BaseCommand):
             valor_total += valor_parcial
             print "VALOR TOTAL: %s" % valor_total
             print "####" * 10
+        print "VALOR TOTAL:",valor_total
         registro = RegistroValorEstoque.objects.create(
             valor=valor_total
         )
+        
 
                 
         
