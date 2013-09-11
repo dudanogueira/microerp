@@ -70,13 +70,29 @@
 	</div>
 </div>
 <h2>Componentes Vinculados</h2>
-<ul>
-	{% for vinculo in ordem.componentesdaordemdecompra_set.all %}
-	<li>{{vinculo.quantidade_comprada}} {{vinculo.componente_comprado.medida}} de {{vinculo.componente_comprado}} no valor de R${{vinculo.valor|floatformat:2}} <a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculo.ordem_de_compra.id vinculo.id %}"><i class="icon-trash"></i></a></li>
-	{% empty %}
-	<small>Nenhum Componente Vinculado a esta Ordem de Compra</small>
-	{% endfor %}
-</ul>
+
+<table class="table table-condensed table-striped table-hover table-rounded nomargin table-bordered">
+	<thead>
+		<tr>
+			<th>Componente</th>
+			<th>Descrição</th>
+			<th>Quantidade</th>
+			<th>Valor</th>
+			<th>Ação</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for vinculado in ordem.componentesdaordemdecompra_set.all %}
+		<tr>
+			<td>{{vinculado.componente_comprado.part_number}}</td>
+			<td>{{vinculado.componente_comprado.descricao}}</td>
+			<td>{{vinculado.quantidade_comprada}} {{vinculado.componente_comprado.medida}}</td>
+			<td>R$ {{vinculado.valor|floatformat:2}}</td>
+			<td><a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculado.ordem_de_compra.id vinculado.id %}"><i class="icon-trash"></i></a></td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
 
 <!-- Modal Vincular Componente-->
 <div id="FormVincularComponente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
