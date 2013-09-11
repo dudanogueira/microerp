@@ -29,7 +29,7 @@
 			
 		</div>
 
-    <div class="tab-pane fade in" id="abertos">
+    <div class="tab-pane fade" id="abertos">
 			<p class="btn-group">
 				<a href="?#abertos" class="btn">Todos</a>
 				<a class="btn btn-success" href="?criticidade=0#abertos">Criticidade Baixa</a>
@@ -43,9 +43,9 @@
 						<th>Atendido</th>
 						<th>Usuário</th>
 						<th>Solicitante</th>
+						<th>Criado em</th>
 						<th>Data para Atender</th>
 						<th>Descrição</th>
-						<th>Criado em</th>
 						<th>Criticidade</th>
 						<th>Ação</th>
 					</tr>
@@ -57,9 +57,10 @@
 						<td>{{solicitacao.atendido|yesno|capfirst}}</td>
 						<td>{{solicitacao.solicitante}}</td>
 						<td>{{solicitacao.solicitado}}</td>
+						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
 						<td>{{solicitacao.descricao}}</td>
-						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+						
 						<td>
 							{% ifequal solicitacao.criticidade 0 %}
 								<span class="badge badge-success">
@@ -89,12 +90,12 @@
 				<thead>
 					<tr>
 						<th>ID</th>
-						<th>Atendido</th>
 						<th>Usuário</th>
 						<th>Solicitante</th>
-						<th>Data para Atender</th>
-						<th>Descrição</th>
 						<th>Criado em</th>
+						<th>Data para Atender</th>
+						<th>Atendido</th>
+						<th>Descrição</th>
 						<th>Criticidade</th>
 					</tr>
 				</thead>
@@ -102,12 +103,12 @@
 					{% for solicitacao in fechados %}
 					<tr>
 						<td>#{{solicitacao.id}}</td>
-						<td>em {{solicitacao.atendido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>{{solicitacao.solicitante}}</td>
 						<td>{{solicitacao.solicitado}}</td>
-						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
-						<td>{{solicitacao.descricao}}</td>
 						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
+						<td>{{solicitacao.atendido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
+						<td>{{solicitacao.descricao}}</td>
 						<td>
 							{% ifequal solicitacao.criticidade 0 %}
 								<span class="badge badge-success">
