@@ -2071,6 +2071,7 @@ class FormOrdemDeCompraFiltro(forms.Form):
     funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=False, label=u"Funcionário")
     fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
     mostrar_somente_abertos = forms.BooleanField(initial=True, required=False)
+    mostrar_somente_fechados = forms.BooleanField(initial=False, required=False)
     criticidade = forms.ChoiceField(choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO, required=False)
     data_inicio_abertura = forms.DateField(label=u"Data Início Abertura", required=False)
     data_fim_abertura = forms.DateField(label=u"Data Fim Abertura", required=False)
@@ -2105,6 +2106,7 @@ class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
         self.fields['valor'].widget.is_localized = True
         self.fields['valor'].widget.attrs['class'] = 'nopoint'
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
+        self.fields['fornecedor'].widget.attrs['class'] = 'select2'
         
     class Meta:
         model = OrdemDeCompra
@@ -2153,6 +2155,7 @@ def ordem_de_compra(request):
                 ordem_de_compra.save()
                 return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem_de_compra.id]))
         if request.POST.get("form-filtrar-ordem-de-compra", None):
+            filtro = True
             form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
             form_filtro = FormOrdemDeCompraFiltro(request.POST)
             if form_filtro.is_valid():
@@ -2165,6 +2168,8 @@ def ordem_de_compra(request):
                 
                 if form_filtro.cleaned_data['mostrar_somente_abertos']:
                     ordens = ordens.filter(data_fechado=None)
+                if form_filtro.cleaned_data['mostrar_somente_fechados']:
+                    ordens = ordens.exclude(data_fechado=None)
                 if form_filtro.cleaned_data['funcionario']:
                     ordens = ordens.filter(funcionario=form_filtro.cleaned_data['funcionario'])
                 if form_filtro.cleaned_data['fornecedor']:

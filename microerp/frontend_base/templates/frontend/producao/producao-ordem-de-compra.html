@@ -14,7 +14,10 @@
  
 	<!-- Button to trigger ADD ORDEM -->
 	<a href="#AddOrdemModal" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Ordem de Compra</a>
- 
+	{% if filtro %}
+	<a class="btn" href="{% url "producao:ordem_de_compra" %}">Limpar Filtro</a> 
+	{% endif %}
+	
 </p>
 
 <div id="lista-ordens">
@@ -75,7 +78,7 @@
 					
 				</a>
 			</div>
-			<div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse {% if forloop.first %}in{%endif%}">
+			<div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse">
 				<div class="accordion-inner">
 								{# Informacoes da Ordem #}
 					
@@ -124,18 +127,18 @@
 								<table class="table table-condensed table-striped table-hover table-rounded nomargin table-bordered">
 									<thead>
 										<tr>
-											<th>Quantidade</th>
 											<th>Componente</th>
 											<th>Descrição</th>
+											<th>Quantidade</th>
 											<th>Valor</th>
 										</tr>
 									</thead>
 									<tbody>
 										{% for vinculado in ordem.componentesdaordemdecompra_set.all %}
 										<tr>
-											<td>{{vinculado.quantidade_comprada}} {{vinculado.componente_comprado.medida}}</td>
 											<td>{{vinculado.componente_comprado.part_number}}</td>
 											<td>{{vinculado.componente_comprado.descricao}}</td>
+											<td>{{vinculado.quantidade_comprada}} {{vinculado.componente_comprado.medida}}</td>
 											<td>R$ {{vinculado.valor|floatformat:2}}</td>
 										</tr>
 										{% endfor %}

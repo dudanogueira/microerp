@@ -1266,7 +1266,7 @@ class OrdemDeCompra(models.Model):
     valor = models.DecimalField("Valor Total (R$)", max_digits=10, decimal_places=2, default=0)
     descricao = models.TextField(u"Descrição", blank=False)
     fornecedor = models.ForeignKey('FabricanteFornecedor')
-    notafiscal = models.CharField("Nota Fiscal", blank=False, max_length=100)
+    notafiscal = models.CharField("Nota Fiscal", blank=True, null=True, max_length=100)
     criticidade = models.IntegerField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

@@ -6,6 +6,7 @@
 
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-briefcase"></i>  Ordem de Compra</h1>
+<a href="{% url "producao:ordem_de_compra" %}"><i class="icon-arrow-left"></i> Retornar à listagem de Ordens de Compra</a>
 <h2>Ordem de Compra #{{ordem.id}}</h2>
 <p class="btn-group">
 <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>
