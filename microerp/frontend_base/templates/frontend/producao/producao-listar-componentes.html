@@ -76,15 +76,13 @@
       
       
 
-    {% if componentes_encontrados %}
-    <hr/>
     <ul>
     {% for componente in componentes_encontrados %}
         <li><a href="{% url "producao:ver_componente"  componente.id %}">{{componente}}</a></li>
     {% endfor %}
     </ul>
     
-    {% endif %}
+
 </div>
 
 

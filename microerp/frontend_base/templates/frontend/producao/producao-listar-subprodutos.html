@@ -15,12 +15,11 @@
   <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar SubProduto</button>
   <a class="btn btn-success" href="?q_subproduto=todos">Listar Todos</a>
 </form>
-{% if subprodutos_encontrados %}
+
 {% for subproduto in subprodutos_encontrados %}
     <a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}} - {{subproduto.descricao}}</a>
     <hr />
 {% endfor %}
-{% endif %}
 
 {% endblock %}
 

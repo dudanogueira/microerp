@@ -465,6 +465,7 @@ class ArquivoAnexoComponenteForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_componentes(request):
+    componentes_encontrados = Componente.objects.all()
     if request.POST:
         if request.POST.get('adicionar-tipo-componente', None):
             tipo_componente_form = TipoComponenteAdd(request.POST)
@@ -994,7 +995,7 @@ class AgregarSubProdutoForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_subprodutos(request):
-    
+    subprodutos_encontrados = SubProduto.objects.all()
     if request.GET:
         q_subproduto = request.GET.get('q_subproduto', None)
         if q_subproduto:
@@ -1420,6 +1421,7 @@ def ver_produto_apagar_anexo(request, produto_id, anexo_id):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
+    produtos_encontrados = ProdutoFinal.objects.all()
     if request.GET:
         q_produto = request.GET.get('q_produto', True)
         if q_produto:

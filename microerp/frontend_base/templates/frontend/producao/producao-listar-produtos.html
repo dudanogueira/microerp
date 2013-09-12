@@ -22,13 +22,10 @@
     </form>
 </div>
 
-{% if q_produto %}
-
 {% for produto in produtos_encontrados %}
     <a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a>
     <hr />
 {% endfor %}
-{% endif %}
 
 {% endblock %}
 
