@@ -1246,6 +1246,14 @@ class RegistroValorEstoque(models.Model):
 
 class OrdemDeCompra(models.Model):
     
+    
+    def atrasada(self):
+        if self.atividadedeordemdecompra_set.filter(data__lte=datetime.date.today(), data_fechado=None):
+            return True
+        else:
+            return False
+    
+    
     class Meta:
         ordering = ['-criado']
     
@@ -1267,12 +1275,23 @@ class OrdemDeCompra(models.Model):
     descricao = models.TextField(u"Descrição", blank=False)
     fornecedor = models.ForeignKey('FabricanteFornecedor')
     notafiscal = models.CharField("Nota Fiscal", blank=True, null=True, max_length=100)
-    criticidade = models.IntegerField(blank=True, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
+    criticidade = models.IntegerField(blank=False, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class AtividadeDeOrdemDeCompra(models.Model):
+    
+    def atrasada(self):
+        if self.data > datetime.date.today():
+            return False
+        else:
+            # ja foi fechado, nao esta atrasado
+            if self.data_fechado:
+                return False
+            else:
+                return True
+    
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
     data = models.DateField("Data de Lembrete", default=datetime.datetime.today)
     descricao = models.TextField(u"Descrição", blank=False)
