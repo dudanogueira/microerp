@@ -246,6 +246,10 @@ textarea{
     width: 100%;
 }
 
+.medioselect2.select2-container{
+    width: 80%;
+}
+
 h1 {
 font-size: 28.5px;
 }

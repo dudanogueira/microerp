@@ -1578,11 +1578,12 @@ def ordem_de_producao(request):
     return render_to_response('frontend/producao/producao-ordem-de-producao.html', locals(), context_instance=RequestContext(request),)    
 
 class FormConfiguradorSubProduto(forms.Form):
+    
     def __init__(self, *args, **kwargs):
         subproduto = kwargs.pop('subproduto', None)
         super(FormConfiguradorSubProduto, self).__init__(*args, **kwargs)
         if subproduto:
-            for linha in subproduto.linhasubproduto_set.all():
+            for linha in subproduto.linhasubproduto_set.all():            
                 opcao_padrao = linha.opcao_padrao()
                 if opcao_padrao:
                     opcao_id = opcao_padrao.id
@@ -1592,6 +1593,9 @@ class FormConfiguradorSubProduto(forms.Form):
                 self.fields['linha-%s' % linha.id].widget.attrs['class'] = 'select2'
                 self.fields['linha-%s' % linha.id].required = True
                 self.fields['linha-%s' % linha.id].empty_label = None
+                if linha.opcaolinhasubproduto_set.all().count() == 1:
+                    self.fields['linha-%s' % linha.id].widget = forms.HiddenInput()
+                    
     
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_solicitada):
@@ -1753,6 +1757,11 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
 
     else:
         form_configurador_subproduto = FormConfiguradorSubProduto(subproduto=subproduto)
+        linhas_sem_alternativo = []
+        for linha in subproduto.linhasubproduto_set.all():
+            if linha.opcaolinhasubproduto_set.all().count() == 1:
+                linhas_sem_alternativo.append(linha)
+
     return render_to_response('frontend/producao/producao-ordem-de-producao-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1880,9 +1889,21 @@ def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
     # contabilizar todos os componentes deste produto
     return render_to_response('frontend/producao/producao-ordem-de-producao-produto.html', locals(), context_instance=RequestContext(request),)
 
+class SelecionarProdutoUnicoForm(forms.Form):
+    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all(), empty_label=None)
+    produto.widget.attrs['class'] = 'select2'
+
+
 @user_passes_test(possui_perfil_acesso_producao)
 def arvore_de_produto(request):
-    produtos = ProdutoFinal.objects.all()
+    seleciona_produto = SelecionarProdutoUnicoForm()
+    if request.GET:
+        filtro = True
+        seleciona_produto = SelecionarProdutoUnicoForm(request.GET)
+        if seleciona_produto.is_valid():
+            produtos = ProdutoFinal.objects.filter(pk=seleciona_produto.cleaned_data['produto'].id)
+    else:
+        produtos = ProdutoFinal.objects.all()
     return render_to_response('frontend/producao/producao-arvore-de-produto.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)

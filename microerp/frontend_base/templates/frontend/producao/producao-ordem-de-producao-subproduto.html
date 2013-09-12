@@ -6,32 +6,67 @@
 
 {% block content %}
 	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Sub Produto {{subproduto.part_number}}</h2>
+	<h2><i class="icon-list-ul"></i> Sub Produto {{subproduto.part_number}} {% if calculado%}: Cálculo de Produção{% endif %}</h2>
+	{% if calculado %}
+		<p class="btn-group">
+	<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
+
+		<button href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</button>
+		</p>
+		{% endif %}
+	
+	
 	<div class="row-fluid">
 		
-		<div class="span7">
+		<div class="span3">
 			{% if subproduto.tipo_de_teste %}
 			<strong>Total Montado</strong>: <span class="badge">{{subproduto.total_montado}}</span><br />
 			<strong>Total Testando</strong>: <span class="badge badge-info">{{subproduto.total_testando}}</span><br />
 			<strong>Total Funcional</strong>: <span class="badge badge-success">{{subproduto.total_funcional}}</span><br />
 			{% endif %}
+			
 		</div>
 
-		<div class="span5">
-				<h2 class="alert alert-info">{{quantidade_solicitada}} Unidades</h2>
-					<h4>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</h4>
+		<div class="span3">
+				<h4 class="alert alert-info">{{quantidade_solicitada}} Unidades</h4>
+					
+		</div>
+		
+		<div class="span6">
+	{% if producao_liberada %}
+		{% if request.user.perfilacessoproducao.gerente %}
+		<form method="POST" name="confirmar-produto" action="{% url "producao:ordem_de_producao_subproduto_confirmar" subproduto.id quantidade_solicitada %}">
+			{% csrf_token %}
+
+			<input type="hidden" name="configuracao" value="{{conf}}">
+			<button class="btn btn-danger" type="submit"><i class="icon-thumbs-up"></i> Confirmar Produção!</button>
+			<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
+		</form>
+		{% else %}
+		<h1>Somente o gerente pode ordenar produção!</h1>
+		{% endif %}
+	
+	{% else %}
+
+	<button class="btn btn-primary" form="configurador_produto">
+		<i class="icon-search"></i> Verificar Disponibilidade para Produção
+	</button>
+	<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
+	{% endif %}
+	
+
 		</div>
 	</div>
 
 	
 	{% if calculado %}
 	<div id="calculado">
-		<h2>Calculo de Produção</h2>
 		<h3>Componentes</h3>
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
 				<tr>
 					<th>Componente</th>
+					<th>Descrição</th>
 					<th>Qtd Utilizada</th>
 					<th>Qtd Consumida</th>
 					<th>Disponível em Estoque</th>
@@ -41,7 +76,7 @@
 					{% for k,linha in quantidades_componente.items %}
 					<tr class="
 					{% if linha.3 %}
-					alert alert-success
+					alert alert-success linhaok
 					{%else%}
 					alert alert-danger
 					{% endif %}
@@ -49,6 +84,7 @@
 						<td>
 							{{linha.0.componente.part_number}} ({{linha.0.componente.id}})
 						</td>
+						<td>{{linha.0.componente.descricao}}</td>
 						<td>{{linha.0.quantidade}}</td>
 						<td>
 							{{linha.1}} {{linha.0.medida}}
@@ -60,7 +96,7 @@
 			{% endfor %}				
 			</tbody>	
 		</table>
-		 
+		{% if quantidades_agregados %}
 		<h3>Sub Produtos Agregados</h3>
 		
 		<table class="table table-condensed table-hover table-rounded">
@@ -78,7 +114,7 @@
 					{{subproduto_agregado.0}}
 					<tr class="
 					{% if linha.3 %}
-					alert alert-success
+					alert alert-success linhaok
 					{%else%}
 					alert alert-danger
 					{% endif %}
@@ -101,20 +137,11 @@
 			{% endfor %}				
 			</tbody>	
 		</table>
+		{% endif %}
 
 		{% if producao_liberada %}
 		
 		<h2>Produção Liberada</h2>
-		{% if request.user.perfilacessoproducao.gerente %}
-		<form method="POST" name="confirmar-produto" action="{% url "producao:ordem_de_producao_subproduto_confirmar" subproduto.id quantidade_solicitada %}">
-			{% csrf_token %}
-
-			<input type="hidden" name="configuracao" value="{{conf}}">
-			<button class="btn btn-danger" type="submit">Confirmar Produção!</button>
-		</form>
-		{% else %}
-		<h1>Somente o gerente pode ordenar produção!</h1>
-		{% endif %}
 		
 		{% endif %}
 
@@ -122,11 +149,8 @@
 	{% else %}
 		<div id="configurar">
 			
-			<button class="btn btn-primary" form="configurador_produto">
-				<i class="icon-search"></i> Verificar Disponibilidade para Produção
-			</button>
 			
-			
+			{% if subproduto.linhasubprodutos_agregados.all %}
 			<h2>SubProdutos Agregados</h2>
 		  <table class="table table-condensed table-hover table-rounded">
 		      <thead>
@@ -161,13 +185,42 @@
 				
 					</tbody>
 			</table>
+			{% endif %}
 	
-			<h2>Linhas de Componentes</h2>
-			<form method="post" name="configurador_produto" id="configurador_produto">
+			<h2>Linhas de Componentes Com Alternativo</h2>
+			<div id="select2medio">
+			<form method="post" name="configurador_produto" id="configurador_produto" class="form-inline">
 				{% csrf_token %}
-				{{form_configurador_subproduto}}
+				
+				{{form_configurador_subproduto.as_p}}
 			</form>
-	
+			</div>
+					
+			<h2>Linhas de Componentes Sem Alternativo</h2>			
+		  <table class="table table-condensed table-hover table-rounded">
+		      <thead>
+		          <tr>
+									<th>ID Linha</th>
+		              <th>Componente</th>
+									<th>Descrição</th>
+		              <th>Quantidade Utilizada</th>
+		              <th>Disponível em Estoque</th>
+		          </tr>
+		      </thead>
+		      <tbody>
+			
+						{% for linha in linhas_sem_alternativo %}
+						<tr>
+							<td>#{{linha.id}}</td>
+							<td>{{linha.opcao_padrao.componente.part_number}}</td>
+							<td>{{linha.opcao_padrao.componente.descricao}}</td>
+							<td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida}}</td>
+							<td>{{linha.opcao_padrao.componente.posicao_no_estoque_produtor}} {{linha.opcao_padrao.componente.medida}}</td>
+							
+						</tr>
+						{% endfor %}
+					</tbody>
+			</table>
 	
 	
 		</div>
@@ -187,7 +240,24 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+		$("#esconder-linhas-ok").click(function(e){
+			e.preventDefault();
+			$(".linhaok").toggle();
+		});
 });
+
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$('#esconder-linhas-ok').hide()
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+	
+});
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

@@ -225,6 +225,12 @@ class Componente(models.Model):
             posicao = 0
         return posicao
     
+    def posicao_no_estoque_produtor(self):
+        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+        return self.posicao_no_estoque(estoque_produtor) or 0
+    
+    
     def registrar_preco_medio(self):
         pm = LancamentoComponente.objects.filter(componente=self).aggregate(avg=Avg('valor_unitario_final'))['avg']
         self.preco_medio_unitario = pm

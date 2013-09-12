@@ -10,6 +10,15 @@
 <p>
 	<a href="" id="imprimir" class="btn btn-large"><i class="icon-print"></i> imprimir</a>
 </p>
+<form method="GET" class="form-inline well well-small" id="selecionar-produto-form">
+{{seleciona_produto.as_p}}
+<p class="btn-group">
+	<button type="submit" class="btn btn-primary"><i class="icon-filter"></i> Escolher somente este produto</button>
+	{% if filtro %}
+	<a href="{% url "producao:arvore_de_produto" %}" class="btn btn-success">Mostrar todos</a>
+	{% endif %}
+</p>
+</form>
 
 <div class="accordion" id="arvore-de-produtos">
 	{% for produto in produtos %}
@@ -113,6 +122,7 @@ $(document).on("click", ".accordion-toggle", function(e){
 $(document).on("click", "#imprimir", function(e){
 	e.preventDefault();
 	$(this).hide();
+	$("#selecionar-produto-form").hide();
 	$("#menu-lateral").hide();
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);

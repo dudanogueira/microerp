@@ -7,19 +7,50 @@
 {% block content %}
 	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
 	<h2><i class="icon-windows"></i> Produto {{produto.part_number}}</h2>
+	{% if calculado %}
+		<p class="btn-group">
+	<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
+
+		<button href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</button>
+		</p>
+		{% endif %}
 	
 	
 	<div class="row-fluid">
 		
-		<div class="span7">
-			{% if produto.tipo_de_teste %}
+		<div class="span3">
 			<strong>Total Produzido</strong>: <span class="badge badge-success">{{produto.total_produzido}}</span><br />
-			{% endif %}
 		</div>
 
-		<div class="span5">
-				<h2 class="alert alert-info">{{quantidade_solicitada}} Unidades</h2>
+		<div class="span3">
+				<h4 class="alert alert-info">{{quantidade_solicitada}} Unidades</h4>
 		</div>
+
+		<div class="span6">
+			{% if producao_liberada %}	
+			
+			{% if request.user.perfilacessoproducao.gerente %}
+			<a class="btn btn-danger" href="{% url "producao:ordem_de_producao_produto_confirmar" produto_id quantidade_solicitada %}">Confirmar Produção!</a>
+			{% else %}
+			<h1>Somente o Gerente pode ordenar a produção!</h1>
+			{% endif %}
+			
+			{% else %}
+			
+			<form method="POST">
+				{% csrf_token %}
+				<button class="btn btn-primary" name="verificar-producao" value="verificar">
+					<i class="icon-search"></i> Verificar Disponibilidade para Produção
+				</button>
+			</form>
+			
+			{% endif %}
+				
+				
+				
+		</div>
+
+		
 	</div>
 
 	
@@ -40,7 +71,7 @@
 					{% for k,linha in quantidades_componente.items %}
 					<tr class="
 					{% if linha.3 %}
-					alert alert-success
+					alert alert-success linhaok
 					{%else%}
 					alert alert-danger
 					{% endif %}
@@ -76,7 +107,7 @@
 					{{subproduto_agregado.0}}
 					<tr class="
 					{% if linha.3 %}
-					alert alert-success
+					alert alert-success linhaok
 					{%else%}
 					alert alert-danger
 					{% endif %}
@@ -102,26 +133,10 @@
 			</tbody>	
 		</table>
 
-		{% if producao_liberada %}
-		
-		<h2>Produção Liberada</h2>
-			{% if request.user.perfilacessoproducao.gerente %}
-			<a class="btn btn-danger" href="{% url "producao:ordem_de_producao_produto_confirmar" produto_id quantidade_solicitada %}">Confirmar Produção!</a>
-			{% else %}
-			<h1>Somente o Gerente pode ordenar a produção!</h1>
-			{% endif %}
-		
-		{% endif %}
 
 	</div>		
 	{% else %}
 		<div id="configurar">
-			<form method="POST">
-				{% csrf_token %}
-			<button class="btn btn-primary" name="verificar-producao" value="verificar">
-				<i class="icon-search"></i> Verificar Disponibilidade para Produção
-			</button>
-		</form>
 			
 			
 			<h2>SubProdutos Agregados</h2>
@@ -188,6 +203,7 @@
 	
 		</div>
 	{% endif %}
+	
 	{% if get_componentes %}<strong>Notação de Produção</strong>: {{get_componentes}}<br />{% endif %}
 	
 {% endblock %}
@@ -202,7 +218,25 @@ $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
     var activeTab = $('[href=' + location.hash + ']');
     activeTab && activeTab.tab('show');
+		
+		$("#esconder-linhas-ok").click(function(e){
+			e.preventDefault();
+			$(".linhaok").toggle();
+		});
+		
 });
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$('#esconder-linhas-ok').hide()
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+	
+});
+
 
 $('.nav-tabs').on("click", '.ajaxtab', function(e){
 	e.preventDefault();
