@@ -5,7 +5,7 @@
 
 	<h1>Composição de Sub Produto</h1>
 	<div class="well well-small">
-		<h2>Sub Produto: {{subproduto}} - {{subproduto.descricao}} - R$ {{subproduto.custo|floatformat:2}}</h2>
+		<h2>Sub Produto: {{subproduto.part_number}} - {{subproduto.descricao}} - R$ {{subproduto.custo|floatformat:2}}</h2>
 
 
 		{% if subproduto.linhasubproduto_set.all %}
@@ -75,7 +75,7 @@
 	<h1>Composição de Sub Produtos Agregados</h1>
 		{% for subproduto in subprodutos_abaixo %}
 			<div class="well well-small">
-				<h2>{{subproduto}}</h2>
+				<h2>{{subproduto}} - R${{subproduto.custo|floatformat:2}}</h2>
 
 				{% if subproduto.linhasubproduto_set.all %}
 				<table class="table table-condensed table-hover table-rounded">
