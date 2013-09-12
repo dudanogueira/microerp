@@ -15,7 +15,7 @@ class Command(BaseCommand):
             #calcular a posicao do componente em todos os estoques
             for estoque in EstoqueFisico.objects.all():
                 total_em_estoques += componente.posicao_no_estoque(estoque)
-            valor_parcial = float(total_em_estoques) * float(componente.preco_liquido_unitario_real)
+            valor_parcial = float(total_em_estoques) * float(componente.preco_medio_unitario)
             print "VALOR PARCIAL: %s" % valor_parcial
             valor_total += valor_parcial
             print "VALOR TOTAL: %s" % valor_total

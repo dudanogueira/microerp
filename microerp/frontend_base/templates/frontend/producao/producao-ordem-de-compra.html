@@ -28,59 +28,31 @@
 		<div class="accordion-group">
 			<div class="accordion-heading">
 				<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion-ordens-compra"  href="#collapse-ordem-{{ordem.id}}">
-					<table class="table table-condensed table-striped table-rounded nomargin">
-						<thead>
-							<tr>
-								<th>Status</th>
-								<th>ID</th>
-								<th>Valor</th>
-								<th>Descrição</th>
-								<th>Fornecedor</th>
-								<th>Nota Fiscal</th>
-								<th>Criticidade</th>
-								<th>Data de Abertura</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td>{% if ordem.data_fechado %}
-									<span class="badge badge-success">FECHADO</span>
-									{% else %}
-									<span class="badge badge-important">ABERTO</span>
-									{% if ordem.atrasada %}
-										<span class="badge badge-important">Atrasada</span>
-									{% else %}
-										<span class="badge badge-success">Em dia</span>
-									{% endif %}
+					ID #{{ordem.id}} - {% if ordem.data_fechado %}
+												<span class="badge badge-success">Fechado</span>
+												{% else %}
+												<span class="badge badge-important">Aberto</span>
+												{% if ordem.atrasada %}
+													<span class="badge badge-important">Atrasada</span>
+												{% else %}
+													<span class="badge badge-success">Em dia</span>
+												{% endif %}
 									
-									{% endif %}
-								</td>
-							
-								<td>{{ordem.id}}</td>
-								<td>R${{ordem.valor|floatformat:2}}</td>
-								<td>{{ordem.descricao}}</td>
-								<td>{{ordem.fornecedor}}</td>
-								<td>{{ordem.notafiscal}}</td>
-								<td>
-										
-										{% ifequal ordem.criticidade 0 %}
-										<span class="badge badge-success">
-											{% endifequal %}
-											{% ifequal ordem.criticidade 1 %}
-											<span class="badge badge-warning">
+												{% endif %}
+												
+												{% ifequal ordem.criticidade 0 %}
+													<span class="badge badge-success">
+												{% endifequal %}
+												{% ifequal ordem.criticidade 1 %}
+													<span class="badge badge-warning">
 												{% endifequal %}
 												{% ifequal ordem.criticidade 2 %}
-												<span class="badge badge-important">
-													{% endifequal %}
-													{{ordem.get_criticidade_display}}
-												</span>
-										
-										
-								</td>
-								<td>{{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}</td>
-							</tr>
-						</tbody>
-					</table>					
+														<span class="badge badge-important">
+												{% endifequal %}
+															{{ordem.get_criticidade_display}}
+													</span>
+													
+													{{ordem.descricao}}
 					
 				</a>
 			</div>
@@ -106,6 +78,27 @@
 								<strong>Tempo que ficou aberto</strong>: {{ordem.data_aberto|timesince}}<br />
 								<strong>Data de Fechamento</strong>: {{ordem.data_fechado|date:"SHORT_DATE_FORMAT"}}
 								{% endif %}
+								
+								<table class="table table-condensed table-striped table-rounded nomargin">
+									<thead>
+										<tr>
+											<th>Data de Abertura</th>
+											<th>Fornecedor</th>
+											<th>Valor</th>
+											<th>Nota Fiscal</th>
+											<th>Funcionario</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr>
+											<td>{{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}</td>
+											<td>{{ordem.fornecedor}}</td>
+											<td>R${{ordem.valor|floatformat:2}}</td>
+											<td>R${{ordem.valor|floatformat:2}}</td>
+											<td>{{ordem.funcionario}}</td>
+										</tr>
+									</tbody>
+								</table>					
 					
 								<h3>Atividades</h3>
 								<div class="atividades-{{ordem.id}}">

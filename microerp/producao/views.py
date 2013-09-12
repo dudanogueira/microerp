@@ -571,7 +571,7 @@ def ver_componente(request, componente_id):
         except:
             posicao = None
         if posicao:
-            valor = posicao.quantidade * posicao.componente.preco_liquido_unitario_real
+            valor = posicao.quantidade * posicao.componente.preco_medio_unitario
             posicoes_estoque.append((posicao, valor))
     # Anexos
     if request.POST:
@@ -826,8 +826,8 @@ def listar_estoque(request):
                     historicos = historicos.filter(estoque=estoque_consultado, componente=componente_consultado)
                     consulta_dupla = True
                     posicaoestoque = componente_consultado.posicao_no_estoque(estoque_consultado)
-                    if posicaoestoque and componente_consultado.preco_liquido_unitario_real:
-                        valor_no_estoque = posicaoestoque * componente_consultado.preco_liquido_unitario_real
+                    if posicaoestoque and componente_consultado.preco_medio_unitario:
+                        valor_no_estoque = posicaoestoque * componente_consultado.preco_medio_unitario
                     else:
                         valor_no_estoque = None
                     # define os forms já sugeridos
@@ -844,7 +844,7 @@ def listar_estoque(request):
                         except:
                             posicao = None
                         if posicao and posicao.quantidade:
-                            valor = posicao.quantidade * posicao.componente.preco_liquido_unitario_real
+                            valor = posicao.quantidade * posicao.componente.preco_medio_unitario
                             posicoes_estoque.append((posicao, valor))
                     form_mover_estoque = MoverEstoque(componente_consultado=componente_consultado)
                     form_alterar_estoque = AlterarEstoque(componente=componente_consultado)
@@ -860,7 +860,7 @@ def listar_estoque(request):
                         except:
                             posicao = None
                         if posicao:
-                            valor = posicao.quantidade * posicao.componente.preco_liquido_unitario_real
+                            valor = posicao.quantidade * posicao.componente.preco_medio_unitario
                             posicoes_estoque.append((posicao, valor))
                     total_geral = 0
                     for posicao in posicoes_estoque:
@@ -1930,6 +1930,7 @@ def producao_combinada(request):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def producao_combinada_calcular(request):
+    agora = datetime.datetime.now()
     if request.POST:
         teste = []
         producao_liberada = True
@@ -1976,21 +1977,25 @@ def producao_combinada_calcular(request):
         slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
         estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
         relatorio_producao = []
+        import decimal
         for item in get_componentes.items():
             if type(item[0]) == long:
                 # verifica se possui a quantidade total deste componente em estoque
                 qtd_componente = item[1]
-                posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
                 componente = Componente.objects.get(pk=int(item[0]))
+                posicao_em_estoque = componente.total_em_estoques()
+                
                 # quantiade no estoque insuficiente
                 pode = True
                 faltou = None
-                if float(qtd_componente) > float(posicao_em_estoque_produtor):
-                    faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
+                if float(qtd_componente) > float(posicao_em_estoque):
+                    faltou = float(qtd_componente) - float(posicao_em_estoque)
                     producao_liberada = False
                     pode = False
                     # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
-                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque_produtor, faltou, pode))
+                    qtd_componente = decimal.Decimal(qtd_componente)
+                    faltou = decimal.Decimal(faltou)
+                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode))
             elif type(item[0]) == str:
                 subproduto_id = item[0].split("-")[1]
                 subproduto_usado = SubProduto.objects.get(id=subproduto_id)
@@ -2005,6 +2010,9 @@ def producao_combinada_calcular(request):
                     producao_liberada = False
                     faltou = float(qtd_subproduto) - float(quantidade_disponivel)
                     pode = False
+                    qtd_subproduto = decimal.Decimal(qtd_subproduto)
+                    faltou = decimal.Decimal(faltou)
+                    
                     relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode))
              
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)
@@ -2025,6 +2033,7 @@ def qeps_componentes(request):
     para QEPS, quantidade em estoque produtor, e diferença desses dois
     ultimos valores
     '''
+    margem_fornecida = request.GET.get('margem', None)
     dic = {}
     slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
     estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
@@ -2064,7 +2073,10 @@ def qeps_componentes(request):
             posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
             componente = Componente.objects.get(pk=int(item[0]))
             quantidade_lead_time = item[1] * componente.lead_time
-            diferenca = float(posicao_em_estoque_produtor) - float(quantidade_lead_time)
+            if margem_fornecida:
+                margem = float(quantidade_lead_time) * float(margem_fornecida) / float(100)
+                quantidade_lead_time = float(quantidade_lead_time) + float(margem)
+            diferenca = float(componente.total_em_estoques()) - float(quantidade_lead_time)
             if diferenca > 0:
                 ok = True
             else:

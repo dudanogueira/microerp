@@ -1,3 +1,12 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção de SubProduto{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-gears"></i> Totalizador de Produção</h1>
+
 <h2><i class="icon-windows"></i> Produtos</h2>
 <table class="table table-condensed table-rounded table-hover">
 	<thead>
@@ -40,7 +49,7 @@
 			<th class="alert">Total Mont.</th>
 			<th class="alert alert-info">Total Test.</th>
 			<th class="alert alert-success">Total Func.</th>
-			<th>Max Prod.</th>
+			<th>Max. Prod.*</th>
 			<th>Teste</th>
 			<th>Custo</th>
 		</tr>
@@ -90,8 +99,23 @@
 			<td>{{subproduto.get_tipo_de_teste_display}}</td>
 			<td>R$ {{subproduto.custo|floatformat:2}}</td>
 		</tr>
-
 		{% endfor %}
 			
 	</tbody>
 </table>
+<small>* Máximo de Produção: Máximo Possível de Produção Somente deste Produto</small>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-totalizador-producao, #top-menu-producao").addClass("active");
+		
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

@@ -8,6 +8,34 @@
 <h1><i class="icon-th"></i> <i class="icon-briefcase"></i>  Ordem de Compra</h1>
 <a href="{% url "producao:ordem_de_compra" %}"><i class="icon-arrow-left"></i> Retornar à listagem de Ordens de Compra</a>
 <h2>Ordem de Compra #{{ordem.id}}</h2>
+
+<p>
+{% if ordem.data_fechado %}
+												<span class="badge badge-success">Fechado</span>
+												{% else %}
+												<span class="badge badge-important">Aberto</span>
+												{% if ordem.atrasada %}
+													<span class="badge badge-important">Atrasada</span>
+												{% else %}
+													<span class="badge badge-success">Em dia</span>
+												{% endif %}
+									
+												{% endif %}
+												
+												{% ifequal ordem.criticidade 0 %}
+													<span class="badge badge-success">
+												{% endifequal %}
+												{% ifequal ordem.criticidade 1 %}
+													<span class="badge badge-warning">
+												{% endifequal %}
+												{% ifequal ordem.criticidade 2 %}
+														<span class="badge badge-important">
+												{% endifequal %}
+															{{ordem.get_criticidade_display}}
+													</span>
+												</p>
+													
+													
 <p class="btn-group">
 <a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>
 
@@ -30,7 +58,6 @@
 						<th>Descrição</th>
 						<th>Fornecedor</th>
 						<th>Nota Fiscal</th>
-						<th>Criticidade</th>
 						<th>Data de Abertura</th>
         </tr>
     </thead>
@@ -41,7 +68,6 @@
 				<td>{{ordem.descricao}}</td>
 				<td>{{ordem.fornecedor}}</td>
 				<td>{{ordem.notafiscal}}</td>
-				<td>{{ordem.get_criticidade_display}}</td>
 				<td>{{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}</td>
 			</tr>
 		</tbody>

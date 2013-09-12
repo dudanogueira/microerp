@@ -7,19 +7,25 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
 <h2>Produção Combinada</h2>
+
+<a href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</a>
+
 <p>
 <strong>Notação de Produção</strong>: {{get_componentes}}
 </p>
 
 <p>
-<strong>Quantidades Analisadas</strong>
+<h2>Quantidades Analisadas</h2>
 <ul>
 {% for quantidade in quantidade_analisada %}
-	<li><span class="badge badge-warning">{{quantidade.1}}</span> de {{quantidade.0}}</li>
+	{% ifnotequal quantidade.1 '0' %}
+		<li><span class="badge badge-warning">{{quantidade.1}}</span> de {{quantidade.0}}</li>
+		{% endifnotequal %}
 {% endfor %}
 </ul>
 </p>
 
+{% if relatorio_producao %}
 <h2>Relatório de Faltas</h2>
 
 <table class="table table-condensed table-hover table-rounded">
@@ -27,7 +33,7 @@
 		<tr>
 			<th>Item</th>
 			<th>Descrição</th>
-			<th>Qtd Atual</th>
+			<th>Qtd Necessária</th>
 			<th>Posição em Estoque</th>
 			<th>Faltante</th>
 		</tr>
@@ -37,9 +43,9 @@
 		<tr class="{% if relatorio.5 %}alert alert-success{% else %}alert alert-error{% endif %}">
 			<td>{{relatorio.0.part_number}}</td>
 			<td>{{relatorio.1}}</td>
-			<td>{{relatorio.2}}</td>
-			<td>{{relatorio.3}}</td>
-			<td>{{relatorio.4}}</td>
+			<td>{{relatorio.2|floatformat:2}} {{relatorio.0.medida|upper}}</td>
+			<td>{{relatorio.3|floatformat:2}} {{relatorio.0.medida|upper}}</td>
+			<td>{{relatorio.4|floatformat:2}} {{relatorio.0.medida|upper}}</td>
 			
 		</tr>
 		
@@ -48,12 +54,14 @@
 	</tbody>
 </table>
 
+{% endif %}
+
 
 
 {% if producao_liberada %}
-<h5 class="alert alert-success">PRODUÇÃO LIBERADA!</h5>
+<h5 class="alert alert-success">PRODUÇÃO LIBERADA! Em: {{agora|date:"SHORT_DATETIME_FORMAT"}}</h5>
 {% else %}
-<h5 class="alert alert-error">PRODUÇÃO INVIÁVEL!</h5>
+<h5 class="alert alert-error">PRODUÇÃO INVIÁVEL! Em: {{agora|date:"SHORT_DATETIME_FORMAT"}}</h5>
 {% endif %}
 
 <p>
@@ -68,6 +76,17 @@ $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
 		
 });
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+	
+});
+
 
 
 </script>

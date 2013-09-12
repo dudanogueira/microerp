@@ -1,19 +1,38 @@
+<div id="qeps-container">
+<p class="btn-group">
+<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
+
+	<button href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</button>
+	</p>
+	<div id="form-margem-fornecida">
+		<form method="get">
+		<input type="text" name="margem" id="margem-qeps" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,''); handleChange(this);" value="{% if margem_fornecida %}{{margem_fornecida}}{% else %}0{%endif%}" class="input-mini"><strong>%</strong> Margem de Segurança de Componentes
+		<button type="submit" class="btn btn-primary" id="calcular-magem">Calcular com Margem</button>
+		</form>
+	</div>
+<small>* Relatório leva em consideração Quantidade de Estoque de Produção Semanal (QEPS) X Lead Time de Cada Componente</small><br />
+<small>** Não está levando em consideração a quantidade de Sub Produtos funcionais e Produtos produzidos</small>
+	
+	
+
 <table class="table table-condensed table-hover table-rounded">
 	<thead>
 		<tr>
 			<th>Componente</th>
 			<th>Descrição</th>
-			<th>Posição em Todos os Estoques</th>
-			<th>Posição em Estoque Produtor</th>
+			<th>Custo</th>
+			<th>Qtd Todos Estoques</th>
+			<th>Qtd Estoque Produtor</th>
 			<th>Estoque Mínimo</th>
 			<th>Diferença</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for linha in tabela_items %}
-		<tr class="alert alert-{% if linha.4 %}success{% else %}danger{% endif %}">
+		<tr class="alert alert-{% if linha.4 %}success linhaok{% else %}danger{% endif %}">
 			<td><i class="icon-stop"></i> {{linha.0.part_number}}</td>
 			<td>{{linha.0.descricao}}</td>
+			<td>R$ {{linha.0.preco_medio_unitario|floatformat:2}}</td>
 			<td>{{linha.0.total_em_estoques}}</td>
 			<td>{{linha.1}}</td>
 			<td>{{linha.2}}</td>
@@ -22,3 +41,43 @@
 		{% endfor %}
 	</tbody>
 </table>
+{% if margem_fornecida %}
+<small>Margem de Segurança de Componentes: {{margem_fornecida}}%</small>
+{% endif %}
+<script>
+$(document).ready(function() {
+		$("#esconder-linhas-ok").click(function(e){
+			e.preventDefault();
+			$(".linhaok").toggle();
+		});
+		
+		$(".linhaok").toggle();
+		$('#calcular-magem').click(function(e){
+			e.preventDefault();
+			//alert($("#margem-qeps")[0].value);
+			$("#qeps-container").load("{% url "producao:qeps_componentes" %}"+"?margem=" +$("#margem-qeps")[0].value)
+		});
+});
+
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#navtab-ordem-producao").hide();
+	$('#esconder-linhas-ok').hide()
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+	$("#form-margem-fornecida").hide();
+	
+});
+
+
+  function handleChange(input) {
+    if (input.value < 0) input.value = 0;
+    if (input.value > 100) input.value = 100;
+  }
+
+</script>
+</div>

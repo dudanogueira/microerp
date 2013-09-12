@@ -772,7 +772,7 @@ class SubProduto(models.Model):
         for linha in self.linhasubproduto_set.all():
             # somente as linhas que possuem opcao padrao
             if linha.opcao_padrao():
-                valor = linha.opcao_padrao().quantidade * linha.opcao_padrao().componente.preco_liquido_unitario_real
+                valor = linha.opcao_padrao().quantidade * linha.opcao_padrao().componente.preco_medio_unitario
                 total_parcial += valor
         return total_parcial
     
@@ -951,8 +951,8 @@ class LinhaSubProduto(models.Model):
 
     def custo(self):
         padrao = self.opcao_padrao()
-        if padrao and padrao.quantidade and padrao.componente.preco_liquido_unitario_real:
-            valor = padrao.quantidade * padrao.componente.preco_liquido_unitario_real
+        if padrao and padrao.quantidade and padrao.componente.preco_medio_unitario:
+            valor = padrao.quantidade * padrao.componente.preco_medio_unitario
             return valor or 0
         else:
             return 0
@@ -980,7 +980,7 @@ class OpcaoLinhaSubProduto(models.Model):
     
     def custo(self):
         valor = 0
-        valor = self.quantidade * self.componente.preco_liquido_unitario_real
+        valor = self.quantidade * self.componente.preco_medio_unitario
         return valor
         
     
@@ -1161,7 +1161,7 @@ class LinhaComponenteAvulsodoProduto(models.Model):
     def custo(self):
         valor = 0
         if self.quantidade:
-            valor = self.quantidade * self.componente.preco_liquido_unitario_real
+            valor = self.quantidade * self.componente.preco_medio_unitario
         return valor
     
     def clean(self):

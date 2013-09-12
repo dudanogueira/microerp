@@ -7,63 +7,74 @@
 {% block content %}
 <h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
 	
-	<ul class="nav nav-tabs">
+	<ul class="nav nav-tabs" id="navtab-ordem-producao">
 	    <li class="active"><a href="#produzir" data-toggle="tab">Produzir</a></li>
-	    <li>
-	        <a href="#totalizadores-producao" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:totalizador_de_producao" %}">
-						Totalizadores de Produção
-	        </a>
-	    </li>
 	    <li>
 	        <a href="#producao-combinada" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:producao_combinada" %}">
 	            Produção Combinada
 	        </a>
 	    </li>
-			
 	    <li>
 	        <a href="#preparar-producao-semanal" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:preparar_producao_semanal" %}">
 	            Preparar Produção Semanal
 	        </a>
 	    </li>
-			
-			
 	    <li>
 	        <a href="#qeps-componente" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:qeps_componentes" %}">
-	            QEPS X Componentes
+	            Relatório de Compras
 	        </a>
 	    </li>
-			
-    
 	</ul>
-	
 	
 	<div id="tab-content-ordem-producao" class="tab-content">
 		
 		<div class="tab-pane fade in active" id="produzir">
 			<h2><i class="icon-list-ul"></i> Produzir Sub Produto</h2>
-			<div class="">
 				<form method="post">
 					{% csrf_token %}
-					{{form_subproduto.as_p}}
-					<button class="btn" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> Produzir Sub Produto</button>
+					
+					<div class="row-fluid">
+						<div class="span2">
+							Quantidade:<br />
+							{{form_subproduto.quantidade.errors}}
+							{{form_subproduto.quantidade}}
+						</div>
+							
+						<div class="span10">
+							Subproduto<br/>
+							{{form_subproduto.subproduto.errors}}
+							{{form_subproduto.subproduto}}
+						</div>
+						<p>
+				</p>
+					</div>
+					<button class="btn btn-primary" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> <i class="icon-list-ul"></i> Produzir Sub Produto</button>
+					
 				</form>
-			</div>
 	
 			<h3><i class="icon-windows"></i> Produzir Produto</h3>
-			<div class="">
+			
 				<form method="post">
 					{% csrf_token %}
-					{{form_produto.as_p}}
-					<button class="btn" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> Produzir Produto</button>
+					<div class="row-fluid">
+						<div class="span2">
+							Quantidade:<br />
+							{{ form_produto.quantidade.errors }}
+							{{form_produto.quantidade}}
+						</div>
+						<div class="span10">
+							Produto:<br />
+							{{form_produto.produto.errors}}
+							{{form_produto.produto}}
+						</div>
+					</div>
+					<button class="btn btn-primary" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> <i class="icon-windows"></i> Produzir  Produto</button>
 			
 				</form>
-			</div>	
+							
 		</div>
 		
-		<div class="tab-pane fade in" id="totalizadores-producao">
-			Totalizador
-		</div>
-		
+	
 		<div class="tab-pane fade in" id="producao-combinada">
 			producao
 		</div>

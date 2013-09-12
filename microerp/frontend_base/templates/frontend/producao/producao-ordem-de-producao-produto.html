@@ -23,7 +23,9 @@
 		</div>
 
 		<div class="span3">
-				<h4 class="alert alert-info">{{quantidade_solicitada}} Unidades</h4>
+				<div class="alert alert-info nomargin">
+					<h4>{{quantidade_solicitada}} Unidades</h4>
+				</div>
 		</div>
 
 		<div class="span6">
@@ -37,7 +39,7 @@
 			
 			{% else %}
 			
-			<form method="POST">
+			<form method="POST" class="nomargin">
 				{% csrf_token %}
 				<button class="btn btn-primary" name="verificar-producao" value="verificar">
 					<i class="icon-search"></i> Verificar Disponibilidade para Produção
@@ -62,6 +64,7 @@
 			<thead>
 				<tr>
 					<th>Componente</th>
+					<th>Descrição</th>
 					<th>Qtd Utilizada</th>
 					<th>Qtd Consumida</th>
 					<th>Disponível em Estoque</th>
@@ -79,6 +82,7 @@
 						<td>
 							{{linha.0.componente.part_number}} ({{linha.0.componente.id}})
 						</td>
+						<td>{{linha.0.componente.descricao}}</td>
 						<td>{{linha.0.quantidade}}</td>
 						<td>
 							{{linha.1}} {{linha.0.medida}}
@@ -178,17 +182,22 @@
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
+						<th>ID Linha</th>
 						<th>Componente</th>
-						<th>Quantidade</th>
 						<th>Descrição</th>
+						<th>Quantidade</th>
+						<th>Disponível em Estoque</th>
 					</tr>
 				</thead>
 				<tbody>
 					{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
 					<tr>
+						<td>#{{linha.id}}</td>
 						<td>{{linha.componente.part_number}}</td>
-						<td>{{linha.quantidade}} {{linha.opcao_padrao.componente.medida}}</td>
 						<td>{{linha.componente.descricao}}</td>
+						<td>{{linha.quantidade}} {{linha.opcao_padrao.componente.medida}}</td>
+						<td>{{linha.componente.posicao_no_estoque_produtor}} {{linha.componente.medida}}</td>
+						
 					</tr>
 					{% empty %}
 					<tr>Nenhum Componente</tr>
@@ -223,6 +232,9 @@ $(document).ready(function() {
 			e.preventDefault();
 			$(".linhaok").toggle();
 		});
+		
+		$(".linhaok").toggle();
+		
 		
 });
 
