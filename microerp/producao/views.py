@@ -1548,12 +1548,14 @@ class SelecionarSubProdutoForm(forms.Form):
     quantidade = forms.IntegerField(required=True)
     subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.exclude(tipo_de_teste=0), empty_label=None)
     subproduto.widget.attrs['class'] = 'select2'
+    quantidade.widget.attrs['class'] = 'input-mini'
 
 
 class SelecionarProdutoForm(forms.Form):
     quantidade = forms.IntegerField(required=True)
     produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all(), empty_label=None)
     produto.widget.attrs['class'] = 'select2'
+    quantidade.widget.attrs['class'] = 'input-mini'
  
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao(request):
