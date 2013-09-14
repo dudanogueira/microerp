@@ -1252,6 +1252,15 @@ class RegistroValorEstoque(models.Model):
 
 class OrdemDeCompra(models.Model):
     
+    def proxima_atividade(self):
+        proxima = self.atividadedeordemdecompra_set.filter(data_fechado=None).order_by('data')
+        if proxima:
+            return proxima[0]
+        else:
+            return None
+
+    def atividades_atrasadas(self):
+        return self.atividadedeordemdecompra_set.filter(data__lte=datetime.date.today(), data_fechado=None).all()
     
     def atrasada(self):
         if self.atividadedeordemdecompra_set.filter(data__lte=datetime.date.today(), data_fechado=None):
@@ -1287,6 +1296,15 @@ class OrdemDeCompra(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class AtividadeDeOrdemDeCompra(models.Model):
+    
+    class Meta:
+        ordering = ('data',)
+    
+    def __unicode__(self):
+        if not self.data_fechado:
+            return "ATIVIDADE #%s/%s ABERTA: %s - %s" % (self.ordem_de_compra.id, self.id, self.data, self.descricao)
+        else:
+            return "ATIVIDADE #%s/%s FECHADA: %s - %s" % (self.ordem_de_compra.id, self.id, self.data, self.descricao)
     
     def atrasada(self):
         if self.data > datetime.date.today():

@@ -35,7 +35,11 @@
 												{% if ordem.atrasada %}
 													<span class="badge badge-important">Atrasada</span>
 												{% else %}
-													<span class="badge badge-success">Em dia</span>
+													<span class="badge badge-success">Em dia. 
+														{% if ordem.proxima_atividade %}
+														Próx. Atividade: {{ordem.proxima_atividade.data|timeuntil}}
+														{% endif %}
+													</span>
 												{% endif %}
 									
 												{% endif %}
