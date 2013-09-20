@@ -9,7 +9,6 @@
 <p>
     <a class="btn btn-primary" href="{% url "producao:adicionar_subproduto" %}"><i class="icon-plus"></i> Adicionar Sub Produto</a>
 </p>
-<hr />
 <form class="form-search">
   <input type="text" class="input-medium search-query" name="q_subproduto", id="busca_subproduto" {% if q_subproduto %}value="{{q_subproduto}}"{% endif %}>
   <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar SubProduto</button>
@@ -17,8 +16,7 @@
 </form>
 
 {% for subproduto in subprodutos_encontrados %}
-    <a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}} - {{subproduto.descricao}}</a>
-    <hr />
+    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}} - {{subproduto.descricao}}</a></p>
 {% endfor %}
 
 {% endblock %}

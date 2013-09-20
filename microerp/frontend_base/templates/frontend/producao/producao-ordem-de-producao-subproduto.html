@@ -49,10 +49,13 @@
 		{% endif %}
 	
 	{% else %}
-
+	{% if calculado %}
+	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="icon-search"></i> Produção Não Liberada. Nova Consulta</a>
+	{% else %}
 	<button class="btn btn-primary" form="configurador_produto">
 		<i class="icon-search"></i> Verificar Disponibilidade para Produção
 	</button>
+	{% endif %}
 	<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
 	{% endif %}
 	
@@ -87,12 +90,12 @@
 							{{linha.0.componente.part_number}} ({{linha.0.componente.id}})
 						</td>
 						<td>{{linha.0.componente.descricao}}</td>
-						<td>{{linha.0.quantidade}}</td>
+						<td>{{linha.0.quantidade}} {{linha.0.componente.medida}}</td>
 						<td>
-							{{linha.1}} {{linha.0.medida}}
+							{{linha.1}} {{linha.0.componente.medida}}
 						</td>
 						<td>
-							{{linha.2}} {{linha.0.medida}}
+							{{linha.2}} {{linha.0.componente.medida}}
 						</td>
 					</tr>
 			{% endfor %}				
@@ -127,7 +130,7 @@
 						</td>
 						<td>{{linha.0.quantidade}}</td>
 						<td>
-							{{linha.1}} unidades
+							{{linha.1|floatformat:0}} 
 						</td>
 						<td>
 							{{linha.2}}
@@ -139,12 +142,6 @@
 			{% endfor %}				
 			</tbody>	
 		</table>
-		{% endif %}
-
-		{% if producao_liberada %}
-		
-		<h2>Produção Liberada</h2>
-		
 		{% endif %}
 
 	</div>		
@@ -190,13 +187,14 @@
 			{% endif %}
 	
 			<h2>Linhas de Componentes Com Alternativo</h2>
-			<div id="select2medio">
+			
 			<form method="post" name="configurador_produto" id="configurador_produto" class="form-inline">
 				{% csrf_token %}
-				
+				<div id="select2medio">
 				{{form_configurador_subproduto.as_p}}
+				</div>
 			</form>
-			</div>
+			
 					
 			<h2>Linhas de Componentes Sem Alternativo</h2>			
 		  <table class="table table-condensed table-hover table-rounded">

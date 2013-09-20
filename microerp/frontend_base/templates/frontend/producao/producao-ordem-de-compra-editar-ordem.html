@@ -78,13 +78,13 @@
 	<div class="span12">
 		
 		
-		<h2>Atividades</h2>
+		<h5>Atividades</h5>
 		<ul>
 			{% for atividade in ordem.atividadedeordemdecompra_set.all %}
 			{% if atividade.data_fechado %}
-			<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
+			<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small></li>
 			{% else %}
-			<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATE_FORMAT"}}</span> 
+			<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span> 
 				
 			{% if atividade.atrasada %}
 				<span class="badge badge-important">Atrasada</span>
@@ -102,7 +102,7 @@
 			
 	</div>
 </div>
-<h2>Componentes Vinculados</h2>
+<h5>Componentes Vinculados</h5>
 
 <table class="table table-condensed table-striped table-hover table-rounded nomargin table-bordered">
 	<thead>
@@ -110,8 +110,8 @@
 			<th>Componente</th>
 			<th>Descrição</th>
 			<th>Quantidade</th>
-			<th>Valor</th>
-			<th>Ação</th>
+			<th>Valor (Unitário)</th>
+			<th>Valor (Total)</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -121,7 +121,7 @@
 			<td>{{vinculado.componente_comprado.descricao}}</td>
 			<td>{{vinculado.quantidade_comprada}} {{vinculado.componente_comprado.medida}}</td>
 			<td>R$ {{vinculado.valor|floatformat:2}}</td>
-			<td><a class="btn btn-danger" href="{% url "producao:ordem_de_compra_componente_comprado_remover" vinculado.ordem_de_compra.id vinculado.id %}"><i class="icon-trash"></i></a></td>
+			<td>R$ {{vinculado.valor_total|floatformat:2}}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
@@ -143,7 +143,7 @@
 
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
 		<button form="form-vincular-componente" class="btn btn-primary" type="submit" name="vincular_componentes" value="vincular"><i class="icon-link"></i> Vincular</button>
     
   </div>
@@ -165,7 +165,7 @@
 
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
     			<button type="submit" form="form-editar-ordem" name="editar-ordem" value="editar" class="btn btn-primary"><i class="icon-pencil"></i> Editar</button>
   </div>
 </div>
@@ -187,7 +187,7 @@
 
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
 		<button form="form-add-atividade" type="submit" name="adicionar-atividade" value="adicionar" class="btn btn-success"><i class="icon-plus"></i> Adicionar Atividade</button>
     
   </div>
@@ -203,15 +203,40 @@
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 <link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-timepicker-addon.js"></script>
+
 
 <script>
+
 $(document).ready(function() {
 	$("#menu-producao-ordem-de-compra, #top-menu-producao").addClass("active");
 	
 	$( ".datepicker" ).datepicker({
 		inline: true,
-		dateFormat: "dd/mm/yy"   
+		dateFormat: "dd/mm/yy H::s"   
 	});
+	
+	$(".datetimepicker").datetimepicker({ // Default regional settings
+		dateFormat: "dd/mm/yy",   
+		timeFormat: "H:m:s",
+		currentText: 'Agora',
+		closeText: 'Fim',
+		amNames: ['AM', 'A'],
+		pmNames: ['PM', 'P'],
+		timeFormat: 'HH:mm',
+		timeSuffix: '',
+		timeOnlyTitle: 'Escolher Horário',
+		timeText: 'Horário',
+		hourText: 'Hora',
+		minuteText: 'Minuto',
+		secondText: 'Segundos',
+		millisecText: 'Millisecond',
+		microsecText: 'Microsecond',
+		timezoneText: 'Fuso Horário',
+		isRTL: false
+	});
+	
+	
 	
 	$(".nopoint").keyup(function() {
 		$(this).val($(this).val().replace(/[.]/g, ""));

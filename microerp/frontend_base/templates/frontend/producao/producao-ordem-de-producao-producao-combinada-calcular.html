@@ -15,14 +15,40 @@
 </p>
 
 <p>
-<h2>Quantidades Analisadas</h2>
-<ul>
-{% for quantidade in quantidade_analisada %}
-	{% ifnotequal quantidade.1 '0' %}
-		<li><span class="badge badge-warning">{{quantidade.1}}</span> de {{quantidade.0}}</li>
-		{% endifnotequal %}
-{% endfor %}
-</ul>
+	
+	<div class="row-fluid">
+		
+		<div class="span6">
+			<h2>Quantidades Analisadas</h2>
+			<ul>
+			{% for quantidade in quantidade_analisada %}
+				{% ifnotequal quantidade.1 '0' %}
+					<li><span class="badge badge-warning">{{quantidade.1}}</span> de {{quantidade.0}}</li>
+					{% endifnotequal %}
+			{% endfor %}
+			</ul>			
+		</div>
+		
+		
+		<div class="span6">
+			<br />
+			<h6>Legenda da Tabela</h6>
+			<p>
+					<small>
+				
+					* <strong>R$ Médio</strong> = Preço Médio Unitário	<br />
+					* <strong>Ult R$</strong> = Última Compra em Real	Sem Impostos<br />
+					* <strong>Ult USD</strong> = Última Compra em Dolar	Sem Impostos<br />
+					* <strong>Qtd Nc.</strong> = Quantidade Necessária para Produção	<br />
+					* <strong>Tot Estoq.</strong> = Total em TODOS os estoques<br />
+				</small>
+			</p>
+			
+		</div>
+		
+		
+	</div>
+	
 </p>
 
 {% if relatorio_producao %}
@@ -33,19 +59,26 @@
 		<tr>
 			<th>Item</th>
 			<th>Descrição</th>
-			<th>Qtd Necessária</th>
-			<th>Posição em Estoque</th>
+			<th>R$ Médio</th>
+			<th>Ult R$</th>
+			<th>Ult USD</th>
+			<th>Tot Estoq</th>
+			<th>Qtd Nec.</th>
 			<th>Faltante</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for relatorio in relatorio_producao %}
+		
 		<tr class="{% if relatorio.5 %}alert alert-success{% else %}alert alert-error{% endif %}">
 			<td>{{relatorio.0.part_number}}</td>
 			<td>{{relatorio.1}}</td>
-			<td>{{relatorio.2|floatformat:2}} {{relatorio.0.medida|upper}}</td>
-			<td>{{relatorio.3|floatformat:2}} {{relatorio.0.medida|upper}}</td>
-			<td>{{relatorio.4|floatformat:2}} {{relatorio.0.medida|upper}}</td>
+			<td>{% if relatorio.0.preco_medio_unitario %}R$ {{relatorio.0.preco_medio_unitario|floatformat:2}}{% else %}-{% endif %}</td>
+			<td>{% if relatorio.0.preco_liquido_unitario_real %}R$ {{relatorio.0.preco_liquido_unitario_real|floatformat:2}}{% else %}-{%endif%}</td>
+			<td>{% if relatorio.0.preco_liquido_unitario_dolar %} USD {{relatorio.0.preco_liquido_unitario_dolar|floatformat:2}}{% else %}-{% endif %}</td>
+			<td>{{relatorio.3|floatformat:2}} {{relatorio.0.medida}}</td>
+			<td>{{relatorio.2|floatformat:2}} {{relatorio.0.medida}}</td>
+			<td>{{relatorio.4|floatformat:2}} {{relatorio.0.medida}}</td>
 			
 		</tr>
 		
@@ -55,6 +88,14 @@
 </table>
 
 {% endif %}
+<div class="row-fluid">
+	<div class="span8">
+	</div>
+	<div class="span4">
+		<h4>Valor Total da Compra: R$1.000</h4>
+	</div>
+</div>
+
 
 
 

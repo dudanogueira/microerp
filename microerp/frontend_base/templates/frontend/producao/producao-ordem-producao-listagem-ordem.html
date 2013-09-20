@@ -1,0 +1,130 @@
+		<div class="accordion-group solid-border">
+	<div class="accordion-heading">
+		<a class="accordion-toggle" data-toggle="collapse"  href="#collapse-ordem-{{ordem.id}}">
+			<div class="badge">ID #{{ordem.id}}</div> - {% if ordem.data_fechado %}
+										<span class="badge badge-success">Fechado</span>
+										{% else %}
+										<span class="badge badge-important">Aberto</span>
+										{% if ordem.atrasada %}
+											<span class="badge badge-important">Atrasada</span>
+										{% else %}
+											<span class="badge badge-success">Em dia 
+												{% if ordem.proxima_atividade %}
+												Próx. Atividade: {{ordem.proxima_atividade.data|timeuntil}}
+												{% endif %}
+											</span>
+										{% endif %}
+						
+										{% endif %}
+									
+										{% ifequal ordem.criticidade 0 %}
+											<span class="badge badge-success">
+										{% endifequal %}
+										{% ifequal ordem.criticidade 1 %}
+											<span class="badge badge-warning">
+										{% endifequal %}
+										{% ifequal ordem.criticidade 2 %}
+												<span class="badge badge-important">
+										{% endifequal %}
+													{{ordem.get_criticidade_display}}
+											</span>
+										
+											{{ordem.fornecedor}}
+		
+		</a>
+	</div>
+	<div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse">
+		<div class="accordion-inner">
+						{# Informacoes da Ordem #}
+		
+						{% if not ordem.data_fechado %}
+						{# BOTOES PARA EDITAR, SE ABERTO #}
+						{% if request.user.perfilacessoproducao.gerente %}
+						<div class="botoes-editar-fechar">
+							<p class="btn-group">
+								<a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
+								<a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>	
+							</p>
+						</div>
+						{% endif %}
+		
+						{% else %}
+						<strong>Tempo que ficou aberto</strong>: {{ordem.data_aberto|timesince}}<br />
+						<strong>Data de Fechamento</strong>: {{ordem.data_fechado|date:"SHORT_DATE_FORMAT"}}
+						{% endif %}
+					
+						<table class="table table-condensed table-striped table-rounded nomargin">
+							<thead>
+								<tr>
+									<th>Data de Abertura</th>
+									<th>Descrição</th>
+									<th>Valor</th>
+									<th>Nota Fiscal</th>
+									<th>Funcionario</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td>{{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}</td>
+									<td>{{ordem.descricao}}</td>
+									<td>R${{ordem.valor|floatformat:2}}</td>
+									<td>R${{ordem.valor|floatformat:2}}</td>
+									<td>{{ordem.funcionario}}</td>
+								</tr>
+							</tbody>
+						</table>					
+		
+						<h5 class="nomargin">Atividades</h5>
+						<div class="atividades-{{ordem.id}}">
+							<ul>
+								{% for atividade in ordem.atividadedeordemdecompra_set.all %}
+								{% if atividade.data_fechado %}
+								<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small>
+								</li>
+								{% else %}
+								<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span>
+									{% if atividade.atrasada %}
+										<span class="badge badge-important">Atrasada</span>
+									{% else %}
+										<span class="badge badge-success">Em dia</span>
+									{% endif %} - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
+									{% if request.user.perfilacessoproducao.gerente %}
+				
+									<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-success"><i class="icon-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+				
+									{% endif %}
+								</li>
+								{% endif %}
+								{% empty %}
+								<small>Nenhuma Atividade. Edite a Ordem de Compra e Adicione uma nova atividade.</small>
+								{% endfor %}
+							</ul>
+						</div>
+		
+						<h5 class="nomargin">Componentes Vinculados</h5>
+						<table class="table table-condensed table-striped table-hover table-rounded nomargin table-bordered">
+							<thead>
+								<tr>
+									<th>Componente</th>
+									<th>Descrição</th>
+									<th>Quantidade</th>
+									<th>Valor (Unitário)</th>
+									<th>Valor (Total)</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for vinculado in ordem.componentesdaordemdecompra_set.all %}
+								<tr>
+									<td>{{vinculado.componente_comprado.part_number}}</td>
+									<td>{{vinculado.componente_comprado.descricao}}</td>
+									<td>{{vinculado.quantidade_comprada}} {{vinculado.componente_comprado.medida}}</td>
+									<td>R$ {{vinculado.valor|floatformat:2}}</td>
+									<td>R$ {{vinculado.valor_total|floatformat:2}}</td>
+								</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+		
+		</div>
+	</div>
+</div>

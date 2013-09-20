@@ -23,13 +23,13 @@ class Command(BaseCommand):
         total_atividades_atrasadas = AtividadeDeOrdemDeCompra.objects.filter(
             ordem_de_compra__data_fechado=None,
             data_fechado=None,
-            data__lt=datetime.date.today(),
+            data__lt=datetime.datetime.now(),
         )
         
         total_ordens = len(total_atividades_atrasadas.annotate(total=Count('ordem_de_compra')))
     
         # envia email
-        if ordens_abertas.count():
+        if ordens_abertas.count() and total_atividades_atrasadas.count():
             
             # puxa os gerentes
             gerentes = PerfilAcessoProducao.objects.filter(gerente=True)

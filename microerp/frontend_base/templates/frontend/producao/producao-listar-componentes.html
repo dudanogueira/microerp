@@ -6,84 +6,72 @@
 {% block content %}
 
 <h1><i class="icon-th"></i> <i class="icon-stop"></i> Componentes</h1>
+{% if request.user.perfilacessoproducao.gerente %}
+{# ADICIONAR TIPO COMPONENTE #}
+  <p>
+    <!-- Modal Adicionar Componente -->
+    <a href="#modal-add-componente" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Componente</a>
+    
+    <!-- Modal Adicionar Tipo -->
+    <a href="#adicionar-tipo-componente" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Tipo</a>
+</p>
+    
+<!-- Modal do Tipo -->
+<div id="adicionar-tipo-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Adicionar Tipo de Componente</h3>
+  </div>
+  <div class="modal-body">
 
+      <form method="POST" class="form-horizontal">
+          {% csrf_token %}
+          {{tipo_componente_form.as_p}}
+
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button type="submit" value="Adicionar Tipo de Componente" name="adicionar-tipo-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Tipo de Componente</button>
+    </form>
+  </div>
+</div>
+
+{# ADICIONAR COMPONENTE #}
+
+<!-- Modal do Componente -->
+<div id="modal-add-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="titulo-modal-add-componente" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="titulo-modal-add-componente">Adicionar Componente</h3>
+  </div>
+  <div class="modal-body">
+      <form method="POST" action="{% url "producao:adicionar_componentes" %}" class="form-inline">
+          {% csrf_token %}
+          {{componente_form}}
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button type="submit" value="Adicionar Componente" name="pre-adicionar-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Componente</button>
+    </form>
+  </div>
+</div>
+
+{% endif %}
 {# BUSCAR COMPONENTES #}
-<div class="well well-small">
-    <h2>Buscar</h2>
-    <h5>Campos: Part Number, Descrição</h5>
+
     <form class="form-search">
       <input type="text" class="input-medium search-query" name="q_componente", id="busca_componente" {% if q_componente %}value="{{q_componente}}"{% endif %}>
       <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Componente</button>
       <a class="btn btn-success" href="?q_componente=todos">Listar Todos</a>
      </form>
-      {% if request.user.perfilacessoproducao.gerente %}
-      {# ADICIONAR TIPO COMPONENTE #}
-          <h6>Gerente:</h6>
-        <p>
-          <!-- Modal Adicionar Componente -->
-          <a href="#modal-add-componente" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Componente</a>
-          
-          <!-- Modal Adicionar Tipo -->
-          <a href="#adicionar-tipo-componente" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Tipo</a>
-          
-      </p>
-          
-      
 
-      <!-- Modal do Tipo -->
-      <div id="adicionar-tipo-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3>Adicionar Tipo de Componente</h3>
-        </div>
-        <div class="modal-body">
-      
-            <form method="POST" class="form-horizontal">
-                {% csrf_token %}
-                {{tipo_componente_form.as_p}}
-      
 
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-          <button type="submit" value="Adicionar Tipo de Componente" name="adicionar-tipo-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Tipo de Componente</button>
-          </form>
-        </div>
-      </div>
 
-      {# ADICIONAR COMPONENTE #}
- 
-      <!-- Modal do Componente -->
-      <div id="modal-add-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="titulo-modal-add-componente" aria-hidden="true">
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-          <h3 id="titulo-modal-add-componente">Adicionar Componente</h3>
-        </div>
-        <div class="modal-body">
-            <form method="POST" action="{% url "producao:adicionar_componentes" %}" class="form-inline">
-                {% csrf_token %}
-                {{componente_form}}
-    
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-          <button type="submit" value="Adicionar Componente" name="pre-adicionar-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Componente</button>
-          </form>
-        </div>
-      </div>
-
-      {% endif %}
-      
-      
-
-    <ul>
     {% for componente in componentes_encontrados %}
-        <li><a href="{% url "producao:ver_componente"  componente.id %}">{{componente}}</a></li>
+<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="icon-stop"></i> {{componente}}</a></p>
     {% endfor %}
-    </ul>
-    
-
-</div>
 
 
 

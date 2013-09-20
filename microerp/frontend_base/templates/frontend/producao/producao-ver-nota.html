@@ -5,17 +5,32 @@
 
 {% block content %}
 <div class="row-fluid">
-    <div class="span6">
+    <div class="span5">
         
         <h1><i class="icon-th"></i> <i class="icon-paste"></i> Ver Nota</h1>
 
-        <h3>NFe Série {{notafiscal.numero_de_serie}}, Número {{notafiscal.numero_identificador}}</h3> <h4>{{notafiscal.get_tipo_display}}</h4>
+        <h4>NFe Série {{notafiscal.numero_de_serie}}, Número {{notafiscal.numero_identificador}}</h4> 
+				
+		    {% if request.user.perfilacessoproducao.gerente %}
+		    <p class="btn-group">
+		            <a href="{% url "producao:adicionar_lancamento" notafiscal.id %}" class="btn btn-medium btn-primary"><i class="icon-plus"></i> Lançamento</a>
+		    {% ifequal notafiscal.status "a" %}
+		    <a class="btn btn-success" href="{% url "producao:editar_nota" notafiscal.id %}"><i class="icon-pencil"></i> Nota</a>
+
+		    {# <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="icon-refresh"></i> Calcular</a> #}
+
+
+		    <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="icon-paste"></i> Lançar em Estoque</a>
+		    {% endifequal %}
+		    </p>
+		    {% endif %}
         
     </div>
     
-    <div class="span6 well well-small">
+    <div class="span7 well well-small">
         <strong>Status</strong>: {{notafiscal.get_status_display}}<br />
-        <strong>Fornecedor</strong>: {{notafiscal.fabricante_fornecedor}}<br />
+				<strong>Tipo</strong>: {{notafiscal.get_tipo_display}}<br />
+        <strong>Fornecedor</strong>: {{notafiscal.fabricante_fornecedor.nome}}<br />
         <strong>Data de Entrada</strong>: {{notafiscal.data_entrada|date:"SHORT_DATETIME_FORMAT"}} <em> <small>(há {{notafiscal.data_entrada|timesince}})</small></em><br />
         <strong>Taxas Diversas</strong>: R$ {{notafiscal.taxas_diversas}}<br />
         <strong>Total da Nota Sem Imposto</strong>: R$ {{notafiscal.total_sem_imposto}}<br />
@@ -29,20 +44,6 @@
     
     
 </div>
-    {% if request.user.perfilacessoproducao.gerente %}
-    <p class="btn-group">
-            <a href="{% url "producao:adicionar_lancamento" notafiscal.id %}" class="btn btn-medium btn-primary"><i class="icon-plus"></i> Lançamento</a>
-    {% ifequal notafiscal.status "a" %}
-    <a class="btn btn-success" href="{% url "producao:editar_nota" notafiscal.id %}"><i class="icon-pencil"></i> Nota</a>
-
-    {# <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="icon-refresh"></i> Calcular</a> #}
-
-
-    <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="icon-paste"></i> Lançar em Estoque</a>
-    {% endifequal %}
-    </p>
-    {% endif %}
-
 
 <table class="table table-bordered table-condensed table-hover">
     <thead>

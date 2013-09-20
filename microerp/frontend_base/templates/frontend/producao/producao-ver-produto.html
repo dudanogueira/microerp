@@ -5,7 +5,7 @@
 <title>{%block title %}{{block.super}} - Produção - Ver Produto{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-windows"></i>   Produtos - Ver {{produto}}</h1>
+<h1>{{produto.part_number}} - {{produto.nome}}</h1>
 
 {% if request.user.perfilacessoproducao.gerente %}
 <p>
@@ -50,16 +50,16 @@
             <div class="span6">
                 <h2>Geral</h2>
                 <strong>Nome</strong>: {{produto.nome}}<br />
-                <strong>Descrição</strong>: {{produto.descricao}}<br />
-                <h2>Custos Totais</h2>
-                <span class="label label-info">Linhas de SubProduto:</span> R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}<br />
-                <span class="label label-success">Linhas de Componentes:</span> R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}<br />
-                <span class="badge">R$ {{produto.custo|floatformat:2}}</span><br />
-                <h2>Custo Internacional</h2>
-                USD {{produto.custo_internacional|floatformat:2}}
-                <h2>Produção</h2>
+                <strong>Descrição</strong>: {{produto.descricao}}<br /><br />
+								<p>
+                <strong>Linhas de SubProduto:</strong> <span class="label label-info">R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span><br />
+                <strong>Linhas de Componentes:</strong> <span class="label label-success">R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}</span><br />
+                <strong>Somatório Total de Custos</strong> <span class="label">R$ {{produto.custo|floatformat:2}}</span><br />
+							</p>
+                <strong>Total dos Componentes Internacionais em Dólar</strong>: {{produto.custo_internacional|floatformat:2}}<br />
                 <strong>Total Produzido:</strong> {{produto.total_produzido}}<br />
                 <strong>Quantidade Estimada de Produção Semanal:</strong> {{produto.quantidade_estimada_producao_semanal}}<br />
+								<strong>Quantidade Máxima de Produto Estocável:</strong> {{produto.quantidade_maxima_estocavel}}
             </div>
 
             <div clas="span6">
@@ -221,7 +221,7 @@
         <h2>Documentos Técnicos</h2>
 
         {% if request.user.perfilacessoproducao.gerente %}
-        <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+        <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
             {% csrf_token %}
             {{form_anexos}}
             <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
@@ -230,11 +230,10 @@
         {% endif %}
         <hr />
         {% for anexo in produto.documentotecnicoproduto_set.all %}
-        <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+        <p><span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a>
         {% if request.user.perfilacessoproducao.gerente %}
-        <a href="{% url "producao:ver_produto_apagar_anexo" produto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+        <a href="{% url "producao:ver_produto_apagar_anexo" produto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a></p>
         {% endif %}
-        <hr />
         {% empty %}
         Nenhum arquivo anexo.
         {% endfor %}

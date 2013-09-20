@@ -11,20 +11,15 @@
     <a href="{% url "producao:adicionar_produto" %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Produto</a>
 </p>
 {% endif %}
-<div class="well well-small">
-    <h2>Buscar</h2>
-    
     <form class="form-search">
       <input type="text" class="input-medium search-query" name="q_produto", id="busca_produto" {% if q_produto %}value="{{q_produto}}"{% endif %}>
 
       <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Produto</button>
       <a class="btn btn-success" href="?q_produto=todos">Listar Todos</a>
     </form>
-</div>
 
 {% for produto in produtos_encontrados %}
-    <a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a>
-    <hr />
+    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a></p>
 {% endfor %}
 
 {% endblock %}

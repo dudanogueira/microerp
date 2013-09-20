@@ -5,7 +5,7 @@
 <title>{%block title %}{{block.super}} - Produção - Ver Sub Produtos{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-list-ul"></i>  Sub Produto {{subproduto}}</h1>
+<h1>{{subproduto.part_number}} - {{subproduto.nome}}</h1>
 
 {% if request.user.perfilacessoproducao.gerente %}
 <p>
@@ -53,21 +53,21 @@
             <div class="span6">
                 <h2>Geral</h2>
                 <strong>Nome</strong>: {{subproduto.nome}}<br />
-                <strong>Descrição</strong>: {{subproduto.descricao}}<br />
-                <h2>Custos Totais</h2>
-                <span class="label label-info">Linhas de Componente:</span> R$ {{subproduto.custo_total_linhas|floatformat:2}}<br />
-                <span class="label label-success">SubProdutos Agregados:</span> R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}<br />
-                <span class="badge">R$ {{subproduto.custo|floatformat:2}}</span><br />
-                <h3>Custo Internacional</h3>
+                <strong>Descrição</strong>: {{subproduto.descricao}}<br /><br />
+								<p>
+                <strong>Linhas de Componente:</strong> <span class="label label-info">R$ {{subproduto.custo_total_linhas|floatformat:2}}</span><br />
+ 							 <strong>SubProdutos Agregados:</strong>                <span class="label label-success">R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span><br />
+                <strong>Somatório Total de Custos</strong>: <span class="label">R$ {{subproduto.custo|floatformat:2}}</span>
+							</p>
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
+                <strong>Quantidade Máxima de Produção Independente: {{subproduto.maximo_produzivel}}</strong><br />
+                <strong>Quantidade Máxima de Produção Agrupado: {{subproduto.maximo_produzivel_agrupado}}</strong><br />
                 
-                <h2>Produção</h2>
+                <h3>Situação de Testes e Produção</h3>
 								{% if subproduto.tipo_de_teste == 0 %}
 								<strong>Não precisa de testes.</strong><br />
 								Capacidade de Produção conforme Estoque: {{subproduto.total_disponivel}}
 								{% else %}
-								
-                <h3>Situação de Testes e Produção</h3>
 								<div id="situacao-testes">
 				        	<table class="table table-condensed table-hover table-rounded">
 				            <thead>
@@ -150,10 +150,6 @@
 								
 								{% endif %}								
 								
-                <h3>Quantidades de Produção</h3>
-                <strong>Quantidade Máxima de Produção:</strong><br />
-                <strong>Quantidade Estimada de Produção Semanal:</strong><br />
-                
             </div>
 
             <div clas="span6">
@@ -204,7 +200,7 @@
                     <td class="alert-info" id="linha-id-{{linha.id}}">{{forloop.counter}}</td>
 										{% if subproduto.possui_tags %}
                     <td>
-                        {{linha.tag}}
+                        {{linha.tag|upper}}
                     </td>
 										{% endif %}
                     <td>
@@ -380,7 +376,7 @@
             <h2>Documentos Técnicos</h2>
 
             {% if request.user.perfilacessoproducao.gerente %}
-            <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+            <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{form_anexos}}
                 <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
@@ -389,11 +385,12 @@
             {% endif %}
             <hr />
             {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
-            <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a>
+						<p>
+            <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a>
             {% if request.user.perfilacessoproducao.gerente %}
             <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
             {% endif %}
-            <hr />
+						</p>
             {% empty %}
             Nenhum arquivo anexo.
             {% endfor %}

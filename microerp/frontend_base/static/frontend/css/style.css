@@ -246,7 +246,7 @@ textarea{
     width: 100%;
 }
 
-.medioselect2.select2-container{
+div#select2medio .select2-container{
     width: 80%;
 }
 
@@ -280,7 +280,7 @@ margin-bottom: 0px;
 padding: 0px 5px;
 }
 
-#arvore-de-produtos .accordion-inner {
+#arvore-de-produtos .accordion-inner, {
 padding: 2px 15px;
 border-top: 1px solid #e5e5e5;
 }
@@ -323,4 +323,5 @@ margin-bottom: 5px;
 .nomargin{
     margin:0;
 }
+
 

@@ -20,11 +20,12 @@
 		<tr>
 			<th>Componente</th>
 			<th>Descrição</th>
-			<th>Custo</th>
-			<th>Qtd Todos Estoques</th>
-			<th>Qtd Estoque Produtor</th>
-			<th>Estoque Mínimo</th>
-			<th>Diferença</th>
+			<th>R$ Médio</th>
+			<th>Ult R$</th>
+			<th>Ult USD</th>
+			<th>Tot Estoq</th>
+			<th>Qt </th>
+			<th>Faltante</th>
 		</tr>
 	</thead>
 	<tbody>
@@ -33,17 +34,46 @@
 			<td><i class="icon-stop"></i> {{linha.0.part_number}}</td>
 			<td>{{linha.0.descricao}}</td>
 			<td>R$ {{linha.0.preco_medio_unitario|floatformat:2}}</td>
-			<td>{{linha.0.total_em_estoques}}</td>
-			<td>{{linha.1}}</td>
-			<td>{{linha.2}}</td>
-			<td>{{linha.3}}</td>
+			
+			
+			<td>{% if linha.0.preco_liquido_unitario_real %}R$ {{linha.0.preco_liquido_unitario_real|floatformat:2}}{% else %}-{%endif%}</td>
+			<td>{% if linha.0.preco_liquido_unitario_dolar %} USD {{linha.0.preco_liquido_unitario_dolar|floatformat:2}}{% else %}-{% endif %}</td>
+			
+			<td>{{linha.0.total_em_estoques}} {{linha.0.medida}}</td>
+			<td>{{linha.2}} {{linha.0.medida}}</td>
+			<td>{{linha.3}} {{linha.0.medida}}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
 </table>
-{% if margem_fornecida %}
-<small>Margem de Segurança de Componentes: {{margem_fornecida}}%</small>
-{% endif %}
+<div class="row-fluid">
+	
+	<div class="span8">
+		
+		<h6>Legenda da Tabela</h6>
+		<p>
+				<small>
+	
+				* <strong>R$ Médio</strong> = Preço Médio Unitário	<br />
+				* <strong>Ult R$</strong> = Última Compra em Real	Sem Impostos<br />
+				* <strong>Ult USD</strong> = Última Compra em Dolar	Sem Impostos<br />
+				* <strong>Qtd Nc.</strong> = Quantidade Necessária para Produção	<br />
+				* <strong>Tot Estoq.</strong> = Total em TODOS os estoques<br />
+			</small>
+		</p>
+		
+	</div>
+	
+	<divl class="span4">
+		<h4>Valor Total da Compra: R$1.000</h4>
+		{% if margem_fornecida %}
+		<small>Margem de Segurança de Componentes: <strong>{{margem_fornecida}}%</strong></small>
+		{% endif %}
+		
+	</div>
+
+
+
 <script>
 $(document).ready(function() {
 		$("#esconder-linhas-ok").click(function(e){

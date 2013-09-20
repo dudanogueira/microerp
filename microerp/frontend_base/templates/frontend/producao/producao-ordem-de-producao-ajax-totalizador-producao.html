@@ -15,6 +15,7 @@
 			<th>Nome</th>
 			<th>Descrição</th>
 			<th>QEPS *</th>
+			<th>QMPE **</th>
 			<th class="alert alert-success">Produzido</th>
 			<th>Custo</th>
 		</tr>
@@ -23,10 +24,11 @@
 			
 		{% for produto in produtos %}
 		<tr>
-			<td>{{produto.part_number}}</td>
+			<td><a href="{% url "producao:ver_produto" produto.id %}">{{produto.part_number}}</a></td>
 			<td>{{produto.nome}}</td>
 			<td>{{produto.descricao}}</td>
 			<td>{{produto.quantidade_estimada_producao_semanal}}</td>			
+			<td>{{produto.quantidade_maxima_estocavel}}</td>
 			<td class="alert alert-success">{{produto.total_produzido}}</td>
 			<td>R$ {{produto.custo|floatformat:2}}</td>
 		</tr>
@@ -36,7 +38,9 @@
 	</tbody>
 </table>
 
-<small>* Quantidade Estimada de Produção Semanal</small>
+<small>* Quantidade Estimada de Produção Semanal</small><br />
+<small>** Quantidade Máxima de Produto Estocável</small>
+
 
 
 <h2><i class="icon-list-ul"></i> Sub Produtos</h2>
@@ -58,7 +62,7 @@
 			
 		{% for subproduto in subprodutos %}
 		<tr {% if not subproduto.tipo_de_teste %}class="alert alert-danger"{%endif%}>
-			<td>{{subproduto.part_number}}</td>
+			<td><a href="{% url "producao:ver_subproduto" subproduto.id %}">{{subproduto.part_number}}</a></td>
 			<td>{{subproduto.nome}}</td>
 			
 			<td class="alert">

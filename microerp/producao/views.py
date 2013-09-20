@@ -455,6 +455,8 @@ class ArquivoAnexoComponenteForm(forms.ModelForm):
         super(ArquivoAnexoComponenteForm, self).__init__(*args, **kwargs)
         self.fields['componente'].initial  = componente
         self.fields['componente'].widget = forms.HiddenInput()
+        self.fields['nome'].widget.attrs['class'] = 'input-xxlarge'
+        
     
     
     class Meta:
@@ -626,6 +628,7 @@ class AdicionarMemoriaComponenteForm(forms.ModelForm):
         self.fields['fornecedor'].widget.attrs['class'] = 'select2'
         self.fields['fabricante'].widget.attrs['class'] = 'select2'
         self.fields['componente'].widget.attrs['class'] = 'select2'
+        self.fields['componente'].widget = forms.HiddenInput()
         
     
     class Meta:
@@ -667,6 +670,7 @@ class AdicionarFabricanteFornecedor(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_fabricantes_fornecedores(request):
     tipos_possiveis = FABRICANTE_FORNECEDOR_TIPO_CHOICES
+    fab_for_encontrados = FabricanteFornecedor.objects.all()
     if request.GET:
         q_fab_for = request.GET.get('q_fab_for', True)
         q_tipo = request.GET.get('q_tipo')
@@ -686,8 +690,8 @@ def listar_fabricantes_fornecedores(request):
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
-    fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__id', 'componente__ativo').annotate(total=Sum('quantidade')).order_by('-total')
-    fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id').annotate(total=Sum('quantidade')).order_by('-total')
+    fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__id', 'componente__ativo', 'componente__descricao').annotate(total=Sum('quantidade')).order_by('-total')
+    fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id', 'componente__descricao').annotate(total=Sum('quantidade')).order_by('-total')
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(fornecedor=fabricante_fornecedor)
     return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
     
@@ -955,6 +959,7 @@ class ImagemSubprodutoForm(forms.ModelForm):
         model = SubProduto
         fields = 'imagem',
 
+
 class ArquivoAnexoSubProdutoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -962,11 +967,12 @@ class ArquivoAnexoSubProdutoForm(forms.ModelForm):
         super(ArquivoAnexoSubProdutoForm, self).__init__(*args, **kwargs)
         self.fields['subproduto'].initial  = subproduto
         self.fields['subproduto'].widget = forms.HiddenInput()
+        self.fields['nome'].widget.attrs['class'] = 'input-xxlarge'
     
     
     class Meta:
         model = DocumentoTecnicoSubProduto
-        fields = 'arquivo', 'subproduto'
+        fields = 'arquivo', 'nome', 'subproduto'
 
 
 
@@ -1353,7 +1359,7 @@ class ProdutoFinalForm(forms.ModelForm):
     
     class Meta:
         model = ProdutoFinal
-        fields = ('imagem', 'nome', 'slug', 'descricao', 'quantidade_estimada_producao_semanal')
+        fields = ('imagem', 'nome', 'slug', 'descricao', 'quantidade_estimada_producao_semanal', 'quantidade_maxima_estocavel')
 
 class AdicionarLinhaSubProdutoAoProdutoFinalForm(forms.ModelForm):
     
@@ -1397,11 +1403,12 @@ class ArquivoAnexoProdutoForm(forms.ModelForm):
         super(ArquivoAnexoProdutoForm, self).__init__(*args, **kwargs)
         self.fields['produto'].initial  = produto
         self.fields['produto'].widget = forms.HiddenInput()
+        self.fields['nome'].widget.attrs['class'] = 'input-xxlarge'
 
 
     class Meta:
         model = DocumentoTecnicoProduto
-        fields = 'arquivo', 'produto'
+        fields = 'arquivo', 'nome', 'produto'
     
     
 
@@ -1660,6 +1667,7 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
             subproduto.total_montado = novo_total
             messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
         subproduto.save()
+        return redirect(reverse("producao:ordem_de_producao"))
 
     return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
 
@@ -1976,8 +1984,6 @@ def producao_combinada_calcular(request):
         # verificar cada uma dessas quantidades
         #verifica toda a produção conforme a notação de componentes
         get_componentes = dic
-        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
-        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
         relatorio_producao = []
         import decimal
         for item in get_componentes.items():
@@ -1991,7 +1997,7 @@ def producao_combinada_calcular(request):
                 pode = True
                 faltou = None
                 if float(qtd_componente) > float(posicao_em_estoque):
-                    faltou = float(qtd_componente) - float(posicao_em_estoque)
+                    faltou = float(posicao_em_estoque) - float(qtd_componente)
                     producao_liberada = False
                     pode = False
                     # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
@@ -2010,7 +2016,7 @@ def producao_combinada_calcular(request):
                 faltou = None
                 if int(qtd_subproduto) > int(quantidade_disponivel):
                     producao_liberada = False
-                    faltou = float(qtd_subproduto) - float(quantidade_disponivel)
+                    faltou = float(quantidade_disponivel) - float(qtd_subproduto)
                     pode = False
                     qtd_subproduto = decimal.Decimal(qtd_subproduto)
                     faltou = decimal.Decimal(faltou)
@@ -2109,6 +2115,7 @@ class FormOrdemDeCompraFiltro(forms.Form):
     fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
     mostrar_somente_abertos = forms.BooleanField(initial=True, required=False)
     mostrar_somente_fechados = forms.BooleanField(initial=False, required=False)
+    mostrar_somente_atrasados = forms.BooleanField(initial=False, required=False)
     criticidade = forms.ChoiceField(choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO, required=False)
     data_inicio_abertura = forms.DateField(label=u"Data Início Abertura", required=False)
     data_fim_abertura = forms.DateField(label=u"Data Fim Abertura", required=False)
@@ -2150,12 +2157,18 @@ class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
 
 class FormAddAtividadeOrdemDeCompra(forms.ModelForm):
     
+    def clean_data(self):
+        data = self.cleaned_data.get('data', None)
+        if data < datetime.datetime.now():
+            raise ValidationError(u"Erro. Data não pode ser menor que a data e hora atual")
+    
     def __init__(self, *args, **kwargs):
         ordem_de_compra = kwargs.pop('ordem_de_compra')
         super(FormAddAtividadeOrdemDeCompra, self).__init__(*args, **kwargs)
         self.fields['ordem_de_compra'].initial  = ordem_de_compra
         self.fields['ordem_de_compra'].widget = forms.HiddenInput()
-        self.fields['data'].widget.attrs['class'] = 'datepicker'
+        #self.fields['data'].widget.attrs['class'] = 'datetimepicker'
+        #self.fields['data'].input_formats = ['%d/%m/%Y %H:%M:%S',]
 
     
     class Meta:
@@ -2203,6 +2216,10 @@ def ordem_de_compra(request):
                 if form_filtro.cleaned_data['data_inicio_fechamento'] and form_filtro.cleaned_data['data_fim_fechamento']:
                     ordens = OrdemDeCompra.objects.filter(data_fechado__range=(form_filtro.cleaned_data['data_inicio_fechamento'], form_filtro.cleaned_data['data_fim_fechamento'])).order_by('data_aberto')
                 
+                if form_filtro.cleaned_data['mostrar_somente_atrasados']:
+                    mostrar_somente_atrasados = True
+                else:
+                    mostrar_somente_atrasados = False
                 if form_filtro.cleaned_data['mostrar_somente_abertos']:
                     ordens = ordens.filter(data_fechado=None)
                 if form_filtro.cleaned_data['mostrar_somente_fechados']:

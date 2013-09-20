@@ -262,7 +262,7 @@ class Componente(models.Model):
     lead_time = models.IntegerField("Lead Time (Semanas)", blank=False, null=False)
     
     ## preco_liquido_unitario_dolar
-    #Obrigatorio se for componente importado, vai ser aramazenado o ultimo preco do lancamento
+    #Obrigatorio se for componente importado, vai ser aramazenado o ultimo preco do T
     preco_liquido_unitario_dolar = models.DecimalField("Preço Líquido Unitário em Dólar", help_text="INSERIDO AUTOMATICAMENTE DA ULTIMA COMPRA", max_digits=10, decimal_places=2, default=0)
     
     # preco_bruto_unitrario_real - calculado no lancamento, onde deve ser preenchido a cotacao
@@ -290,6 +290,7 @@ class ArquivoAnexoComponente(models.Model):
     
     componente = models.ForeignKey('Componente')
     arquivo = models.FileField(upload_to=anexo_componente_local)
+    nome = models.CharField(blank=False, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1004,8 +1005,7 @@ class DocumentoTecnicoSubProduto(models.Model):
         verbose_name_plural = u"Documentos Técnicos do Sub Produto"
     
     subproduto = models.ForeignKey('SubProduto')
-    titulo = models.CharField(blank=True, max_length=100)
-    descricao = models.TextField("Descrição", blank=True)
+    nome = models.CharField(blank=False, max_length=100)
     arquivo = models.FileField(upload_to=subproduto_local_documentos, blank=False, null=False)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
@@ -1126,6 +1126,7 @@ class ProdutoFinal(models.Model):
     descricao = models.TextField(u"Descrição", blank=True)
     total_produzido = models.IntegerField(blank=False, null=False, default=0)
     quantidade_estimada_producao_semanal = models.IntegerField(u"Quantidade Estimada de Produção Semanal", blank=False, null=False)
+    quantidade_maxima_estocavel = models.IntegerField(u"Quantidade Máxima de Produto Estocável", blank=False, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1198,6 +1199,7 @@ class DocumentoTecnicoProduto(models.Model):
     
     produto = models.ForeignKey('ProdutoFinal')
     arquivo = models.FileField(upload_to=produto_local_documentos)
+    nome = models.CharField(blank=False, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1260,10 +1262,10 @@ class OrdemDeCompra(models.Model):
             return None
 
     def atividades_atrasadas(self):
-        return self.atividadedeordemdecompra_set.filter(data__lte=datetime.date.today(), data_fechado=None).all()
+        return self.atividadedeordemdecompra_set.filter(data__lte=datetime.datetime.now(), data_fechado=None).all()
     
     def atrasada(self):
-        if self.atividadedeordemdecompra_set.filter(data__lte=datetime.date.today(), data_fechado=None):
+        if self.atividadedeordemdecompra_set.filter(data__lte=datetime.datetime.now(), data_fechado=None):
             return True
         else:
             return False
@@ -1297,6 +1299,7 @@ class OrdemDeCompra(models.Model):
 
 class AtividadeDeOrdemDeCompra(models.Model):
     
+    
     class Meta:
         ordering = ('data',)
     
@@ -1307,7 +1310,7 @@ class AtividadeDeOrdemDeCompra(models.Model):
             return "ATIVIDADE #%s/%s FECHADA: %s - %s" % (self.ordem_de_compra.id, self.id, self.data, self.descricao)
     
     def atrasada(self):
-        if self.data > datetime.date.today():
+        if self.data > datetime.datetime.now():
             return False
         else:
             # ja foi fechado, nao esta atrasado
@@ -1317,7 +1320,7 @@ class AtividadeDeOrdemDeCompra(models.Model):
                 return True
     
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
-    data = models.DateField("Data de Lembrete", default=datetime.datetime.today)
+    data = models.DateTimeField("Data de Lembrete", default=datetime.datetime.now)
     descricao = models.TextField(u"Descrição", blank=False)
     data_fechado = models.DateTimeField(blank=True, null=True)
     fechado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
@@ -1327,10 +1330,13 @@ class AtividadeDeOrdemDeCompra(models.Model):
 
 class ComponentesDaOrdemDeCompra(models.Model):
         
+        
+    def valor_total(self):
+        return float(self.quantidade_comprada) * float(self.valor)
     ordem_de_compra = models.ForeignKey('OrdemDeCompra')
     quantidade_comprada = models.DecimalField(max_digits=15, decimal_places=2)
     componente_comprado = models.ForeignKey('Componente')
-    valor = models.DecimalField("Valor (R$)", max_digits=10, decimal_places=2, default=0)
+    valor = models.DecimalField("Valor Unitário (R$)", max_digits=10, decimal_places=2, default=0)
     
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

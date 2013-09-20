@@ -5,13 +5,13 @@
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
 {% block content %}
-<h1>Componente {{componente.part_number}}</h1>
+<h1>{{componente.part_number}} - {{componente.descricao}}</h1>
 <p>
 <a href="{% url "producao:editar_componente" componente.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar {{componente.part_number}}</a>
 </p>
 
 <ul class="nav nav-tabs">
-	<li class="active"><a href="#valores" data-toggle="tab">Valores</a></li>
+	<li class="active"><a href="#valores" data-toggle="tab">Informações</a></li>
 	<li><a href="#participacao" data-toggle="tab">Participações
         
 		{% if componente.total_unico_participacoes %}
@@ -53,7 +53,12 @@
 			<div class="span6">
                     
 				<div class="well well-small">
-					<h6>Valores da última compra:</h6>
+					<h4>Geral</h4>
+					<strong>Descrição:</strong> {{componente.descricao}}<br />
+					<strong>Nacionalidade:</strong> {{componente.get_nacionalidade_display}}<br />
+					<strong>NCM: </strong>{{componente.ncm}}<br />
+					<strong>Lead Time (Semanas):</strong> {{componente.lead_time}}<br />
+					<strong>Medida:</strong> {{componente.get_medida_display}}<br />
 					{% if componente.preco_liquido_unitario_dolar %}
 					<strong>Preço Líquido Unitário em Dólar</strong>: USD {{componente.preco_liquido_unitario_dolar}}<br />
 					{% endif %}
@@ -70,21 +75,21 @@
 			</div>
 			<div class="span6">
 				<div class="well well-small">
-					<h6>Posições em Estoque</h6>
+					<h4>Posições em Estoque</h4>
 					<table class="table table-condensed table-striped table-rounded">
 						<thead>
 							<tr>
 								<th>Estoque</th>
 								<th>Quantidade</th>
 								<th>Valor</th>
-								<th>Data</th>
+								<th>Última Alteração</th>
 							</tr>
 						</thead>
 					</tbody>
 					{% for posicao in posicoes_estoque %}
 					<tr>
 						<td>{% if posicao.0.estoque.nome %}{{posicao.0.estoque.nome}}{% else %}{{posicao.0.estoque.identificacao|capfirst}}{% endif %}</td>
-						<td>{{posicao.0.quantidade}}</td>
+						<td>{{posicao.0.quantidade}} {{posicao.0.componente.medida}}</td>
 						<td>R$ {{posicao.1|floatformat:2}}
 							<td>{{posicao.0.criado|date:"SHORT_DATE_FORMAT"}}</td>
 
@@ -123,25 +128,57 @@
 	</div>
         
 	<div class="tab-pane fade in" id="fornecimento">
-		<h3>Fornecedores - Unidades fornecidas</h3>
+		<h2>Fornecedores - Somatória Unidades Fornecidas</h2>
 		{% for fornecedor in fornecedores %}
 		<span class="badge badge-success"> {{forloop.counter}} </span> <strong>{{fornecedor.nota__fabricante_fornecedor__nome}}</strong>: {{fornecedor.total}} {{componente.get_medida_display}}{{fornecedor.total|pluralize}}<br />
 		{% empty %}
 		Nenhum Item Fornecido
 		{% endfor %}
             
-		<h3>Lançamentos Fornecidos</h3>
-		{% for lancamento in lancamentos %}
-		<span class="label label-success">+ {{lancamento.quantidade}} {{lancamento.componente.medida}}</span> em  {{lancamento.nota.data_lancado_estoque|date:"SHORT_DATETIME_FORMAT"}} <span class="label label-success"><strong>Fornecedor: {{lancamento.nota.fabricante_fornecedor.nome}} ({{lancamento.part_number_fornecedor}})</strong></span>, <span class="label label-warning">Fabricante: {{lancamento.fabricante.nome}} - {{lancamento.part_number_fabricante}}</span> nota: {{lancamento.nota.numero}}. <strong>Por: {{lancamento.nota.lancado_por.funcionario}}</strong><br />
-		<hr />
-		{% empty %}
-		Nenhum Lançamento Realizado
-		{% endfor %}
+		<h2>Lançamentos Fornecidos</h2>
+		
+		
+		
+		<table class="table table-condensed table-hover table-striped table-rounded">
+			<thead>
+				<tr>
+					<th>Data</th>
+					<th>Nota</th>
+					<th>Fornecedor</th>
+					<th>Fabricante</th>
+					<th>Qtd.</th>
+					<th>Unit S/ Imp.</th>
+					<th>Unit C/ Imp.</th>
+					<th>Responsável</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for lancamento in lancamentos %}
+					<tr>
+						<td>{{lancamento.nota.data_lancado_estoque|date:"d/m/y"}}</td>
+						<td>{{lancamento.nota.numero}}</td>
+						<td>{{lancamento.nota.fabricante_fornecedor.nome}}</td>
+						<td>{{lancamento.fabricante.nome}}</td>
+						<td>{{lancamento.quantidade}} {{lancamento.componente.medida}}</td>
+						<td>{% ifequal lancamento.nota.tipo "i" %}USD {{lancamento.valor_unitario}}{% else %}R$ {{lancamento.valor_unitario}}{% endifequal %}</td>
+						<td>{% ifequal lancamento.nota.tipo "i" %}USD {{lancamento.valor_unitario_final}}{% else %}R$ {{lancamento.valor_unitario_final}}{% endifequal %}</td>
+						<td>{{lancamento.nota.lancado_por.funcionario}}</td>
+						
+					</tr>
+					
+					
+				{% endfor %}
+			</tbody>
+		</table>
+		
+		
+		
+
             
 	</div>
         
 	<div class="tab-pane fade in" id="fabricacao">
-		<h3>Fabricantes - Unidades fabricadas</h3>
+		<h2>Fabricantes - Unidades fabricadas</h2>
 		{% for fabricante in fabricantes %}
 		<span class="badge badge-info"> {{forloop.counter}} </span> <strong>{% if fabricante.fabricante__nome %}{{fabricante.fabricante__nome}}{% else %}Desconhecido{% endif %}</strong>: {{fabricante.total}} {{componente.get_medida_display}}{{fabricante.total|pluralize}}<br />
 		{% empty %}
@@ -276,53 +313,70 @@
 
             
             
-		</div>
+	</div>
         
 	<div class="tab-pane fade in" id="memoria">
 
 
-			<h4>Memória de Relacionamento com Fornecedores</h4>
+			<h2>Memória de Relacionamento com Fornecedores</h2>
+			
+			<div class="row-fluid">
+				<div class="span6">
+					
 			{% if request.user.perfilacessoproducao.gerente %}
 			<p>
 				<a href="{% url "producao:adicionar_memoria_componente" componente.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar à Memória</a>
 			</p>
 			{% endif %}
-			<div class="well well-small">
-				<ul>
-
+			
+				</div>
+				
+				<div class="span6">
+					<p>
+						<small>* Part Number Fornecedor<br />
+							* * Part Number Fabricante
+						</small> 
+					</p>
+				</div>
+				
+			
+			
+		</div>
+			
+			
+			
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Fornecedor</th>
+						<th>PN Fornecedor *</th>
+						<th>Fabricante</th>
+						<th>PN Fabricante **</th>
+						<th>Ação</th>
+					</tr>
+				</thead>
+				<tbody>
 					{% for memoria in memorias %}
-					<li>
-						<a href="{% url "producao:ver_fabricantes_fornecedores" memoria.fornecedor.id %}">
-							{{memoria.fornecedor.nome_curto}}
-						</a>:
-						<span class="label label-warning">
-							PNFOR: {{memoria.part_number_fornecedor}}
-						</span>
-						->
-						<span class="label label-success">
-							<em>{{memoria.componente.part_number}}</em>
-						</span>
-						<span class="label label-info">
-							FAB: {{memoria.fabricante.nome}}
-						</span>
-						<span class="label label-info">
-							PNFAB: {{memoria.part_number_fabricante}}
-						</span>
-                        
-						{% if request.user.perfilacessoproducao.gerente %}
+					<tr>
+						<td>
+							<a class="" href="{% url "producao:ver_fabricantes_fornecedores" memoria.fornecedor.id %}">{{memoria.fornecedor.nome_curto}}</a>
+						</td>
+						<td>{{memoria.part_number_fornecedor}}</td>
+						<td>FAB: {{memoria.fabricante.nome}}</td>
+						<td>{{memoria.part_number_fabricante}}</td>
+						<td>						{% if request.user.perfilacessoproducao.gerente %}
 						<a href="{% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')">
 							<i class="icon-trash"></i> Apagar
 						</a>{% endif %}
-					</li>
-					{% empty %}
-					<p>Este Fornecedor Não possui memória de entrada de lançamentos de nota fiscal</p>
+					</td>
+					</tr>
 					{% endfor %}
-				</ul>
-
-			</div>
+		
+				</tbody>
+			</table>
 
         
-		</div>
+	</div>
         
 	<div class="tab-pane fade in" id="arquivos">
             
@@ -356,7 +410,7 @@
 			<h2>Documentos Técnicos</h2>
 
 			{% if request.user.perfilacessoproducao.gerente %}
-			<form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+			<form method="POST" class="form form-inline" action="#arquivos" enctype="multipart/form-data">
 				{% csrf_token %}
 				{{form_anexos}}
 				<button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
@@ -365,8 +419,7 @@
 			{% endif %}
 			<hr />
 			{% for anexo in componente.arquivoanexocomponente_set.all %}
-			<span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.arquivo}}</a> {% if request.user.perfilacessoproducao.gerente %}<a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" ><i class="icon-trash"></i></a>{% endif %}
-			<hr />
+			<p><span class="label"> {{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a> {% if request.user.perfilacessoproducao.gerente %}<a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" ><i class="icon-trash"></i></a>{% endif %}</p>
 			{% empty %}
 			Nenhum arquivo anexo.
 			{% endfor %}
