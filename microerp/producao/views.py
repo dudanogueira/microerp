@@ -2267,6 +2267,14 @@ class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
 
 
 class FormReagendarAtividadeDeCompra(forms.ModelForm):
+    
+    def clean_data(self):
+        data = self.cleaned_data.get('data', None)
+        if data < datetime.datetime.now():
+            raise ValidationError(u"Erro. Data não pode ser menor que a data e hora atual")
+        return data
+    
+    
     def __init__(self, *args, **kwargs):
         super(FormReagendarAtividadeDeCompra, self).__init__(*args, **kwargs)
         self.fields['data'].widget.attrs['class'] = 'datetimepicker'
@@ -2283,6 +2291,8 @@ def ordem_de_compra_atividade_reagendar(request, ordem_de_compra_id, atividade_i
         form = FormReagendarAtividadeDeCompra(request.POST, instance=atividade)
         if form.is_valid():
             atividade = form.save()
+        else:
+            return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
     else:
         form = FormReagendarAtividadeDeCompra(instance=atividade)
         return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
