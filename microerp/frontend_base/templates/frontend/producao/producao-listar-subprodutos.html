@@ -19,6 +19,15 @@
     <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}} - {{subproduto.descricao}}</a></p>
 {% endfor %}
 
+{% if subprodutos_inativos %}
+<hr />
+<div class="well well-small alert alert-danger">Sub Produtos Inativos</div>
+{% for subproduto in subprodutos_inativos %}
+    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}}</a></p>
+{% endfor %}
+{% endif %}
+
+
 {% endblock %}
 
 {% block auxiliar-menu %}

@@ -82,14 +82,15 @@
 								<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small>
 								</li>
 								{% else %}
-								<li><span class="badge badge-important">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span>
+								<li>
+									<span class="badge badge-important">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span>
 									{% if atividade.atrasada %}
 										<span class="badge badge-important">Atrasada</span>
 									{% else %}
 										<span class="badge badge-success">Em dia</span>
 									{% endif %} - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
 									{% if request.user.perfilacessoproducao.gerente %}
-				
+									<a href="{% url "producao:ordem_de_compra_atividade_reagendar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-info btn-reagendar-atividade"><i class="icon-refresh"></i></a>
 									<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-success"><i class="icon-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
 				
 									{% endif %}

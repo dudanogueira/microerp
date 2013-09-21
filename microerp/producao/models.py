@@ -639,14 +639,15 @@ class SubProduto(models.Model):
             # monta dicionario com o padrao
             for linha in self.linhasubproduto_set.all():
                 opcao_padrao = linha.opcao_padrao()
-                componente = opcao_padrao.componente
-                quantidade_necessaria = float(opcao_padrao.quantidade)
-                # soma ao montante
-                try:
-                    quantidade_atual = dic[opcao_padrao.componente.id]
-                except:
-                    quantidade_atual = 0
-                dic[opcao_padrao.componente.id] = float(quantidade_atual) + (float(quantidade_necessaria) * float(multiplicador))
+                if opcao_padrao:
+                    componente = opcao_padrao.componente
+                    quantidade_necessaria = float(opcao_padrao.quantidade)
+                    # soma ao montante
+                    try:
+                        quantidade_atual = dic[opcao_padrao.componente.id]
+                    except:
+                        quantidade_atual = 0
+                    dic[opcao_padrao.componente.id] = float(quantidade_atual) + (float(quantidade_necessaria) * float(multiplicador))
 
         
         # agora pro SUBPRODUTO
@@ -714,6 +715,12 @@ class SubProduto(models.Model):
                     quantidade_atual = 0
                 dic[opcao_padrao.componente.id] = float(quantidade_atual) + (float(quantidade_necessaria) * float(multiplicador))
         return dic            
+    
+    def total_participacao(self):
+        # verifica se este produto esta agregado em outro subproduto
+        agregado_em_subproduto = LinhaSubProdutoAgregado.objects.filter(subproduto_agregado=self).count()    
+        agregado_em_produto = LinhaSubProdutodoProduto.objects.filter(subproduto=self).count()
+        return agregado_em_subproduto + agregado_em_produto
     
     def dicionario_quantidades_utilizadas_padrao(self, dic=None, fator_multiplicador=1):
         '''retorna um dicionario de todos os componentes utilizados por padrão'''
@@ -877,6 +884,7 @@ class SubProduto(models.Model):
         else:
             return self.total_funcional
 
+    ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
     slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")

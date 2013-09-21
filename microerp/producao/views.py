@@ -71,6 +71,8 @@ def home(request):
     componentes_total = Componente.objects.all().count()
     subprodutos_total = SubProduto.objects.all().count()
     produtos_total = ProdutoFinal.objects.all().count()
+    produtos_ativos = ProdutoFinal.objects.filter(ativo=True).count()
+    produtos_inativos = ProdutoFinal.objects.filter(ativo=False).count()
     fornecedores_total = NotaFiscal.objects.all().values('fabricante_fornecedor').distinct().count()
     notas_total = NotaFiscal.objects.all().count()
     estoques = EstoqueFisico.objects.all()
@@ -249,6 +251,7 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         self.fields['impostos'].widget.is_localized = True
         self.fields['impostos'].widget.attrs['class'] = 'nopoint'
         self.fields['componente'].widget.attrs['class'] = 'select2'
+        self.fields['componente'].queryset = Componente.objects.filter(ativo=True)
         self.fields['fabricante'].widget.attrs['class'] = 'select2'
 
         
@@ -467,7 +470,8 @@ class ArquivoAnexoComponenteForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_componentes(request):
-    componentes_encontrados = Componente.objects.all()
+    componentes_encontrados = Componente.objects.filter(ativo=True)
+    componentes_inativos = Componente.objects.filter(ativo=False)
     if request.POST:
         if request.POST.get('adicionar-tipo-componente', None):
             tipo_componente_form = TipoComponenteAdd(request.POST)
@@ -482,7 +486,7 @@ def listar_componentes(request):
         q_componente = request.GET.get('q_componente', True)
         if q_componente:
             if q_componente == "todos":
-                componentes_encontrados = Componente.objects.all()
+                componentes_encontrados = Componente.objects.filter(ativo=True)
             else:
                 componentes_encontrados = Componente.objects.filter(
                     Q(part_number__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
@@ -555,6 +559,35 @@ def editar_componente(request, componente_id):
     else:
         editar_componente_form = FormEditarComponente(instance=componente)
     return render_to_response('frontend/producao/producao-editar-componente.html', locals(), context_instance=RequestContext(request),)    
+
+
+@user_passes_test(possui_perfil_acesso_producao)
+def inativar_componente(request, componente_id):
+    componente = get_object_or_404(Componente.objects.select_related(), pk=componente_id)
+    pode = True
+    if componente.total_em_estoques() or componente.total_unico_participacoes():
+        pode = False
+    if request.GET.get('confirmar'):
+        componente.ativo = False
+        componente.save()
+        messages.success(request, "Sucesso! Componente Inativado")
+        return redirect(reverse("producao:ver_componente", args=[componente.id]))
+    # verifica se possui no estoque
+    return render_to_response('frontend/producao/producao-inativar-componente.html', locals(), context_instance=RequestContext(request),)    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ativar_componente(request, componente_id):
+    componente = get_object_or_404(Componente.objects.select_related(), pk=componente_id)
+    pode = True
+    if componente.total_em_estoques() or componente.total_unico_participacoes():
+        pode = False
+    if request.GET.get('confirmar'):
+        componente.ativo = True
+        componente.save()
+        messages.success(request, "Sucesso! Componente Ativado")
+        return redirect(reverse("producao:ver_componente", args=[componente.id]))
+    # verifica se possui no estoque
+    return render_to_response('frontend/producao/producao-ativar-componente.html', locals(), context_instance=RequestContext(request),)    
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -729,7 +762,7 @@ def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
 
 class ConsultaEstoque(forms.Form):
     
-    componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=False)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=False)
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=False)
     def __init__(self, *args, **kwargs):
         super(ConsultaEstoque, self).__init__(*args, **kwargs)
@@ -769,7 +802,7 @@ class MoverEstoque(forms.Form):
         return cleaned_data    
     
     quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
-    componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True)
     estoque_origem = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     estoque_destino = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
@@ -805,7 +838,7 @@ class AlterarEstoque(forms.Form):
     
     alteracao_tipo = forms.ChoiceField(label="Tipo de Alteração", choices=(('adicionar', 'Adicionar'), ('remover', 'Remover')))
     quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
-    componente = forms.ModelChoiceField(queryset=Componente.objects.all(), required=True)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True)
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
@@ -859,7 +892,7 @@ def listar_estoque(request):
                     historicos = historicos.filter(estoque=estoque_consultado)
                     consulta_estoque = True
                     posicoes_estoque = []
-                    for componente_ver in Componente.objects.all():
+                    for componente_ver in Componente.objects.filter(ativo=True):
                         try:
                             posicao = PosicaoEstoque.objects.filter(componente=componente_ver, estoque=estoque_consultado).order_by('-data_entrada')[0]
                         except:
@@ -1001,14 +1034,15 @@ class AgregarSubProdutoForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_subprodutos(request):
-    subprodutos_encontrados = SubProduto.objects.all()
+    subprodutos_encontrados = SubProduto.objects.filter(ativo=True)
+    subprodutos_inativos = SubProduto.objects.filter(ativo=False)
     if request.GET:
         q_subproduto = request.GET.get('q_subproduto', None)
         if q_subproduto:
             if q_subproduto == "todos":
-                subprodutos_encontrados = SubProduto.objects.all()
+                subprodutos_encontrados = SubProduto.objects.filter(ativo=True)
             else:
-                subprodutos_encontrados = SubProduto.objects.filter(
+                subprodutos_encontrados = subprodutos_encontrados.objects.filter(
                     Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
                 )
     
@@ -1074,8 +1108,37 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
 
 
 @user_passes_test(possui_perfil_acesso_producao)
+def inativar_subproduto(request, subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    pode = True
+    if subproduto.total_montado or subproduto.total_testando or subproduto.total_funcional or subproduto.total_participacao():
+        pode = False
+    if request.GET.get('confirmar'):
+        subproduto.ativo = False
+        subproduto.save()
+        messages.success(request, "Sucesso! SubProduto Inativado!")
+        return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+    # verifica se possui no estoque
+    return render_to_response('frontend/producao/producao-inativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ativar_subproduto(request, subproduto_id):
+    subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    if request.GET.get('confirmar'):
+        subproduto.ativo = True
+        subproduto.save()
+        messages.success(request, "Sucesso! SubProduto Ativado!")
+        return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+    # verifica se possui no estoque
+    return render_to_response('frontend/producao/producao-ativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+
+
+@user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    participacao_subprodutos = LinhaSubProdutoAgregado.objects.filter(subproduto_agregado=subproduto)
+    agregado_em_produto = LinhaSubProdutodoProduto.objects.filter(subproduto=subproduto)
     if request.POST:
         if request.POST.get('anexar-documento', None):
             form_anexos = ArquivoAnexoSubProdutoForm(request.POST, request.FILES, subproduto=subproduto)
@@ -1261,6 +1324,7 @@ class OpcaoLinhaSubProdutoForm(forms.ModelForm):
         self.fields['linha'].initial  = linha
         self.fields['linha'].widget = forms.HiddenInput()
         self.fields['componente'].widget.attrs['class'] = 'select2'
+        self.fields['componente'].queryset = Componente.objects.filter(ativo=True)
     
     class Meta:
         model = OpcaoLinhaSubProduto
@@ -1386,6 +1450,7 @@ class AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(forms.ModelForm):
             self.fields['produto'].initial = produto
             self.fields['produto'].widget = forms.HiddenInput()  
             self.fields['componente'].widget.attrs['class'] = 'select2'          
+            self.fields['componente'].queryset = Componente.objects.filter(ativo=True)
     
     class Meta:
         model = LinhaComponenteAvulsodoProduto
@@ -1428,16 +1493,17 @@ def ver_produto_apagar_anexo(request, produto_id, anexo_id):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
-    produtos_encontrados = ProdutoFinal.objects.all()
+    produtos_encontrados = ProdutoFinal.objects.filter(ativo=True)
     if request.GET:
         q_produto = request.GET.get('q_produto', True)
         if q_produto:
             if q_produto == "todos":
-                produtos_encontrados = ProdutoFinal.objects.all()
+                produtos_encontrados = ProdutoFinal.objects.filter(ativo=True)
             else:
-                produtos_encontrados = ProdutoFinal.objects.filter(
+                produtos_encontrados = produtos_encontrados.filter(
                     Q(nome__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
                 )
+    produtos_inativos = ProdutoFinal.objects.filter(ativo=False)
         
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
 
@@ -1451,6 +1517,30 @@ def adicionar_produto(request):
     else:
         form = ProdutoFinalForm()
     return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
+
+
+
+@user_passes_test(possui_perfil_acesso_producao)
+def inativar_produto(request, produto_id):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    if request.GET.get('confirmar', None):
+        produto.ativo = False
+        produto.save()
+        messages.success(request, u"Sucesso! Produto Inativado!")
+        return redirect(reverse("producao:ver_produto", args=[produto.id]))
+    return render_to_response('frontend/producao/producao-inativar-produto.html', locals(), context_instance=RequestContext(request),)    
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ativar_produto(request, produto_id):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    if request.GET.get('confirmar', None):
+        produto.ativo = True
+        produto.save()
+        messages.success(request, u"Sucesso! Produto Ativado!")
+        return redirect(reverse("producao:ver_produto", args=[produto.id]))
+    return render_to_response('frontend/producao/producao-ativar-produto.html', locals(), context_instance=RequestContext(request),)    
+
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def editar_produto(request, produto_id):
@@ -1562,7 +1652,7 @@ class SelecionarSubProdutoForm(forms.Form):
 
 class SelecionarProdutoForm(forms.Form):
     quantidade = forms.IntegerField(required=True)
-    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all(), empty_label=None)
+    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.filter(ativo=True), empty_label=None)
     produto.widget.attrs['class'] = 'select2'
     quantidade.widget.attrs['class'] = 'input-mini'
  
@@ -1900,7 +1990,7 @@ def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
     return render_to_response('frontend/producao/producao-ordem-de-producao-produto.html', locals(), context_instance=RequestContext(request),)
 
 class SelecionarProdutoUnicoForm(forms.Form):
-    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.all(), empty_label=None)
+    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.filter(ativo=True), empty_label=None)
     produto.widget.attrs['class'] = 'select2'
 
 
@@ -1913,7 +2003,7 @@ def arvore_de_produto(request):
         if seleciona_produto.is_valid():
             produtos = ProdutoFinal.objects.filter(pk=seleciona_produto.cleaned_data['produto'].id)
     else:
-        produtos = ProdutoFinal.objects.all()
+        produtos = ProdutoFinal.objects.filter(ativo=True)
     return render_to_response('frontend/producao/producao-arvore-de-produto.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1928,13 +2018,13 @@ def registro_de_testes(request):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def totalizador_de_producao(request):
-    produtos = ProdutoFinal.objects.all().order_by('-total_produzido')
+    produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.all().order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-totalizador-producao.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def producao_combinada(request):
-    produtos = ProdutoFinal.objects.all().order_by('-total_produzido')
+    produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.all().order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada.html', locals(), context_instance=RequestContext(request),)
 
@@ -1966,7 +2056,9 @@ def producao_combinada_calcular(request):
                                 valor_multiplicador = value
                             if valor_multiplicador > 0:
                                 dic = produto.get_componentes_produto(dic=dic, multiplicador=valor_multiplicador)
-                            quantidade_analisada.append((produto, value))
+                            # gera link do produto
+                            link = reverse("producao:ver_produto", args=[produto.id])
+                            quantidade_analisada.append((produto, value, link))
                         # analise do subproduto
                         if tipo == 'subproduto':
                             subproduto = SubProduto.objects.get(pk=tipo_id)
@@ -1978,7 +2070,10 @@ def producao_combinada_calcular(request):
                             # se for menor, significa que a quantidade em estoque / funcional é superior ao planejado de produção, nem precisa calcular
                             if valor_multiplicador > 0:
                                 dic = subproduto.get_componentes(dic=dic, multiplicador=valor_multiplicador)
-                            quantidade_analisada.append((subproduto, value))
+                            # gera link do subproduto
+                            link = reverse("producao:ver_subproduto", args=[subproduto.id])
+                            quantidade_analisada.append((subproduto, value, link))
+                            
             except:
                 raise
         # verificar cada uma dessas quantidades
@@ -1986,6 +2081,7 @@ def producao_combinada_calcular(request):
         get_componentes = dic
         relatorio_producao = []
         import decimal
+        valor_total_compra = 0
         for item in get_componentes.items():
             if type(item[0]) == long:
                 # verifica se possui a quantidade total deste componente em estoque
@@ -1993,17 +2089,22 @@ def producao_combinada_calcular(request):
                 componente = Componente.objects.get(pk=int(item[0]))
                 posicao_em_estoque = componente.total_em_estoques()
                 
-                # quantiade no estoque insuficiente
+                # assume-se que pode produzir com estoque, e que não faltaram componentes
                 pode = True
                 faltou = None
                 if float(qtd_componente) > float(posicao_em_estoque):
+                    # quantidade menor
                     faltou = float(posicao_em_estoque) - float(qtd_componente)
                     producao_liberada = False
                     pode = False
                     # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
                     qtd_componente = decimal.Decimal(qtd_componente)
                     faltou = decimal.Decimal(faltou)
-                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode))
+                    # total da compra
+                    valor_item = faltou * componente.preco_medio_unitario * -1
+                    valor_total_compra += valor_item
+                    link = reverse("producao:ver_componente", args=[componente.id])
+                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode, valor_total_compra, link))
             elif type(item[0]) == str:
                 subproduto_id = item[0].split("-")[1]
                 subproduto_usado = SubProduto.objects.get(id=subproduto_id)
@@ -2016,12 +2117,15 @@ def producao_combinada_calcular(request):
                 faltou = None
                 if int(qtd_subproduto) > int(quantidade_disponivel):
                     producao_liberada = False
-                    faltou = float(quantidade_disponivel) - float(qtd_subproduto)
+                    faltou = float(quantidade_disponivel) - float(qtd_subproduto) * -1
                     pode = False
                     qtd_subproduto = decimal.Decimal(qtd_subproduto)
                     faltou = decimal.Decimal(faltou)
-                    
-                    relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode))
+                    # total da compra
+                    valor_item = faltou * subproduto.custo()
+                    valor_total_compra += valor_item
+                    link = reverse("producao:ver_subproduto", args=[subproduto.id])
+                    relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode, valor_total_compra, link))
              
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)
 
@@ -2075,7 +2179,9 @@ def qeps_componentes(request):
     
     # calcula a tabelas de leadtime
     tabela_items = []
+    valor_total_compra = 0
     for item in dic.items():
+        
         if type(item[0]) == long:
             qtd_componente = item[1]
             posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
@@ -2089,13 +2195,17 @@ def qeps_componentes(request):
                 ok = True
             else:
                 ok = False
-            tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok))
+                valor_item = float(diferenca) * float(componente.preco_medio_unitario) * -1
+                valor_total_compra += valor_item
+            link = reverse("producao:ver_componente", args=[componente.id])
+            
+            tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok, link, valor_total_compra))
             
     return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-qeps-componentes.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def preparar_producao_semanal(request):
-    produtos = ProdutoFinal.objects.all().order_by('-total_produzido')
+    produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.all().order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao.html', locals(), context_instance=RequestContext(request),)
 
@@ -2155,20 +2265,45 @@ class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
     class Meta:
         model = OrdemDeCompra
 
+
+class FormReagendarAtividadeDeCompra(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(FormReagendarAtividadeDeCompra, self).__init__(*args, **kwargs)
+        self.fields['data'].widget.attrs['class'] = 'datetimepicker'
+    
+    class Meta:
+        model = AtividadeDeOrdemDeCompra
+        fields = 'data',
+    
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_compra_atividade_reagendar(request, ordem_de_compra_id, atividade_id):
+    atividade = get_object_or_404(AtividadeDeOrdemDeCompra, pk=atividade_id, ordem_de_compra__pk=ordem_de_compra_id)
+    # formulario
+    if request.POST:
+        form = FormReagendarAtividadeDeCompra(request.POST, instance=atividade)
+        if form.is_valid():
+            atividade = form.save()
+    else:
+        form = FormReagendarAtividadeDeCompra(instance=atividade)
+        return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
+        
+    return redirect(reverse('producao:ordem_de_compra_editar', args=[atividade.ordem_de_compra.id]))
+        
+
 class FormAddAtividadeOrdemDeCompra(forms.ModelForm):
     
     def clean_data(self):
         data = self.cleaned_data.get('data', None)
         if data < datetime.datetime.now():
             raise ValidationError(u"Erro. Data não pode ser menor que a data e hora atual")
+        return data
     
     def __init__(self, *args, **kwargs):
         ordem_de_compra = kwargs.pop('ordem_de_compra')
         super(FormAddAtividadeOrdemDeCompra, self).__init__(*args, **kwargs)
         self.fields['ordem_de_compra'].initial  = ordem_de_compra
         self.fields['ordem_de_compra'].widget = forms.HiddenInput()
-        #self.fields['data'].widget.attrs['class'] = 'datetimepicker'
-        #self.fields['data'].input_formats = ['%d/%m/%Y %H:%M:%S',]
+        self.fields['data'].widget.attrs['class'] = 'datetimepicker'
 
     
     class Meta:

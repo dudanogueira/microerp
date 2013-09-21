@@ -9,22 +9,30 @@
 
 <div class="row-fluid">
     <div class="span2">
-        <h6>Componentes</h6>
-        <div class="alert alert-success">
-            <h5>{{componentes_total}}</h5>
-        </div>
+      <h6>Produtos</h6>
+      <div class="alert alert-danger">
+          <h5>{{produtos_total}}</h5>
+					{% if produtos_ativos %}
+					<span class="badge badge-success">{{produtos_ativos}} Ativo{{produtos_ativos|pluralize}}</span>
+					{% endif %}
+					{% if produtos_inativos %}
+					<span class="badge badge-important">{{produtos_inativos}} Inativo{{produtos_inativos|pluralize}}</span>
+					{% endif %}
+      </div>
+			
     </div>
     <div class="span2">
-        <h6>SubProdutos</h6>
-        <div class="alert alert-warning">
-            <h5>{{subprodutos_total}}</h5>
-        </div>
+      <h6>Componentes</h6>
+      <div class="alert alert-success">
+          <h5>{{componentes_total}}</h5>
+      </div>
     </div>
     <div class="span2">
-        <h6>Produtos</h6>
-        <div class="alert alert-danger">
-            <h5>{{produtos_total}}</h5>
-        </div>
+      <h6>SubProdutos</h6>
+      <div class="alert alert-warning">
+          <h5>{{subprodutos_total}}</h5>
+      </div>
+			
     </div>
     <div class="span2">
         <h6>Notas Fiscais</h6>

@@ -72,6 +72,16 @@
     {% for componente in componentes_encontrados %}
 <p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="icon-stop"></i> {{componente}}</a></p>
     {% endfor %}
+		
+		
+		{% if componentes_inativos %}
+		<hr />
+		<div class="well well-small alert alert-danger">Componentes Inativos</div>
+		{% for componente in componentes_inativos %}
+		<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="icon-stop"></i> {{componente}}</a></p>
+		{% endfor %}
+		{% endif %}
+		
 
 
 

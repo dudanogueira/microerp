@@ -22,6 +22,16 @@
     <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a></p>
 {% endfor %}
 
+{% if produtos_inativos %}
+<hr />
+<div class="well well-small alert alert-danger">Produtos Inativos</div>
+{% for produto in produtos_inativos %}
+    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a></p>
+{% endfor %}
+{% endif %}
+
+
+
 {% endblock %}
 
 {% block auxiliar-menu %}

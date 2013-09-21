@@ -26,12 +26,13 @@
 			<th>Tot Estoq</th>
 			<th>Qt </th>
 			<th>Faltante</th>
+			<th>Memória de Cálculo</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for linha in tabela_items %}
 		<tr class="alert alert-{% if linha.4 %}success linhaok{% else %}danger{% endif %}">
-			<td><i class="icon-stop"></i> {{linha.0.part_number}}</td>
+			<td><a href="{{linha.5}}"><i class="icon-stop"></i> {{linha.0.part_number}}</a></td>
 			<td>{{linha.0.descricao}}</td>
 			<td>R$ {{linha.0.preco_medio_unitario|floatformat:2}}</td>
 			
@@ -42,6 +43,7 @@
 			<td>{{linha.0.total_em_estoques}} {{linha.0.medida}}</td>
 			<td>{{linha.2}} {{linha.0.medida}}</td>
 			<td>{{linha.3}} {{linha.0.medida}}</td>
+			<td>R${{linha.6|floatformat:2}}</td>
 		</tr>
 		{% endfor %}
 	</tbody>
@@ -65,7 +67,7 @@
 	</div>
 	
 	<divl class="span4">
-		<h4>Valor Total da Compra: R$1.000</h4>
+		<h4>Valor Total da Compra: R${{valor_total_compra|floatformat:2}}</h4>
 		{% if margem_fornecida %}
 		<small>Margem de Segurança de Componentes: <strong>{{margem_fornecida}}%</strong></small>
 		{% endif %}

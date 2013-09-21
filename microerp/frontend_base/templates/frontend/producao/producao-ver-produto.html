@@ -5,11 +5,17 @@
 <title>{%block title %}{{block.super}} - Produção - Ver Produto{% endblock %}</title>
 
 {% block content %}
-<h1>{{produto.part_number}} - {{produto.nome}}</h1>
+<h1>{{produto.part_number}} - {{produto.nome}} {% if produto.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
 
 {% if request.user.perfilacessoproducao.gerente %}
-<p>
+<p class="btn-group">
     <a class="btn btn-primary" href="{% url "producao:editar_produto" produto.id %}"><i class="icon-pencil"></i> Editar Produto</a>
+		{% if produto.ativo %}
+		<a href="{% url "producao:inativar_produto" produto.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar Produto</a>
+		{% else %}
+		<a href="{% url "producao:ativar_produto" produto.id %}" class="btn btn-success"><i class="icon-thumbs-up"></i>  Ativar Produto</a>
+		{% endif %}
+		
 </p>
 {% endif %}
 

@@ -5,10 +5,21 @@
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
 {% block content %}
-<h1>{{componente.part_number}} - {{componente.descricao}}</h1>
-<p>
-<a href="{% url "producao:editar_componente" componente.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar {{componente.part_number}}</a>
+<h1>{{componente.part_number}} - {{componente.descricao}} {% if componente.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
+<p class="btn-group">
+<a href="{% url "producao:editar_componente" componente.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar </a>
+
+{% if componente.ativo %}
+<a href="{% url "producao:inativar_componente" componente.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar</a>
+
+{% else %}
+<a href="{% url "producao:ativar_componente" componente.id %}" class="btn btn-success"><i class="icon-thumbs-up"></i> Ativar</a>
+{% endif %}
+
+
+
 </p>
+
 
 <ul class="nav nav-tabs">
 	<li class="active"><a href="#valores" data-toggle="tab">Informações</a></li>
@@ -205,7 +216,7 @@
 				<tr>
 					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 					</td>
-					<td><a href="{% url "producao:ver_produto" participacao.produto.id %}">{{participacao.produto.part_number}}</a></td>
+					<td><a href="{% url "producao:ver_produto" participacao.produto.id %}#componentes-avulsos">{{participacao.produto.part_number}}</a></td>
 					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 					<td>{{participacao.produto.nome}}</td>
 					<td>{{participacao.produto.descricao}}</td>
@@ -220,7 +231,8 @@
 					<td></td>
 					<td></td>
 				</tr>
-			</table>
+			</tbody>
+		</table>
             
 			<h2>Participação como PADRÃO em Linha de Sub Produto</h2>
 			<table class="table table-condensed table-hover table-rounded">
@@ -240,7 +252,7 @@
 					<tr>
 						<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 						</td>
-						<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}">{{participacao.linha.subproduto.part_number}}</a></td>
+						<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
 						<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 												
 						<td>{{participacao.linha.subproduto.nome}}</td>
@@ -284,7 +296,7 @@
 					<tr>
 						<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 						</td>
-						<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}">{{participacao.linha.subproduto.part_number}}</a></td>
+						<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
 						<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 												
 						<td>{{participacao.linha.subproduto.nome}}</td>

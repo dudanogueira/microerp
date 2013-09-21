@@ -1,0 +1,48 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Inativar Subproduto{% endblock %}</title>
+
+{% block content %}
+<h1>{{subproduto}}</h1>
+
+{% if not pode %}
+<p class="alert alert-info">
+Posição total Funcional: {{subproduto.total_funcional}}
+</p>
+<p class="alert alert-info">
+Posição total Testando: {{subproduto.total_testando}}
+</p>
+<p class="alert alert-info">
+Posição total Montando: {{subproduto.total_montado}}
+</p>
+
+
+<p class="alert alert-info">
+Quantidade Total de Participações: {{subproduto.total_participacao}} <a class="btn btn-primary" href="{% url "producao:ver_subproduto" subproduto.id %}#participacao">Ver Participações</a><br/>
+</p>
+<p class="alert alert-danger">
+	<strong>Não é possível inativar este SubProduto nessa situação</strong>.<br />Remova as participações e elimine o estoque antes de continuar.
+</p>
+{% else %}
+<p class="alert alert-success">Sucesso! Este SubProduto pode ser inativado</p>
+<a href="?confirmar=sim" class="btn btn-success">Confirmar Inativação deste Componente</a>
+{% endif %}
+
+
+{% endblock %}
+
+	{% block auxiliar-menu %}
+	{% addtoblock "js" %}
+	<script>
+	$(document).ready(function() {
+		$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
+	});
+	</script>
+
+
+
+	{% endaddtoblock %}
+	{% include "frontend/producao/producao-menu.html" %}
+	{% endblock%}

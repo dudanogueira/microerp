@@ -5,16 +5,22 @@
 <title>{%block title %}{{block.super}} - Produção - Ordem de Produção - Produção Combinada{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-<h2>Produção Combinada</h2>
 
-<a href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</a>
+<div class="row-fluid">
+	<div class="span6">
+		<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
+		<h2>Produção Combinada</h2>
+		<a href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</a>
+		
+	</div>
+	<div class="span6">
+		<p>
+		<strong>Notação de Produção</strong>: {{get_componentes}}
+		</p>
+	</div>
+</div>
 
-<p>
-<strong>Notação de Produção</strong>: {{get_componentes}}
-</p>
 
-<p>
 	
 	<div class="row-fluid">
 		
@@ -23,7 +29,7 @@
 			<ul>
 			{% for quantidade in quantidade_analisada %}
 				{% ifnotequal quantidade.1 '0' %}
-					<li><span class="badge badge-warning">{{quantidade.1}}</span> de {{quantidade.0}}</li>
+					<li><span class="badge badge-warning">{{quantidade.1}}</span> de <a href="{{quantidade.2}}">{{quantidade.0.part_number}} - {{quantidade.0.nome}}</a></li> 
 					{% endifnotequal %}
 			{% endfor %}
 			</ul>			
@@ -65,20 +71,26 @@
 			<th>Tot Estoq</th>
 			<th>Qtd Nec.</th>
 			<th>Faltante</th>
+			<th>Memória de Cálculo</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for relatorio in relatorio_producao %}
 		
 		<tr class="{% if relatorio.5 %}alert alert-success{% else %}alert alert-error{% endif %}">
-			<td>{{relatorio.0.part_number}}</td>
+			<td><a href="{{relatorio.7}}">{{relatorio.0.part_number}}</a></td>
 			<td>{{relatorio.1}}</td>
-			<td>{% if relatorio.0.preco_medio_unitario %}R$ {{relatorio.0.preco_medio_unitario|floatformat:2}}{% else %}-{% endif %}</td>
+			<td>{% if relatorio.0.preco_medio_unitario %}R$ {{relatorio.0.preco_medio_unitario|floatformat:2}}{% endif %}
+				{% if relatorio.0.custo %}
+				R$ {{relatorio.0.custo|floatformat:2}}
+				{% endif %}
+			</td>
 			<td>{% if relatorio.0.preco_liquido_unitario_real %}R$ {{relatorio.0.preco_liquido_unitario_real|floatformat:2}}{% else %}-{%endif%}</td>
 			<td>{% if relatorio.0.preco_liquido_unitario_dolar %} USD {{relatorio.0.preco_liquido_unitario_dolar|floatformat:2}}{% else %}-{% endif %}</td>
 			<td>{{relatorio.3|floatformat:2}} {{relatorio.0.medida}}</td>
 			<td>{{relatorio.2|floatformat:2}} {{relatorio.0.medida}}</td>
 			<td>{{relatorio.4|floatformat:2}} {{relatorio.0.medida}}</td>
+			<td>R${{relatorio.6|floatformat:2}}</td>
 			
 		</tr>
 		
@@ -92,7 +104,7 @@
 	<div class="span8">
 	</div>
 	<div class="span4">
-		<h4>Valor Total da Compra: R$1.000</h4>
+		<h4>Valor Total da Compra: R${{valor_total_compra|floatformat:2}}</h4>
 	</div>
 </div>
 
@@ -106,7 +118,7 @@
 {% endif %}
 
 <p>
-<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}#producao-combinada">Nova Consulta de Produção Combinada</a>
+<a class="btn btn-primary" id="nova-consulta" href="{% url "producao:ordem_de_producao" %}#producao-combinada">Nova Consulta de Produção Combinada</a>
 </p>
 {% endblock %}
 
@@ -121,8 +133,7 @@ $(document).ready(function() {
 $(document).on("click", "#imprimir", function(e){
 	e.preventDefault();
 	$(this).hide();
-	$("#menu-lateral").hide();
-	$("#global-top-menu").hide();
+	$("#global-top-menu, #nova-consulta, #menu-lateral").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
 	

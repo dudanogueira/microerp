@@ -5,19 +5,36 @@
 <title>{%block title %}{{block.super}} - Produção - Ver Sub Produtos{% endblock %}</title>
 
 {% block content %}
-<h1>{{subproduto.part_number}} - {{subproduto.nome}}</h1>
-
+<h1>{{subproduto.part_number}} - {{subproduto.nome}} {% if subproduto.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
 {% if request.user.perfilacessoproducao.gerente %}
-<p>
+<p class="btn-group">
     <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="icon-pencil"></i> Editar SubProduto</a>
+
+		{% if subproduto.ativo %}
+		<a href="{% url "producao:inativar_subproduto" subproduto.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar</a>
+
+		{% else %}
+		<a href="{% url "producao:ativar_subproduto" subproduto.id %}" class="btn btn-success"><i class="icon-thumbs-up"></i> Ativar</a>
+		{% endif %}
+
+
 </p>
 {% endif %}
 
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
     <li>
+        <a href="#participacao" data-toggle="tab">
+            Participações {% if subproduto.total_participacao %}
+            <span class="badge badge-important">{{subproduto.total_participacao}}</span>
+        
+            {% endif %}
+
+        </a>
+    </li>
+    <li>
         <a href="#linhas-componente" data-toggle="tab">
-            Linhas de Componentes 
+            Componentes 
             {% if subproduto.linhasubproduto_set.count %}
             <span class="badge badge-info">{{subproduto.linhasubproduto_set.count}}</span>
         
@@ -26,7 +43,7 @@
     </li>
     <li>
         <a href="#sub-produtos-agregados" data-toggle="tab">
-            Sub Produtos Agregados
+            Sub Produtos
             {% if subproduto.linhasubprodutos_agregados.count %}
             <span class="badge badge-success">{{subproduto.linhasubprodutos_agregados.count}}</span>
             {% endif %}
@@ -168,6 +185,65 @@
         </div>
 
     </div>
+		
+    <div class="tab-pane fade in active" id="participacao">
+			{% if participacao_subprodutos %}
+			<h4>Participação Como Sub Produto de Outros SubProdutos</h4>	
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Item</th>
+						<th>SubProduto</th>
+						<th>Quantidade</th>
+						<th>Nome</th>
+						<th>Descrição</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for participacao in participacao_subprodutos %}
+					<tr>
+						<td class="alert alert-danger">{{forloop.counter}}</td>
+						<td><a href="{% url "producao:ver_subproduto" participacao.subproduto_principal.id %}#sub-produtos-agregados">{{participacao.subproduto_principal.part_number}}</a></td>
+						<td><span class="badge badge-warning">{{participacao.quantidade}} und</span></td>
+						<td>{{participacao.subproduto_principal.nome}}</td>
+						<td>{{participacao.subproduto_principal.descricao}}</td>
+
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% endif %}
+			
+			{% if agregado_em_produto %}
+			<h4>Participação Como Sub Produto de Outros Produtos</h4>	
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Item</th>
+						<th>Produto</th>
+						<th>Quantidade</th>
+						<th>Nome</th>
+						<th>Descrição</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for participacao in agregado_em_produto %}
+					<tr>
+						<td class="alert alert-danger">             {{forloop.counter}} </span>
+						</td>
+						<td><a href="{% url "producao:ver_produto" participacao.produto.id %}#linhas-subprodutos">{{participacao.produto.part_number}}</a></td>
+						<td><span class="badge badge-warning">{{participacao.quantidade}} und</span></td>
+						<td>{{participacao.produto.nome}}</td>
+						<td>{{participacao.produto.descricao}}</td>
+
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% endif %}
+			
+			
+		</div>
     
     <div class="tab-pane fade in" id="linhas-componente">
         

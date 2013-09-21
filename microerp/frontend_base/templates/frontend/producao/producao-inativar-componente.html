@@ -1,0 +1,50 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Apagar Componente{% endblock %}</title>
+
+{% block content %}
+<h1>{{componente.part_number}} - {{componente.descricao}}</h1>
+
+{% if not pode %}
+<p class="alert alert-info">
+Posição total em estoques: {{componente.total_em_estoques}} 	<button type="submit" form="consulta-estoque-produto" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+
+<form method="POST" id="consulta-estoque-produto" action="{% url "producao:listar_estoque" %}">
+	{% csrf_token %}
+	<input type="hidden" name="componente" value="{{componente.id}}">
+	<input type="hidden" name="estoque" value="">
+  
+  
+
+</form>
+
+</p>
+<p class="alert alert-info">
+Quantidade Total de Participações: {{componente.total_unico_participacoes}} <a class="btn btn-primary" href="{% url "producao:ver_componente" componente.id %}#participacao">Ver Participações</a><br
+</p>
+<p class="alert alert-danger">
+	<strong>Não é possível inativar este Componente nessa situação</strong>.<br />Remova as participações e elimite o estoque antes de continuar.
+</p>
+{% else %}
+<p class="alert alert-success">Sucesso! Este componente pode ser inativado</p>
+<a href="?confirmar=sim" class="btn btn-success">Confirmar Inativação deste Componente</a>
+{% endif %}
+
+
+{% endblock %}
+
+	{% block auxiliar-menu %}
+	{% addtoblock "js" %}
+	<script>
+	$(document).ready(function() {
+		$("#menu-producao-componentes, #top-menu-producao").addClass("active");
+	});
+	</script>
+
+
+
+	{% endaddtoblock %}
+	{% include "frontend/producao/producao-menu.html" %}
+	{% endblock%}
