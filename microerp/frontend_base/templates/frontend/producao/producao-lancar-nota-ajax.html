@@ -1,0 +1,7 @@
+Status: {{status}}
+Notas encontradas:
+<ul>
+{% for nota in notas_exibir %}
+    <li><a href="{% url "producao:ver_nota" nota.id %}"><strong>{{nota.fabricante_fornecedor}}</strong>: {{nota}}</a></li>
+{% endfor %}
+</ul>

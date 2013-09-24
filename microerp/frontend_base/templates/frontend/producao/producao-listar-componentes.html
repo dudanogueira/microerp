@@ -8,12 +8,12 @@
 <h1><i class="icon-th"></i> <i class="icon-stop"></i> Componentes</h1>
 {% if request.user.perfilacessoproducao.gerente %}
 {# ADICIONAR TIPO COMPONENTE #}
-  <p>
+  <p class="btn-group">
     <!-- Modal Adicionar Componente -->
     <a href="#modal-add-componente" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Componente</a>
     
     <!-- Modal Adicionar Tipo -->
-    <a href="#adicionar-tipo-componente" role="button" class="btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Tipo</a>
+    <a href="#adicionar-tipo-componente" role="button" class="btn-success btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Tipo</a>
 </p>
     
 <!-- Modal do Tipo -->
@@ -68,7 +68,7 @@
      </form>
 
 
-
+		 <div class="well well-small alert alert-success">Componentes Ativos</div>
     {% for componente in componentes_encontrados %}
 <p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="icon-stop"></i> {{componente}}</a></p>
     {% endfor %}

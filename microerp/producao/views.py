@@ -15,7 +15,7 @@ from django.conf import settings
 from django.core.mail import EmailMessage
 
 from producao.models import FabricanteFornecedor, FABRICANTE_FORNECEDOR_TIPO_CHOICES
-from producao.models import NotaFiscal
+from producao.models import NotaFiscal, STATUS_NOTA_FISCAL
 from producao.models import LancamentoComponente
 from producao.models import Componente
 from producao.models import ComponenteTipo
@@ -181,11 +181,26 @@ def importa_nota_sistema(f):
     except:
         raise
         return False
-    
+
+class FormFiltrarNotaFiscal(forms.Form):
+    status = forms.ChoiceField(choices=(('', '---',), ('a', 'Abertas'), ('l', u'Lançadas')), required=False, initial='a')    
+    fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
-    notas_abertas = NotaFiscal.objects.filter(status='a')
+    notas_exibir = NotaFiscal.objects.filter(status='a')
+    if request.POST.get('status') or request.POST.get('fornecedor'):
+            filtro_notas_form = FormFiltrarNotaFiscal(request.POST)
+            if filtro_notas_form.is_valid():
+                notas_exibir = NotaFiscal.objects.all()
+                status = filtro_notas_form.cleaned_data['status']
+                fornecedor = filtro_notas_form.cleaned_data['fornecedor']
+                if status:
+                    notas_exibir = notas_exibir.filter(status=status)
+                if fornecedor:
+                    notas_exibir = notas_exibir.filter(fabricante_fornecedor=fornecedor)
+    else:
+        filtro_notas_form = FormFiltrarNotaFiscal()
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
     if request.GET.get('tipo', None) == 'nfe':
         tipo = 'nfe'
@@ -1116,7 +1131,7 @@ def inativar_subproduto(request, subproduto_id):
     if request.GET.get('confirmar'):
         subproduto.ativo = False
         subproduto.save()
-        messages.success(request, "Sucesso! SubProduto Inativado!")
+        messages.success(request, "Sucesso! Sub Produto Inativado!")
         return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
     # verifica se possui no estoque
     return render_to_response('frontend/producao/producao-inativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
@@ -1127,7 +1142,7 @@ def ativar_subproduto(request, subproduto_id):
     if request.GET.get('confirmar'):
         subproduto.ativo = True
         subproduto.save()
-        messages.success(request, "Sucesso! SubProduto Ativado!")
+        messages.success(request, "Sucesso! Sub Produto Ativado!")
         return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
     # verifica se possui no estoque
     return render_to_response('frontend/producao/producao-ativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
@@ -1644,13 +1659,28 @@ def ver_produto_relatorios_composicao(request, produto_id):
  #
  
 class SelecionarSubProdutoForm(forms.Form):
+    
+    def clean_quantidade(self):
+        quantidade = self.cleaned_data.get('quantidade', None)
+        if quantidade <= 0:
+            raise ValidationError(u"Erro. Quantidade deve ser maior e diferente de 0")
+        return quantidade
+        
     quantidade = forms.IntegerField(required=True)
-    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.exclude(tipo_de_teste=0), empty_label=None)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.exclude(tipo_de_teste=0), empty_label=None, label="Sub Produto")
     subproduto.widget.attrs['class'] = 'select2'
     quantidade.widget.attrs['class'] = 'input-mini'
 
 
 class SelecionarProdutoForm(forms.Form):
+    
+    def clean_quantidade(self):
+        quantidade = self.cleaned_data.get('quantidade', None)
+        if quantidade <= 0:
+            raise ValidationError(u"Erro. Quantidade deve ser maior e diferente de 0")
+        return quantidade
+    
+    
     quantidade = forms.IntegerField(required=True)
     produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.filter(ativo=True), empty_label=None)
     produto.widget.attrs['class'] = 'select2'
@@ -1851,9 +1881,9 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     pode = True
                 quantidades_agregados.append((linha, quantidade_usada, linha.subproduto_agregado.total_disponivel(), pode))
 
-        if producao_liberada:
-            for field in form_configurador_subproduto.fields:
-                form_configurador_subproduto[field].widget = forms.HiddenInput()
+            if producao_liberada:
+                for field in form_configurador_subproduto.fields:
+                    form_configurador_subproduto[field].widget = forms.HiddenInput()
 
     else:
         form_configurador_subproduto = FormConfiguradorSubProduto(subproduto=subproduto)
@@ -2104,9 +2134,10 @@ def producao_combinada_calcular(request):
                     valor_item = faltou * componente.preco_medio_unitario * -1
                     valor_total_compra += valor_item
                     link = reverse("producao:ver_componente", args=[componente.id])
-                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode, valor_total_compra, link))
+                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode, valor_item, link))
             elif type(item[0]) == str:
                 subproduto_id = item[0].split("-")[1]
+                subproduto = SubProduto.objects.get(pk=subproduto_id)
                 subproduto_usado = SubProduto.objects.get(id=subproduto_id)
                 qtd_subproduto = item[1]
                 # aqui eh quantidade funcional, pois o subproduto sem teste vem como
@@ -2117,15 +2148,15 @@ def producao_combinada_calcular(request):
                 faltou = None
                 if int(qtd_subproduto) > int(quantidade_disponivel):
                     producao_liberada = False
-                    faltou = float(quantidade_disponivel) - float(qtd_subproduto) * -1
+                    faltou =  float(quantidade_disponivel) - float(qtd_subproduto)
                     pode = False
                     qtd_subproduto = decimal.Decimal(qtd_subproduto)
                     faltou = decimal.Decimal(faltou)
                     # total da compra
-                    valor_item = faltou * subproduto.custo()
+                    valor_item = faltou * subproduto.custo() * -1
                     valor_total_compra += valor_item
-                    link = reverse("producao:ver_subproduto", args=[subproduto.id])
-                    relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode, valor_total_compra, link))
+                    link = reverse("producao:ver_subproduto", args=[subproduto_id])
+                    relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode, valor_item, link))
              
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)
 
@@ -2199,7 +2230,7 @@ def qeps_componentes(request):
                 valor_total_compra += valor_item
             link = reverse("producao:ver_componente", args=[componente.id])
             
-            tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok, link, valor_total_compra))
+            tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok, link, valor_item))
             
     return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-qeps-componentes.html', locals(), context_instance=RequestContext(request),)
 
@@ -2291,6 +2322,7 @@ def ordem_de_compra_atividade_reagendar(request, ordem_de_compra_id, atividade_i
         form = FormReagendarAtividadeDeCompra(request.POST, instance=atividade)
         if form.is_valid():
             atividade = form.save()
+            messages.success(request, "Sucesso! Atividade Reagendada!")
         else:
             return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
     else:

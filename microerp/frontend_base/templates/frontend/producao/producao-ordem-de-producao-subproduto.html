@@ -66,44 +66,8 @@
 	
 	{% if calculado %}
 	<div id="calculado">
-		<h3>Componentes</h3>
-		<table class="table table-condensed table-hover table-rounded">
-			<thead>
-				<tr>
-					<th>Componente</th>
-					<th>Descrição</th>
-					<th>Qtd Utilizada</th>
-					<th>Qtd Consumida</th>
-					<th>Disponível em Estoque</th>
-				</tr>
-			</thead>
-			<tbody>
-					{% for k,linha in quantidades_componente.items %}
-					<tr class="
-					{% if linha.3 %}
-					alert alert-success linhaok
-					{%else%}
-					alert alert-danger
-					{% endif %}
-					">
-						<td>
-							{{linha.0.componente.part_number}} ({{linha.0.componente.id}})
-						</td>
-						<td>{{linha.0.componente.descricao}}</td>
-						<td>{{linha.0.quantidade}} {{linha.0.componente.medida}}</td>
-						<td>
-							{{linha.1}} {{linha.0.componente.medida}}
-						</td>
-						<td>
-							{{linha.2}} {{linha.0.componente.medida}}
-						</td>
-					</tr>
-			{% endfor %}				
-			</tbody>	
-		</table>
 		{% if quantidades_agregados %}
 		<h3>Sub Produtos Agregados</h3>
-		
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
 				<tr>
@@ -143,6 +107,42 @@
 			</tbody>	
 		</table>
 		{% endif %}
+		
+		<h3>Componentes</h3>
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>Componente</th>
+					<th>Descrição</th>
+					<th>Qtd Utilizada</th>
+					<th>Qtd Consumida</th>
+					<th>Disponível em Estoque</th>
+				</tr>
+			</thead>
+			<tbody>
+					{% for k,linha in quantidades_componente.items %}
+					<tr class="
+					{% if linha.3 %}
+					alert alert-success linhaok
+					{%else%}
+					alert alert-danger
+					{% endif %}
+					">
+						<td>
+							{{linha.0.componente.part_number}} ({{linha.0.componente.id}})
+						</td>
+						<td>{{linha.0.componente.descricao}}</td>
+						<td>{{linha.0.quantidade}} {{linha.0.componente.medida}}</td>
+						<td>
+							{{linha.1}} {{linha.0.componente.medida}}
+						</td>
+						<td>
+							{{linha.2}} {{linha.0.componente.medida}}
+						</td>
+					</tr>
+			{% endfor %}				
+			</tbody>	
+		</table>
 
 	</div>		
 	{% else %}

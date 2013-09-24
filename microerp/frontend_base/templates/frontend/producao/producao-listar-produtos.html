@@ -18,6 +18,7 @@
       <a class="btn btn-success" href="?q_produto=todos">Listar Todos</a>
     </form>
 
+<div class="well well-small alert alert-success">Produtos Ativos</div>
 {% for produto in produtos_encontrados %}
     <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a></p>
 {% endfor %}

@@ -74,7 +74,7 @@
 					<strong>Preço Líquido Unitário em Dólar</strong>: USD {{componente.preco_liquido_unitario_dolar}}<br />
 					{% endif %}
 					{% if componente.preco_liquido_unitario_real %}
-					<strong>Preço Líquido Unitário em Real</strong>: R$ {{componente.preco_liquido_unitario_real}}<br />
+					<strong>Preço Líquido Unitário (Valor da Última Compra)</strong>: R$ {{componente.preco_liquido_unitario_real}}<br />
 					{% endif %}
 					{% if componente.preco_medio_unitario %}
 					<strong>Preço Médio Bruto Unitário</strong>: R$ {{componente.preco_medio_unitario}}
@@ -154,7 +154,7 @@
 			<thead>
 				<tr>
 					<th>Data</th>
-					<th>Nota</th>
+					<th>Nota Fiscal</th>
 					<th>Fornecedor</th>
 					<th>Fabricante</th>
 					<th>Qtd.</th>
@@ -424,7 +424,7 @@
 			{% if request.user.perfilacessoproducao.gerente %}
 			<form method="POST" class="form form-inline" action="#arquivos" enctype="multipart/form-data">
 				{% csrf_token %}
-				{{form_anexos}}
+				{{form_anexos.as_p}}
 				<button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
                 
 			</form>

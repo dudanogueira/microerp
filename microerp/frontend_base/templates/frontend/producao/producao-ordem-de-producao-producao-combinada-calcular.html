@@ -6,19 +6,9 @@
 
 {% block content %}
 
-<div class="row-fluid">
-	<div class="span6">
-		<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-		<h2>Produção Combinada</h2>
-		<a href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</a>
-		
-	</div>
-	<div class="span6">
-		<p>
-		<strong>Notação de Produção</strong>: {{get_componentes}}
-		</p>
-	</div>
-</div>
+<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
+<h2>Produção Combinada</h2>
+<a href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</a>		<strong>Notação de Produção</strong>: {{get_componentes}}
 
 
 	
@@ -45,7 +35,7 @@
 					* <strong>R$ Médio</strong> = Preço Médio Unitário	<br />
 					* <strong>Ult R$</strong> = Última Compra em Real	Sem Impostos<br />
 					* <strong>Ult USD</strong> = Última Compra em Dolar	Sem Impostos<br />
-					* <strong>Qtd Nc.</strong> = Quantidade Necessária para Produção	<br />
+					* <strong>Qtd Nec.</strong> = Quantidade Necessária para Produção	<br />
 					* <strong>Tot Estoq.</strong> = Total em TODOS os estoques<br />
 				</small>
 			</p>
@@ -71,7 +61,7 @@
 			<th>Tot Estoq</th>
 			<th>Qtd Nec.</th>
 			<th>Faltante</th>
-			<th>Memória de Cálculo</th>
+			<th>Valor</th>
 		</tr>
 	</thead>
 	<tbody>

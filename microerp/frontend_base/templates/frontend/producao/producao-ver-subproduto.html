@@ -8,7 +8,7 @@
 <h1>{{subproduto.part_number}} - {{subproduto.nome}} {% if subproduto.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
 {% if request.user.perfilacessoproducao.gerente %}
 <p class="btn-group">
-    <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="icon-pencil"></i> Editar SubProduto</a>
+    <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="icon-pencil"></i> Editar Sub Produto</a>
 
 		{% if subproduto.ativo %}
 		<a href="{% url "producao:inativar_subproduto" subproduto.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar</a>
@@ -72,13 +72,14 @@
                 <strong>Nome</strong>: {{subproduto.nome}}<br />
                 <strong>Descrição</strong>: {{subproduto.descricao}}<br /><br />
 								<p>
-                <strong>Linhas de Componente:</strong> <span class="label label-info">R$ {{subproduto.custo_total_linhas|floatformat:2}}</span><br />
- 							 <strong>SubProdutos Agregados:</strong>                <span class="label label-success">R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span><br />
+                <strong>Somatório do Custo de Componentes:</strong> <span class="label label-info">R$ {{subproduto.custo_total_linhas|floatformat:2}}</span><br />
+								
+ 							 <strong>Somatório do Custo de Sub Produtos:</strong>                <span class="label label-success">R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span><br />
                 <strong>Somatório Total de Custos</strong>: <span class="label">R$ {{subproduto.custo|floatformat:2}}</span>
 							</p>
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
-                <strong>Quantidade Máxima de Produção Independente: {{subproduto.maximo_produzivel}}</strong><br />
-                <strong>Quantidade Máxima de Produção Agrupado: {{subproduto.maximo_produzivel_agrupado}}</strong><br />
+                <strong>Quantidade Máxima de Produção Independente:</strong> {{subproduto.maximo_produzivel}}<br />
+                <strong>Quantidade Máxima de Produção Agrupado:</strong> {{subproduto.maximo_produzivel_agrupado}}<br />
                 
                 <h3>Situação de Testes e Produção</h3>
 								{% if subproduto.tipo_de_teste == 0 %}
@@ -186,7 +187,7 @@
 
     </div>
 		
-    <div class="tab-pane fade in active" id="participacao">
+    <div class="tab-pane fade in" id="participacao">
 			{% if participacao_subprodutos %}
 			<h4>Participação Como Sub Produto de Outros SubProdutos</h4>	
 			<table class="table table-condensed table-hover table-rounded">
@@ -342,7 +343,6 @@
             </tbody>
 				</table>
 		</div>
-        
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
         
@@ -454,7 +454,7 @@
             {% if request.user.perfilacessoproducao.gerente %}
             <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
                 {% csrf_token %}
-                {{form_anexos}}
+                {{form_anexos.as_p}}
                 <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
     
             </form>

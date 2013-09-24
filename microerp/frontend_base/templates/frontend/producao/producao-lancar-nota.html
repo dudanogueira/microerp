@@ -10,12 +10,9 @@
     {% if not tipo %}
 
     <h2>Escolha o tipo de nota</h2>
-    <p>
-    <a href="?tipo=nfe" class="btn btn-success">Nota Fiscal Eletrônica (ARQUIVO XML)</a>
-    </p>
-
-    <p>
-        <a href="{% url "producao:adicionar_nota" %}" class="btn btn-info">Nota Manual</a>
+    <p class="btn-group">
+    <a href="?tipo=nfe" class="btn btn-success"><i class="icon-attach"></i> Nota Fiscal Eletrônica (ARQUIVO XML)</a>
+		<a href="{% url "producao:adicionar_nota" %}" class="btn btn-info"><i class="icon-user"></i> Nota Manual</a>
     </p>
     {% else %}
         <h2>Tipo Escolhido {{tipo}}</h2>
@@ -29,12 +26,47 @@
 
     {% endif %}
 {% endif %}
-<h2>Notas Abertas</h2>
-<ul>
-{% for nota in notas_abertas %}
-    <li><a href="{% url "producao:ver_nota" nota.id %}"><strong>{{nota.fabricante_fornecedor}}</strong>: {{nota}}</a></li>
-{% endfor %}
-</ul>
+
+<form method="POST" class="form form-inline">
+	{% csrf_token %}
+	{{filtro_notas_form}}
+	<button type="submit" class="btn btn-primary">Filtrar</button>
+</form>
+
+
+<table class="table table-condensed table-hover table-rounded">
+    <thead>
+        <tr>
+            <th>Fornecedor</th>
+            <th>Série / # Nota</th>
+						<th>Tipo</th>
+						<th>Total S/ Imp.</th>
+						<th>Total C/ Imp.</th>
+						<th>Ação</th>
+        </tr>
+    </thead>
+    <tbody>
+
+			{% for nota in notas_exibir %}
+				<tr>
+					<td><a href="{% url "producao:ver_fabricantes_fornecedores" nota.fabricante_fornecedor.id  %}">{{nota.fabricante_fornecedor.nome}}</a></td>
+					<td>{{nota.numero_de_serie}} / {{nota.numero_identificador}}</td>
+					<td>{{nota.get_tipo_display}}</td>
+					<td>R$ {{nota.total_sem_imposto|floatformat:2}}</td>
+					<td>R$ {{nota.total_com_imposto|floatformat:2}}</td>
+					<td>
+						{% ifequal nota.status "a" %}
+							<a class="btn btn-primary" href="{% url "producao:ver_nota" nota.id %}"><i class="icon-pencil"></i></a>
+						{% else %}
+						<a class="btn btn-success" href="{% url "producao:ver_nota" nota.id %}"><i class="icon-eye-open"></i></a>
+							{% endifequal %}
+					</td>
+				</tr>
+			{% endfor %}			
+			
+		</tbody>
+	</thead>
+
 
 {% endblock %}
 

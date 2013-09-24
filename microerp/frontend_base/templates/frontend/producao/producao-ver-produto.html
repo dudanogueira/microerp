@@ -58,8 +58,9 @@
                 <strong>Nome</strong>: {{produto.nome}}<br />
                 <strong>Descrição</strong>: {{produto.descricao}}<br /><br />
 								<p>
-                <strong>Linhas de SubProduto:</strong> <span class="label label-info">R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span><br />
-                <strong>Linhas de Componentes:</strong> <span class="label label-success">R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}</span><br />
+	                <strong>Somatório do Custo de Componentes:</strong> <span class="label label-info">R$ {{produto.custo_total_linha_produtos_avulsos|floatformat:2}}</span><br />
+									
+                <strong>Somatório do Custo de Subprodutos:</strong> <span class="label label-success">R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span><br />
                 <strong>Somatório Total de Custos</strong> <span class="label">R$ {{produto.custo|floatformat:2}}</span><br />
 							</p>
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: {{produto.custo_internacional|floatformat:2}}<br />
@@ -229,7 +230,7 @@
         {% if request.user.perfilacessoproducao.gerente %}
         <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
             {% csrf_token %}
-            {{form_anexos}}
+            {{form_anexos.as_p}}
             <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
 
         </form>

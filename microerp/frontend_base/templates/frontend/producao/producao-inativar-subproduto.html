@@ -9,13 +9,13 @@
 
 {% if not pode %}
 <p class="alert alert-info">
-Posição total Funcional: {{subproduto.total_funcional}}
+Posição total Funcional: {{subproduto.total_funcional}} <a class="btn btn-primary" href="{% url "producao:ver_subproduto" subproduto.id %}#informacoes">Ver Informações</a>
 </p>
 <p class="alert alert-info">
-Posição total Testando: {{subproduto.total_testando}}
+Posição total Testando: {{subproduto.total_testando}} <a class="btn btn-primary" href="{% url "producao:ver_subproduto" subproduto.id %}#informacoes">Ver Informações</a>
 </p>
 <p class="alert alert-info">
-Posição total Montando: {{subproduto.total_montado}}
+Posição total Montando: {{subproduto.total_montado}} <a class="btn btn-primary" href="{% url "producao:ver_subproduto" subproduto.id %}#informacoes">Ver Informações</a>
 </p>
 
 
@@ -23,11 +23,11 @@ Posição total Montando: {{subproduto.total_montado}}
 Quantidade Total de Participações: {{subproduto.total_participacao}} <a class="btn btn-primary" href="{% url "producao:ver_subproduto" subproduto.id %}#participacao">Ver Participações</a><br/>
 </p>
 <p class="alert alert-danger">
-	<strong>Não é possível inativar este SubProduto nessa situação</strong>.<br />Remova as participações e elimine o estoque antes de continuar.
+	<strong>Não é possível inativar este Sub Produto nessa situação</strong>.<br />Remova as participações e elimine o estoque antes de continuar.
 </p>
 {% else %}
-<p class="alert alert-success">Sucesso! Este SubProduto pode ser inativado</p>
-<a href="?confirmar=sim" class="btn btn-success">Confirmar Inativação deste Componente</a>
+<p class="alert alert-danger">Este Sub Produto pode ser inativado</p>
+<a href="?confirmar=sim" class="btn btn-danger">Confirmar Inativação deste Sub Produto</a>
 {% endif %}
 
 

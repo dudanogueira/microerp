@@ -11,10 +11,15 @@
 
         <h4>NFe Série {{notafiscal.numero_de_serie}}, Número {{notafiscal.numero_identificador}}</h4> 
 				
+				<p>
+					<a href="{% url "producao:lancar_nota" %}"><i class="icon-arrow-left"></i> Ver Lista de Notas</a>
+				</p>
+				
 		    {% if request.user.perfilacessoproducao.gerente %}
 		    <p class="btn-group">
+					{% ifequal notafiscal.status "a" %}
 		            <a href="{% url "producao:adicionar_lancamento" notafiscal.id %}" class="btn btn-medium btn-primary"><i class="icon-plus"></i> Lançamento</a>
-		    {% ifequal notafiscal.status "a" %}
+		    
 		    <a class="btn btn-success" href="{% url "producao:editar_nota" notafiscal.id %}"><i class="icon-pencil"></i> Nota</a>
 
 		    {# <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="icon-refresh"></i> Calcular</a> #}
@@ -82,7 +87,9 @@
             <td>R$ {{lancamento.valor_unitario_final}}</td>
             <td>
                 {% if request.user.perfilacessoproducao.gerente %}
+									{% ifequal notafiscal.status "a" %}
                 <a href="{% url "producao:editar_lancamento" notafiscal.id lancamento.id %}" class="btn"><i class="icon-pencil"></i></a>
+								{% endifequal %}
                 {% endif %}
         </tr>
         {% endfor %}
@@ -90,9 +97,11 @@
 </table>
 
 {% if request.user.perfilacessoproducao.gerente %}
+	{% ifequal notafiscal.status "a" %}
 <p>
 <a href="{% url "producao:apagar_nota" notafiscal.id %}" class="btn btn-danger"><i class="icon-trash"></i> Apagar Nota</a>
 </p>
+	{% endifequal %}
 {% endif %}
 
 

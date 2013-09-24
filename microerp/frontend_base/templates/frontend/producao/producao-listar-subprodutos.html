@@ -11,12 +11,13 @@
 </p>
 <form class="form-search">
   <input type="text" class="input-medium search-query" name="q_subproduto", id="busca_subproduto" {% if q_subproduto %}value="{{q_subproduto}}"{% endif %}>
-  <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar SubProduto</button>
+  <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Sub Produto</button>
   <a class="btn btn-success" href="?q_subproduto=todos">Listar Todos</a>
 </form>
 
+<div class="well well-small alert alert-success">Sub Produtos Ativos</div>
 {% for subproduto in subprodutos_encontrados %}
-    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}} - {{subproduto.descricao}}</a></p>
+    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}}</a></p>
 {% endfor %}
 
 {% if subprodutos_inativos %}
