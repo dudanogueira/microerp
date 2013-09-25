@@ -29,11 +29,22 @@
 
 <form method="POST" class="form form-inline">
 	{% csrf_token %}
-	{{filtro_notas_form}}
+	<div class="row-fluid">
+		<div class="span3">
+			Status:<br/>
+			{{filtro_notas_form.status}}
+			
+		</div>
+		<div class="span9">
+			Fornecedor:<br/>
+			{{filtro_notas_form.fornecedor}}
+		</div>
+	
+	</div>
 	<button type="submit" class="btn btn-primary">Filtrar</button>
 </form>
 
-
+{% if notas_exibir %}
 <table class="table table-condensed table-hover table-rounded">
     <thead>
         <tr>
@@ -49,7 +60,7 @@
 
 			{% for nota in notas_exibir %}
 				<tr>
-					<td><a href="{% url "producao:ver_fabricantes_fornecedores" nota.fabricante_fornecedor.id  %}">{{nota.fabricante_fornecedor.nome}}</a></td>
+					<td><a href="{% url "producao:ver_fabricantes_fornecedores" nota.fabricante_fornecedor.id  %}">{{nota.fabricante_fornecedor.nome}} {{nota.criado}}</a></td>
 					<td>{{nota.numero_de_serie}} / {{nota.numero_identificador}}</td>
 					<td>{{nota.get_tipo_display}}</td>
 					<td>R$ {{nota.total_sem_imposto|floatformat:2}}</td>
@@ -66,11 +77,17 @@
 			
 		</tbody>
 	</thead>
-
+</table>
+{% else %}
+<small>Nenhuma Nota a Exibir</small>
+{% endif %}
 
 {% endblock %}
 
 {% block auxiliar-menu %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {

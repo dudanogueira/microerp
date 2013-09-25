@@ -183,13 +183,16 @@ def importa_nota_sistema(f):
         return False
 
 class FormFiltrarNotaFiscal(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(FormFiltrarNotaFiscal, self).__init__(*args, **kwargs)
+        self.fields['fornecedor'].widget.attrs['class'] = 'select2'
+    
     status = forms.ChoiceField(choices=(('', '---',), ('a', 'Abertas'), ('l', u'Lançadas')), required=False, initial='a')    
     fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
-    notas_exibir = NotaFiscal.objects.filter(status='a')
-    if request.POST.get('status') or request.POST.get('fornecedor'):
+    if request.POST:
             filtro_notas_form = FormFiltrarNotaFiscal(request.POST)
             if filtro_notas_form.is_valid():
                 notas_exibir = NotaFiscal.objects.all()
@@ -197,9 +200,12 @@ def lancar_nota(request):
                 fornecedor = filtro_notas_form.cleaned_data['fornecedor']
                 if status:
                     notas_exibir = notas_exibir.filter(status=status)
+                else:
+                    notas_exibir = NotaFiscal.objects.all()
                 if fornecedor:
                     notas_exibir = notas_exibir.filter(fabricante_fornecedor=fornecedor)
     else:
+        notas_exibir = NotaFiscal.objects.filter(status='a')
         filtro_notas_form = FormFiltrarNotaFiscal()
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
     if request.GET.get('tipo', None) == 'nfe':
@@ -861,7 +867,7 @@ class AlterarEstoque(forms.Form):
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_estoque(request):
     historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')
-    totalizadores = RegistroValorEstoque.objects.all()
+    totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')
     if request.POST:
         if request.POST.get('consulta-estoque'):
             form_mover_estoque = MoverEstoque()
@@ -1057,7 +1063,7 @@ def listar_subprodutos(request):
             if q_subproduto == "todos":
                 subprodutos_encontrados = SubProduto.objects.filter(ativo=True)
             else:
-                subprodutos_encontrados = subprodutos_encontrados.objects.filter(
+                subprodutos_encontrados = subprodutos_encontrados.filter(
                     Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
                 )
     
@@ -1516,7 +1522,7 @@ def listar_produtos(request):
                 produtos_encontrados = ProdutoFinal.objects.filter(ativo=True)
             else:
                 produtos_encontrados = produtos_encontrados.filter(
-                    Q(nome__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
+                    Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
                 )
     produtos_inativos = ProdutoFinal.objects.filter(ativo=False)
         
@@ -2211,6 +2217,7 @@ def qeps_componentes(request):
     # calcula a tabelas de leadtime
     tabela_items = []
     valor_total_compra = 0
+    valor_item = 0
     for item in dic.items():
         
         if type(item[0]) == long:

@@ -77,7 +77,7 @@
  							 <strong>Somatório do Custo de Sub Produtos:</strong>                <span class="label label-success">R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span><br />
                 <strong>Somatório Total de Custos</strong>: <span class="label">R$ {{subproduto.custo|floatformat:2}}</span>
 							</p>
-                <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}
+                <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}<br />
                 <strong>Quantidade Máxima de Produção Independente:</strong> {{subproduto.maximo_produzivel}}<br />
                 <strong>Quantidade Máxima de Produção Agrupado:</strong> {{subproduto.maximo_produzivel_agrupado}}<br />
                 
@@ -475,7 +475,7 @@
 		
 		<div class="tab-pane fade in" id="relatorios">
  		 <p class="btn-group">
- 			 <a class="btn btn-large" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='icon-print'></i> Impressão da Composição deste SubProduto</a>
+ 			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='icon-print'></i> Impressão da Composição deste SubProduto</a>
  		 </p>
 			
 		</div>

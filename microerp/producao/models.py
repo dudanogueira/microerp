@@ -463,6 +463,7 @@ class NotaFiscal(models.Model):
     
     class Meta:
         unique_together = (('fabricante_fornecedor', 'numero'))
+        ordering = ['-criado']
     
     def numero_de_serie(self):
         return self.numero[0:3]
