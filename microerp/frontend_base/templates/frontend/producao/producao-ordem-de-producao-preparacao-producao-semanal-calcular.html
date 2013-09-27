@@ -85,20 +85,27 @@
 		</tr>
 		
 		{% endfor %}
+		<tr>
+			<td>{% if margem_fornecida %}
+<small>Margem de Segurança: {{margem_fornecida}}%</small>
+{% endif %}
+</td>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td></td>
+	<td></td>	
+	<td></td>
+	<td><span class="badge badge-important">Total: R${{valor_total_compra|floatformat:2}}</span></td>
+	
+</tr>
+
 		
 	</tbody>
 </table>
 
 {% endif %}
-<div class="row-fluid">
-	<div class="span8">
-	</div>
-	<div class="span4">
-		<h4>Valor Total da Compra: R${{valor_total_compra|floatformat:2}}</h4>
-	</div>
-</div>
-
-
 
 
 {% if producao_liberada %}
