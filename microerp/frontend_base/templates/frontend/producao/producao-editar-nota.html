@@ -23,6 +23,10 @@
 <script>
 $(document).ready(function() {
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
+  $(".nopoint").keyup(function() {
+          $(this).val($(this).val().replace(/[.]/g, ""));
+    });
+	
 });
 </script>
 {% endaddtoblock %}

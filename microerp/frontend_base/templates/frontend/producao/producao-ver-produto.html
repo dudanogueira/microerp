@@ -131,6 +131,7 @@
                     <td></td>
                     <td></td>
                     <td></td>
+										<td></td>
                     <td><span class="label label-success">Total: R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span></td>
                     <td></td>
                 </tr>
@@ -315,6 +316,9 @@
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
+
+
+
 $(document).ready(function() {
     $("#menu-producao-produtos, #top-menu-producao").addClass("active");
     $("#busca_produto").focus()

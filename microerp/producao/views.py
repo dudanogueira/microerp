@@ -386,7 +386,6 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
     return render_to_response('frontend/producao/producao-editar-lancamento.html', locals(), context_instance=RequestContext(request),)
 
 
-
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_lancamento(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
@@ -395,7 +394,9 @@ def adicionar_lancamento(request, notafiscal_id):
         if lancamento_form.is_valid():
             lancamento = lancamento_form.save(commit=False)
             lancamento.nota = notafiscal
+            lancamento.calcula_totais_lancamento()
             lancamento.save()
+            notafiscal.calcula_totais_nota()
             messages.success(request, u'Lançamento %d Adicionado com Sucesso à nota %s!' % (lancamento.id, notafiscal))
             return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
     else:
@@ -726,8 +727,8 @@ def listar_fabricantes_fornecedores(request):
     tipos_possiveis = FABRICANTE_FORNECEDOR_TIPO_CHOICES
     fab_for_encontrados = FabricanteFornecedor.objects.all()
     if request.GET:
-        q_fab_for = request.GET.get('q_fab_for', True)
-        q_tipo = request.GET.get('q_tipo')
+        q_fab_for = request.GET.get('q_fab_for', None)
+        q_tipo = request.GET.get('q_tipo', None)
         if q_fab_for:
             if q_fab_for == "todos":
                 fab_for_encontrados = FabricanteFornecedor.objects.all()
@@ -735,8 +736,15 @@ def listar_fabricantes_fornecedores(request):
                 fab_for_encontrados = FabricanteFornecedor.objects.filter(
                     Q(cnpj__icontains=q_fab_for) | Q(nome__icontains=q_fab_for)
                 )
+        else:
+            fab_for_encontrados = FabricanteFornecedor.objects.all()
+
         if q_tipo:
-            fab_for_encontrados = fab_for_encontrados.filter(tipo=q_tipo)
+            if q_tipo != "no":
+                fab_for_encontrados = fab_for_encontrados.filter(tipo=q_tipo)
+            else:
+                fab_for_encontrados = fab_for_encontrados.filter(tipo='')
+                
     return render_to_response('frontend/producao/producao-listar-fabricantes-fornecedores.html', locals(), context_instance=RequestContext(request),)    
 
 
@@ -2246,6 +2254,82 @@ def preparar_producao_semanal(request):
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.all().order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def preparar_producao_semanal_calcular(request):
+    agora = datetime.datetime.now()
+    if request.POST:
+        teste = []
+        producao_liberada = True
+        dic = {}
+        # para cada um, descobrir se produto ou subproduto
+        quantidade_analisada = []
+        for key, value in request.POST.iteritems():
+            try:
+                if key != "csrfmiddlewaretoken" and value != "on" and value.isdigit():
+                    if key == 'margem_componentes':
+                        margem_fornecida = value
+                    else:
+                        tipo = key.split("-")[0]
+                        tipo_id = key.split("-")[1]
+                        if tipo in ['produto', 'subproduto']:
+                            # analise do produto
+                            if tipo == 'produto':
+                                produto = ProdutoFinal.objects.get(pk=tipo_id)
+                                valor_multiplicador = value
+                                dic = produto.get_componentes_produto(dic=dic, multiplicador=valor_multiplicador, agrega_subproduto_sem_teste=False)
+                                # gera link do produto
+                                link = reverse("producao:ver_produto", args=[produto.id])
+                                quantidade_analisada.append((produto, value, link))
+                            # analise do subproduto
+                            if tipo == 'subproduto':
+                                subproduto = SubProduto.objects.get(pk=tipo_id)
+                                valor_multiplicador = value
+                                # se valor encontrado for maior que 0, calcular
+                                # se for menor, significa que a quantidade em estoque / funcional é superior ao planejado de produção, nem precisa calcular
+                                dic = subproduto.get_componentes(dic=dic, multiplicador=valor_multiplicador, agrega_subproduto_sem_teste=False)
+                                # gera link do subproduto
+                                link = reverse("producao:ver_subproduto", args=[subproduto.id])
+                                quantidade_analisada.append((subproduto, value, link))
+                            
+            except:
+                raise
+        # verificar cada uma dessas quantidades
+        #verifica toda a produção conforme a notação de componentes
+        get_componentes = dic
+        relatorio_producao = []
+        import decimal
+        valor_total_compra = 0
+        for item in get_componentes.items():
+            if type(item[0]) == long:
+                # verifica se possui a quantidade total deste componente em estoque
+                qtd_componente = item[1]
+                # aplica a margem de seguranca
+                if margem_fornecida:
+                    margem = float(qtd_componente) * float(margem_fornecida) / float(100)
+                    qtd_componente = float(qtd_componente) + float(margem)
+                componente = Componente.objects.get(pk=int(item[0]))
+                posicao_em_estoque = componente.total_em_estoques()
+                
+                # assume-se que pode produzir com estoque, e que não faltaram componentes
+                pode = True
+                faltou = None
+                if float(qtd_componente) > float(posicao_em_estoque):
+                    # quantidade menor
+                    faltou = float(posicao_em_estoque) - float(qtd_componente)
+                    producao_liberada = False
+                    pode = False
+                    # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
+                    qtd_componente = decimal.Decimal(qtd_componente)
+                    faltou = decimal.Decimal(faltou)
+                    # total da compra
+                    valor_item = faltou * componente.preco_medio_unitario * -1
+                    valor_total_compra += valor_item
+                    link = reverse("producao:ver_componente", args=[componente.id])
+                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode, valor_item, link))
+
+             
+    return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao-semanal-calcular.html', locals(), context_instance=RequestContext(request),)
 
 
 

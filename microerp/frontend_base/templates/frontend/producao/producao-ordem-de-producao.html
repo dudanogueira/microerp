@@ -40,18 +40,20 @@
 							{{form_subproduto.quantidade}}
 						</div>
 							
-						<div class="span10">
+						<div class="span6">
 							Subproduto<br/>
 							{{form_subproduto.subproduto.errors}}
 							{{form_subproduto.subproduto}}
 						</div>
-						<p>
-				</p>
+						
+						<div class="span4">
+							<br />
+							<button class="btn btn-primary" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> <i class="icon-list-ul"></i> Produzir Sub Produto</button>
+						</div>
+						
 					</div>
-					<button class="btn btn-primary" type="submit" name="bt-form-subproduto" value="Produzir"><i class="icon-truck"></i> <i class="icon-list-ul"></i> Produzir Sub Produto</button>
-					
+				
 				</form>
-	
 			<h3><i class="icon-windows"></i> Produzir Produto</h3>
 			
 				<form method="post">
@@ -62,19 +64,22 @@
 							{{ form_produto.quantidade.errors }}
 							{{form_produto.quantidade}}
 						</div>
-						<div class="span10">
+						<div class="span6">
 							Produto:<br />
 							{{form_produto.produto.errors}}
 							{{form_produto.produto}}
 						</div>
+						
+						<div class="span4">
+							<br />
+							<button class="btn btn-primary" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> <i class="icon-windows"></i> Produzir  Produto</button>
+						</div>
 					</div>
-					<button class="btn btn-primary" type="submit" name="bt-form-produto" value="Produzir"><i class="icon-truck"></i> <i class="icon-windows"></i> Produzir  Produto</button>
 			
 				</form>
 							
 		</div>
-		
-	
+			
 		<div class="tab-pane fade in" id="producao-combinada">
 			producao
 		</div>

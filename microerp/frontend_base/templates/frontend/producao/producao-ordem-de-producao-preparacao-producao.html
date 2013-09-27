@@ -1,7 +1,6 @@
 <h2>Preparo de Produção</h2>
-<form method="POST" action="{% url "producao:producao_combinada_calcular" %}" class="form-inline">
+<form method="POST" action="{% url "producao:preparar_producao_semanal_calcular" %}" class="form-inline">
 	{% csrf_token %}
-
 	<h5>Configurações</h5>
 	<p>
 	<input type="text" name="margem_componentes" id="margem_componentes" onkeyup="if (/\D/g.test(this.value)) this.value = this.value.replace(/\D/g,''); handleChange(this);" value="0" class="input-mini"><strong>%</strong> <label for="margem_componentes" >Margem de Segurança de Componentes</label>	

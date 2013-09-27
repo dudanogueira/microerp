@@ -60,7 +60,7 @@
 
 			{% for nota in notas_exibir %}
 				<tr>
-					<td><a href="{% url "producao:ver_fabricantes_fornecedores" nota.fabricante_fornecedor.id  %}">{{nota.fabricante_fornecedor.nome}} {{nota.criado}}</a></td>
+					<td><a href="{% url "producao:ver_fabricantes_fornecedores" nota.fabricante_fornecedor.id  %}">{{nota.fabricante_fornecedor.nome}}</a></td>
 					<td>{{nota.numero_de_serie}} / {{nota.numero_identificador}}</td>
 					<td>{{nota.get_tipo_display}}</td>
 					<td>R$ {{nota.total_sem_imposto|floatformat:2}}</td>

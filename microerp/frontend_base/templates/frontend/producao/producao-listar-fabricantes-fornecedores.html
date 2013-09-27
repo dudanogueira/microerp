@@ -20,16 +20,16 @@
     </form>
 </div>
 
-{% if fab_for_encontrados %}
+
 <p>
-<strong>Listar Somente:</strong> {% for tipo in tipos_possiveis %}{% if not forloop.first %} | {% endif %}{% ifnotequal tipo.0 q_tipo %}<a href="?q_fab_for={{q_fab_for}}&q_tipo={{tipo.0}}">{% endifnotequal %}{{tipo.1}}{% ifnotequal tipo.0 q_tipo %}</a>{% endifnotequal %}{% endfor %}
+<strong>Listar Somente:</strong> {% for tipo in tipos_possiveis %}{% if not forloop.first %} | {% endif %}{% ifnotequal tipo.0 q_tipo %}<a href="?q_tipo={{tipo.0}}">{% endifnotequal %}{{tipo.1}}{% ifnotequal tipo.0 q_tipo %}</a>{% endifnotequal %}{% endfor %} | <a href="?q_tipo=no">Sem Tipo Definido</a>
 </p>
+
 {% for fab_for in fab_for_encontrados %}
     <p><a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="icon-building"></i> {{fab_for}}, Tipo: {{fab_for.tipo}}</a></p>
 {% empty %}
 Nenhum Encontrado
 {% endfor %}
-{% endif %}
 
 {% endblock %}
 

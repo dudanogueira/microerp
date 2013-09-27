@@ -21,6 +21,10 @@
 
 <script>
 $(document).ready(function() {
+  $(".nopoint").keyup(function() {
+          $(this).val($(this).val().replace(/[.]/g, ""));
+    });
+	
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
 });
 </script>
