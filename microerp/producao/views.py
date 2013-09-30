@@ -42,6 +42,7 @@ from producao.models import AtividadeDeOrdemDeCompra
 from producao.models import ComponentesDaOrdemDeCompra
 from producao.models import RequisicaoDeCompra
 from producao.models import PerfilAcessoProducao
+from producao.models import OrdemConversaoSubProduto
 
 ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     ('', '-----'),
@@ -871,11 +872,51 @@ class AlterarEstoque(forms.Form):
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
+class FiltroMovimentos(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        inicio_initial = kwargs.pop('inicio', None)
+        fim_initial = kwargs.pop('fim', None)
+        super(FiltroMovimentos, self).__init__(*args, **kwargs)
+        self.fields['fim_movimentos'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['inicio_movimentos'].widget.attrs.update({'class' : 'datepicker'})
+        if inicio_initial:
+            
+            self.fields['inicio_movimentos'].initial = inicio_initial
+        if fim_initial:
+        
+            self.fields['fim_movimentos'].initial = fim_initial
+        
+    inicio_movimentos = forms.DateField(label=u"Início", required=True)
+    fim_movimentos = forms.DateField(label=u"Fim", required=True)
+
+class FiltroHistoricos(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        inicio_initial = kwargs.pop('inicio', None)
+        fim_initial = kwargs.pop('fim', None)
+        super(FiltroHistoricos, self).__init__(*args, **kwargs)
+        self.fields['fim_historicos'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['inicio_historicos'].widget.attrs.update({'class' : 'datepicker'})
+        if inicio_initial:
+            
+            self.fields['inicio_historicos'].initial = inicio_initial
+        if fim_initial:
+        
+            self.fields['fim_historicos'].initial = fim_initial
+        
+    inicio_historicos = forms.DateField(label=u"Início", required=True)
+    fim_historicos = forms.DateField(label=u"Fim", required=True)
+    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_estoque(request):
-    historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')
-    totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')
+    data_ultimo_movimento = PosicaoEstoque.objects.all().order_by('-criado')[0].criado.strftime("%d/%m/%Y")
+    data_primeiro_movimento = PosicaoEstoque.objects.all().order_by('-criado').reverse()[0].criado.strftime("%d/%m/%Y")
+    # totalizadores
+    totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')[:10]
+    data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-criado')[0].data.strftime("%d/%m/%Y")
+    data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('-criado').reverse()[0].data.strftime("%d/%m/%Y")
     if request.POST:
         if request.POST.get('consulta-estoque'):
             form_mover_estoque = MoverEstoque()
@@ -890,7 +931,7 @@ def listar_estoque(request):
                     consultado = False
                 # consulta dupla
                 elif estoque_consultado and componente_consultado:
-                    historicos = historicos.filter(estoque=estoque_consultado, componente=componente_consultado)
+                    historicos = PosicaoEstoque.objects.filter(estoque=estoque_consultado, componente=componente_consultado).order_by('-data_entrada')
                     consulta_dupla = True
                     posicaoestoque = componente_consultado.posicao_no_estoque(estoque_consultado)
                     if posicaoestoque and componente_consultado.preco_medio_unitario:
@@ -902,7 +943,7 @@ def listar_estoque(request):
                     form_alterar_estoque = AlterarEstoque(estoque=estoque_consultado, componente=componente_consultado)
                 # consulta somente componente
                 if componente_consultado and not estoque_consultado:
-                    historicos = historicos.filter(componente=componente_consultado)
+                    historicos = PosicaoEstoque.objects.filter(componente=componente_consultado).order_by('-data_entrada')
                     consulta_componente = True
                     posicoes_estoque = []
                     for estoque in EstoqueFisico.objects.all():
@@ -934,11 +975,6 @@ def listar_estoque(request):
                         total_geral += posicao[1]
                     form_mover_estoque = MoverEstoque(estoque_origem=estoque_consultado)
                     form_alterar_estoque = AlterarEstoque(estoque=estoque_consultado)
-            
-                    
-                
-                
-
         if request.POST.get('movimentar-estoque'):
             form_mover_estoque = MoverEstoque(request.POST)
             form_consulta_estoque = ConsultaEstoque()
@@ -994,10 +1030,39 @@ def listar_estoque(request):
                 return redirect(reverse("producao:listar_estoque"))
                 
             
+        if request.POST.get('filtrar-historico-estoque'):
+            form_consulta_estoque = ConsultaEstoque()
+            form_mover_estoque = MoverEstoque()
+            form_alterar_estoque = AlterarEstoque()
+            form_filtra_historico_totalizador = FiltroHistoricos(request.POST)
+            form_filtra_historico_movimentos = FiltroMovimentos()
+            if form_filtra_historico_totalizador.is_valid():
+                inicio = form_filtra_historico_totalizador.cleaned_data['inicio_historicos']
+                fim = form_filtra_historico_totalizador.cleaned_data['fim_historicos']
+                fim = datetime.datetime.combine(fim, datetime.time(23, 59))
+                totalizadores = RegistroValorEstoque.objects.filter(data__gte=inicio, data__lte=fim)
+                filtro_totalizador = True
+            
+        if request.POST.get('filtrar-historico-movimentos'):
+            form_consulta_estoque = ConsultaEstoque()
+            form_mover_estoque = MoverEstoque()
+            form_alterar_estoque = AlterarEstoque()
+            form_filtra_historico_movimentos = FiltroMovimentos(request.POST)
+            if form_filtra_historico_movimentos.is_valid():
+                inicio = form_filtra_historico_movimentos.cleaned_data['inicio_movimentos']
+                fim = form_filtra_historico_movimentos.cleaned_data['fim_movimentos']
+                fim = datetime.datetime.combine(fim, datetime.time(23, 59))
+                historicos = PosicaoEstoque.objects.filter(criado__gte=inicio, criado__lte=fim)
+                filtro_historico = True
+                form_filtra_historico_totalizador = FiltroHistoricos(inicio=inicio, fim=fim)
+            
     else:
+        historicos = PosicaoEstoque.objects.all().order_by('-data_entrada')[:10]
         form_consulta_estoque = ConsultaEstoque()
         form_mover_estoque = MoverEstoque()
         form_alterar_estoque = AlterarEstoque()
+        form_filtra_historico_totalizador = FiltroHistoricos(inicio=data_primeiro_totalizador, fim=data_ultimo_totalizador)
+        form_filtra_historico_movimentos = FiltroMovimentos(inicio=data_primeiro_movimento, fim=data_ultimo_movimento)
     return render_to_response('frontend/producao/producao-listar-estoques.html', locals(), context_instance=RequestContext(request),)    
 
 # SUB PRODUTOS
@@ -1036,8 +1101,6 @@ class ArquivoAnexoSubProdutoForm(forms.ModelForm):
         model = DocumentoTecnicoSubProduto
         fields = 'arquivo', 'nome', 'subproduto'
 
-
-
 class AgregarSubProdutoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         subproduto_principal = kwargs.pop('subproduto_principal')
@@ -1060,7 +1123,6 @@ class AgregarSubProdutoForm(forms.ModelForm):
     class Meta:
         model = LinhaSubProdutoAgregado
 
-
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_subprodutos(request):
     subprodutos_encontrados = SubProduto.objects.filter(ativo=True)
@@ -1077,7 +1139,6 @@ def listar_subprodutos(request):
     
     return render_to_response('frontend/producao/producao-listar-subprodutos.html', locals(), context_instance=RequestContext(request),)    
 
-
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_subproduto(request):
     if request.POST:
@@ -1089,6 +1150,7 @@ def adicionar_subproduto(request):
     else:
         form = SubProdutoForm()
     return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)
+
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1103,7 +1165,6 @@ def editar_subproduto(request, subproduto_id):
     else:
         form = SubProdutoForm(instance=subproduto)
     return render_to_response('frontend/producao/producao-editar-subproduto.html', locals(), context_instance=RequestContext(request),)    
-
 
 class FormEnviarSubProdutoParaTeste(forms.Form):
 
@@ -1700,10 +1761,26 @@ class SelecionarProdutoForm(forms.Form):
     produto.widget.attrs['class'] = 'select2'
     quantidade.widget.attrs['class'] = 'input-mini'
  
+ 
+class FormConverterSubProduto(forms.Form):
+     
+    def clean(self):
+        data = super(FormConverterSubProduto, self).clean()
+        if data.get('subproduto_original') == data.get('subproduto_destino'):
+            raise ValidationError(u"Erro. Sub Produtos igualmente selecionados.")
+        return data
+
+    subproduto_original = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True))
+    subproduto_destino = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True))
+    subproduto_original.widget.attrs['class'] = 'select2'
+    subproduto_destino.widget.attrs['class'] = 'select2'
+    quantidade = forms.IntegerField(required=True)
+
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao(request):
     form_subproduto = SelecionarSubProdutoForm()
     form_produto = SelecionarProdutoForm()
+    form_converter_subproduto = FormConverterSubProduto()
     if request.POST.get('bt-form-subproduto', None):
         form_subproduto = SelecionarSubProdutoForm(request.POST)
         if form_subproduto.is_valid():
@@ -1716,7 +1793,22 @@ def ordem_de_producao(request):
             produto = get_object_or_404(ProdutoFinal.objects.select_related(), pk=form_produto.cleaned_data['produto'].id)
             quantidade = form_produto.cleaned_data['quantidade']
             return redirect(reverse("producao:ordem_de_producao_produto", args=[produto.id, quantidade]))
-    
+
+    if request.POST.get('bt-form-converter', None):
+        form_converter_subproduto = FormConverterSubProduto(request.POST)
+        if form_converter_subproduto.is_valid():
+            data = form_converter_subproduto.cleaned_data
+            return redirect(
+                reverse(
+                    "producao:ordem_de_producao_subproduto_converter",
+                    args=[
+                        data['quantidade'],
+                        data['subproduto_original'].id,
+                        data['subproduto_destino'].id,
+                        ]
+                )
+            )
+            
         
     return render_to_response('frontend/producao/producao-ordem-de-producao.html', locals(), context_instance=RequestContext(request),)    
 
@@ -1805,6 +1897,106 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
 
     return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_original_id, subproduto_destino_id):
+    subproduto_original = SubProduto.objects.get(pk=subproduto_original_id)
+    subproduto_destino = SubProduto.objects.get(pk=subproduto_destino_id)
+    pode_converter = True
+    alerta_movimento = False
+    # verifica se possui quantidade a se converter
+    if subproduto_original.total_funcional < int(quantidade):
+        pode_converter = False
+        messages.error(request, u"Impossível Converter. Quantidade de Sub Produto Funcional: %s. MENOR que a quantidade a converter: %s" % (subproduto_original.total_funcional, quantidade))
+    # pega todos os componentes dos dois subprodutos em questão
+    componentes_original = subproduto_original.get_componentes(multiplicador=quantidade, agrega_subproduto_sem_teste=False)
+    componentes_destino = subproduto_destino.get_componentes(multiplicador=quantidade, agrega_subproduto_sem_teste=False)
+    # verifica se todos os componentes do sub-produto A
+    # estão no subproduto B e com pelo menos a mesma quantidade.
+    for item in componentes_original.items():
+        componente = Componente.objects.get(pk=item[0])
+        try:
+            quantidade_no_destino = componentes_destino[item[0]]
+            quantidade_na_origem = item[1]
+            if quantidade_na_origem > quantidade_no_destino:
+                messages.error(request, u"Impossível Converter. Componente %s (ID:%s) Quantidade na Origem: %s, Quantidade no Destino: %s" % (componente.part_number, componente.id, quantidade_na_origem, quantidade_no_destino))
+                pode_converter = False
+        except KeyError:
+            pode_converter = False
+            messages.error(request, u"Impossível Converter. Não existe o Componente %s (ID:%s) em produto de Destino" % (componente.part_number, componente.id))
+    # agora calcula todas as diferenças
+    relatorio = []
+    for item in componentes_destino.items():
+        componente = Componente.objects.get(pk=item[0])
+        try:
+            quantidade_na_origem = componentes_original[item[0]]
+            quantidade_no_destino = item[1]
+            valor = float(quantidade_no_destino) - float(quantidade_na_origem)
+        except KeyError:
+            # nao existe na origem, contabilizar valor total do destino
+            valor = float(item[1])
+        total_estoque = componente.total_em_estoques()
+        slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
+        estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
+        posicao_em_estoque_produtor = estoque_produtor.posicao_componente(componente)
+        # possui no estoque produtor
+        if posicao_em_estoque_produtor >= valor:
+            linha_no_estoque = True
+            tem_estoque = True
+            alerta_linha = False
+            pode_converter_linha = True
+        else:
+            if total_estoque >= valor:
+                linha_no_estoque = True
+                alerta_movimento = True
+                alerta_linha = True
+                tem_estoque = True
+                pode_converter_linha = True
+                diferenca = float(valor) - float(posicao_em_estoque_produtor)
+                messages.warning(request, u"Impossível Converter. É preciso mover mais pelo menos %s %s de %s para o Estoque Produtor" % (diferenca, componente.medida, componente.part_number))
+            else:
+                linha_no_estoque = False
+                alerta_linha = False
+                tem_estoque = False
+                pode_converter = False
+                pode_converter_linha = False
+                messages.error(request, u"Impossível Converter. No Estoque Total só possui %s %s de %s, quando o necessário é %s %s" % (total_estoque, componente.medida, componente.part_number, valor, componente.medida))
+            
+        relatorio.append((componente, valor, total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha))
+
+    if request.GET.get('confirmado', None):
+        confirmado = True
+        # processa o relatorio
+        for item in relatorio:
+            # cria a entrada de referencia
+            ordem_producao_conversao_subproduto = OrdemConversaoSubProduto.objects.create(
+                subproduto_original=subproduto_original,
+                subproduto_destino=subproduto_destino,
+                quantidade=quantidade,
+                string_producao="A:%s -> B:%s" % (componentes_original, componentes_destino),
+                criado_por=request.user, 
+            )
+            posicao_atual = estoque_produtor.posicao_componente(item[0])
+            # remove da posicao atual
+            nova_quantidade = float(posicao_atual) - float(item[1])
+            nova_posicao = PosicaoEstoque.objects.create(
+                componente_id=int(item[0].id),
+                estoque=estoque_produtor,
+                quantidade=nova_quantidade,
+                criado_por=request.user,
+                justificativa='Ordem #%s de Conversão de Sub Produto' % ordem_producao_conversao_subproduto.id,
+                quantidade_alterada="-%s (A:%s -> B:%s)" % (float(item[1]), componentes_original, componentes_destino),
+                ordem_producao_conversao_subproduto_referencia=ordem_producao_conversao_subproduto
+            )
+            messages.success(request, u"Nova posição em Estoque de Produção para %s: %s - %s = %s" % (nova_posicao.componente, posicao_atual, float(item[1]), nova_posicao.quantidade))
+            
+            
+        
+        
+    return render_to_response('frontend/producao/producao-ordem-de-producao-converter-subproduto.html', locals(), context_instance=RequestContext(request),)
+
+
+
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
@@ -1858,7 +2050,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     if qtd_subproduto > quantidade_disponivel: 
                         producao_liberada = False
                         faltou = float(qtd_subproduto) - float(quantidade_disponivel)
-                        messages.error(request, "Quantidade Indisponível (FALTOU: %s) de SubProduto %s" % (faltou, item[0]))
+                        messages.error(request, "Quantidade Indisponível (FALTOU: %s) de Sub Produto %s" % (faltou, item[0]))
                     
             
             calculado = True
@@ -1953,7 +2145,7 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
             # remove a quantidade de subproduto funcional
             subproduto_remover.total_funcional = nova_posicao 
             subproduto_remover.save()
-            messages.success(request, u"Removido do Total Funcional do Subproduto %s: %s - %s = %s" % (subproduto_remover, posicao_atual, float(item[1]), nova_posicao))
+            messages.success(request, u"Removido do Total Funcional do Sub Produto %s: %s - %s = %s" % (subproduto_remover, posicao_atual, float(item[1]), nova_posicao))
 
     # incrementa o produto em seu total_produzido
     produto_total_produzido = produto.total_produzido

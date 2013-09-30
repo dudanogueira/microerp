@@ -59,10 +59,10 @@
                             <td>{{posicao.criado|date:"SHORT_DATE_FORMAT"}}</td>
                         </tr>
                         {% endfor %}
-
                         </tbody>
                     </table>
 
+										<h5>Total em Estoque: {{componente_consultado.total_em_estoques}} {{componente_consultado.medida}}</h5>
     
                     <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
                 </div>
@@ -160,6 +160,20 @@
             <h4>Consultando Estoque: {{estoque_consultado}}</h4>
             {% endif %}
         {% endif %}
+				
+				<form method="POST" action="#historico" class="form form-inline" id="form-historico-movimentos">
+					{% csrf_token %}
+					{% if not filtro_historico %}
+					<p><strong>Mostrando últimos 10</strong></p>
+					{% else %}
+					<p><strong>Filtro ativo. Exibindo {{historicos.count}} movimentos </strong></p>
+					{% endif %}
+					
+				{{form_filtra_historico_movimentos}}
+				<button type="submit" class="btn btn-primary" name="filtrar-historico-movimentos" value="filtrar">Filtrar</button>
+			</form>
+				
+				
         
         <table class="table table-condensed table-striped table-rounded">
             <thead>
@@ -205,8 +219,21 @@
     
 		<div class="tab-pane fade in" id="historico-totalizador">
 			
-			<small>* Soma o valor total de todos os estoques e armazena o valor diáriamente.</small>
+			{% if not filtro_totalizador %}
+			<p><strong>Mostrando últimos 10</strong></p>
+			{% else %}
+			<p><strong>Filtro ativo. Exibindo <span class="badge badge-success">{{totalizadores.count}}</span> Históricos de Totalizador </strong></p>
+			{% endif %}
 			
+			<form method="POST" id="form-historico-totalizador"  action="#historico-totalizador" class="form form-inline">
+				{% csrf_token %}
+			{{form_filtra_historico_totalizador}}
+			<button type="submit" class="btn btn-primary" name="filtrar-historico-estoque" value="filtrar">Filtrar</button>
+			</form>
+			
+			<small>* Soma o valor total de todos os estoques e armazena o valor em relação a uma data/hora.</small>
+
+
       <table class="table table-condensed table-striped table-rounded">
           <thead>
               <tr>
@@ -223,6 +250,11 @@
 						{% endfor %}
 					</tbody>
 				</table>
+				
+				<h6>Total Estoque X Data
+					<canvas id="canvas" height="300px" width=""></canvas>
+				</div>
+				
 			
 			
 		</div>
@@ -236,14 +268,23 @@
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui.custom.min.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-timepicker-addon.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-sliderAccess.js"></script>
+
 
 <script>
 $(document).ready(function() {
 	$("#menu-producao-estoque, #top-menu-producao").addClass("active");
     var activeTab = $('[href=' + location.hash + ']');
     activeTab && activeTab.tab('show');
-    
-    
+		
+		$( ".datepicker" ).datepicker({
+			inline: true,
+			dateFormat: "dd/mm/yy"
+		});
+		
 });
 </script>
 

@@ -63,6 +63,7 @@ urlpatterns = patterns('',
     url(r'^ordem-de-producao/totalizador-de-producao/$', 'producao.views.totalizador_de_producao', name='totalizador_de_producao'),
     url(r'^ordem-de-producao/subproduto/(?P<subproduto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/$', 'producao.views.ordem_de_producao_subproduto', name='ordem_de_producao_subproduto'),
     url(r'^ordem-de-producao/subproduto/(?P<subproduto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/confirmar/$', 'producao.views.ordem_de_producao_subproduto_confirmar', name='ordem_de_producao_subproduto_confirmar'),    
+    url(r'^ordem-de-producao/subproduto/converter/(?P<quantidade>[0-9]+)/(?P<subproduto_original_id>[0-9]+)/(?P<subproduto_destino_id>[0-9]+)/$', 'producao.views.ordem_de_producao_subproduto_converter', name='ordem_de_producao_subproduto_converter'),    
     url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/$', 'producao.views.ordem_de_producao_produto', name='ordem_de_producao_produto'),
     url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/confirmar/$', 'producao.views.ordem_de_producao_produto_confirmar', name='ordem_de_producao_produto_confirmar'),
     # ajax auxs

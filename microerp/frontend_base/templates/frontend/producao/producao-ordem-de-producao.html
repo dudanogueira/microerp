@@ -8,7 +8,8 @@
 <h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
 	
 	<ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
-	    <li class="active"><a href="#produzir" data-toggle="tab">Produzir</a></li>
+	    <li class="active"><a href="#produzir" class="ajaxtab" data-toggle="tab">Produzir</a></li>
+			<li> <a class="ajaxtab" href="#converter" data-toggle="tab">Converter</a></li>
 	    <li>
 	        <a href="#producao-combinada" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:producao_combinada" %}">
 	            Produção Combinada
@@ -24,6 +25,7 @@
 	            Relatório de Compras
 	        </a>
 	    </li>
+
 	</ul>
 	
 	<div id="tab-content-ordem-producao" class="tab-content">
@@ -92,6 +94,15 @@
 			Preparar Produção Semanal
 		</div>
 		
+		<div class="tab-pane fade in" id="converter">
+			<h4>Converter Sub Produto</h4>
+			<form method="POST">
+				{% csrf_token %}
+			{{form_converter_subproduto.as_p}}
+			<button type="submit" class="btn btn-primary" name="bt-form-converter" value="converter"><i class="icon-refresh"></i> Converter</button>
+			</form>
+		</div>
+		
 		
 		
 	</div>
@@ -115,13 +126,16 @@ $(document).ready(function() {
 
 $('.nav-tabs').on("click", '.ajaxtab', function(e){
 	e.preventDefault();
-	var url = $(this).attr("data-url");
+	
 	var href = this.hash;
 	window.location.hash = this.hash;
 	var pane = $(this);
 	// ajax load from data-url
-	$(href).load(url)
-	$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	var url = $(this).attr("data-url");
+	if (url){
+		$(href).load(url);
+		$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	}
 	pane.tab('show');		
 })
 

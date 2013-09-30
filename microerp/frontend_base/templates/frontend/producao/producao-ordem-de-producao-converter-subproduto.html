@@ -1,0 +1,84 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção: Converter Sub Produto{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="icon-list-ul"></i> Converter Sub Produto: <a href="{% url "producao:ver_subproduto" subproduto_original.id %}">{{subproduto_original.part_number}}</a> para <a href="{% url "producao:ver_subproduto" subproduto_destino.id %}">{{subproduto_destino.part_number}}</a></h2>
+	<h3>Quantidade: {{quantidade}}</h3>
+	Notação do Original: {{componentes_original}}<br />
+	Notação de Destino: {{componentes_destino}}
+	{% if not confirmado %}
+	<div id="relatorio">
+
+    <table class="table table-condensed table-hover table-rounded">
+        <thead>
+            <tr>
+                <th>Componente</th>
+								<th>Descrição</th>
+								<th>Total Necessário</th>
+								<th>Total Estoque</th>
+								<th>Total Estoque Produtor</th>
+            </tr>
+        </thead>
+        <tbody>
+					{% for linha in relatorio %}
+					<tr class="{% if not linha.4 and not linha.5 %}
+							alert alert-danger
+							{% endif %}
+							{% if linha.4 and linha.5 %}
+							alert alert-waring
+							{% endif %}
+							{% if linha.4 and not linha.5 %}
+							alert alert-success
+							{% endif %}">
+						<td><a href="{% url "producao:ver_componente" linha.0.id %}">{{linha.0.part_number}}</a></td>
+						<td>{{linha.0.descricao}} a: {{linha.4}} {{linha.5}}
+							
+						
+						</td>
+						<td>{{linha.1}} {{linha.0.medida}}</td>
+						<td>{{linha.2}} {{linha.0.medida}}</td>
+						<td>{{linha.3}} {{linha.0.medida}}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		
+		
+	</div>	
+	{% if pode_converter and not alerta_movimento %}
+	<a class="btn btn-primary" href="?confirmado=sim"><i class="icon-refresh"></i> Conversão Liberada</a>
+	{% else %}
+	<div class="alert alert-danger">
+		<h4>Conversão Não Liberada</h4>
+	</div>	
+	{% endif %}
+	{% else %}
+	<h1>Conversão realizada</h1>
+	{% endif %}
+	
+
+	{% if alerta_movimento %}
+	<div class="alert alert-warning">
+		<h4>É preciso movimentar o estoque para realizar a conversão</h4>
+	</div>
+	{% endif %}
+	
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

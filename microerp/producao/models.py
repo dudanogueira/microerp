@@ -109,6 +109,7 @@ class PosicaoEstoque(models.Model):
     nota_referencia = models.ForeignKey('NotaFiscal', blank=True, null=True, on_delete=models.PROTECT)
     ordem_producao_subproduto_referencia = models.ForeignKey('OrdemProducaoSubProduto', null=True, blank=True)
     ordem_producao_produto_referencia = models.ForeignKey('OrdemProducaoProduto', null=True, blank=True)
+    ordem_producao_conversao_subproduto_referencia = models.ForeignKey('OrdemConversaoSubProduto', null=True, blank=True)
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
@@ -1221,6 +1222,19 @@ class OrdemProducaoSubProduto(models.Model):
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+
+class OrdemConversaoSubProduto(models.Model):
+    subproduto_original = models.ForeignKey('SubProduto', related_name="ordem_conversao_subproduto_original_set")
+    subproduto_destino = models.ForeignKey('SubProduto', related_name="ordem_conversao_subproduto_destino_set")
+    quantidade = models.IntegerField(blank=False, null=False)
+    string_producao = models.TextField(blank=False)
+    # meta
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+## PRODUCAO PRODUTO
 
 
 class OrdemProducaoProduto(models.Model):
