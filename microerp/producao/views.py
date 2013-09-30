@@ -1946,7 +1946,7 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
             alerta_linha = False
             pode_converter_linha = True
         else:
-            if total_estoque >= valor:
+            if total_estoque >= valor:                    
                 linha_no_estoque = True
                 alerta_movimento = True
                 alerta_linha = True
@@ -1961,7 +1961,8 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
                 pode_converter = False
                 pode_converter_linha = False
                 messages.error(request, u"Impossível Converter. No Estoque Total só possui %s %s de %s, quando o necessário é %s %s" % (total_estoque, componente.medida, componente.part_number, valor, componente.medida))
-            
+        if valor < 0:
+            linha_no_estoque = False
         relatorio.append((componente, valor, total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha))
 
     if request.GET.get('confirmado', None):
