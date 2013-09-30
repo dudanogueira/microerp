@@ -6,10 +6,36 @@
 
 {% block content %}
 	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Converter Sub Produto: <a href="{% url "producao:ver_subproduto" subproduto_original.id %}">{{subproduto_original.part_number}}</a> para <a href="{% url "producao:ver_subproduto" subproduto_destino.id %}">{{subproduto_destino.part_number}}</a></h2>
-	<h3>Quantidade: {{quantidade}}</h3>
-	Notação do Original: {{componentes_original}}<br />
-	Notação de Destino: {{componentes_destino}}
+	<h2><i class="icon-list-ul"></i> Converter Sub Produto</h2>
+	<p>
+	<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
+	</p>
+	
+	
+	<a href="{% url "producao:ver_subproduto" subproduto_original.id %}">{{subproduto_original}}</a> para <a href="{% url "producao:ver_subproduto" subproduto_destino.id %}">{{subproduto_destino}}</a>
+	
+	<div class="row-fluid">
+		<div class="span6">
+			
+			
+			<p>
+			Notação do Original: {{componentes_original}}<br />
+			Notação de Destino: {{componentes_destino}}
+		</p>
+			
+			
+		</div>
+		
+		<div class="span6">
+			<div class="alert alert-info nomargin">
+				<h4>{{quantidade}} Unidades</h4>
+			</div>
+			
+			
+			
+		</div>
+		
+	</div>
 	{% if not confirmado %}
 	<div id="relatorio">
 
@@ -18,9 +44,10 @@
             <tr>
                 <th>Componente</th>
 								<th>Descrição</th>
-								<th>Total Necessário</th>
-								<th>Total Estoque</th>
-								<th>Total Estoque Produtor</th>
+								<th>Tot. Nec.</th>
+								<th>Tot. Estoq.</th>
+								<th>Estoq. Prod.</th>
+								<th>Falta</th>
             </tr>
         </thead>
         <tbody>
@@ -32,13 +59,14 @@
 							alert alert-waring
 							{% endif %}
 							{% if linha.4 and not linha.5 %}
-							alert alert-success
+							alert alert-success linhaok
 							{% endif %}">
 						<td><a href="{% url "producao:ver_componente" linha.0.id %}">{{linha.0.part_number}}</a></td>
 						<td>{{linha.0.descricao}}</td>
 						<td>{{linha.1}} {{linha.0.medida}}</td>
 						<td>{{linha.2}} {{linha.0.medida}}</td>
 						<td>{{linha.3}} {{linha.0.medida}}</td>
+						<td>{{linha.6}} {{linha.0.medida}}</td>
 					</tr>
 					{% endfor %}
 				</tbody>
@@ -73,6 +101,13 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+		$("#esconder-linhas-ok").click(function(e){
+			e.preventDefault();
+			$(".linhaok").toggle();
+		});
+		
+		$(".linhaok").toggle();
+		
 });
 
 </script>

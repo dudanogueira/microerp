@@ -1939,6 +1939,7 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
         slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
         estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
         posicao_em_estoque_produtor = estoque_produtor.posicao_componente(componente)
+        diferenca_estoque_produtor = float(posicao_em_estoque_produtor) - float(valor) 
         # possui no estoque produtor
         if posicao_em_estoque_produtor >= valor:
             linha_no_estoque = True
@@ -1952,18 +1953,17 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
                 alerta_linha = True
                 tem_estoque = True
                 pode_converter_linha = True
-                diferenca = float(valor) - float(posicao_em_estoque_produtor)
-                messages.warning(request, u"Impossível Converter. É preciso mover mais pelo menos %s %s de %s para o Estoque Produtor" % (diferenca, componente.medida, componente.part_number))
+                #messages.warning(request, u"Impossível Converter. É preciso mover mais pelo menos %s %s de %s para o Estoque Produtor" % (diferenca, componente.medida, componente.part_number))
             else:
                 linha_no_estoque = False
                 alerta_linha = False
                 tem_estoque = False
                 pode_converter = False
                 pode_converter_linha = False
-                messages.error(request, u"Impossível Converter. No Estoque Total só possui %s %s de %s, quando o necessário é %s %s" % (total_estoque, componente.medida, componente.part_number, valor, componente.medida))
+                #messages.error(request, u"Impossível Converter. No Estoque Total só possui %s %s de %s, quando o necessário é %s %s" % (total_estoque, componente.medida, componente.part_number, valor, componente.medida))
         if valor < 0:
             linha_no_estoque = False
-        relatorio.append((componente, valor, total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha))
+        relatorio.append((componente, "%.2f" % valor, "%.2f" % total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha, "%.2f" % diferenca_estoque_produtor))
 
     if request.GET.get('confirmado', None):
         confirmado = True

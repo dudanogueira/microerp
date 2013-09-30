@@ -166,7 +166,7 @@
 					{% if not filtro_historico %}
 					<p><strong>Mostrando últimos 10</strong></p>
 					{% else %}
-					<p><strong>Filtro ativo. Exibindo {{historicos.count}} movimentos </strong></p>
+					<p><strong>Filtro ativo. Exibindo <span class="badge badge-success">{{historicos.count}}</span> movimentos </strong></p>
 					{% endif %}
 					
 				{{form_filtra_historico_movimentos}}
