@@ -123,6 +123,11 @@ class Command(BaseCommand):
                                         print "NCM",row[29].value
                                         if row[29].value:
                                             produto.ncm = row[29].value
+                                        
+                                        print "PRECO_CONSUMIDOR",row[18].value
+                                        if row[18].value:
+                                            produto.preco_consumo = row[18].value
+                                        
                                         produto.save()
                                 
                             # trata o arquivo

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
+from django.db.models import Q
 
 from django.core.exceptions import ValidationError
 from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
@@ -24,6 +25,7 @@ from rh.models import Departamento
 from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial
+from estoque.models import Produto
 
 from django.conf import settings
 
@@ -250,4 +252,18 @@ def solicitacao_adicionar(request):
     return render_to_response('frontend/comercial/comercial-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 
+class FiltraTabelaDePrecos(forms.Form):
+    buscar = forms.CharField(required=True)
 
+@user_passes_test(possui_perfil_acesso_comercial)
+def tabela_de_precos(request):
+    if request.POST:
+        form_filtra_tabela = FiltraTabelaDePrecos(request.POST)
+        if form_filtra_tabela.is_valid():
+            q = form_filtra_tabela.cleaned_data['buscar']
+            produtos = Produto.objects.filter(
+                    Q(codigo=q) | Q(descricao__icontains=q) | Q(nome__icontains=q)
+                )
+    else:
+        form_filtra_tabela = FiltraTabelaDePrecos()
+    return render_to_response('frontend/comercial/comercial-consultar-tabela-precos.html', locals(), context_instance=RequestContext(request),)

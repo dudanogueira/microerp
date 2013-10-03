@@ -17,4 +17,7 @@ urlpatterns = patterns('',
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/$', 'comercial.views.propostas_comerciais_precliente', name='propostas_comerciais_precliente'),
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/adicionar/$', 'comercial.views.propostas_comerciais_precliente_adicionar', name='propostas_comerciais_precliente_adicionar'),    
     url(r'^propostas/minhas/$', 'comercial.views.propostas_comerciais_minhas', name='propostas_comerciais_minhas'),    
+    # tabela de precos
+    url(r'^tabela-de-precos/$', 'comercial.views.tabela_de_precos', name='tabela_de_precos'),
+    
 )

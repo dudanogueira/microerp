@@ -82,6 +82,7 @@ class Produto(models.Model):
     quantidade_em_estoque = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
     preco_custo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     preco_venda = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    preco_consumo = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     # fk
     tipo = models.ForeignKey('TipoDeProduto', blank=True, null=True)
     tabela = models.ForeignKey('TabelaDePreco', blank=True, null=True)

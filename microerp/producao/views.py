@@ -1770,8 +1770,8 @@ class FormConverterSubProduto(forms.Form):
             raise ValidationError(u"Erro. Sub Produtos igualmente selecionados.")
         return data
 
-    subproduto_original = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True))
-    subproduto_destino = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True))
+    subproduto_original = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True).exclude(tipo_de_teste=0), label="Sub Produto Original")
+    subproduto_destino = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True).exclude(tipo_de_teste=0), label="Sub Produto Destino")
     subproduto_original.widget.attrs['class'] = 'select2'
     subproduto_destino.widget.attrs['class'] = 'select2'
     quantidade = forms.IntegerField(required=True)
@@ -1963,6 +1963,10 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
                 #messages.error(request, u"Impossível Converter. No Estoque Total só possui %s %s de %s, quando o necessário é %s %s" % (total_estoque, componente.medida, componente.part_number, valor, componente.medida))
         if valor < 0:
             linha_no_estoque = False
+            valor = 0
+        if diferenca_estoque_produtor > 0:
+            diferenca_estoque_produtor = 0
+            
         relatorio.append((componente, "%.2f" % valor, "%.2f" % total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha, "%.2f" % diferenca_estoque_produtor))
 
     if request.GET.get('confirmado', None):
