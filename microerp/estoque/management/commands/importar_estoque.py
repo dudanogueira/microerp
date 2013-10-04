@@ -62,7 +62,7 @@ class Command(BaseCommand):
                         if formato_tipo == "xls":
                             print "Formato XLS"
                             # abre o arquivp
-                            print "ARQUIVO:", arquivo
+                            print u"ARQUIVO: %s" f
                             workbook = xlrd.open_workbook(f)
                             worksheet = workbook.sheet_by_name('Plan1')
                             i = 0
@@ -77,7 +77,7 @@ class Command(BaseCommand):
                                     if codigo:
                                         print "CODIGO", codigo
                                         produto,created = Produto.objects.get_or_create(codigo=codigo)
-                                        print "PRODUTO:", produto
+                                        print u"PRODUTO: %s" % produto
                                         print "PRODUTO CREATED:",created
                                         # ATUALIZAVEIS
                                         produto.nome = smart_text(row[3].value)
@@ -89,7 +89,7 @@ class Command(BaseCommand):
                                         tabela_nome = smart_text(row[28].value)
                                         tabela_id = tabela_nome.split()[0]
                                         print "TABELA ID:", tabela_id
-                                        print "TABELA NOME:", tabela_nome
+                                        print u"TABELA NOME: %s" % tabela_nome
                                         if str(tabela_id).isdigit() and tabela_id != 0:
                                             tabela,created = TabelaDePreco.objects.get_or_create(id=tabela_id)
                                         else:
@@ -104,9 +104,9 @@ class Command(BaseCommand):
                                             tipo = None
                                         else:
                                             tipo,created = TipoDeProduto.objects.get_or_create(id=tipo_id)
-                                            tipo.nome = "GRUPO %s" % tipo.id
+                                            tipo.nome = u"GRUPO %s" % tipo.id
                                             tipo.save()
-                                        print "TIPO:,",tipo
+                                        print u"TIPO: %s" % tipo
                                         produto.tipo = tipo
                                         
                                         # FATOR
@@ -153,8 +153,8 @@ class Command(BaseCommand):
                             codigo = row['CODIGO']
                             print "CODIGO", codigo
                             produto,created = Produto.objects.get_or_create(codigo=codigo)
-                            print "PRODUTO:", produto
-                            print "PRODUTO CREATED:",created
+                            print "PRODUTO: %s" % produto
+                            print "PRODUTO CREATED: %s" % created
 
                             # ATUALIZAVEIS
                             print "** ATUALIZAVEIS **"
@@ -162,12 +162,12 @@ class Command(BaseCommand):
                             tabela_nome = row['TABELA_PRECO']
                             tabela_id = tabela_nome.split()[0]
                             print "TABELA ID:", tabela_id
-                            print "TABELA NOME:", tabela_nome
+                            print "TABELA NOME: %s" % tabela_nome
                             if str(tabela_id).isdigit() and tabela_id != 0:
                                 tabela,created = TabelaDePreco.objects.get_or_create(id=tabela_id)
                             else:
                                 tabela,created = TabelaDePreco.objects.get_or_create(nome=tabela_nome)
-                            print "TABELA CRIADA:",created
+                            print "TABELA CRIADA: %s" % created
                             produto.tabela = tabela
                         
                             # TIPO / GRUPO
