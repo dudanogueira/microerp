@@ -32,7 +32,7 @@ class Command(BaseCommand):
     make_option('--format',
             action='store_true',
             dest='formato',
-            help='Especificar o formato. Padrão CSV, alternativo: XSL',
+            help='Especificar o formato. Padrão CSV, alternativo: xls',
         ),
     make_option('--delete_after',
             action='store_true',
@@ -59,8 +59,8 @@ class Command(BaseCommand):
             try:
                 if os.path.isfile(f):
                     if formato:
-                        if formato_tipo == "xsl":
-                            print "Formato XSL"
+                        if formato_tipo == "xls":
+                            print "Formato XLS"
                             # abre o arquivp
                             print "ARQUIVO:", arquivo
                             workbook = xlrd.open_workbook(f)
@@ -143,7 +143,7 @@ class Command(BaseCommand):
                                 if not rename_after:
                                     os.remove(f)
                         else:
-                            print "Formato Inválido. suportado: xsl"
+                            print "Formato Inválido. suportado: xls"
                             
                      # padrao CSV   
                     else:
@@ -215,7 +215,7 @@ class Command(BaseCommand):
 
 
                 else:
-                    print "ERRO. Arquivo não encontrado."
+                    print "ERRO. Arquivo não encontrado. %s" % f
             except:
                 raise
         else:
