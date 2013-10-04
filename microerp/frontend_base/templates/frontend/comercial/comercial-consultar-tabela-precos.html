@@ -8,33 +8,40 @@
 
 <h1><i class="icon-th"></i> <i class="icon-briefcase"></i> <i class="icon-file-alt"></i> Consulta Tabela de Preços</h1>
 
-<form method="POST" class="form form-inline">
+<form method="POST" class="form form-search">
 {% csrf_token %}
-{{form_filtra_tabela}}
-<button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar</button>
+	<div class="input-append">
+	{{form_filtra_tabela}}
+	<button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar</button>
+	</div>
 </form>
-
-<table class="table table-condensed table-hover table-rounded">
-	<thead>
-		<tr>
-			<th>Código</th>
-			<th>Nome</th>
-			<th>Descrição</th>
-			<th>Preço de Venda</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for produto in produtos %}
-		<tr>
-			<td>{{produto.codigo}}</td>
-			<td>{{produto.nome}}</td>
-			<td>{{produto.descricao}}</td>
-			<td>{{produto.preco_consumo}}</td>
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
-
+{% if produtos %}
+<div id="produtos-encontrados">
+	<h2>Total de: {{produtos.count}} encontrados</h2>
+	<table class="table table-condensed table-hover table-rounded ">
+		<thead>
+			<tr>
+				<th>Código</th>
+				<th>Nome</th>
+				<th>Preço de Venda</th>
+				<th>Descrição</th>
+				<th>Estoque</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for produto in produtos %}
+			<tr>
+				<td class="alert alert-info"><strong>{{produto.codigo}}</strong></td>
+				<td>{{produto.nome}}</td>
+				<td class="alert alert-success"><strong>R$ {{produto.preco_consumo}}</strong></td>
+				<td>{{produto.descricao}}</td>
+				<td class="alert alert-warning">{{produto.quantidade_em_estoque}}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+{% endif %}
 
 
 {% endblock %}
@@ -43,7 +50,7 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+$("#menu-comercial-tabela-de-precos, #top-menu-comercial").addClass("active");
 });
 </script>
 {% endaddtoblock %}

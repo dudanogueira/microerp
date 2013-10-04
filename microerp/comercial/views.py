@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import operator
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
@@ -253,17 +254,25 @@ def solicitacao_adicionar(request):
 
 
 class FiltraTabelaDePrecos(forms.Form):
-    buscar = forms.CharField(required=True)
+    
+    def __init__(self, *args, **kwargs):
+        super(FiltraTabelaDePrecos, self).__init__(*args, **kwargs)
+        self.fields['buscar'].widget.attrs['class'] = 'input-xxlarge'
+    
+    
+    buscar = forms.CharField(required=True, label='')
+    
+    
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def tabela_de_precos(request):
     if request.POST:
         form_filtra_tabela = FiltraTabelaDePrecos(request.POST)
         if form_filtra_tabela.is_valid():
-            q = form_filtra_tabela.cleaned_data['buscar']
-            produtos = Produto.objects.filter(
-                    Q(codigo=q) | Q(descricao__icontains=q) | Q(nome__icontains=q)
-                )
+            queries = form_filtra_tabela.cleaned_data['buscar'].split()
+            qset1 =  reduce(operator.__and__, [Q(codigo=query) | Q(descricao__icontains=query) | Q(nome__icontains=query)  for query in queries])
+            produtos = Produto.objects.filter(qset1).order_by('-preco_consumo').distinct()
     else:
         form_filtra_tabela = FiltraTabelaDePrecos()
     return render_to_response('frontend/comercial/comercial-consultar-tabela-precos.html', locals(), context_instance=RequestContext(request),)
