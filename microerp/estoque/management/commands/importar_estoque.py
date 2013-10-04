@@ -32,17 +32,17 @@ class Command(BaseCommand):
     make_option('--format',
             action='store_true',
             dest='formato',
-            help='Especificar o formato. Padrão CSV, alternativo: xls',
+            help=u'Especificar o formato. Padrão CSV, alternativo: xls',
         ),
     make_option('--delete_after',
             action='store_true',
             dest='delete_after',
-            help='Apagar após importar',
+            help=u'Apagar após importar',
         ),    
     make_option('--rename_after',
             action='store_true',
             dest='rename_after',
-            help='Renomear após importar',
+            help=u'Renomear após importar',
         ),    
         
     )
@@ -143,7 +143,7 @@ class Command(BaseCommand):
                                 if not rename_after:
                                     os.remove(f)
                         else:
-                            print "Formato Inválido. suportado: xls"
+                            print u"Formato Inválido. suportado: xls"
                             
                      # padrao CSV   
                     else:
@@ -215,7 +215,7 @@ class Command(BaseCommand):
 
 
                 else:
-                    print "ERRO. Arquivo não encontrado. %s" % f
+                    print u"ERRO. Arquivo não encontrado. %s" % f
             except:
                 raise
         else:
