@@ -62,7 +62,7 @@ class Command(BaseCommand):
                         if formato_tipo == "xls":
                             print "Formato XLS"
                             # abre o arquivp
-                            print u"ARQUIVO: %s" f
+                            print u"ARQUIVO: %s" % f
                             workbook = xlrd.open_workbook(f)
                             worksheet = workbook.sheet_by_name('Plan1')
                             i = 0
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                                         # TABELA
                                         tabela_nome = smart_text(row[28].value)
                                         tabela_id = tabela_nome.split()[0]
-                                        print "TABELA ID:", tabela_id
+                                        print u"TABELA ID: %s" % tabela_id
                                         print u"TABELA NOME: %s" % tabela_nome
                                         if str(tabela_id).isdigit() and tabela_id != 0:
                                             tabela,created = TabelaDePreco.objects.get_or_create(id=tabela_id)
