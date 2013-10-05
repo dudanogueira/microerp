@@ -24,25 +24,17 @@
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
     <li><a href="#componentes-avulsos" data-toggle="tab">
             Linhas de Componentes
-            {% if produto.linhacomponenteavulsodoproduto_set.count %}
             <span class="badge badge-info">{{produto.linhacomponenteavulsodoproduto_set.count}}</span>
-            {% endif %}
         </a>
     </li>
     
     <li><a href="#linhas-subprodutos" data-toggle="tab">
             Sub Produtos Agregados
-            {% if produto.linhasubprodutodoproduto_set.count %}
             <span class="badge badge-success">{{produto.linhasubprodutodoproduto_set.count}}</span>
-        
-            {% endif %}
         </a>
     </li>
     <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
-        {% if produto.documentotecnicoproduto_set.count %}
         <span class="badge badge">{{produto.documentotecnicoproduto_set.count}}</span>
-        {% endif %}
-    
     </a></li>
     <li><a href="#relatorios" data-toggle="tab">Relatórios</a></li>
     

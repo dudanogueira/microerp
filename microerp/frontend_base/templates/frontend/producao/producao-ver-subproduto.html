@@ -25,35 +25,27 @@
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
     <li>
         <a href="#participacao" data-toggle="tab">
-            Participações {% if subproduto.total_participacao %}
+            Participações
             <span class="badge badge-important">{{subproduto.total_participacao}}</span>
-        
-            {% endif %}
 
         </a>
     </li>
     <li>
         <a href="#linhas-componente" data-toggle="tab">
             Componentes 
-            {% if subproduto.linhasubproduto_set.count %}
             <span class="badge badge-info">{{subproduto.linhasubproduto_set.count}}</span>
-        
-            {% endif %}
-        </a>
+					</a>
     </li>
     <li>
         <a href="#sub-produtos-agregados" data-toggle="tab">
             Sub Produtos
-            {% if subproduto.linhasubprodutos_agregados.count %}
             <span class="badge badge-success">{{subproduto.linhasubprodutos_agregados.count}}</span>
-            {% endif %}
             
         </a>
     </li>
     <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
-        {% if subproduto.documentotecnicosubproduto_set.count %}
         <span class="badge badge">{{subproduto.documentotecnicosubproduto_set.count}}</span>
-        {% endif %}
+
         
     
     
@@ -82,20 +74,17 @@
                 <strong>Quantidade Máxima de Produção Agrupado:</strong> {{subproduto.maximo_produzivel_agrupado}}<br />
                 
                 <h3>Situação de Testes e Produção</h3>
-								{% if subproduto.tipo_de_teste == 0 %}
-								<strong>Não precisa de testes.</strong><br />
-								Capacidade de Produção conforme Estoque: {{subproduto.total_disponivel}}
-								{% else %}
-								<div id="situacao-testes">
-				        	<table class="table table-condensed table-hover table-rounded">
-				            <thead>
+								{% if subproduto.tipo_de_teste == 2 %}
+									<div id="situacao-teste-composto">
+				        		<table class="table table-condensed table-hover table-rounded">
+				            	<thead>
 				                <tr>
 				                    <th>Situação</th>
 														<th>Quantidade</th>
 				                    <th>Ação</th>
 				                </tr>
 				            </thead>
-				            <tbody>
+											<tbody>
 											
 											<tr>
 												<td>Montado</td>
@@ -163,9 +152,36 @@
 											
 											
 										</tbody>
-								</table>
-								</div>
-								
+										</table>
+									</div>
+								{% elif subproduto.tipo_de_teste == 1  %}
+									<div id="situacao-teste-simples">
+				        		<table class="table table-condensed table-hover table-rounded">
+											<thead>
+				                <tr>
+				                    <th>Situação</th>
+														<th>Quantidade</th>
+				                    <th>Ação</th>
+				                </tr>
+				            </thead>
+											<tbody>
+										
+											<tr>
+												<td>Funcional</td>
+												<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
+												<td></td>
+											</tr>
+										
+										
+										
+										</tbody>
+										</table>
+									</div>
+								{% else %}
+									<div class="sotiacao-teste-nulo">
+									<strong>Não precisa de testes.</strong><br />
+									Capacidade de Produção conforme Estoque: {{subproduto.total_disponivel}}
+									</div>
 								{% endif %}								
 								
             </div>
@@ -188,8 +204,8 @@
     </div>
 		
     <div class="tab-pane fade in" id="participacao">
+			<h4>Participação Como Sub Produto de Outros Sub Produtos</h4>	
 			{% if participacao_subprodutos %}
-			<h4>Participação Como Sub Produto de Outros SubProdutos</h4>	
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
@@ -213,10 +229,12 @@
 					{% endfor %}
 				</tbody>
 			</table>
+			{% else %}
+			<small>Nenhuma Participação</small>
 			{% endif %}
 			
-			{% if agregado_em_produto %}
 			<h4>Participação Como Sub Produto de Outros Produtos</h4>	
+			{% if agregado_em_produto %}
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
@@ -241,6 +259,8 @@
 					{% endfor %}
 				</tbody>
 			</table>
+			{% else %}
+			<small>Nenhuma Participação</small>
 			{% endif %}
 			
 			

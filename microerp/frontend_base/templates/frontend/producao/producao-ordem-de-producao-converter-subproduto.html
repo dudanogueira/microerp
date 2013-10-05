@@ -44,9 +44,9 @@
             <tr>
                 <th>Componente</th>
 								<th>Descrição</th>
-								<th>Tot. Nec.</th>
 								<th>Tot. Estoq.</th>
 								<th>Estoq. Prod.</th>
+								<th>Tot. Nec.</th>
 								<th>Falta</th>
             </tr>
         </thead>
@@ -63,10 +63,10 @@
 							{% endif %}">
 						<td><a href="{% url "producao:ver_componente" linha.0.id %}">{{linha.0.part_number}}</a></td>
 						<td>{{linha.0.descricao}}</td>
-						<td>{{linha.1}} {{linha.0.medida}}</td>
-						<td>{{linha.2}} {{linha.0.medida}}</td>
-						<td>{{linha.3}} {{linha.0.medida}}</td>
-						<td>{{linha.6}} {{linha.0.medida}}</td>
+						<td class="tot-estoq">{{linha.2}} {{linha.0.medida}}</td>
+						<td class="tot-estoq-produtor">{{linha.3}} {{linha.0.medida}}</td>
+						<td class="tot-necessario">{{linha.1}} {{linha.0.medida}}</td>
+						<td class="tot-falta">{{linha.6}} {{linha.0.medida}}</td>
 					</tr>
 					{% endfor %}
 				</tbody>
