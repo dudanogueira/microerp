@@ -1078,6 +1078,7 @@ class SubProdutoForm(forms.ModelForm):
 
     class Meta:
         model = SubProduto
+        fields = ('ativo', 'imagem', 'slug', 'nome', 'slug', 'descricao', 'possui_tags', 'tipo_de_teste')
 
 
 class ImagemSubprodutoForm(forms.ModelForm):
@@ -1325,9 +1326,6 @@ def ver_subproduto(request, subproduto_id):
         form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto)
         
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
-
-
-
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto_apagar_anexo(request, subproduto_id, anexo_id):
@@ -1893,7 +1891,8 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
             subproduto.total_montado = novo_total
             messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
         subproduto.save()
-        return redirect(reverse("producao:ordem_de_producao"))
+        url_retorno = "%s%s" % (reverse("producao:ordem_de_producao"), "#converter")
+        return redirect(url_retorno)
 
     return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
 
@@ -1967,7 +1966,7 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
         if diferenca_estoque_produtor > 0:
             diferenca_estoque_produtor = 0
             
-        relatorio.append((componente, "%.2f" % valor, "%.2f" % total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha, "%.2f" % diferenca_estoque_produtor))
+        relatorio.append((componente, valor, total_estoque, posicao_em_estoque_produtor, linha_no_estoque, alerta_linha, diferenca_estoque_produtor))
 
     if request.GET.get('confirmado', None):
         confirmado = True
@@ -1994,7 +1993,7 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
                 ordem_producao_conversao_subproduto_referencia=ordem_producao_conversao_subproduto
             )
             messages.success(request, u"Nova posição em Estoque de Produção para %s: %s - %s = %s" % (nova_posicao.componente, posicao_atual, float(item[1]), nova_posicao.quantidade))
-            
+            return redirect(reverse("producao:ordem_de_producao"))
             
         
         
