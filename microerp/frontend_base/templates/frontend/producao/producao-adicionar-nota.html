@@ -5,12 +5,12 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-paste"></i> Adicionar Nota</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-paste"></i> Adicionar Nota</h1>
 
 <form method="POST">
     {% csrf_token %}
     {{form_adicionar_notafiscal.as_p}}
-    <button type="submit" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Nota</button>
+    <button type="submit" class="btn btn-primary"><i class="fa fafa fa-plus"></i> Adicionar Nota</button>
 </form>
 {% endblock %}
 

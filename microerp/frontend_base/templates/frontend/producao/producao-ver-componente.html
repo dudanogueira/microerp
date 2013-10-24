@@ -7,13 +7,13 @@
 {% block content %}
 <h1>{{componente.part_number}} - {{componente.descricao}} {% if componente.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
 <p class="btn-group">
-<a href="{% url "producao:editar_componente" componente.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar </a>
+<a href="{% url "producao:editar_componente" componente.id %}" class="btn btn-primary"><i class="fa fa-pencil"></i> Editar </a>
 
 {% if componente.ativo %}
-<a href="{% url "producao:inativar_componente" componente.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar</a>
+<a href="{% url "producao:inativar_componente" componente.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i> Inativar</a>
 
 {% else %}
-<a href="{% url "producao:ativar_componente" componente.id %}" class="btn btn-success"><i class="icon-thumbs-up"></i> Ativar</a>
+<a href="{% url "producao:ativar_componente" componente.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i> Ativar</a>
 {% endif %}
 
 
@@ -115,7 +115,7 @@
 						<input type="hidden" name="componente" value="{{componente.id}}">
 						<input type="hidden" name="estoque" value="">
             
-						<button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+						<button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="fa fa-search"> Consultar</i> </button>
             
 
 					</form>
@@ -260,7 +260,7 @@
 												
 						<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
 						<td>{% if participacao.padrao %}
-							<span class="badge badge-success"><i class="icon-check"></i> Padrão</span>
+							<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
 							{% endif %}
 						</td>
 					</tr>
@@ -304,7 +304,7 @@
 												
 						<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
 						<td>{% if participacao.padrao %}
-							<span class="badge badge-success"><i class="icon-check"></i> Padrão</span>
+							<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
 							{% endif %}
 						</td>
 					</tr>
@@ -337,7 +337,7 @@
 					
 			{% if request.user.perfilacessoproducao.gerente %}
 			<p>
-				<a href="{% url "producao:adicionar_memoria_componente" componente.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar à Memória</a>
+				<a href="{% url "producao:adicionar_memoria_componente" componente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar à Memória</a>
 			</p>
 			{% endif %}
 			
@@ -378,7 +378,7 @@
 						<td>{{memoria.part_number_fabricante}}</td>
 						<td>						{% if request.user.perfilacessoproducao.gerente %}
 						<a href="{% url "producao:apagar_memoria_componente" memoria.componente.pk memoria.pk %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')">
-							<i class="icon-trash"></i> Apagar
+							<i class="fa fa-trash-o"></i> Apagar
 						</a>{% endif %}
 					</td>
 					</tr>
@@ -409,7 +409,7 @@
 					<form method="POST" class="well form-horizontal" action="#arquivos" enctype="multipart/form-data">
 						{% csrf_token %}
 						{{form_imagem.as_p}}
-						<button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+						<button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Alterar / Anexar Imagem</button>
                 
 					</form>
 					{% endif %}
@@ -425,13 +425,13 @@
 			<form method="POST" class="form form-inline" action="#arquivos" enctype="multipart/form-data">
 				{% csrf_token %}
 				{{form_anexos.as_p}}
-				<button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
+				<button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Anexar Arquivo</button>
                 
 			</form>
 			{% endif %}
 			<hr />
 			{% for anexo in componente.arquivoanexocomponente_set.all %}
-			<p><span class="label"> {{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a> {% if request.user.perfilacessoproducao.gerente %}<a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" ><i class="icon-trash"></i></a>{% endif %}</p>
+			<p><span class="label"> {{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a> {% if request.user.perfilacessoproducao.gerente %}<a href="{% url "producao:ver_componente_apagar_anexo" componente.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" ><i class="fa fa-trash-o"></i></a>{% endif %}</p>
 			{% empty %}
 			Nenhum arquivo anexo.
 			{% endfor %}

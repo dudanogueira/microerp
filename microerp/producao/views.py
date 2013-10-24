@@ -1179,8 +1179,8 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
         self.fields['quantidade_preenchida'].label = u"Quantidade para enviar para teste"
         self.fields['subproduto'].initial=subproduto
         self.fields['subproduto'].widget = forms.HiddenInput()
-        self.fields['funcionario'].label= u"Funcionário"
-        
+        self.fields['funcionario'].label= u"Funcionário"        
+        self.fields['data_envio'].widget.attrs['class'] = 'datepicker'
 
     def clean_quantidade_preenchida(self):
         cleaned_data = super(FormEnviarSubProdutoParaTeste, self).clean()
@@ -1191,11 +1191,20 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
         if int(quantidade_preenchida) > int(quantidade_permitida):
             raise forms.ValidationError("Quantidade máxima permitida: %s" % quantidade_permitida)
         return quantidade_preenchida
+    
+    def clean_data_envio(self):
+        cleaned_data = super(FormEnviarSubProdutoParaTeste, self).clean()
+        data_envio = cleaned_data.get('data_envio')
+        if data_envio > datetime.date.today():
+            raise forms.ValidationError("Data de Envio não pode ser no futuro.")
+        return data_envio
+
 
     quantidade_maxima_permitida = forms.IntegerField(required=True)
     quantidade_preenchida = forms.IntegerField(required=True)
     subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.all(), empty_label=None)
     funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=True)
+    data_envio = forms.DateField(label=u"Data de Envio", required=False, initial=datetime.date.today())
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1259,11 +1268,12 @@ def ver_subproduto(request, subproduto_id):
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
         
         if request.POST.get('enviar-subproduto-teste-btn', None):
-            form_enviar_para_teste = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto)
+            form_enviar_para_teste = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_teste")
             if form_enviar_para_teste.is_valid():
                 # OK, pode fazer a operacao
                 # primeiro, mover as quantidades
                 quantidade_preenchida = form_enviar_para_teste.cleaned_data['quantidade_preenchida']
+                data_envio = form_enviar_para_teste.cleaned_data['data_envio']
                 funcionario = form_enviar_para_teste.cleaned_data['funcionario']
                 # remove do montado
                 valor_atual_montado = subproduto.total_montado
@@ -1283,6 +1293,7 @@ def ver_subproduto(request, subproduto_id):
                     subproduto=subproduto,
                     funcionario=funcionario,
                     criado_por=request.user,
+                    data_envio=data_envio
                 )
                 messages.success(request, u"Sucesso! Criado o Registro de Teste de SubProduto #%s " % registro.id)
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
@@ -1291,9 +1302,10 @@ def ver_subproduto(request, subproduto_id):
                 
         
         if request.POST.get('enviar-subproduto-funcional-btn', None):
-            form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto)
+            form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_funcional")
             if form_enviar_para_funcional.is_valid():
                 quantidade_preenchida = form_enviar_para_funcional.cleaned_data['quantidade_preenchida']
+                data_envio = form_enviar_para_funcional.cleaned_data['data_envio']
                 funcionario = form_enviar_para_funcional.cleaned_data['funcionario']
                 # remove do testando
                 valor_atual_testando = subproduto.total_testando
@@ -1313,6 +1325,7 @@ def ver_subproduto(request, subproduto_id):
                     subproduto=subproduto,
                     funcionario=funcionario,
                     criado_por=request.user,
+                    data_envio=data_envio,
                 )
                 messages.success(request, u"Sucesso! Criado o Registro Saída de Teste de SubProduto #%s " % registro.id)
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
@@ -1322,8 +1335,8 @@ def ver_subproduto(request, subproduto_id):
         form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
         form_imagem = ImagemSubprodutoForm(instance=subproduto)
         form_agregar_subproduto = AgregarSubProdutoForm(subproduto_principal=subproduto)
-        form_enviar_para_teste = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_montado, subproduto=subproduto)
-        form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto)
+        form_enviar_para_teste = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_teste")
+        form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto, prefix="enviar_para_funcional")
         
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
@@ -1833,22 +1846,35 @@ class FormConfiguradorSubProduto(forms.Form):
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_solicitada):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
+    form_configurador_producao_subproduto = FormConfiguradorProducaoSubProduto(request.POST)
     slug_estoque_produtor = getattr(settings, 'ESTOQUE_FISICO_PRODUTOR', 'producao')
     estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
     #extra configuracao
     if request.POST.get('configuracao', None):
         configuracao = request.POST.get('configuracao', None)
+        # interpreta o string para dict
         import ast
         conf = ast.literal_eval(configuracao)
         componentes = subproduto.get_componentes(conf=conf, multiplicador=float(quantidade_solicitada))
+        # pega as informacoes da producao
+        if form_configurador_producao_subproduto.is_valid():
+            data_producao = form_configurador_producao_subproduto.cleaned_data['data_producao']
+            funcionario_produtor = form_configurador_producao_subproduto.cleaned_data['funcionario']
+            data_producao = form_configurador_producao_subproduto.cleaned_data['data_producao']
+            if data_producao > datetime.date.today():
+                data_producao = datetime.date.today()
+                messages.info(request, u"Atenção: Data de Produção no Futuro. Alterado para Hoje.")
+
         # registra a ordem de producao
         ordem_producao_subproduto = OrdemProducaoSubProduto.objects.create(
             subproduto=subproduto,
             quantidade=quantidade_solicitada,
             string_producao=componentes,
             criado_por=request.user, 
+            funcionario_produtor=funcionario_produtor,
+            data_producao=data_producao,
         )
-        messages.success(request, "Ordem de Produção criada")
+        messages.success(request, "Ordem de Produção criada: %s" % ordem_producao_subproduto)
         # dar baixa em todos os items do componentes
         for item in componentes.items():
             # longo ou inteiro, é componente
@@ -1891,7 +1917,7 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
             subproduto.total_montado = novo_total
             messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
         subproduto.save()
-        url_retorno = "%s%s" % (reverse("producao:ordem_de_producao"), "#converter")
+        url_retorno = "%s%s" % (reverse("producao:ordem_de_producao"), "#produzir")
         return redirect(url_retorno)
 
     return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
@@ -2000,6 +2026,14 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
     return render_to_response('frontend/producao/producao-ordem-de-producao-converter-subproduto.html', locals(), context_instance=RequestContext(request),)
 
 
+class FormConfiguradorProducaoSubProduto(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormConfiguradorProducaoSubProduto, self).__init__(*args, **kwargs)
+        self.fields['data_producao'].widget.attrs['class'] = 'datepicker'
+    
+    data_producao = forms.DateField(label=u"Data de Produção", required=False, initial=datetime.date.today())
+    funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=True, label=u"Funcionário Produtor", empty_label=None)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
@@ -2007,6 +2041,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
     if request.POST:
         linhas = []
         form_configurador_subproduto = FormConfiguradorSubProduto(request.POST, subproduto=subproduto)
+        form_configurador_producao_subproduto = FormConfiguradorProducaoSubProduto()
         if form_configurador_subproduto.is_valid():
             subproduto_produzivel = subproduto.produzivel(quantidade=quantidade_solicitada)
             # pega estoque de producao
@@ -2831,9 +2866,77 @@ def requisicao_de_compra(request):
         form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
     return render_to_response('frontend/producao/producao-requisicao-de-compra.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_producao)
 def requisicao_de_compra_atendido(request, requisicao_id):
     requisicao = get_object_or_404(RequisicaoDeCompra, pk=requisicao_id)
     requisicao.atendido = True
     requisicao.atendido_em = datetime.datetime.now()
     requisicao.save()
     return redirect(reverse('producao:requisicao_de_compra'))
+
+class FormFiltraMovimentoProducaoSubProduto(forms.Form):
+    
+    inicio = forms.DateField(label=u"Início", required=False)
+    fim = forms.DateField(label=u"Fim", required=False)
+    funcionario = forms.ModelChoiceField(label=u"Funcionário Produtor", queryset=Funcionario.objects.all(), required=False, empty_label="Todos")
+    
+    def __init__(self, *args, **kwargs):
+        super(FormFiltraMovimentoProducaoSubProduto, self).__init__(*args, **kwargs)
+        self.fields['inicio'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['fim'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['funcionario'].widget.attrs['class'] = 'select2 input-small'
+
+@user_passes_test(possui_perfil_acesso_producao)
+def movimento_de_producao(request):
+    ordens_producao_subproduto = OrdemProducaoSubProduto.objects.all()
+    registros_envio_de_teste = RegistroEnvioDeTesteSubProduto.objects.all()
+    registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
+    if request.POST:
+        form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto(request.POST)
+        # resgata ordens de producao subproduto por padrao
+        if form_filtro_movimento_subproduto.is_valid():
+            inicio = form_filtro_movimento_subproduto.cleaned_data['inicio']
+            fim = form_filtro_movimento_subproduto.cleaned_data['fim']
+            funcionario = form_filtro_movimento_subproduto.cleaned_data['funcionario']
+            # valores preenchidos resgatados, filtrar
+            # primeiro, ordens de producao
+            # somente preencheu a data de inciio
+            if inicio and not fim:
+                ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__gte=inicio)
+                registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__gte=inicio)
+                registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__gte=inicio)
+            # somente preencheu a data de fim
+            if fim and not inicio:
+                ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__lte=fim)
+                registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__lte=fim)
+                registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__lte=fim)
+            # ambos os campos data de inicio e fim
+            if fim and inicio:
+                ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__range=(inicio,fim))
+                registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__range=(inicio,fim))
+                registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__range=(inicio,fim))
+            # filtra por funcionario
+            if funcionario:
+                ordens_producao_subproduto = ordens_producao_subproduto.filter(funcionario_produtor=funcionario)            
+                registros_envio_de_teste = registros_envio_de_teste.filter(funcionario=funcionario)
+                registros_saida_de_teste = registros_saida_de_teste.filter(funcionario=funcionario)
+
+    else:
+        form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto()
+        ordens_producao_subproduto = ordens_producao_subproduto[0:10]
+        registros_envio_de_teste = registros_envio_de_teste[0:10]
+        registros_saida_de_teste = registros_saida_de_teste[0:10]
+
+    # calcula totais dos sets
+    total_ordem_producao = ordens_producao_subproduto.aggregate(Sum('quantidade'))
+    total_registro_envio_de_testes = registros_envio_de_teste.aggregate(Sum('quantidade'))
+    total_registro_saida_de_testes = registros_saida_de_teste.aggregate(Sum('quantidade'))
+
+    
+    return render_to_response('frontend/producao/producao-movimento-de-producao.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_producao)
+def rastreabilidade_de_producao(request):
+    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
+    

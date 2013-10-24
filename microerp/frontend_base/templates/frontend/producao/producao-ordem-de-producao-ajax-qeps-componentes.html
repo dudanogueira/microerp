@@ -2,7 +2,7 @@
 <p class="btn-group">
 <button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
 
-	<button href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</button>
+	<button href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</button>
 	</p>
 	<div id="form-margem-fornecida">
 		<form method="get">
@@ -32,7 +32,7 @@
 	<tbody>
 		{% for linha in tabela_items %}
 		<tr class="alert alert-{% if linha.4 %}success linhaok{% else %}danger{% endif %}">
-			<td><a href="{{linha.5}}"><i class="icon-stop"></i> {{linha.0.part_number}}</a></td>
+			<td><a href="{{linha.5}}"><i class="fa fa-stop"></i> {{linha.0.part_number}}</a></td>
 			<td>{{linha.0.descricao}}</td>
 			<td>R$ {{linha.0.preco_medio_unitario|floatformat:2}}</td>
 			

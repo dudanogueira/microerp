@@ -40,7 +40,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="{% url "home" %}"><i class="icon-th"></i> MicroERP</a>
+          <a class="brand" href="{% url "home" %}"><i class="fa fa-th"></i> MicroERP</a>
           <div class="nav-collapse collapse">
             {% include "frontend/global-top-menu.html" %}
           </div><!--/.nav-collapse -->
@@ -55,18 +55,20 @@
             {% if logo_empresa %}
             <img src="{{logo_empresa}}">
             {% endif %}
+						
+						
             </div>
             
             {% if mostra_menu_principal_lateral %}
             <div class="well sidebar-nav principal">
               <ul class="nav nav-list">
-                <li class="nav-header"><i class="icon icon-home icon-3x"></i> Principal</li>
-                <li id="main-home"><a href="{% url "home" %}"><i class="icon-th"></i> Meu Painel</a></li>
+                <li class="nav-header"><i class="fa fa-home fa-3x"></i> Principal</li>
+                <li id="main-home"><a href="{% url "home" %}"><i class="fa fa-th"></i> Meu Painel</a></li>
                 {% if request.user.funcionario %}
-                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="icon-envelope"></i> Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
+                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="fa fa-envelope"></i> Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
                 {% if "solicitacao"|is_installed_app %}
                 
-                <li id="main-home-minhas-solicitacoes"><a href="{% url "minhas_solicitacoes" %}"><i class="icon-bell {% if request.user.funcionario.solicitacoes_total %}icon-animated-bell{% endif %}"></i> Solicitações {% if request.user.funcionario.solicitacoes_total %}<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>{%endif%}</a></li>
+                <li id="main-home-minhas-solicitacoes"><a href="{% url "minhas_solicitacoes" %}"><i class="fa fa-bell {% if request.user.funcionario.solicitacoes_total %}icon-animated-bell{% endif %}"></i> Solicitações {% if request.user.funcionario.solicitacoes_total %}<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>{%endif%}</a></li>
                 {% endif %}
                 
                 {% endif %}
@@ -89,16 +91,16 @@
     				<div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}">
     				  <a class="close" data-dismiss="alert">×</a>
                       {% if message.tags == "error" %}
-    				  <i class="icon-warning-sign"></i>
+    				  <i class="fa fa-warning-sign"></i>
                       {% endif %}
                       {% if message.tags == "info" %}
-    				  <i class="icon-comment"></i>
+    				  <i class="fa fa-comment"></i>
                       {% endif %}
                       {% if message.tags == "success" %}
-    				  <i class="icon-ok-sign"></i>
+    				  <i class="fa fa-ok-sign"></i>
                       {% endif %}
                       {% if message.tags == "warning" %}
-    				  <i class="icon-warning-sign"></i>
+    				  <i class="fa fa-warning-sign"></i>
                       {% endif %}
                       
                        {{ message|safe }}

@@ -4,7 +4,7 @@
 <title>{%block title %}{{block.super}} - Produção - Listar Estoques{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-archive"></i> Estoque</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-archive"></i> Estoque</h1>
 
 <ul class="nav nav-tabs">
   <li class="active"><a href="#consultar" data-toggle="tab">Consultar</a></li>
@@ -32,7 +32,7 @@
                          <strong>Quantidade</strong>: {{posicaoestoque}} ({{componente_consultado.get_medida_display}})<br />
                          <strong>Valor</strong>: R$ {{valor_no_estoque|floatformat:2}}
                      </div>
-                     <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
+                     <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="fa fa-search"></i> Nova Consulta / Movimentação</a>
                  </div>
                 {% endif %}
     
@@ -64,7 +64,7 @@
 
 										<h5>Total em Estoque: {{componente_consultado.total_em_estoques}} {{componente_consultado.medida}}</h5>
     
-                    <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
+                    <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="fa fa-search"></i> Nova Consulta / Movimentação</a>
                 </div>
                 {% endif %}
     
@@ -105,7 +105,7 @@
                     </table>
 
     
-                    <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="icon-search"></i> Nova Consulta / Movimentação</a>
+                    <a href="{% url "producao:listar_estoque" %}" class="btn btn-primary"><i class="fa fa-search"></i> Nova Consulta / Movimentação</a>
                 </div>
                 {% endif %}
     
@@ -114,7 +114,7 @@
                     {% csrf_token %}
                 {{form_consulta_estoque.as_p}}
                 <p>
-                    <button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
+                    <button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="fa fa-search"> Consultar</i> </button>
                 </p>
                 </form>
             {% endif %}
@@ -131,7 +131,7 @@
             <form method="POST" class="form-inline" action="#movimentar">
                 {% csrf_token %}
                 {{form_mover_estoque.as_p}}
-                <button type='submit' class="btn btn-primary" name='movimentar-estoque' value="movimentar"><i class="icon-arrow-right"></i> Movimentar Estoque</button>
+                <button type='submit' class="btn btn-primary" name='movimentar-estoque' value="movimentar"><i class="fa fa-arrow-right"></i> Movimentar Estoque</button>
             </form>
         </div>
         <hr />
@@ -144,7 +144,7 @@
             <form method="POST" action="#alterar">
                 {% csrf_token %}
             {{form_alterar_estoque.as_p}}
-            <button type="submit" name='alterar-estoque' value="alterar" class="btn btn-primary"><i class="icon-wrench"></i> Alterar Estoque</button>
+            <button type="submit" name='alterar-estoque' value="alterar" class="btn btn-primary"><i class="fa fa-wrench"></i> Alterar Estoque</button>
             </form>
         </div>
         

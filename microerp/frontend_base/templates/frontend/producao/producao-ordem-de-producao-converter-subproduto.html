@@ -5,8 +5,8 @@
 <title>{%block title %}{{block.super}} - Produção - Ordem de Produção: Converter Sub Produto{% endblock %}</title>
 
 {% block content %}
-	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Converter Sub Produto</h2>
+	<h1><i class="fa fa-th"></i> <i class="fa fa-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="fa fa-list-ul"></i> Converter Sub Produto</h2>
 	<p>
 	<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
 	</p>
@@ -75,12 +75,12 @@
 		
 	</div>	
 	{% if pode_converter and not alerta_movimento %}
-	<a class="btn btn-primary" href="?confirmado=sim"><i class="icon-refresh"></i> Conversão Liberada</a>
+	<a class="btn btn-primary" href="?confirmado=sim"><i class="fa fa-refresh"></i> Conversão Liberada</a>
 	{% else %}
 	<div class="alert alert-danger">
 		<h4>Conversão Não Liberada</h4>
 	</div>	
-	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}#converter"><i class="icon-search"></i> Nova Pesquisa</a>
+	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}#converter"><i class="fa fa-search"></i> Nova Pesquisa</a>
 	{% endif %}
 	{% else %}
 	<h1>Conversão realizada</h1>

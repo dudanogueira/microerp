@@ -8,7 +8,7 @@
 <form id="form-reagendar-atividade" class="form form-inline" method="POST" action="{% url "producao:ordem_de_compra_atividade_reagendar" atividade.ordem_de_compra.id atividade.id %}" id="reagendar_atividade_form">
 	{% csrf_token %}
 {{form}}
-<button type="submit" class="btn btn-primary"><i class="icon-refresh"></i> Reagendar</button>
+<button type="submit" class="btn btn-primary"><i class="fa fa-refresh"></i> Reagendar</button>
 </form>
 
 {% endblock %}

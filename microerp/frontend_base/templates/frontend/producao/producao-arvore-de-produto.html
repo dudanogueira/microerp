@@ -5,15 +5,15 @@
 <title>{%block title %}{{block.super}} - Produção - Arvore de Produto{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-code-fork"></i>  Árvore de Produtos</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-code-fork"></i>  Árvore de Produtos</h1>
 
 <p>
-	<a href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</a>
+	<a href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</a>
 </p>
 <form method="GET" class="form-inline well well-small" id="selecionar-produto-form">
 {{seleciona_produto.as_p}}
 <p class="btn-group">
-	<button type="submit" class="btn btn-primary"><i class="icon-filter"></i> Escolher somente este produto</button>
+	<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i> Escolher somente este produto</button>
 	{% if filtro %}
 	<a href="{% url "producao:arvore_de_produto" %}" class="btn btn-success">Mostrar todos</a>
 	{% endif %}
@@ -25,7 +25,7 @@
 	<div class="accordion-group">
 		<div class="accordion-heading">
 			<a class="accordion-toggle" data-toggle="collapse"  href="#collapse{{produto.id}}">
-				<i class="icon-windows"></i> {{produto}} - R$ {{produto.custo|floatformat:2}}
+				<i class="fa fa-windows"></i> {{produto}} - R$ {{produto.custo|floatformat:2}}
 			</a>
 		</div>
 		<div id="collapse{{produto.id}}" class="accordion-body collapse">
@@ -48,7 +48,7 @@
 						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
 						<tr>
 							<td>{{linha.componente.tag|upper}}</td>
-							<td><i class="icon-stop"></i> {{linha.componente.part_number}}</td>
+							<td><i class="fa fa-stop"></i> {{linha.componente.part_number}}</td>
 							<td>{{linha.componente.descricao}}</td>
 							<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida|upper}}</span></td>
 							<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
@@ -68,13 +68,13 @@
 					<div class="accordion-group">
 						<div class="accordion-heading">
 							<a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}?parent=produto{{produto.id}}-linha{{linha.id}}-forloop-{{forloop.counter}}-{{linha.subproduto.id}}">
-								<i class="icon-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span> {{linha.subproduto}} - R${{linha.subproduto.custo|floatformat:2}}
+								<i class="fa fa-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span> {{linha.subproduto}} - R${{linha.subproduto.custo|floatformat:2}}
 							</a>
 						</div>
 
 						<div id="collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-body collapse">
 							<div class="accordion-inner">
-								<i class='icon-spinner icon-spin icon-large icon-3x'></i>
+								<i class='fa fa-spinner fa-spin fa-large fa-3x'></i>
 							</div>
 						</div>
 					</div>

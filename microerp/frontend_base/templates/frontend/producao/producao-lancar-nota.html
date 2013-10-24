@@ -5,14 +5,14 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-paste"></i> Lançar Nota</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-paste"></i> Lançar Nota</h1>
 {% if request.user.perfilacessoproducao.gerente %}
     {% if not tipo %}
 
     <h2>Escolha o tipo de nota</h2>
     <p class="btn-group">
-    <a href="?tipo=nfe" class="btn btn-success"><i class="icon-attach"></i> Nota Fiscal Eletrônica (ARQUIVO XML)</a>
-		<a href="{% url "producao:adicionar_nota" %}" class="btn btn-info"><i class="icon-user"></i> Nota Manual</a>
+    <a href="?tipo=nfe" class="btn btn-success"><i class="fa fa-attach"></i> Nota Fiscal Eletrônica (ARQUIVO XML)</a>
+		<a href="{% url "producao:adicionar_nota" %}" class="btn btn-info"><i class="fa fa-user"></i> Nota Manual</a>
     </p>
     {% else %}
         <h2>Tipo Escolhido {{tipo}}</h2>
@@ -67,9 +67,9 @@
 					<td>R$ {{nota.total_com_imposto|floatformat:2}}</td>
 					<td>
 						{% ifequal nota.status "a" %}
-							<a class="btn btn-primary" href="{% url "producao:ver_nota" nota.id %}"><i class="icon-pencil"></i></a>
+							<a class="btn btn-primary" href="{% url "producao:ver_nota" nota.id %}"><i class="fa fa-pencil"></i></a>
 						{% else %}
-						<a class="btn btn-success" href="{% url "producao:ver_nota" nota.id %}"><i class="icon-eye-open"></i></a>
+						<a class="btn btn-success" href="{% url "producao:ver_nota" nota.id %}"><i class="fa fa-eye-open"></i></a>
 							{% endifequal %}
 					</td>
 				</tr>

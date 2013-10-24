@@ -2,38 +2,38 @@
 {% load check_installed %}
 
 <ul class="nav">
-  <li id="top-menu-home"><a href="{% url "home" %}" class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Principal"><i class="icon-white icon icon-home icon-2x"><span class="visible-phone">Principal</span></i></a></li>
+  <li id="top-menu-home"><a href="{% url "home" %}" class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Principal"><i class="fa-white fa fa-home fa-2x"><span class="visible-phone">Principal</span></i></a></li>
   
   {# LINKS DOS MODULOS #}
   
 
   {% if request.user.perfilacessorecepcao%}
-  <li id="top-menu-cadastro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recepção" href="{% url "cadastro:home" %}"><i class="icon-white icon icon-download-alt icon-2x"><span class="visible-phone">Recepção</span></i></a></li>
+  <li id="top-menu-cadastro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recepção" href="{% url "cadastro:home" %}"><i class="fa-white fa fa-download fa-2x"><span class="visible-phone">Recepção</span></i></a></li>
   {% endif %}
   
   {% if request.user.perfilacessorh %}
-  <li id="top-menu-rh"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recursos Humanos" href="{% url "rh:home" %}"><i class="icon-white icon icon-group icon-2x"><span class="visible-phone">RH</span></i></a></li>
+  <li id="top-menu-rh"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Recursos Humanos" href="{% url "rh:home" %}"><i class="fa-white fa fa-group fa-2x"><span class="visible-phone">RH</span></i></a></li>
   {% endif %}
 
   {% if request.user.perfilacessocomercial and "comercial"|is_installed_app %}
-  <li id="top-menu-comercial"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Comercial" href="{% url "comercial:home" %}"><i class="icon-white icon icon-briefcase icon-2x"><span class="visible-phone">Comercial</span></i></a></li>
+  <li id="top-menu-comercial"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Comercial" href="{% url "comercial:home" %}"><i class="fa-white fa fa-briefcase fa-2x"><span class="visible-phone">Comercial</span></i></a></li>
   {% endif %}
   
   {% if request.user.perfilacessosolicitacao and  "solicitacao"|is_installed_app %}
-  <li id="top-menu-solicitacao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Solicitações" href="{% url "solicitacao:home" %}"><i class="icon-white icon icon-bell-alt icon-2x"><span class="visible-phone">Solicitações</span></i></a></li>
+  <li id="top-menu-solicitacao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Solicitações" href="{% url "solicitacao:home" %}"><i class="fa-white fa fa-bell fa-2x"><span class="visible-phone">Solicitações</span></i></a></li>
   {% endif %}
   
   {% if request.user.perfilacessoestoque and  "estoque"|is_installed_app %}
-  <li id="top-menu-estoque"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Estoque" href="{% url "estoque:home" %}"><i class="icon-white icon icon-shopping-cart icon-2x"><span class="visible-phone">Estoque</span></i></a></li>
+  <li id="top-menu-estoque"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Estoque" href="{% url "estoque:home" %}"><i class="fa-white fa fa-shopping-cart fa-2x"><span class="visible-phone">Estoque</span></i></a></li>
   {% endif %}
 
   {% if request.user.perfilacessoproducao and  "producao"|is_installed_app %}
-  <li id="top-menu-producao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Produção" href="{% url "producao:home" %}"><i class="icon-white icon icon-dropbox icon-2x"><span class="visible-phone">Produção</span></i></a></li>
+  <li id="top-menu-producao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Produção" href="{% url "producao:home" %}"><i class="fa-white fa fa-dropbox fa-2x"><span class="visible-phone">Produção</span></i></a></li>
   {% endif %}
 
   
   {% if request.user.perfilacessofinanceiro and  "financeiro"|is_installed_app %}
-  <li id="top-menu-financeiro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Financeiro" href="{% url "financeiro:home" %}"><i class="icon-white icon icon-money icon-2x"><span class="visible-phone">Financeiro</span></i></a></li>
+  <li id="top-menu-financeiro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Financeiro" href="{% url "financeiro:home" %}"><i class="fa-white fa fa-money fa-2x"><span class="visible-phone">Financeiro</span></i></a></li>
   {% endif %}
   
 </ul>
@@ -47,7 +47,7 @@
       {% if request.user.funcionario.solicitacoes_total %}
 			<li class="purple">
 				<a href="{% url "minhas_solicitacoes" %}">
-					<i class="icon-bell-alt icon-animated-bell icon-only"></i>
+					<i class="fa-bell-alt fa-animated-bell fa-only"></i>
 					<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>
 				</a>
 			</li>
@@ -57,7 +57,7 @@
             {% if  request.user.funcionario.recados_nao_lidos.count %}
 			<li class="green">
 				<a href="{% url "meus_recados" %}">
-					<i class="icon-envelope-alt icon-animated-vertical icon-only"></i>
+					<i class="fa-envelope-alt fa-animated-vertical fa-only"></i>
 					<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>
 				</a>
 			</li>
@@ -68,20 +68,19 @@
                     {% thumbnail request.user.funcionario.foto "30x30" crop="center" as im %}
                        <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
                    {% endthumbnail %}
-					
 					<span id="user_info">
 						<small>{% if request.user.funcionario %}{{request.user.funcionario}}{% endif %} (<em>{{request.user}}</em>)</small>
 					</span>
-					<i class="icon-caret-down"></i>
+					<i class="fa fa-caret-down"></i>
 				</a>
 				<ul id="user_menu" class="pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer">
                     {% if request.user.is_staff %}
-					<li><a href="{% url "admin:index" %}"><i class="icon-cog"></i> Administração</a></li>
+					<li><a href="{% url "admin:index" %}"><i class="fa fa-cog"></i> Administração</a></li>
 					<li class="divider"></li>
                     {% endif %}
                     
                     
-                      <li><a href="{% url "logout" %}?next=/" ><i class="icon-off"></i> Sair </a></li>
+                      <li><a href="{% url "logout" %}?next=/" ><i class="fa fa-power-off"></i> Sair </a></li>
                     
                     
 				</ul>

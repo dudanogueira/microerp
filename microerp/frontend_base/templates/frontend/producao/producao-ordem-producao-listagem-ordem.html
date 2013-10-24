@@ -42,8 +42,8 @@
 						{% if request.user.perfilacessoproducao.gerente %}
 						<div class="botoes-editar-fechar">
 							<p class="btn-group">
-								<a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="icon-pencil"></i> Editar</a>
-								<a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="icon-check"></i> Fechar Ordem</a>	
+								<a href="		{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-primary"><i class="fa fa-pencil"></i> Editar</a>
+								<a href="		{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="fa fa-check"></i> Fechar Ordem</a>	
 							</p>
 						</div>
 						{% endif %}
@@ -90,8 +90,8 @@
 										<span class="badge badge-success">Em dia</span>
 									{% endif %} - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
 									{% if request.user.perfilacessoproducao.gerente %}
-									<a href="{% url "producao:ordem_de_compra_atividade_reagendar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-info btn-reagendar-atividade"><i class="icon-refresh"></i></a>
-									<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-success"><i class="icon-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger"><i class="icon-trash"></i></a>
+									<a href="{% url "producao:ordem_de_compra_atividade_reagendar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-info btn-reagendar-atividade"><i class="fa fa-refresh"></i></a>
+									<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-success"><i class="fa fa-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.ordem_de_compra.id atividade.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
 				
 									{% endif %}
 								</li>

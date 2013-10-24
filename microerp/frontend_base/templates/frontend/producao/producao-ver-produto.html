@@ -9,11 +9,11 @@
 
 {% if request.user.perfilacessoproducao.gerente %}
 <p class="btn-group">
-    <a class="btn btn-primary" href="{% url "producao:editar_produto" produto.id %}"><i class="icon-pencil"></i> Editar Produto</a>
+    <a class="btn btn-primary" href="{% url "producao:editar_produto" produto.id %}"><i class="fa fa-pencil"></i> Editar Produto</a>
 		{% if produto.ativo %}
-		<a href="{% url "producao:inativar_produto" produto.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar Produto</a>
+		<a href="{% url "producao:inativar_produto" produto.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i> Inativar Produto</a>
 		{% else %}
-		<a href="{% url "producao:ativar_produto" produto.id %}" class="btn btn-success"><i class="icon-thumbs-up"></i>  Ativar Produto</a>
+		<a href="{% url "producao:ativar_produto" produto.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i>  Ativar Produto</a>
 		{% endif %}
 		
 </p>
@@ -84,7 +84,7 @@
         {% if request.user.perfilacessoproducao.gerente %}
         
         <!-- Button to trigger modal -->
-        <a href="#modal-adicionar-linha-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Sub Produto</a>
+        <a href="#modal-adicionar-linha-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Sub Produto</a>
         {% endif %}
 
 
@@ -112,7 +112,7 @@
                     <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>
                     <td>
                         {% if request.user.perfilacessoproducao.gerente %}
-                        <a href="{% url "producao:apagar_linha_subproduto_de_produto" produto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+                        <a href="{% url "producao:apagar_linha_subproduto_de_produto" produto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
                         {% endif %}
                     </td>
                 </tr>
@@ -142,7 +142,7 @@
         {% if request.user.perfilacessoproducao.gerente %}
         
         <!-- Button to trigger modal -->
-        <a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Componente</a>
+        <a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Componente</a>
         {% endif %}
         
         
@@ -170,7 +170,7 @@
                     <td><span class="badge">R$ {{linha.custo|floatformat:2}}</span></td>
                     <td>
                         {% if request.user.perfilacessoproducao.gerente %}
-                        <a href="{% url "producao:apagar_linha_componente_avulso_de_produto" linha.produto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+                        <a href="{% url "producao:apagar_linha_componente_avulso_de_produto" linha.produto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
                         {% endif %}
                     </td>
                 </tr>
@@ -211,7 +211,7 @@
                 <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{form_imagem.as_p}}
-                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Alterar / Anexar Imagem</button>
 
                 </form>
                 {% endif %}
@@ -224,7 +224,7 @@
         <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
             {% csrf_token %}
             {{form_anexos.as_p}}
-            <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
+            <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Anexar Arquivo</button>
 
         </form>
         {% endif %}
@@ -232,7 +232,7 @@
         {% for anexo in produto.documentotecnicoproduto_set.all %}
         <p><span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a>
         {% if request.user.perfilacessoproducao.gerente %}
-        <a href="{% url "producao:ver_produto_apagar_anexo" produto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a></p>
+        <a href="{% url "producao:ver_produto_apagar_anexo" produto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a></p>
         {% endif %}
         {% empty %}
         Nenhum arquivo anexo.
@@ -243,7 +243,7 @@
 	 <div class="tab-pane fade in" id="relatorios">
 		 
 		 <p class="btn-group">
-			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_produto_relatorios_composicao" produto.id %}"><i class='icon-print'></i> Impressão da Composição deste Produto</a>
+			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_produto_relatorios_composicao" produto.id %}"><i class='fa fa-print'></i> Impressão da Composição deste Produto</a>
 		 </p>
 		 
     </div>
@@ -267,7 +267,7 @@
         <div class="modal-footer">
             <button class="btn btn-danger" type="button" data-dismiss="modal" aria-hidden="true">X Fechar</button>
             <button type="submit" name="btn-adicionar-linha-subproduto" value="adicionar" class="btn btn-primary">
-                <i class="icon-plus"></i> Adicionar
+                <i class="fa fa-plus"></i> Adicionar
             </button>
     
     
@@ -291,7 +291,7 @@
         <div class="modal-footer">
             <button class="btn btn-danger" type="button" data-dismiss="modal" aria-hidden="true">X Fechar</button>
             <button type="submit" name="btn-adicionar-componentes-avulsos" value="adicionar" class="btn btn-primary">
-                <i class="icon-plus"></i> Adicionar
+                <i class="fa fa-plus"></i> Adicionar
             </button>
     
     

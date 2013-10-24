@@ -1215,14 +1215,24 @@ class DocumentoTecnicoProduto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class OrdemProducaoSubProduto(models.Model):
+    
+    def __unicode__(self):
+        return u"Ordem de Produção #%s de %s unidades do Sub Produto %s" % (self.id, self.quantidade, self.subproduto)
+    
+    class Meta:
+        verbose_name = u"Ordem de Produção do Sub Produto"
+        verbose_name_plural = u"Ordens de Produção do Sub Produto"
+        ordering = ['-data_producao']
+    
     subproduto = models.ForeignKey('SubProduto')
     quantidade = models.IntegerField(blank=False, null=False)
     string_producao = models.TextField(blank=False)
+    funcionario_produtor = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Produtor")
+    data_producao = models.DateField(default=datetime.datetime.today)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
-
 
 class OrdemConversaoSubProduto(models.Model):
     subproduto_original = models.ForeignKey('SubProduto', related_name="ordem_conversao_subproduto_original_set")
@@ -1247,18 +1257,34 @@ class OrdemProducaoProduto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class RegistroEnvioDeTesteSubProduto(models.Model):
+    
+    class Meta:
+        verbose_name = u"Registro de Envio de Testes do Sub Produto"
+        verbose_name_plural = u"Registros de Envio de Testes do Sub Produto"
+        ordering = ['-criado']
+    
+    
     quantidade = models.IntegerField(blank=False, null=False)
     subproduto = models.ForeignKey('SubProduto')
     funcionario = models.ForeignKey('rh.Funcionario')
+    data_envio = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class RegistroSaidaDeTesteSubProduto(models.Model):
+    
+    class Meta:
+        verbose_name = u"Registro de Saída de Testes do Sub Produto"
+        verbose_name_plural = u"Registros de Saída de Testes do Sub Produto"
+        ordering = ['-criado']
+    
+    
     quantidade = models.IntegerField(blank=False, null=False)
     subproduto = models.ForeignKey('SubProduto')
     funcionario = models.ForeignKey('rh.Funcionario')
+    data_envio = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

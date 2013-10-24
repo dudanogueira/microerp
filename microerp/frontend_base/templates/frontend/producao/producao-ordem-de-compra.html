@@ -5,15 +5,15 @@
 <title>{%block title %}{{block.super}} - Produção - Ordem de Compra{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-briefcase"></i>  Ordem de Compra</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i>  Ordem de Compra</h1>
 
 <p class="btn-group">
 	
 	<!-- Button to trigger FILTRO modal -->
-	<a href="#FiltroModal" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-filter"></i> Filtrar</a>
+	<a href="#FiltroModal" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-filter"></i> Filtrar</a>
  
 	<!-- Button to trigger ADD ORDEM -->
-	<a href="#AddOrdemModal" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Ordem de Compra</a>
+	<a href="#AddOrdemModal" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Ordem de Compra</a>
 	{% if filtro %}
 	<a class="btn btn-warning" href="{% url "producao:ordem_de_compra" %}">Limpar Filtro</a> 
 	{% endif %}
@@ -44,7 +44,7 @@
 	<div id="FiltroModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3 id="myModalLabel"><i class="icon-filter"></i> Filtrar</h3>
+			<h3 id="myModalLabel"><i class="fa fa-filter"></i> Filtrar</h3>
 		</div>
 		<div class="modal-body">
 
@@ -57,7 +57,7 @@
 		</div>
 		<div class="modal-footer">
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
-			<button form="filtro-ordem-compra" type="submit" class="btn btn-primary" name="form-filtrar-ordem-de-compra" value="filtrar"><i class="icon-filter"></i> Filtrar</button>
+			<button form="filtro-ordem-compra" type="submit" class="btn btn-primary" name="form-filtrar-ordem-de-compra" value="filtrar"><i class="fa fa-filter"></i> Filtrar</button>
 
 
 		</div>
@@ -68,7 +68,7 @@
 	<div id="AddOrdemModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3 id="myModalLabel"><i class="icon-plus"></i> Adicionar Ordem de Compra</h3>
+			<h3 id="myModalLabel"><i class="fa fa-plus"></i> Adicionar Ordem de Compra</h3>
 		</div>
 		<div class="modal-body">
 
@@ -81,7 +81,7 @@
 		</div>
 		<div class="modal-footer">
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
-			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-add-ordem" value="adicionar"><i class="icon-plus"></i> Adicionar</button>
+			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-add-ordem" value="adicionar"><i class="fa fa-plus"></i> Adicionar</button>
 			
 
 
@@ -92,7 +92,7 @@
 	<div id="ReagendarAtividadeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3 id="myModalLabel"><i class="icon-plus"></i> Reagendar Atividade</h3>
+			<h3 id="myModalLabel"><i class="fa fa-plus"></i> Reagendar Atividade</h3>
 		</div>
 		<div class="modal-body" id="body-modal-reagendar-atividade">
 
@@ -100,7 +100,7 @@
 		</div>
 		<div class="modal-footer">
 			<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
-			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-reagendar-atividade" value="adicionar"><i class="icon-resfresh"></i> Reagendar Atividade</button>
+			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-reagendar-atividade" value="adicionar"><i class="fa fa-resfresh"></i> Reagendar Atividade</button>
 			
 
 

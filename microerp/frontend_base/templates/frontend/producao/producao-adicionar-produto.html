@@ -4,14 +4,14 @@
 <title>{%block title %}{{block.super}} - Produção - Adicionar Produto{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-windows"></i>   Produtos - Adicionar</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-windows"></i>   Produtos - Adicionar</h1>
 <form method="POST" enctype="multipart/form-data">
 {% csrf_token %}
 {{form.as_p}}
 {% if produto %}
-    <button type="submit" class="btn btn-primary"><i class="icon-pencil"></i> Editar</button>
+    <button type="submit" class="btn btn-primary"><i class="fa fa-pencil"></i> Editar</button>
 {% else %}
-    <button type="submit" class="btn btn-primary"><i class="icon-plus"></i> Adicionar</button>
+    <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
 {% endif %}
 </form>
 

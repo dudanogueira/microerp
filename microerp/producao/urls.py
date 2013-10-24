@@ -66,6 +66,11 @@ urlpatterns = patterns('',
     url(r'^ordem-de-producao/subproduto/converter/(?P<quantidade>[0-9]+)/(?P<subproduto_original_id>[0-9]+)/(?P<subproduto_destino_id>[0-9]+)/$', 'producao.views.ordem_de_producao_subproduto_converter', name='ordem_de_producao_subproduto_converter'),    
     url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/$', 'producao.views.ordem_de_producao_produto', name='ordem_de_producao_produto'),
     url(r'^ordem-de-producao/produto/(?P<produto_id>[0-9]+)/produzir/(?P<quantidade_solicitada>[0-9]+)/confirmar/$', 'producao.views.ordem_de_producao_produto_confirmar', name='ordem_de_producao_produto_confirmar'),
+    # movimento de producao
+    url(r'^movimento-de-producao/$', 'producao.views.movimento_de_producao', name='movimento_de_producao'),
+    # rastreabilidade de producao
+    url(r'^rastreabilidade-de-producao/$', 'producao.views.rastreabilidade_de_producao', name='rastreabilidade_de_producao'),
+    
     # ajax auxs
     url(r'^ordem-de-producao/ajax/producao-combinada/$', 'producao.views.producao_combinada', name='producao_combinada'),
     url(r'^ordem-de-producao/ajax/producao-combinada/calcular$', 'producao.views.producao_combinada_calcular', name='producao_combinada_calcular'),

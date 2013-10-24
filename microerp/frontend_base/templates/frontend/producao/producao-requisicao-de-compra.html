@@ -5,7 +5,7 @@
 <title>{%block title %}{{block.super}} - Produção - Requisição de Compra{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-credit-card"></i> Requisição de Compra</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-credit-card"></i> Requisição de Compra</h1>
 	
 
 <ul class="nav nav-tabs">
@@ -23,7 +23,7 @@
 			<form method="POST">
 				{% csrf_token %}
 				{{form_add_requisicao_de_compra.as_p}}
-				<button type="submit" name="solicitar-compra" value="solicitar" class="btn btn-primary"><i class="icon-credit-card"></i> Solicitar Compra</button>
+				<button type="submit" name="solicitar-compra" value="solicitar" class="btn btn-primary"><i class="fa fa-credit-card"></i> Solicitar Compra</button>
 			</form>
 			
 			
@@ -76,7 +76,7 @@
 						
 						</td>
 						
-						<td><a href="{% url "producao:requisicao_de_compra_atendido" solicitacao.id %}" class="btn btn-success"><i class="icon-check"></i></a></td>
+						<td><a href="{% url "producao:requisicao_de_compra_atendido" solicitacao.id %}" class="btn btn-success"><i class="fa fa-check"></i></a></td>
 					</tr>
 					{% endfor %}
 				</tbody>

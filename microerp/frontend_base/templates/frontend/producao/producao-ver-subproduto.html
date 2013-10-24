@@ -8,13 +8,13 @@
 <h1>{{subproduto.part_number}} - {{subproduto.nome}} {% if subproduto.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
 {% if request.user.perfilacessoproducao.gerente %}
 <p class="btn-group">
-    <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="icon-pencil"></i> Editar Sub Produto</a>
+    <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="fa fa-pencil"></i> Editar Sub Produto</a>
 
 		{% if subproduto.ativo %}
-		<a href="{% url "producao:inativar_subproduto" subproduto.id %}" class="btn btn-danger"><i class="icon-thumbs-down"></i> Inativar</a>
+		<a href="{% url "producao:inativar_subproduto" subproduto.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i> Inativar</a>
 
 		{% else %}
-		<a href="{% url "producao:ativar_subproduto" subproduto.id %}" class="btn btn-success"><i class="icon-thumbs-up"></i> Ativar</a>
+		<a href="{% url "producao:ativar_subproduto" subproduto.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i> Ativar</a>
 		{% endif %}
 
 
@@ -224,15 +224,13 @@
 						<td><span class="badge badge-warning">{{participacao.quantidade}} und</span></td>
 						<td>{{participacao.subproduto_principal.nome}}</td>
 						<td>{{participacao.subproduto_principal.descricao}}</td>
-
 					</tr>
 					{% endfor %}
 				</tbody>
 			</table>
 			{% else %}
-			<small>Nenhuma Participação</small>
+				<small>Nenhuma Participação</small>
 			{% endif %}
-			
 			<h4>Participação Como Sub Produto de Outros Produtos</h4>	
 			{% if agregado_em_produto %}
 			<table class="table table-condensed table-hover table-rounded">
@@ -272,7 +270,7 @@
         
         {% if request.user.perfilacessoproducao.gerente %}
         
-        <a href="{% url "producao:adicionar_linha_subproduto" subproduto.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Linha de Componente</a>
+        <a href="{% url "producao:adicionar_linha_subproduto" subproduto.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Linha de Componente</a>
         
         {% endif %}
 
@@ -326,14 +324,14 @@
 										<td>
                             {% if request.user.perfilacessoproducao.gerente %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
-                                <i class="icon-pencil"></i>
+                                <i class="fa fa-pencil"></i>
                             </a>
                             <a class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" href="{% url "producao:apagar_linha_subproduto" subproduto.id linha.id %}">
-                                <i class="icon-trash"></i>
+                                <i class="fa fa-trash-o"></i>
                             </a>
                             {% else %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
-                                <i class="icon-eye-open"></i>
+                                <i class="fa fa-eye-open"></i>
                             </a>                   
                             {% endif %}
                         </td>
@@ -370,7 +368,7 @@
         <h2>Sub Produtos Agregados</h2>            
                 
         <!-- Button to trigger modal -->
-        <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="icon-plus"></i> Adicionar Linha de Sub Produto</a>
+        <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Sub Produto</a>
  
         <!-- Modal Agregar Sub produto -->
         <div id="modal-agregar-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -389,7 +387,7 @@
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-                    <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar"><i class="icon-plus"></i> Agregar Sub Produto</button>
+                    <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar"><i class="fa fa-plus"></i> Agregar Sub Produto</button>
                 </form>
                 
             </div>
@@ -422,7 +420,7 @@
                             <td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
                                 <td>
                                     {% if request.user.perfilacessoproducao.gerente %}
-                                    <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+                                    <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
                                     {% endif %}
                                 </td>
                     </tr>
@@ -461,7 +459,7 @@
                 <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{form_imagem.as_p}}
-                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="icon-paperclip"></i> Alterar / Anexar Imagem</button>
+                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Alterar / Anexar Imagem</button>
 
                 </form>
                 {% endif %}
@@ -475,7 +473,7 @@
             <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{form_anexos.as_p}}
-                <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="icon-paperclip"></i> Anexar Arquivo</button>
+                <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Anexar Arquivo</button>
     
             </form>
             {% endif %}
@@ -484,7 +482,7 @@
 						<p>
             <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a>
             {% if request.user.perfilacessoproducao.gerente %}
-            <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="icon-trash"></i></a>
+            <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
             {% endif %}
 						</p>
             {% empty %}
@@ -495,7 +493,7 @@
 		
 		<div class="tab-pane fade in" id="relatorios">
  		 <p class="btn-group">
- 			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='icon-print'></i> Impressão da Composição deste Sub Produto</a>
+ 			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='fa fa-print'></i> Impressão da Composição deste Sub Produto</a>
  		 </p>
 			
 		</div>
@@ -509,6 +507,9 @@
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
 
 <script>
 $(document).ready(function() {
@@ -527,6 +528,13 @@ $(document).ready(function() {
     {% if form_enviar_para_funcional.errors %}
     $('#enviar-para-funcional').modal('show');
     {% endif %}
+		
+		
+		$( ".datepicker" ).datepicker({
+			inline: true,
+	        dateFormat: "dd/mm/yy"
+        
+		});
 		
 
 });

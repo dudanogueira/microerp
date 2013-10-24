@@ -4,30 +4,30 @@
 <title>{%block title %}{{block.super}} - Produção - Produto{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-windows"></i>   Produtos</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-windows"></i>   Produtos</h1>
 
 {% if request.user.perfilacessoproducao.gerente %}
 <p>
-    <a href="{% url "producao:adicionar_produto" %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Produto</a>
+    <a href="{% url "producao:adicionar_produto" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Novo Produto</a>
 </p>
 {% endif %}
     <form class="form-search">
       <input type="text" class="input-medium search-query" name="q_produto", id="busca_produto" {% if q_produto %}value="{{q_produto}}"{% endif %}>
 
-      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Produto</button>
+      <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar Produto</button>
       <a class="btn btn-success" href="?q_produto=todos">Listar Todos</a>
     </form>
 
 <div class="well well-small alert alert-success">Produtos Ativos</div>
 {% for produto in produtos_encontrados %}
-    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a></p>
+    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
 {% endfor %}
 
 {% if produtos_inativos %}
 <hr />
 <div class="well well-small alert alert-danger">Produtos Inativos</div>
 {% for produto in produtos_inativos %}
-    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="icon-windows"></i> {{produto}}</a></p>
+    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
 {% endfor %}
 {% endif %}
 

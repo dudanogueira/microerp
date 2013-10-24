@@ -5,13 +5,13 @@
 <title>{%block title %}{{block.super}} - Produção - Ordem de Produção de Produto{% endblock %}</title>
 
 {% block content %}
-	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-windows"></i> Produto {{produto.part_number}} {% if calculado %}- Cálculo de Produção{% endif %}</h2>
+	<h1><i class="fa fa-th"></i> <i class="fa fa-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="fa fa-windows"></i> Produto {{produto.part_number}} {% if calculado %}- Cálculo de Produção{% endif %}</h2>
 	{% if calculado %}
 		<p class="btn-group">
 	<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
 
-		<button href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</button>
+		<button href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</button>
 		</p>
 		{% endif %}
 	
@@ -39,14 +39,14 @@
 			
 			{% else %}
 			{% if calculado %}
-				<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="icon-search"></i> Produção Não Liberada. Nova Consulta</a>
+				<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="fa fa-search"></i> Produção Não Liberada. Nova Consulta</a>
 			
 			{% else %}
 			
 			<form method="POST" class="nomargin">
 				{% csrf_token %}
 				<button class="btn btn-primary" name="verificar-producao" value="verificar">
-					<i class="icon-search"></i> Verificar Disponibilidade para Produção
+					<i class="fa fa-search"></i> Verificar Disponibilidade para Produção
 				</button>
 			</form>
 			{% endif %}
@@ -263,7 +263,7 @@ $('.nav-tabs').on("click", '.ajaxtab', function(e){
 	var pane = $(this);
 	// ajax load from data-url
 	$(href).load(url)
-	$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	$(href).html("<i class='fa fa-spinner fa-spin fa-large fa-3x'></i>");
 	pane.tab('show');		
 	
 })

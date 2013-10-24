@@ -5,15 +5,15 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-stop"></i> Componentes</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-stop"></i> Componentes</h1>
 {% if request.user.perfilacessoproducao.gerente %}
 {# ADICIONAR TIPO COMPONENTE #}
   <p class="btn-group">
     <!-- Modal Adicionar Componente -->
-    <a href="#modal-add-componente" role="button" class="btn btn-primary" data-toggle="modal"><i class="icon-plus"></i> Adicionar Componente</a>
+    <a href="#modal-add-componente" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Componente</a>
     
     <!-- Modal Adicionar Tipo -->
-    <a href="#adicionar-tipo-componente" role="button" class="btn-success btn" data-toggle="modal"><i class="icon-plus"></i> Adicionar Tipo</a>
+    <a href="#adicionar-tipo-componente" role="button" class="btn-success btn" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Tipo</a>
 </p>
     
 <!-- Modal do Tipo -->
@@ -32,7 +32,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-    <button type="submit" value="Adicionar Tipo de Componente" name="adicionar-tipo-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Tipo de Componente</button>
+    <button type="submit" value="Adicionar Tipo de Componente" name="adicionar-tipo-componente" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Tipo de Componente</button>
     </form>
   </div>
 </div>
@@ -53,7 +53,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-    <button type="submit" value="Adicionar Componente" name="pre-adicionar-componente" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Componente</button>
+    <button type="submit" value="Adicionar Componente" name="pre-adicionar-componente" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Novo Componente</button>
     </form>
   </div>
 </div>
@@ -63,14 +63,14 @@
 
     <form class="form-search">
       <input type="text" class="input-medium search-query" name="q_componente", id="busca_componente" {% if q_componente %}value="{{q_componente}}"{% endif %}>
-      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Componente</button>
+      <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar Componente</button>
       <a class="btn btn-success" href="?q_componente=todos">Listar Todos</a>
      </form>
 
 
 		 <div class="well well-small alert alert-success">Componentes Ativos</div>
     {% for componente in componentes_encontrados %}
-<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="icon-stop"></i> {{componente}}</a></p>
+<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
     {% endfor %}
 		
 		
@@ -78,7 +78,7 @@
 		<hr />
 		<div class="well well-small alert alert-danger">Componentes Inativos</div>
 		{% for componente in componentes_inativos %}
-		<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="icon-stop"></i> {{componente}}</a></p>
+		<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
 		{% endfor %}
 		{% endif %}
 		

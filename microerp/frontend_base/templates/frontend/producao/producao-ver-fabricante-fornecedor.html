@@ -4,11 +4,11 @@
 <title>{%block title %}{{block.super}} - Produção - Ver Fabricante Fornecedor{% endblock %}</title>
 
 {% block content %}
-<h1>Fabricantes e Fornecedores</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-building"></i> Fabricantes e Fornecedores</h1>
        
-        <h2><i class="icon-building"></i> {{fabricante_fornecedor}}</h2>
+        <h2>{{fabricante_fornecedor}}</h2>
         {% if request.user.perfilacessoproducao.gerente %}
-        <a class="btn btn-primary" href="{% url "producao:editar_fabricantes_fornecedores" fabricante_fornecedor.id %}"><i class="icon-pencil"></i> Editar</a>
+        <a class="btn btn-primary" href="{% url "producao:editar_fabricantes_fornecedores" fabricante_fornecedor.id %}"><i class="fa fa-pencil"></i> Editar</a>
         {% endif %}
         
         
@@ -16,7 +16,7 @@
     
     
 
-  <h2><i class="icon-envelope"></i> Contatos</h2>
+  <h2><i class="fa fa-envelope"></i> Contatos</h2>
   {{fabricante_fornecedor.contatos|linebreaks|safe}}
 
 <h4>Componentes Já Fornecidos</h4>

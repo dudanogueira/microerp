@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
 from django.db.models import signals
+
 class LocalAula(models.Model):
     '''Endereço de onde é possível ter aulas'''
     

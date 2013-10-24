@@ -1,0 +1,48 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Rastreabilidade da Produção{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="fa fa-th"></i> <i class="fa fa-barcode"></i> Rastreabilidade de Produção</h1>
+	
+
+	
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
+		
+				
+		$('.datepicker').each(function() {
+		   $(this).datepicker({
+			inline: true,
+	        dateFormat: "dd/mm/yy"
+        
+				});
+		});
+		
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

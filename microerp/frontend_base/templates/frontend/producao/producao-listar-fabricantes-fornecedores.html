@@ -4,18 +4,18 @@
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
 {% block content %}
-<h1>Fabricantes e Fornecedores</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-building"></i> Fabricantes e Fornecedores</h1>
 
 {% if request.user.perfilacessoproducao.gerente %}
 <p>
-    <a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Novo Fabricante / Fornecedor</a>
+    <a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Novo Fabricante / Fornecedor</a>
 </p>
 {% endif %}
 <div class="">
     <form class="form-search">
       <input type="text" class="input-medium search-query" name="q_fab_for", id="busca_fab_for" {% if q_fab_for %}value="{{q_fab_for}}"{% endif %}>
 
-      <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Fabricantes / Fornecedor</button>
+      <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar Fabricantes / Fornecedor</button>
       <a class="btn btn-success" href="?q_fab_for=todos">Listar Todos</a>
     </form>
 </div>
@@ -26,7 +26,7 @@
 </p>
 
 {% for fab_for in fab_for_encontrados %}
-    <p><a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="icon-building"></i> {{fab_for}}, Tipo: {{fab_for.tipo}}</a></p>
+    <p><a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="fa fa-building"></i> {{fab_for}}, Tipo: {{fab_for.tipo}}</a></p>
 {% empty %}
 Nenhum Encontrado
 {% endfor %}

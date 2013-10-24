@@ -7,25 +7,25 @@
 <div class="row-fluid">
     <div class="span5">
         
-        <h1><i class="icon-th"></i> <i class="icon-paste"></i> Ver Nota</h1>
+        <h1><i class="fa fa-th"></i> <i class="fa fa-paste"></i> Ver Nota</h1>
 
         <h4>NFe Série {{notafiscal.numero_de_serie}}, Número {{notafiscal.numero_identificador}}</h4> 
 				
 				<p>
-					<a href="{% url "producao:lancar_nota" %}"><i class="icon-arrow-left"></i> Ver Lista de Notas</a>
+					<a href="{% url "producao:lancar_nota" %}"><i class="fa fa-arrow-left"></i> Ver Lista de Notas</a>
 				</p>
 				
 		    {% if request.user.perfilacessoproducao.gerente %}
 		    <p class="btn-group">
 					{% ifequal notafiscal.status "a" %}
-		            <a href="{% url "producao:adicionar_lancamento" notafiscal.id %}" class="btn btn-medium btn-primary"><i class="icon-plus"></i> Lançamento</a>
+		            <a href="{% url "producao:adicionar_lancamento" notafiscal.id %}" class="btn btn-medium btn-primary"><i class="fa fa-plus"></i> Lançamento</a>
 		    
-		    <a class="btn btn-success" href="{% url "producao:editar_nota" notafiscal.id %}"><i class="icon-pencil"></i> Nota</a>
+		    <a class="btn btn-success" href="{% url "producao:editar_nota" notafiscal.id %}"><i class="fa fa-pencil"></i> Nota</a>
 
-		    {# <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="icon-refresh"></i> Calcular</a> #}
+		    {# <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="fa fa-refresh"></i> Calcular</a> #}
 
 
-		    <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="icon-paste"></i> Lançar em Estoque</a>
+		    <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="fa fa-paste"></i> Lançar em Estoque</a>
 		    {% endifequal %}
 		    </p>
 		    {% endif %}
@@ -88,7 +88,7 @@
             <td>
                 {% if request.user.perfilacessoproducao.gerente %}
 									{% ifequal notafiscal.status "a" %}
-                <a href="{% url "producao:editar_lancamento" notafiscal.id lancamento.id %}" class="btn"><i class="icon-pencil"></i></a>
+                <a href="{% url "producao:editar_lancamento" notafiscal.id lancamento.id %}" class="btn"><i class="fa fa-pencil"></i></a>
 								{% endifequal %}
                 {% endif %}
         </tr>
@@ -99,7 +99,7 @@
 {% if request.user.perfilacessoproducao.gerente %}
 	{% ifequal notafiscal.status "a" %}
 <p>
-<a href="{% url "producao:apagar_nota" notafiscal.id %}" class="btn btn-danger"><i class="icon-trash"></i> Apagar Nota</a>
+<a href="{% url "producao:apagar_nota" notafiscal.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> Apagar Nota</a>
 </p>
 	{% endifequal %}
 {% endif %}

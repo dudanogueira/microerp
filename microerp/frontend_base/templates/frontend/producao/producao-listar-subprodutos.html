@@ -4,27 +4,27 @@
 <title>{%block title %}{{block.super}} - Produção - Lista Sub Produtos{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon-list-ul"></i>  Sub Produtos</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-list-ul"></i>  Sub Produtos</h1>
 
 <p>
-    <a class="btn btn-primary" href="{% url "producao:adicionar_subproduto" %}"><i class="icon-plus"></i> Adicionar Sub Produto</a>
+    <a class="btn btn-primary" href="{% url "producao:adicionar_subproduto" %}"><i class="fa fa-plus"></i> Adicionar Sub Produto</a>
 </p>
 <form class="form-search">
   <input type="text" class="input-medium search-query" name="q_subproduto", id="busca_subproduto" {% if q_subproduto %}value="{{q_subproduto}}"{% endif %}>
-  <button type="submit" class="btn btn-primary"><i class="icon-search"></i> Buscar Sub Produto</button>
+  <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar Sub Produto</button>
   <a class="btn btn-success" href="?q_subproduto=todos">Listar Todos</a>
 </form>
 
 <div class="well well-small alert alert-success">Sub Produtos Ativos</div>
 {% for subproduto in subprodutos_encontrados %}
-    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}}</a></p>
+    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="fa fa-list-ul"></i> {{subproduto}}</a></p>
 {% endfor %}
 
 {% if subprodutos_inativos %}
 <hr />
 <div class="well well-small alert alert-danger">Sub Produtos Inativos</div>
 {% for subproduto in subprodutos_inativos %}
-    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="icon-list-ul"></i> {{subproduto}}</a></p>
+    <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="fa fa-list-ul"></i> {{subproduto}}</a></p>
 {% endfor %}
 {% endif %}
 

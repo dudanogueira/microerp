@@ -5,13 +5,13 @@
 <title>{%block title %}{{block.super}} - Produção - Ordem de Produção de SubProduto{% endblock %}</title>
 
 {% block content %}
-	<h1><i class="icon-th"></i> <i class="icon-truck"></i>  Ordem de Produção</h1>
-	<h2><i class="icon-list-ul"></i> Sub Produto {{subproduto.part_number}} {% if calculado%}: Cálculo de Produção{% endif %}</h2>
+	<h1><i class="fa fa-th"></i> <i class="fa fa-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="fa fa-list-ul"></i> Sub Produto {{subproduto.part_number}} {% if calculado%}: Cálculo de Produção{% endif %}</h2>
 	{% if calculado %}
 		<p class="btn-group">
 	<button id="esconder-linhas-ok" class="btn btn-success">Mostra/Esconder Linhas OK</button>
 
-		<button href="" id="imprimir" class="btn btn-primary"><i class="icon-print"></i> imprimir</button>
+		<button href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</button>
 		</p>
 		{% endif %}
 	
@@ -41,7 +41,9 @@
 			{% csrf_token %}
 
 			<input type="hidden" name="configuracao" value="{{conf}}">
-			<button class="btn btn-danger" type="submit"><i class="icon-thumbs-up"></i> Confirmar Produção!</button>
+			{{form_configurador_producao_subproduto.as_p}}
+			<button class="btn btn-danger" type="submit"><i class="fa fa-thumbs-up"></i> Confirmar Produção!</button>
+			
 			<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
 		</form>
 		{% else %}
@@ -50,10 +52,10 @@
 	
 	{% else %}
 	{% if calculado %}
-	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="icon-search"></i> Produção Não Liberada. Nova Consulta</a>
+	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="fa fa-search"></i> Produção Não Liberada. Nova Consulta</a>
 	{% else %}
 	<button class="btn btn-primary" form="configurador_produto">
-		<i class="icon-search"></i> Verificar Disponibilidade para Produção
+		<i class="fa fa-search"></i> Verificar Disponibilidade para Produção
 	</button>
 	{% endif %}
 	<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
@@ -236,6 +238,10 @@
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/datepicker.css" rel="stylesheet">
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" />
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
 
 <script>
 $(document).ready(function() {
@@ -246,6 +252,12 @@ $(document).ready(function() {
 		});
 		
 		$(".linhaok").toggle();
+		
+		$( ".datepicker" ).datepicker({
+			inline: true,
+	        dateFormat: "dd/mm/yy"
+        
+		});
 });
 
 
