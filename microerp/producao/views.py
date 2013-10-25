@@ -43,6 +43,7 @@ from producao.models import ComponentesDaOrdemDeCompra
 from producao.models import RequisicaoDeCompra
 from producao.models import PerfilAcessoProducao
 from producao.models import OrdemConversaoSubProduto
+from producao.models import LancamentoProdProduto
 
 ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     ('', '-----'),
@@ -2192,8 +2193,19 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
     produto.total_produzido = novo_valor
     produto.save()
     messages.success(request, u"Novo Valor para Total Produzido do Produto %s: %s -> %s" % (produto.part_number(), produto_total_produzido, novo_valor))
+    # adiciona a entidade LancamentoDeProducaoDeProduto
+    # tantas vezes quantos produtos produzidos
+    for i in range(int(quantidade_solicitada)):
+        # para cada um solicitado, criar entrada de lancamento
+        lancamento = LancamentoProdProduto.objects.create(
+            ordem_de_producao = ordem_producao_produto,
+        )
+        # para cada subproduto testável deste produto, criar uma linha de testes
+        for subproduto_testavel in ordem_producao_produto.produto.subprodutos_testaveis.all():
+            linha = LinhaTesteLancamentoProdProduto.objects.create()
+        messages.success(request, u"Sucesso! Criado novo Lançamento de Produção: #%s" % lancamento.id)
     return redirect(reverse("producao:ordem_de_producao"))
-        
+
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
     produto = get_object_or_404(ProdutoFinal, pk=produto_id)
@@ -2935,8 +2947,40 @@ def movimento_de_producao(request):
     
     return render_to_response('frontend/producao/producao-movimento-de-producao.html', locals(), context_instance=RequestContext(request),)
 
-
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao(request):
+    produtos_ativos = ProdutoFinal.objects.filter(ativo=True)
+    nao_apagados = LancamentoProdProduto.objects.filter(apagado=False)
+    lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
+    lancamentos_sem_serial = nao_apagados.filter(serial_number=None)
+    lancamentos_com_serial = nao_apagados.exclude(serial_number=None).filter(vendido=False)
+    lancamentos_vendidos = nao_apagados.filter(vendido=True)
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
+
+class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormConfigurarSubProdutosTestaveisDoProduto, self).__init__(*args, **kwargs)
+        self.fields['subprodutos_testaveis'].widget.attrs['class'] = 'select2'
+        self.fields['subprodutos_testaveis'].help_text = None
+        if self.instance:
+            # filtra somente os que participam do subproduto
+            subprodutos = self.instance.linhasubprodutodoproduto_set.all()
+            subprodutos = [(s.id, s.subproduto.part_number()) for s in subprodutos]
+            self.fields['subprodutos_testaveis'].choices = subprodutos
+    
+    class Meta:
+        model = ProdutoFinal
+        fields = 'subprodutos_testaveis',
+        
+def rastreabilidade_de_producao_configurar(request, produto_id):
+    produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    if request.POST:
+        form_configurar = FormConfigurarSubProdutosTestaveisDoProduto(request.POST, instance=produto)
+        if form_configurar.is_valid():
+            produto = form_configurar.save()
+            messages.success(request, u"Produto Configurado")
+    else:
+        form_configurar = FormConfigurarSubProdutosTestaveisDoProduto(instance=produto)
+    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-configurar.html', locals(), context_instance=RequestContext(request),)
     

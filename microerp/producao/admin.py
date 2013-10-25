@@ -32,6 +32,8 @@ from models import AtividadeDeOrdemDeCompra
 from models import ComponentesDaOrdemDeCompra
 from models import RequisicaoDeCompra
 from models import OrdemConversaoSubProduto
+from models import LancamentoProdProduto
+from models import LinhaTesteLancamentoProdProduto
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -193,3 +195,5 @@ admin.site.register(AtividadeDeOrdemDeCompra)
 admin.site.register(ComponentesDaOrdemDeCompra)
 admin.site.register(RequisicaoDeCompra)
 admin.site.register(OrdemConversaoSubProduto)
+admin.site.register(LancamentoProdProduto)
+admin.site.register(LinhaTesteLancamentoProdProduto)

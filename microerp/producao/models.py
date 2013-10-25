@@ -1128,7 +1128,7 @@ class ProdutoFinal(models.Model):
                     self.slug += '-2'
             else:
                 break
-    
+
     ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
@@ -1137,6 +1137,7 @@ class ProdutoFinal(models.Model):
     total_produzido = models.IntegerField(blank=False, null=False, default=0)
     quantidade_estimada_producao_semanal = models.IntegerField(u"Quantidade Estimada de Produção Semanal", blank=False, null=False)
     quantidade_maxima_estocavel = models.IntegerField(u"Quantidade Máxima de Produto Estocável", blank=False, null=True)
+    subprodutos_testaveis = models.ManyToManyField('SubProduto')
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1244,15 +1245,78 @@ class OrdemConversaoSubProduto(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
+
 ## PRODUCAO PRODUTO
-
-
 class OrdemProducaoProduto(models.Model):
+    
+    def __unicode__(self):
+        return u"Ordem de Produção #%s de %s Produtos %s por %s em %s " \
+            % (self.id, self.quantidade, self.produto.part_number(), self.criado_por, self.criado.strftime("%d/%m/%y %H:%M"))
+    
     produto = models.ForeignKey('ProdutoFinal')
     quantidade = models.IntegerField(blank=False, null=False)
     string_producao = models.TextField(blank=False)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class LancamentoProdProduto(models.Model):
+    
+    def __unicode__(self):
+        if self.serial_number:
+            if self.vendido:
+                texto = u"Produto %s com Serial: %s, vendido para %s" % \
+                    (self.ordem_de_producao.produto.part_number(), self.serial_number, self.cliente_associado)
+            else:
+                texto = u"Produto %s com Serial: %s, Disponível" % \
+                    (self.ordem_de_producao.produto.part_number(), self.serial_number)
+        else:
+            texto = u"Produto %s sem Serial. Disponível" % \
+                self.ordem_de_producao.produto.part_number()
+        if self.apagado:
+            texto = "%s - APAGADO" % texto
+        return texto
+            
+            
+    
+    class Meta:
+        verbose_name = u"Lançamento de Produção de Produto"
+        verbose_name_plural = u"Lançamentos de Produção de Produto"
+        ordering = ['-criado']
+    
+    def produto(self):
+        return self.ordem_de_producao.produto
+    
+    serial_number = models.CharField(null=True, max_length=100)
+    vendido = models.BooleanField(default=False)
+    funcionario_que_montou = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="lancamento_de_producao_produto_montado_set")
+    data_montagem = models.DateField(blank=True, null=True, default=datetime.datetime.today)
+    inicio_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today)
+    funcionario_inicio_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_iniciado_set", blank=True, null=True)
+    cliente_associado = models.CharField(blank=True, null=True,  max_length=100)
+    ordem_de_producao = models.ForeignKey(OrdemProducaoProduto)
+    # meta
+    apagado = models.BooleanField(default=False)
+    justificativa_apagado = models.TextField(blank=True)
+    funcionario_apagou = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_apagado_set", blank=True, null=True)
+    data_apagado = models.DateField(default=None, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class LinhaTesteLancamentoProdProduto(models.Model):
+    
+    class Meta:
+        verbose_name = u"Linha de Teste do Lançamento de Produto Produzido"
+        verbose_name_plural = u"Linhas de Teste do Lançamento de Produto Produzido"
+        ordering = ['-criado']
+    
+    lancamento_de_producao = models.ForeignKey(LancamentoProdProduto)
+    subproduto_testavel = models.ForeignKey(SubProduto)
+    funcionario_que_testou = models.ForeignKey('rh.Funcionario', related_name="linha_de_teste_de_lancamento_de_produto_set", null=True)
+    funcionario_que_montou = models.ForeignKey('rh.Funcionario', related_name="linha_de_montagem_de_lancamento_de_produto_set", null=True)
+    versao_firmware = models.CharField(blank=True, max_length=100)
+    # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
@@ -1262,7 +1326,6 @@ class RegistroEnvioDeTesteSubProduto(models.Model):
         verbose_name = u"Registro de Envio de Testes do Sub Produto"
         verbose_name_plural = u"Registros de Envio de Testes do Sub Produto"
         ordering = ['-criado']
-    
     
     quantidade = models.IntegerField(blank=False, null=False)
     subproduto = models.ForeignKey('SubProduto')

@@ -6,7 +6,58 @@
 
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-barcode"></i> Rastreabilidade de Produção</h1>
+
+
+	<h2>Lançamentos de Produto</h2>
+	<ul class="nav nav-tabs">
+		<li class="active"><a href="#lancamentos-sem-serial" data-toggle="tab">Sem Serial</a></li>
+		<li class=""><a href="#lancamentos-com-serial" data-toggle="tab">Com Serial e Disponível</a></li>
+		<li class=""><a href="#lancamentos-vendidos" data-toggle="tab">Vendidos</a></li>
+		<li class=""><a href="#lancamentos-apagados" data-toggle="tab">Apagados</a></li>
+	  <li class=""><a href="#configurar" data-toggle="tab">Configurar Testes</a></li>
+	</ul>
 	
+	<div id="myTabContent" class="tab-content">
+		
+		<div class="tab-pane fade in active" id="lancamentos-sem-serial">
+			<h2>Lançamentos sem Serial</h2>
+			<ul>
+			{% for lancamento in lancamentos_sem_serial %}
+				<li>#{{lancamento.id}} - {{lancamento}}</li>
+			{% endfor %}
+			</ul>
+		</div>
+		
+		<div class="tab-pane fade in" id="lancamentos-com-serial">
+			<h2>Lançamentos com Serial</h2>
+			<ul>
+			{% for lancamento in lancamentos_com_serial %}
+				<li>#{{lancamento.id}} - {{lancamento}}</li>
+			{% endfor %}
+			</ul>
+		</div>
+		
+		
+		<div class="tab-pane fade in" id="lancamentos-vendidos">
+			<h2>Lançamentos vendidos</h2>
+			{{lancamentos_vendidos}}
+		</div>
+		
+		<div class="tab-pane fade in" id="lancamentos-apagados">
+			<h2>Lançamentos apagados</h2>
+			{{lancamentos_apagados}}
+		</div>
+		
+
+		<div class="tab-pane fade in" id="configurar">
+			<ul>
+				{% for produto in produtos_ativos %}
+				<li><a href="{% url "producao:rastreabilidade_de_producao_configurar" produto.id %}">{{produto}}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
+		
+	</div>
 
 	
 {% endblock %}
