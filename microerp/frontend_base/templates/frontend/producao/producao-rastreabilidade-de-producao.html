@@ -7,36 +7,57 @@
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-barcode"></i> Rastreabilidade de Produção</h1>
 
-
-	<h2>Lançamentos de Produto</h2>
+	<div class="row-fluid">
+		<div class="span5">
+			<h2>Lançamentos de Produto</h2>
+		</div>
+		
+		<div class="span7">
+			<p class="btn-group">
+			<a href="{% url "producao:rastreabilidade_de_producao_adicionar" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
+			<a role="button" href="#modal-apagar-lancamento" class="btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i> Apagar</a>
+			
+			</p>
+		</div>
+		
+		<!-- Modal -->
+		<div id="modal-apagar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-header">
+		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		    <h3 id="myModalLabel">Apagar Lançamentos</h3>
+		  </div>
+		  <div class="modal-body">
+				<form method="POST">
+					{% csrf_token %}
+		    {{form_remover_lancamentos}}
+		  </div>
+		  <div class="modal-footer">
+		    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+		    <button class="btn btn-primary">Save changes</button>
+		  </div>
+		</div>
+		
+	</div>
+	
 	<ul class="nav nav-tabs">
-		<li class="active"><a href="#lancamentos-sem-serial" data-toggle="tab">Sem Serial</a></li>
-		<li class=""><a href="#lancamentos-com-serial" data-toggle="tab">Com Serial e Disponível</a></li>
+		<li class="active"><a href="#lancamentos-disponiveis" data-toggle="tab">Disponíveis</a></li>
 		<li class=""><a href="#lancamentos-vendidos" data-toggle="tab">Vendidos</a></li>
 		<li class=""><a href="#lancamentos-apagados" data-toggle="tab">Apagados</a></li>
 	  <li class=""><a href="#configurar" data-toggle="tab">Configurar Testes</a></li>
+		<li class=""><a href="#checar-quantitativos" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:rastreabilidade_de_producao_checar_quantitativos" %}">Checar Quantitativos</a></li>
+		
 	</ul>
 	
 	<div id="myTabContent" class="tab-content">
 		
-		<div class="tab-pane fade in active" id="lancamentos-sem-serial">
-			<h2>Lançamentos sem Serial</h2>
+		<div class="tab-pane fade in active" id="lancamentos-disponiveis">
+			<h2>Lançamentos Disponíveis</h2>
 			<ul>
-			{% for lancamento in lancamentos_sem_serial %}
-				<li>#{{lancamento.id}} - {{lancamento}}</li>
+			{% for lancamento in lancamentos_disponiveis %}
+				<li>#{{lancamento.id}} - {{lancamento}} - Linhas de Teste: {{lancamento.linhatestelancamentoprodproduto_set.count}}</li>
 			{% endfor %}
 			</ul>
 		</div>
-		
-		<div class="tab-pane fade in" id="lancamentos-com-serial">
-			<h2>Lançamentos com Serial</h2>
-			<ul>
-			{% for lancamento in lancamentos_com_serial %}
-				<li>#{{lancamento.id}} - {{lancamento}}</li>
-			{% endfor %}
-			</ul>
-		</div>
-		
 		
 		<div class="tab-pane fade in" id="lancamentos-vendidos">
 			<h2>Lançamentos vendidos</h2>
@@ -55,6 +76,9 @@
 				<li><a href="{% url "producao:rastreabilidade_de_producao_configurar" produto.id %}">{{produto}}</a></li>
 				{% endfor %}
 			</ul>
+		</div>
+
+		<div class="tab-pane fade in" id="checar-quantitativos">
 		</div>
 		
 	</div>
@@ -91,7 +115,27 @@ $(document).on("click", "#imprimir", function(e){
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
+		
 });
+
+$('.nav-tabs').on("click", '.ajaxtab', function(e){
+	e.preventDefault();
+
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	// ajax load from data-url
+	var url = $(this).attr("data-url");
+	if (url){
+		$(href).load(url);
+		$(href).html("<i class='fa fa-spinner fa fa-spin fa fa-large fa fa-3x'></i>");
+	}
+	pane.tab('show');		
+})
+
+var activeTab = $('[href=' + location.hash + ']');
+activeTab && activeTab.click();
+
 
 </script>
 {% endaddtoblock %}

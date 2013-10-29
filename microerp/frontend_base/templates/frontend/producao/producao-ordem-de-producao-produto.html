@@ -255,20 +255,6 @@ $(document).on("click", "#imprimir", function(e){
 });
 
 
-$('.nav-tabs').on("click", '.ajaxtab', function(e){
-	e.preventDefault();
-	var url = $(this).attr("data-url");
-	var href = this.hash;
-	window.location.hash = this.hash;
-	var pane = $(this);
-	// ajax load from data-url
-	$(href).load(url)
-	$(href).html("<i class='fa fa-spinner fa-spin fa-large fa-3x'></i>");
-	pane.tab('show');		
-	
-})
-
-
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

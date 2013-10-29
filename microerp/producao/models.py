@@ -57,6 +57,17 @@ ORDEM_DE_COMPRA_CRITICIDADE_CHOICES = (
     (2, 'Urgente'),
 )
 
+OPERACAO_MOVIMENTO_ESTOQUE_PRODUTO_CHOICES = (
+    ('adiciona', 'Adiciona'),
+    ('remove', 'Remove'),
+)
+
+SITUACAO_MOVIMENTO_ESTOQUE_SUBPRODUTO_CHOICES = (
+    ('0', 'Montado'),
+    ('1', 'Em Teste'),
+    ('2', 'Funcional'),
+)
+
 class PerfilAcessoProducao(models.Model):
     '''Perfil de Acesso à Produção'''
     
@@ -1129,6 +1140,9 @@ class ProdutoFinal(models.Model):
             else:
                 break
 
+    def lancamentos_disponiveis(self):
+        return LancamentoProdProduto.objects.filter(ordem_de_producao__produto=self, vendido=False, apagado=False)
+
     ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
@@ -1223,7 +1237,7 @@ class OrdemProducaoSubProduto(models.Model):
     class Meta:
         verbose_name = u"Ordem de Produção do Sub Produto"
         verbose_name_plural = u"Ordens de Produção do Sub Produto"
-        ordering = ['-data_producao']
+        ordering = ['-criado']
     
     subproduto = models.ForeignKey('SubProduto')
     quantidade = models.IntegerField(blank=False, null=False)
@@ -1245,9 +1259,11 @@ class OrdemConversaoSubProduto(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-
 ## PRODUCAO PRODUTO
 class OrdemProducaoProduto(models.Model):
+    
+    class Meta:
+        ordering = ['-criado']
     
     def __unicode__(self):
         return u"Ordem de Produção #%s de %s Produtos %s por %s em %s " \
@@ -1297,10 +1313,11 @@ class LancamentoProdProduto(models.Model):
     cliente_associado = models.CharField(blank=True, null=True,  max_length=100)
     ordem_de_producao = models.ForeignKey(OrdemProducaoProduto)
     # meta
+    adicionado_manualmente = models.BooleanField(default=True)
     apagado = models.BooleanField(default=False)
     justificativa_apagado = models.TextField(blank=True)
     funcionario_apagou = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_apagado_set", blank=True, null=True)
-    data_apagado = models.DateField(default=None, blank=True, null=True)
+    data_apagado = models.DateTimeField(default=None, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
@@ -1469,3 +1486,38 @@ class RequisicaoDeCompra(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class NotaFiscalLancamentosProducao(models.Model):
+    notafiscal = models.CharField(blank=False, null=False, max_length=100)
+    lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto)
+    cliente_associado = models.CharField(blank=False, null=False, max_length=100)
+
+class MovimentoEstoqueSubProduto(models.Model):
+    subproduto = models.ForeignKey(SubProduto)
+    situacao = models.CharField(blank=False, max_length=100, null=False, choices=SITUACAO_MOVIMENTO_ESTOQUE_SUBPRODUTO_CHOICES, default=0)
+    operacao = models.CharField(blank=False, null=False, max_length=100, choices=OPERACAO_MOVIMENTO_ESTOQUE_PRODUTO_CHOICES, default='adiciona')
+    quantidade_movimentada = models.IntegerField(blank=False, null=False)
+    quantidade_anterior = models.IntegerField(blank=False, null=False)
+    quantidade_nova = models.IntegerField(blank=False, null=False)
+    justificativa = models.TextField(blank=False, null=False)
+    ordem_de_producao = models.ForeignKey(OrdemProducaoSubProduto, blank=True, null=True)
+    # meta
+    criado_manualmente = models.BooleanField(default=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class MovimentoEstoqueProduto(models.Model):
+    produto = models.ForeignKey(ProdutoFinal)
+    operacao = models.CharField(blank=True, max_length=100, choices=OPERACAO_MOVIMENTO_ESTOQUE_PRODUTO_CHOICES, default='adiciona')
+    quantidade_movimentada = models.IntegerField(blank=False, null=False)
+    quantidade_anterior = models.IntegerField(blank=False, null=False)
+    quantidade_nova = models.IntegerField(blank=False, null=False)
+    justificativa = models.TextField(blank=False, null=False)
+    ordem_de_producao = models.ForeignKey(OrdemProducaoProduto, blank=True, null=True)
+    # meta
+    criado_manualmente = models.BooleanField(default=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    

@@ -44,6 +44,9 @@ from producao.models import RequisicaoDeCompra
 from producao.models import PerfilAcessoProducao
 from producao.models import OrdemConversaoSubProduto
 from producao.models import LancamentoProdProduto
+from producao.models import LinhaTesteLancamentoProdProduto
+from producao.models import MovimentoEstoqueSubProduto
+from producao.models import MovimentoEstoqueProduto
 
 ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     ('', '-----'),
@@ -51,7 +54,6 @@ ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     (1, 'Média'),
     (2, 'Urgente'),
 )
-
 
 from rh.models import Funcionario
 
@@ -1233,13 +1235,47 @@ def ativar_subproduto(request, subproduto_id):
     # verifica se possui no estoque
     return render_to_response('frontend/producao/producao-ativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
-
+class FormMovimentoSubProduto(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        subproduto = kwargs.pop('subproduto')
+        operacao = kwargs.pop('operacao')
+        situacao = kwargs.pop('situacao')
+        super(FormMovimentoSubProduto, self).__init__(*args, **kwargs)
+        self.fields['subproduto'].initial = subproduto
+        self.fields['subproduto'].widget = forms.HiddenInput()
+        self.fields['quantidade_movimentada'].label = "Quantidade"
+        self.fields['operacao'].widget = forms.HiddenInput()
+        self.fields['operacao'].initial = operacao
+        self.fields['situacao'].widget = forms.HiddenInput()
+        self.fields['situacao'].initial = situacao
+    
+    class Meta:
+        model = MovimentoEstoqueSubProduto
+        fields = 'quantidade_movimentada', 'justificativa', 'operacao', 'subproduto', 'situacao'
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     participacao_subprodutos = LinhaSubProdutoAgregado.objects.filter(subproduto_agregado=subproduto)
     agregado_em_produto = LinhaSubProdutodoProduto.objects.filter(subproduto=subproduto)
+    # instancia formularios
+    form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
+    form_imagem = ImagemSubprodutoForm(instance=subproduto)
+    form_agregar_subproduto = AgregarSubProdutoForm(subproduto_principal=subproduto)
+    form_enviar_para_teste = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_teste")
+    form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto, prefix="enviar_para_funcional")
+    # forms de movimentos
+    # montado
+    form_adiciona_montado = FormMovimentoSubProduto(subproduto=subproduto, operacao='adiciona', situacao=0)
+    form_remove_montado = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=0)
+    # em testes
+    form_adiciona_em_testes = FormMovimentoSubProduto(subproduto=subproduto, operacao='adiciona', situacao=1)
+    form_remove_em_testes = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=1)
+    # em funcional
+    form_adiciona_funcional = FormMovimentoSubProduto(subproduto=subproduto, operacao='adiciona', situacao=2)
+    form_remove_funcional = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=2)
+    
     if request.POST:
         if request.POST.get('anexar-documento', None):
             form_anexos = ArquivoAnexoSubProdutoForm(request.POST, request.FILES, subproduto=subproduto)
@@ -1332,13 +1368,122 @@ def ver_subproduto(request, subproduto_id):
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
             
             
-    else:
-        form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
-        form_imagem = ImagemSubprodutoForm(instance=subproduto)
-        form_agregar_subproduto = AgregarSubProdutoForm(subproduto_principal=subproduto)
-        form_enviar_para_teste = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_teste")
-        form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto, prefix="enviar_para_funcional")
+        # movimento de produtos - montado
+        if request.POST.get('adiciona-subproduto-montado-btn', None):
+            form_adiciona_montado = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='adiciona', situacao=0)
+            if form_adiciona_montado.is_valid():
+                # registra a alteração de subproduto montado e altera o valor
+                movimento = form_adiciona_montado.save(commit=False)
+                # for positivo, movimenta
+                if movimento.quantidade_movimentada > 0:
+                    movimento.quantidade_anterior = subproduto.total_montado
+                    movimento.quantidade_nova = subproduto.total_montado + movimento.quantidade_movimentada
+                    subproduto.total_montado = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    subproduto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Adicionado %s Sub Produtos %s como Montados" % (movimento.quantidade_movimentada, movimento.subproduto))
+                else:
+                    messages.error(request, u"Erro! Somente números positivos")
+                    
+        if request.POST.get('remove-subproduto-montado-btn', None):
+            form_remove_montado = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=0)
+            if form_remove_montado.is_valid():
+                # registra a alteradacao de produco e altera o valor
+                movimento = form_remove_montado.save(commit=False)
+                if subproduto.total_montado > movimento.quantidade_movimentada:
+                    # possui mais do que quer remover
+                    movimento.quantidade_anterior = subproduto.total_montado
+                    movimento.quantidade_nova = int(subproduto.total_montado) - int(movimento.quantidade_movimentada)
+                    subproduto.total_montado = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    subproduto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Montados" % (movimento.quantidade_movimentada, movimento.subproduto))
+
+                else:
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s Montados" % subproduto.total_montado)
+                    
         
+        # movimento de produtos - em testes
+        if request.POST.get('adiciona-subproduto-testes-btn', None):
+            form_adiciona_testes = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='adiciona', situacao=1)
+            if form_adiciona_testes.is_valid():
+                # registra a alteração de subproduto montado e altera o valor
+                movimento = form_adiciona_testes.save(commit=False)
+                # for positivo, movimenta
+                if movimento.quantidade_movimentada > 0:
+                    movimento.quantidade_anterior = subproduto.total_testando
+                    movimento.quantidade_nova = subproduto.total_testando + movimento.quantidade_movimentada
+                    subproduto.total_testando = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    subproduto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Adicionado %s Sub Produtos %s como Em Testes" % (movimento.quantidade_movimentada, movimento.subproduto))
+                else:
+                    messages.error(request, u"Erro! Somente números positivos")
+                    
+        if request.POST.get('remove-subproduto-testes-btn', None):
+            form_remove_testes = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=1)
+            if form_remove_testes.is_valid():
+                # registra a alteradacao de produco e altera o valor
+                movimento = form_remove_testes.save(commit=False)
+                if subproduto.total_testando > movimento.quantidade_movimentada:
+                    # possui mais do que quer remover
+                    movimento.quantidade_anterior = subproduto.total_testando
+                    movimento.quantidade_nova = int(subproduto.total_testando) - int(movimento.quantidade_movimentada)
+                    subproduto.total_testando = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    subproduto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Testando" % (movimento.quantidade_movimentada, movimento.subproduto))
+
+                else:
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Testando" % subproduto.total_montado)
+                    
+        
+        
+
+        # movimento de produtos - funcional
+        if request.POST.get('adiciona-subproduto-funcional-btn', None):
+            form_adiciona_funcional = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='adiciona', situacao=2)
+            if form_adiciona_funcional.is_valid():
+                # registra a alteração de subproduto montado e altera o valor
+                movimento = form_adiciona_funcional.save(commit=False)
+                # for positivo, movimenta
+                if movimento.quantidade_movimentada > 0:
+                    movimento.quantidade_anterior = subproduto.total_funcional
+                    movimento.quantidade_nova = subproduto.total_funcional + movimento.quantidade_movimentada
+                    subproduto.total_funcional = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    subproduto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Adicionado %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
+                else:
+                    messages.error(request, u"Erro! Somente números positivos")
+                    
+        if request.POST.get('remove-subproduto-funcional-btn', None):
+            form_remove_funcional = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=2)
+            if form_remove_funcional.is_valid():
+                # registra a alteradacao de produco e altera o valor
+                movimento = form_remove_funcional.save(commit=False)
+                if subproduto.total_funcional > movimento.quantidade_movimentada:
+                    # possui mais do que quer remover
+                    movimento.quantidade_anterior = subproduto.total_funcional
+                    movimento.quantidade_nova = int(subproduto.total_funcional) - int(movimento.quantidade_movimentada)
+                    subproduto.total_funcional = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    subproduto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
+
+                else:
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais" % subproduto.total_montado)
+                    
+        
+        
+
+
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1657,9 +1802,35 @@ def editar_produto(request, produto_id):
         form = ProdutoFinalForm(instance=produto)
     return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
 
+
+class FormMovimentoProduto(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        produto = kwargs.pop('produto')
+        operacao = kwargs.pop('operacao')
+        super(FormMovimentoProduto, self).__init__(*args, **kwargs)
+        self.fields['produto'].initial = produto
+        self.fields['produto'].widget = forms.HiddenInput()
+        self.fields['quantidade_movimentada'].label = "Quantidade"
+        self.fields['operacao'].widget = forms.HiddenInput()
+        self.fields['operacao'].initial = operacao
+    
+    class Meta:
+        model = MovimentoEstoqueProduto
+        fields = 'quantidade_movimentada', 'justificativa', 'operacao', 'produto',
+
+
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_produto(request, produto_id):
     produto = get_object_or_404(ProdutoFinal, pk=produto_id)
+    form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(produto=produto)
+    form_adicionar_linha_componentes_avulsos = AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(produto=produto)
+    form_imagem = AlterarImagemProduto(instance=produto)
+    form_anexos = ArquivoAnexoProdutoForm(produto=produto)
+    form_adiciona_produzido = FormMovimentoProduto(produto=produto, operacao='adiciona')
+    form_remove_produzido = FormMovimentoProduto(produto=produto, operacao='remove')
+    # quantidade de lancamentos disponíveis:
+    lancamentos_disponiveis = produto.ordemproducaoproduto_set.filter(lancamentoprodproduto__vendido=False, lancamentoprodproduto__apagado=False)
     if request.POST:
         if request.POST.get('btn-adicionar-linha-subproduto', None):
             form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(request.POST, produto=produto)
@@ -1700,11 +1871,41 @@ def ver_produto(request, produto_id):
                     messages.error(request, u"Erro! Arquivo %s NÃO Anexado!" % anexo)
         
                 
-    else:
-        form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(produto=produto)
-        form_adicionar_linha_componentes_avulsos = AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(produto=produto)
-        form_imagem = AlterarImagemProduto(instance=produto)
-        form_anexos = ArquivoAnexoProdutoForm(produto=produto)
+        if request.POST.get('adiciona-produto-produzido-btn', None):
+            form_adiciona_produzido = FormMovimentoProduto(request.POST, produto=produto, operacao='adiciona')
+            if form_adiciona_produzido.is_valid():
+                # registra a alteração de subproduto montado e altera o valor
+                movimento = form_adiciona_produzido.save(commit=False)
+                # for positivo, movimenta
+                if movimento.quantidade_movimentada > 0:
+                    movimento.quantidade_anterior = produto.total_produzido
+                    movimento.quantidade_nova = produto.total_produzido + movimento.quantidade_movimentada
+                    produto.total_produzido = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    produto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Adicionado %s Produtos %s como Produzido" % (movimento.quantidade_movimentada, movimento.produto))
+                else:
+                    messages.error(request, u"Erro! Somente números positivos")
+                    
+        if request.POST.get('remove-produto-produzido-btn', None):
+            form_remove_produzido = FormMovimentoProduto(request.POST, produto=produto, operacao='remove')
+            if form_remove_produzido.is_valid():
+                # registra a alteradacao de produco e altera o valor
+                movimento = form_remove_produzido.save(commit=False)
+                if produto.total_produzido > movimento.quantidade_movimentada:
+                    # possui mais do que quer remover
+                    movimento.quantidade_anterior = produto.total_produzido
+                    movimento.quantidade_nova = int(produto.total_produzido) - int(movimento.quantidade_movimentada)
+                    produto.total_produzido = movimento.quantidade_nova
+                    movimento.criado_por = request.user
+                    produto.save()
+                    movimento.save()
+                    messages.success(request, u"Sucesso! Removido %s Produtos %s como Produzido" % (movimento.quantidade_movimentada, movimento.produto))
+
+                else:
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Produzidas" % produto.total_produzido)
+                    
     return render_to_response('frontend/producao/producao-ver-produto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)    
@@ -1911,13 +2112,29 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
             novo_total = total_anterior + int(quantidade_solicitada)
             subproduto.total_funcional = novo_total
             messages.success(request, u"Novo Valor de SubProduto %s em Total Funcional: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
+            situacao=2
         elif subproduto.tipo_de_teste == 2:
             # tipo de teste composto, vai pra seção de montados pra depois testar
             total_anterior = subproduto.total_montado
             novo_total = total_anterior + int(quantidade_solicitada)
             subproduto.total_montado = novo_total
             messages.success(request, u"Novo Valor de SubProduto %s em Total Montado: %s + %s = %s" % (subproduto, total_anterior, int(quantidade_solicitada), novo_total))
+            situacao=0
         subproduto.save()
+        # registra o movimento
+        movimento = MovimentoEstoqueSubProduto.objects.create(
+            subproduto = subproduto,
+            situacao = situacao,
+            operacao = 'adiciona',
+            quantidade_movimentada = int(quantidade_solicitada),
+            quantidade_anterior = total_anterior,
+            quantidade_nova = novo_total,
+            justificativa = "Ordem de Produção de Sub Produto #%s" % ordem_producao_subproduto,
+            ordem_de_producao = ordem_producao_subproduto,
+            criado_manualmente=False,
+            criado_por=request.user,
+        )
+        messages.info(request, u"Registrado o Movimento de Produção de Sub Produto.")
         url_retorno = "%s%s" % (reverse("producao:ordem_de_producao"), "#produzir")
         return redirect(url_retorno)
 
@@ -2075,7 +2292,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     # verifica se possui a quantidade total deste componente em estoque
                     qtd_componente = item[1]
                     posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
-                    # quantiade no estoque insuficiente
+                    # quantidade no estoque insuficiente
                     if qtd_componente > posicao_em_estoque_produtor:
                         faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
                         producao_liberada = False
@@ -2193,16 +2410,32 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
     produto.total_produzido = novo_valor
     produto.save()
     messages.success(request, u"Novo Valor para Total Produzido do Produto %s: %s -> %s" % (produto.part_number(), produto_total_produzido, novo_valor))
+    # registra o incremento no movimento de producao
+    movimento = MovimentoEstoqueProduto.objects.create(
+        produto = produto,
+        quantidade_movimentada = int(quantidade_solicitada),
+        quantidade_anterior = produto_total_produzido,
+        quantidade_nova = novo_valor,
+        justificativa = "Ordem de Produção de Produto #%s " % ordem_producao_produto.id,
+        ordem_de_producao = ordem_producao_produto,
+        criado_manualmente=False,
+        criado_por=request.user,
+    )
+    messages.info(request, u"Movimento de Estoque de Produto Registrado: #%s" % movimento.id)
     # adiciona a entidade LancamentoDeProducaoDeProduto
     # tantas vezes quantos produtos produzidos
     for i in range(int(quantidade_solicitada)):
         # para cada um solicitado, criar entrada de lancamento
         lancamento = LancamentoProdProduto.objects.create(
             ordem_de_producao = ordem_producao_produto,
+            adicionado_manualmente=False,
         )
         # para cada subproduto testável deste produto, criar uma linha de testes
         for subproduto_testavel in ordem_producao_produto.produto.subprodutos_testaveis.all():
-            linha = LinhaTesteLancamentoProdProduto.objects.create()
+            linha = LinhaTesteLancamentoProdProduto.objects.create(
+                lancamento_de_producao=lancamento,
+                subproduto_testavel=subproduto_testavel
+            )
         messages.success(request, u"Sucesso! Criado novo Lançamento de Produção: #%s" % lancamento.id)
     return redirect(reverse("producao:ordem_de_producao"))
 
@@ -2221,7 +2454,7 @@ def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
                     # verifica se possui a quantidade total deste componente em estoque
                     qtd_componente = item[1]
                     posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
-                    # quantiade no estoque insuficiente
+                    # quantidade no estoque insuficiente
                     if qtd_componente > posicao_em_estoque_produtor:
                         faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
                         producao_liberada = False
@@ -2903,6 +3136,12 @@ def movimento_de_producao(request):
     ordens_producao_subproduto = OrdemProducaoSubProduto.objects.all()
     registros_envio_de_teste = RegistroEnvioDeTesteSubProduto.objects.all()
     registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
+    registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
+    movimento_estoque_subproduto = MovimentoEstoqueSubProduto.objects.all()
+    movimento_estoque_produto = MovimentoEstoqueProduto.objects.all()
+    ordens_conversao_subproduto = OrdemConversaoSubProduto.objects.all()
+    ordens_de_producao_produto = OrdemProducaoProduto.objects.all()
+    ordens_de_producao_subproduto = OrdemProducaoSubProduto.objects.all()
     if request.POST:
         form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto(request.POST)
         # resgata ordens de producao subproduto por padrao
@@ -2915,24 +3154,39 @@ def movimento_de_producao(request):
             # somente preencheu a data de inciio
             if inicio and not fim:
                 ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__gte=inicio)
+                ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__gte=inicio)
                 registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__gte=inicio)
                 registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__gte=inicio)
+                movimento_estoque_subproduto = movimento_estoque_subproduto.filter(criado__gte=inicio)
+                movimento_estoque_produto = movimento_estoque_produto.filter(criado__gte=inicio)
+                ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado__gte=inicio)
             # somente preencheu a data de fim
             if fim and not inicio:
                 ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__lte=fim)
+                ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__lte=fim)
                 registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__lte=fim)
                 registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__lte=fim)
+                movimento_estoque_subproduto = movimento_estoque_subproduto.filter(criado__lte=fim)
+                movimento_estoque_produto = movimento_estoque_produto.filter(criado__lte=fim)
+                ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado__lte=fim)
             # ambos os campos data de inicio e fim
             if fim and inicio:
                 ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__range=(inicio,fim))
+                ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__range=(inicio,fim))
                 registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__range=(inicio,fim))
                 registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__range=(inicio,fim))
+                movimento_estoque_subproduto = movimento_estoque_subproduto.filter(criado__range=(inicio,fim))
+                movimento_estoque_produto = movimento_estoque_produto.filter(criado__range=(inicio,fim))
+                ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado__range=(inicio,fim))
             # filtra por funcionario
             if funcionario:
-                ordens_producao_subproduto = ordens_producao_subproduto.filter(funcionario_produtor=funcionario)            
+                ordens_producao_subproduto = ordens_producao_subproduto.filter(funcionario_produtor=funcionario)
+                ordens_de_producao_produto = ordens_de_producao_produto.filter(criado_por=funcionario.user)
                 registros_envio_de_teste = registros_envio_de_teste.filter(funcionario=funcionario)
                 registros_saida_de_teste = registros_saida_de_teste.filter(funcionario=funcionario)
-
+                movimento_estoque_subproduto = movimento_estoque_subproduto.filter(criado_por=funcionario.user)
+                movimento_estoque_produto = movimento_estoque_produto.filter(criado_por=funcionario.user)
+                ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado_por=funcionario.user)
     else:
         form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto()
         ordens_producao_subproduto = ordens_producao_subproduto[0:10]
@@ -2941,19 +3195,49 @@ def movimento_de_producao(request):
 
     # calcula totais dos sets
     total_ordem_producao = ordens_producao_subproduto.aggregate(Sum('quantidade'))
+    total_ordem_producao_produto = ordens_de_producao_produto.aggregate(Sum('quantidade'))
+    total_ordem_producao_sub_produto = ordens_de_producao_subproduto.aggregate(Sum('quantidade'))
     total_registro_envio_de_testes = registros_envio_de_teste.aggregate(Sum('quantidade'))
     total_registro_saida_de_testes = registros_saida_de_teste.aggregate(Sum('quantidade'))
-
+    total_movimento_estoque_subproduto = movimento_estoque_subproduto.aggregate(Sum('quantidade_movimentada'))
+    total_movimento_estoque_produto = movimento_estoque_produto.aggregate(Sum('quantidade_movimentada'))
+    total_ordem_conversao_subproduto = ordens_conversao_subproduto.aggregate(Sum('quantidade'))
     
     return render_to_response('frontend/producao/producao-movimento-de-producao.html', locals(), context_instance=RequestContext(request),)
 
+
+class FormRemoverLancamentoProdProduto(forms.Form):
+    
+    id_lancamentos = forms.CharField(required=True, help_text="Formato: 12,34,56,67,..")
+    justificativa = forms.CharField(widget=forms.Textarea, required=True)
+
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao(request):
+    if request.POST:
+        form_remover_lancamentos = FormRemoverLancamentoProdProduto(request.POST)
+        if form_remover_lancamentos.is_valid():
+            ids = form_remover_lancamentos.cleaned_data['id_lancamentos'].split(",")
+            for id_lancamento in ids:
+                if id_lancamento.isdigit():
+                    try:
+                        lancamento = LancamentoProdProduto.objects.get(pk=int(id_lancamento))
+                        lancamento.apagado = True
+                        lancamento.justificativa_apagado = form_remover_lancamentos.cleaned_data['justificativa']
+                        lancamento.funcionario_apagou = request.user.funcionario
+                        lancamento.data_apagado = datetime.datetime.now()
+                        lancamento.save()
+                        messages.success(request, u'Lançamento #%s Marcado como REMOVIDO.' % id_lancamento)
+                    except LancamentoProdProduto.DoesNotExist:
+                        messages.warning(request, u'Lançamento #%s não encontrado.' % id_lancamento)
+                else:
+                    messages.warning(request, u'Lançamento #%s não encontrado.' % id_lancamento)
+                    
+    else:
+        form_remover_lancamentos = FormRemoverLancamentoProdProduto()
     produtos_ativos = ProdutoFinal.objects.filter(ativo=True)
     nao_apagados = LancamentoProdProduto.objects.filter(apagado=False)
     lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
-    lancamentos_sem_serial = nao_apagados.filter(serial_number=None)
-    lancamentos_com_serial = nao_apagados.exclude(serial_number=None).filter(vendido=False)
+    lancamentos_disponiveis = nao_apagados.filter(vendido=False)
     lancamentos_vendidos = nao_apagados.filter(vendido=True)
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
 
@@ -2983,4 +3267,37 @@ def rastreabilidade_de_producao_configurar(request, produto_id):
     else:
         form_configurar = FormConfigurarSubProdutosTestaveisDoProduto(instance=produto)
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-configurar.html', locals(), context_instance=RequestContext(request),)
+
+
+class FormAdicionarLancamentoProdProduto(forms.ModelForm):
     
+    def __init__(self, *args, **kwargs):
+        super(FormAdicionarLancamentoProdProduto, self).__init__(*args, **kwargs)
+        self.fields['inicio_teste'].widget.attrs['class'] = 'datepicker'
+        self.fields['data_montagem'].widget.attrs['class'] = 'datepicker'
+        self.fields['funcionario_inicio_teste'].widget.attrs['class'] = 'select2'
+        self.fields['ordem_de_producao'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario_que_montou'].widget.attrs['class'] = 'select2'
+        
+    class Meta:
+        model = LancamentoProdProduto
+        
+@user_passes_test(possui_perfil_acesso_producao)
+def rastreabilidade_de_producao_adicionar(request):
+    if request.POST:
+        form_adicionar_lancamento = FormAdicionarLancamentoProdProduto(request.POST)
+        if form_adicionar_lancamento.is_valid():
+            lancamento = form_adicionar_lancamento.save()
+            messages.success(request, u"Lançamento #%s adicionado com sucesso!" % lancamento.id)
+            return redirect(reverse("producao:rastreabilidade_de_producao"))
+    else:
+        form_adicionar_lancamento = FormAdicionarLancamentoProdProduto()
+    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def rastreabilidade_de_producao_checar_quantitativos(request):
+    tabela_produtos = []
+    for produto in ProdutoFinal.objects.filter(ativo=True):
+        lancamentos = LancamentoProdProduto.objects.filter(ordem_de_producao__produto=produto, vendido=False, apagado=False)
+        tabela_produtos.append((produto, lancamentos.count()))
+    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-checar-quantitativos.html', locals(), context_instance=RequestContext(request),)

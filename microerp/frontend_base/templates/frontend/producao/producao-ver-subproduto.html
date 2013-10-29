@@ -92,7 +92,7 @@
 												<td>
 													
 													<!-- Button to trigger modal -->
-													<a href="#enviar-para-teste" data-max-control="{{subproduto.total_montado}}" role="button" class="btn btn-info" data-toggle="modal">Enviar para Teste</a>
+													<a href="#enviar-para-teste" data-max-control="{{subproduto.total_montado}}" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-arrow-down"></i> Enviar para Testes</a> <span class="btn-group"><a role="button" href="#adicionar-montado" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-montado" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
  
 													<!-- Modal Enviar para Teste -->
 													<div id="enviar-para-teste" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -108,9 +108,46 @@
 													  </div>
 													  <div class="modal-footer">
 													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-													    <button form="form-enviar-para-teste" class="btn btn-info" name="enviar-subproduto-teste-btn" value="enviado">Enviar para Testes</button>
+													    <button form="form-enviar-para-teste" class="btn btn-info" name="enviar-subproduto-teste-btn" value="enviado"><i class="fa fa-arrow-down"></i> Enviar para Testes</button>
 													  </div>
 													</div>
+													
+													<!-- Modal Adicionar Montado -->
+													<div id="adicionar-montado" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Adicionar Sub Produto Montado</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-adicionar-montado">
+																{% csrf_token %}
+																{{form_adiciona_montado.as_p}}
+															</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-adicionar-montado" class="btn btn-success" name="adiciona-subproduto-montado-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Montado</button>
+													  </div>
+													</div>
+
+													<!-- Modal Remover Montado -->
+													<div id="remover-montado" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Remover Sub Produto Montado</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-remover-montado">
+																{% csrf_token %}
+																{{form_remove_montado.as_p}}
+															</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-remover-montado" class="btn btn-success" name="remove-subproduto-montado-btn" value="remover"><i class="fa fa-minus"></i> Remover Montado</button>
+													  </div>
+													</div>
+													
 													
 												</td>
 											</tr>
@@ -120,7 +157,7 @@
 												<td>
 													
 													<!-- Button to trigger modal -->
-													<a href="#enviar-para-funcional" role="button" class="btn btn-success" data-toggle="modal">Enviar para Funcional</a>
+													<a href="#enviar-para-funcional" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-arrow-down"></i> Enviar para Funcional</a> <span class="btn-group"><a role="button" href="#adicionar-testando" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-testando" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
  
 													<!-- Modal Enviar para Funcional -->
 													<div id="enviar-para-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -136,9 +173,46 @@
 													  </div>
 													  <div class="modal-footer">
 													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-													    <button form="form-enviar-para-funcional" class="btn btn-success" name="enviar-subproduto-funcional-btn" value="enviado">Enviar para Funcional</button>
+													    <button form="form-enviar-para-funcional" class="btn btn-success" name="enviar-subproduto-funcional-btn" value="enviado"><i class="fa fa-arrow-down"></i> Enviar para Funcional</button>
 													  </div>
 													</div>
+
+													<!-- Modal Adicionar Testando -->
+													<div id="adicionar-testando" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Adicionar Sub Produto Testando</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-adicionar-testando">
+																{% csrf_token %}
+																{{form_adiciona_em_testes.as_p}}
+															</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-adicionar-testando" class="btn btn-success" name="adiciona-subproduto-testes-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Testando</button>
+													  </div>
+													</div>
+
+													<!-- Modal Remover Testando -->
+													<div id="remover-testando" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Remover Sub Produto Testando</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-remover-testando">
+																{% csrf_token %}
+																{{form_remove_em_testes.as_p}}
+															</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-remover-testando" class="btn btn-success" name="remove-subproduto-testes-btn" value="remover"><i class="fa fa-minus"></i> Remover Testando</button>
+													  </div>
+													</div>
+
 													
 													
 												</td>
@@ -146,7 +220,48 @@
 											<tr>
 												<td>Funcional</td>
 												<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
-												<td></td>
+												<td>
+													
+													<span class="btn-group"><a role="button" href="#adicionar-funcional" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-funcional" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
+													
+													<!-- Modal Adicionar Funcional -->
+													<div id="adicionar-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Adicionar Sub Produto Funcional</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-adicionar-funcional">
+																{% csrf_token %}
+																{{form_adiciona_funcional.as_p}}
+															</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-adicionar-funcional" class="btn btn-success" name="adiciona-subproduto-funcional-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Funcional</button>
+													  </div>
+													</div>
+
+													<!-- Modal Remover Testando -->
+													<div id="remover-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+													  <div class="modal-header">
+													    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+													    <h3 id="myModalLabel">Remover Sub Produto Funcional</h3>
+													  </div>
+													  <div class="modal-body">
+															<form method="POST" id="form-remover-funcional">
+																{% csrf_token %}
+																{{form_remove_funcional.as_p}}
+															</form>
+													  </div>
+													  <div class="modal-footer">
+													    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+													    <button form="form-remover-funcional" class="btn btn-success" name="remove-subproduto-funcional-btn" value="remover"><i class="fa fa-minus"></i> Remover Funcional</button>
+													  </div>
+													</div>
+													
+													
+												</td>
 											</tr>
 											
 											
@@ -528,6 +643,35 @@ $(document).ready(function() {
     {% if form_enviar_para_funcional.errors %}
     $('#enviar-para-funcional').modal('show');
     {% endif %}
+
+    {% if form_adiciona_montado.errors %}
+    $('#adicionar-montado').modal('show');
+    {% endif %}
+
+    {% if form_remove_montado.errors %}
+    $('#remover-montado').modal('show');
+    {% endif %}
+
+    {% if form_adiciona_em_testes.errors %}
+    $('#adicionar-testando').modal('show');
+    {% endif %}
+
+    {% if form_remove_em_testes.errors %}
+    $('#remover-testando').modal('show');
+    {% endif %}
+		
+		
+    {% if form_adiciona_funcional.errors %}
+    $('#adicionar-funcional').modal('show');
+    {% endif %}
+
+    {% if form_remove_funcional.errors %}
+    $('#remover-funcional').modal('show');
+    {% endif %}
+		
+
+		
+		
 		
 		
 		$( ".datepicker" ).datepicker({

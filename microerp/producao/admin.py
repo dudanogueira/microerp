@@ -24,6 +24,7 @@ from models import LinhaSubProdutoAgregado
 from models import ArquivoAnexoComponente
 from models import LinhaSubProdutodoProduto
 from models import OrdemProducaoSubProduto
+from models import OrdemProducaoProduto
 from models import RegistroEnvioDeTesteSubProduto
 from models import RegistroSaidaDeTesteSubProduto
 from models import RegistroValorEstoque
@@ -34,6 +35,9 @@ from models import RequisicaoDeCompra
 from models import OrdemConversaoSubProduto
 from models import LancamentoProdProduto
 from models import LinhaTesteLancamentoProdProduto
+from models import NotaFiscalLancamentosProducao
+from models import MovimentoEstoqueSubProduto
+from models import MovimentoEstoqueProduto
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -170,6 +174,7 @@ class RegistroSaidaDeTesteSubProdutoAdmin(admin.ModelAdmin):
 
 
 admin.site.register(OrdemProducaoSubProduto)
+admin.site.register(OrdemProducaoProduto)
 admin.site.register(EstoqueFisico)
 admin.site.register(PosicaoEstoque, PosicaoEstoqueAdmin)
 admin.site.register(ComponenteTipo, ComponenteTipoAdmin)
@@ -197,3 +202,7 @@ admin.site.register(RequisicaoDeCompra)
 admin.site.register(OrdemConversaoSubProduto)
 admin.site.register(LancamentoProdProduto)
 admin.site.register(LinhaTesteLancamentoProdProduto)
+
+admin.site.register(NotaFiscalLancamentosProducao)
+admin.site.register(MovimentoEstoqueSubProduto)
+admin.site.register(MovimentoEstoqueProduto)

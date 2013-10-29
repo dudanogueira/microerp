@@ -70,8 +70,9 @@ urlpatterns = patterns('',
     url(r'^movimento-de-producao/$', 'producao.views.movimento_de_producao', name='movimento_de_producao'),
     # rastreabilidade de producao
     url(r'^rastreabilidade-de-producao/$', 'producao.views.rastreabilidade_de_producao', name='rastreabilidade_de_producao'),
+    url(r'^rastreabilidade-de-producao/checar-quantitativos/$', 'producao.views.rastreabilidade_de_producao_checar_quantitativos', name='rastreabilidade_de_producao_checar_quantitativos'),
+    url(r'^rastreabilidade-de-producao/adicionar-lancamento/$', 'producao.views.rastreabilidade_de_producao_adicionar', name='rastreabilidade_de_producao_adicionar'),
     url(r'^rastreabilidade-de-producao/configurar/(?P<produto_id>[0-9]+)/$', 'producao.views.rastreabilidade_de_producao_configurar', name='rastreabilidade_de_producao_configurar'),
-    
     # ajax auxs
     url(r'^ordem-de-producao/ajax/producao-combinada/$', 'producao.views.producao_combinada', name='producao_combinada'),
     url(r'^ordem-de-producao/ajax/producao-combinada/calcular$', 'producao.views.producao_combinada_calcular', name='producao_combinada_calcular'),

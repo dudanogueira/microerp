@@ -55,8 +55,55 @@
                 <strong>Somatório do Custo de Subprodutos:</strong> <span class="label label-success">R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span><br />
                 <strong>Somatório Total de Custos</strong> <span class="label">R$ {{produto.custo|floatformat:2}}</span><br />
 							</p>
-                <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{produto.custo_internacional|floatformat:2}}<br />
-                <strong>Total Produzido:</strong> {{produto.total_produzido}}<br />
+                <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{produto.custo_internacional|floatformat:2}}<br /><br />
+								
+                <strong>Total Produzido:</strong> {{produto.total_produzido}} 	<span class="btn-group"><a role="button" href="#adicionar-produzido" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-produzido" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span><br />
+								
+								<!-- Modal Adicionar Funcional -->
+								<div id="adicionar-produzido" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+								  <div class="modal-header">
+								    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+								    <h3 id="myModalLabel">Adicionar Produto Produzido</h3>
+								  </div>
+								  <div class="modal-body">
+										<form method="POST" id="form-adicionar-produzido">
+											{% csrf_token %}
+											
+											{{form_adiciona_produzido.as_p}}
+											
+										</form>
+								  </div>
+								  <div class="modal-footer">
+								    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+								    <button form="form-adicionar-produzido" class="btn btn-primary" name="adiciona-produto-produzido-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Produto Produzido</button>
+								  </div>
+								</div>
+
+								<!-- Modal Remover Testando -->
+								<div id="remover-produzido" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+								  <div class="modal-header">
+								    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+								    <h3 id="myModalLabel">Remover Produto Produzido</h3>
+								  </div>
+								  <div class="modal-body">
+										<form method="POST" id="form-remover-produzido">
+											{% csrf_token %}
+											{{form_remove_produzido.as_p}}
+										</form>
+								  </div>
+								  <div class="modal-footer">
+								    <button class="btn" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+								    <button form="form-remover-produzido" class="btn btn-danger" name="remove-produto-produzido-btn" value="remover"><i class="fa fa-minus"></i> Remover Produto Produzido</button>
+								  </div>
+								</div>
+								
+								
+								
+								<strong>Lançamentos de Produção Disponível:</strong> {{produto.lancamentos_disponiveis.count}}<br />
+								
+								{% ifnotequal  produto.lancamentos_disponiveis.count produto.total_produzido %}
+								<div class="alert alert-danger">Estoque Inconsistente com Produção</div>
+								{% endifnotequal %}
                 <strong>Quantidade Estimada de Produção Semanal:</strong> {{produto.quantidade_estimada_producao_semanal}}<br />
 								<strong>Quantidade Máxima de Produto Estocável:</strong> {{produto.quantidade_maxima_estocavel}}
             </div>
@@ -324,6 +371,15 @@ $(document).ready(function() {
     {% if form_adicionar_linha_componentes_avulsos.errors %}
         $('#modal-adicionar-linha-componentes-avulsos').modal('show')
     {% endif %}
+		
+    {% if form_adiciona_produzido.errors %}
+    $('#adicionar-produzido').modal('show');
+    {% endif %}
+
+    {% if form_remove_produzido.errors %}
+    $('#remover-produzido').modal('show');
+    {% endif %}
+		
     
 });
 </script>
