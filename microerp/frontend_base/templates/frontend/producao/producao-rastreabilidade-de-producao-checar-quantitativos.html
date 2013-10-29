@@ -1,0 +1,22 @@
+	<h2> Checar Quantitativos</h2>
+	
+  <table class="table table-condensed table-rounded table-bordered">
+		<thead>
+          <tr>
+              <th>Produto</th>
+							<th>Descrição</th>
+              <th>Total Produzido</th>
+              <th>Total Lançamentos Disponíveis</th>
+          </tr>
+      </thead>
+		<tbody>
+			{% for linha in tabela_produtos %}
+				<tr {% ifnotequal linha.0.total_produzido linha.1 %} class="alert alert-danger" {% endifnotequal %}>
+					<td><a href="{% url "producao:ver_produto" linha.0.id %}">{{linha.0.part_number}} - {{linha.0.nome}}</a></td>
+					<td>{{linha.0.descricao}}
+					<td>{{linha.0.total_produzido}}</td>
+					<td>{{linha.1}}</td>
+				</tr>
+			{% endfor %}
+			</tbody>
+	</table>
