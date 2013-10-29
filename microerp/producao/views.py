@@ -3153,7 +3153,7 @@ def movimento_de_producao(request):
             # primeiro, ordens de producao
             # somente preencheu a data de inciio
             if inicio and not fim:
-                ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__gte=inicio)
+                ordens_de_producao_subproduto = ordens_de_producao_subproduto.filter(data_producao__gte=inicio)
                 ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__gte=inicio)
                 registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__gte=inicio)
                 registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__gte=inicio)
@@ -3162,7 +3162,7 @@ def movimento_de_producao(request):
                 ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado__gte=inicio)
             # somente preencheu a data de fim
             if fim and not inicio:
-                ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__lte=fim)
+                ordens_de_producao_subproduto = ordens_de_producao_subproduto.filter(data_producao__lte=fim)
                 ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__lte=fim)
                 registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__lte=fim)
                 registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__lte=fim)
@@ -3171,7 +3171,7 @@ def movimento_de_producao(request):
                 ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado__lte=fim)
             # ambos os campos data de inicio e fim
             if fim and inicio:
-                ordens_producao_subproduto = ordens_producao_subproduto.filter(data_producao__range=(inicio,fim))
+                ordens_de_producao_subproduto = ordens_de_producao_subproduto.filter(data_producao__range=(inicio,fim))
                 ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__range=(inicio,fim))
                 registros_envio_de_teste = registros_envio_de_teste.filter(data_envio__range=(inicio,fim))
                 registros_saida_de_teste = registros_saida_de_teste.filter(data_envio__range=(inicio,fim))
@@ -3180,7 +3180,7 @@ def movimento_de_producao(request):
                 ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado__range=(inicio,fim))
             # filtra por funcionario
             if funcionario:
-                ordens_producao_subproduto = ordens_producao_subproduto.filter(funcionario_produtor=funcionario)
+                ordens_de_producao_subproduto = ordens_de_producao_subproduto.filter(funcionario_produtor=funcionario)
                 ordens_de_producao_produto = ordens_de_producao_produto.filter(criado_por=funcionario.user)
                 registros_envio_de_teste = registros_envio_de_teste.filter(funcionario=funcionario)
                 registros_saida_de_teste = registros_saida_de_teste.filter(funcionario=funcionario)

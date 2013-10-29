@@ -81,7 +81,6 @@
 			
 			<div class="tab-pane fade in" id="producao-sub-produto">
 				<h2>Ordem de Produção Sub Produto</h2>
-				
 				<div id="ordem-de-producao-sub-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -91,7 +90,8 @@
 								<th>Descrição</th>
 								<th>Quantidade</th>
 								<th>Funcionário</th>
-								<th>Data de Movimento</th>
+								<th>Data de Produção</th>
+								<th>Data de Criação</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -102,7 +102,8 @@
 								<td>{{ordem.subproduto.descricao}}</td>
 								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
 								<td>{{ordem.criado_por.funcionario}}</td>
-								<td>{{ordem.criado}}</td>
+								<td>{{ordem.data_producao|date:"SHORT_DATE_FORMAT"}}</td>
+								<td>{{ordem.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
@@ -142,7 +143,7 @@
 								<td><a href="{% url "producao:ver_produto" ordem.subproduto_destino.id %}">{{ordem.subproduto_destino.part_number}}</a></td>
 								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
 								<td>{{ordem.criado_por.funcionario}}</td>
-								<td>{{ordem.criado}}</td>
+								<td>{{ordem.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
@@ -188,7 +189,7 @@
 								<td>{{movimento.get_operacao_display}}</td>
 								<td>{{movimento.quantidade_anterior}} -> {{movimento.quantidade_nova}}</td>
 								<td>{{movimento.criado_por}}</td>
-								<td>{{movimento.criado}}</td>
+								<td>{{movimento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
