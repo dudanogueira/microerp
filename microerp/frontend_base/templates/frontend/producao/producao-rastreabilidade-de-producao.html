@@ -127,7 +127,7 @@
 		<div class="tab-pane fade in" id="lancamentos-vendidos">
 			<h2>Lançamentos Vendidos</h2>
 			
-			{% regroup lancamentos_vendidos by produto__part_number as lancamentos_vendidos_group_list %}
+			{% regroup lancamentos_vendidos_valores by produto__part_number as lancamentos_vendidos_group_list %}
 			{% for lancamento in lancamentos_vendidos_group_list %}
 			<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
 			<div id="lancamento-produtos-vendidos">
