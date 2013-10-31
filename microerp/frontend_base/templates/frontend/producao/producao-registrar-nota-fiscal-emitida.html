@@ -1,0 +1,51 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Registrar Nota Fiscal Emitida{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="fa fa-th"></i> <i class="fa fa-dollar"></i> Registrar Nota Fiscal Emitida</h1>
+	<p>
+		<a href="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
+	</p>
+	<table class="table table-condensed table-hover table-rounded">
+		<thead>
+			<tr>
+				<th>Nota Fiscal</th>
+				<th>Cliente</th>
+				<th>Lançamentos</th>
+				<th>Criada</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for registro in notas_registradas %}
+			<tr>
+				<td>{{registro.notafiscal}}</td>
+				<td>{{registro.cliente_associado}}</td>
+				<td>{{registro.lancamentos_de_producao.all|join:","}}</td>
+				<td>{{registro.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+			</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-registrar-nota-emitida, #top-menu-producao").addClass("active");
+		
+		
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

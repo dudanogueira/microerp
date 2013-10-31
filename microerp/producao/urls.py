@@ -70,6 +70,7 @@ urlpatterns = patterns('',
     url(r'^movimento-de-producao/$', 'producao.views.movimento_de_producao', name='movimento_de_producao'),
     # rastreabilidade de producao
     url(r'^rastreabilidade-de-producao/$', 'producao.views.rastreabilidade_de_producao', name='rastreabilidade_de_producao'),
+    url(r'^rastreabilidade-de-producao/associar-lancamento/(?P<lancamento_id>[0-9]+)/$', 'producao.views.rastreabilidade_de_producao_associar_lancamento', name='rastreabilidade_de_producao_associar_lancamento'),
     url(r'^rastreabilidade-de-producao/checar-quantitativos/$', 'producao.views.rastreabilidade_de_producao_checar_quantitativos', name='rastreabilidade_de_producao_checar_quantitativos'),
     url(r'^rastreabilidade-de-producao/adicionar-lancamento/$', 'producao.views.rastreabilidade_de_producao_adicionar', name='rastreabilidade_de_producao_adicionar'),
     url(r'^rastreabilidade-de-producao/configurar/(?P<produto_id>[0-9]+)/$', 'producao.views.rastreabilidade_de_producao_configurar', name='rastreabilidade_de_producao_configurar'),
@@ -95,4 +96,10 @@ urlpatterns = patterns('',
     # requisicao de compra
     url(r'^requisicao-de-compra/$', 'producao.views.requisicao_de_compra', name='requisicao_de_compra'),
     url(r'^requisicao-de-compra/(?P<requisicao_id>[0-9]+)/atendido/$', 'producao.views.requisicao_de_compra_atendido', name='requisicao_de_compra_atendido'),
+    # controle de testes
+    url(r'^controle-de-testes-producao/$', 'producao.views.controle_de_testes_producao', name='controle_de_testes_producao'),
+    url(r'^controle-de-testes-producao/adicionar-falha/$', 'producao.views.controle_de_testes_producao_adicionar_falha', name='controle_de_testes_producao_adicionar_falha'),
+    # registrar nota fiscal emitida
+    url(r'^registrar-nota-fiscal-emitida/$', 'producao.views.registrar_nota_fiscal_emitida', name='registrar_nota_fiscal_emitida'),
+    url(r'^registrar-nota-fiscal-emitida/adicionar/$', 'producao.views.registrar_nota_fiscal_emitida_adicionar', name='registrar_nota_fiscal_emitida_adicionar'),
 )

@@ -1,0 +1,34 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Controle de Testes - Adicionar Falha{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="fa fa-th"></i> <i class="fa fa-retweet"></i>  Controle de Testes da Produção - Adicionar Falha</h1>
+
+	<form method="POST">
+		{% csrf_token %}
+		{{form_adiciona_falha.as_p}}
+		<button type="submit"><i class="fa fa-plus"></i> Adicionar</button>
+	</form>
+
+	
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");
+				
+});
+
+</script>
+
+{% endaddtoblock %}
+
+{% include "frontend/producao/producao-menu.html" %}
+
+{% endblock%}

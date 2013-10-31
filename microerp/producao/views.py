@@ -47,6 +47,8 @@ from producao.models import LancamentoProdProduto
 from producao.models import LinhaTesteLancamentoProdProduto
 from producao.models import MovimentoEstoqueSubProduto
 from producao.models import MovimentoEstoqueProduto
+from producao.models import FalhaDeTeste
+from producao.models import NotaFiscalLancamentosProducao
 
 ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     ('', '-----'),
@@ -1478,11 +1480,8 @@ def ver_subproduto(request, subproduto_id):
                     messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
 
                 else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais" % subproduto.total_montado)
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais" % subproduto.total_funcional)
                     
-        
-        
-
 
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
@@ -2409,7 +2408,7 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
     novo_valor = int(produto_total_produzido) + int(quantidade_solicitada)
     produto.total_produzido = novo_valor
     produto.save()
-    messages.success(request, u"Novo Valor para Total Produzido do Produto %s: %s -> %s" % (produto.part_number(), produto_total_produzido, novo_valor))
+    messages.success(request, u"Novo Valor para Total Produzido do Produto %s: %s -> %s" % (produto.part_number, produto_total_produzido, novo_valor))
     # registra o incremento no movimento de producao
     movimento = MovimentoEstoqueProduto.objects.create(
         produto = produto,
@@ -2428,6 +2427,7 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
         # para cada um solicitado, criar entrada de lancamento
         lancamento = LancamentoProdProduto.objects.create(
             ordem_de_producao = ordem_producao_produto,
+            produto=produto,
             adicionado_manualmente=False,
         )
         # para cada subproduto testável deste produto, criar uma linha de testes
@@ -2436,6 +2436,7 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
                 lancamento_de_producao=lancamento,
                 subproduto_testavel=subproduto_testavel
             )
+            messages.info(request, u"Linha de Teste #%s de Lançamento %s criado para Sub Produto %s " % (linha.id, lancamento, linha.subproduto_testavel))
         messages.success(request, u"Sucesso! Criado novo Lançamento de Produção: #%s" % lancamento.id)
     return redirect(reverse("producao:ordem_de_producao"))
 
@@ -3133,7 +3134,6 @@ class FormFiltraMovimentoProducaoSubProduto(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def movimento_de_producao(request):
-    ordens_producao_subproduto = OrdemProducaoSubProduto.objects.all()
     registros_envio_de_teste = RegistroEnvioDeTesteSubProduto.objects.all()
     registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
     registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
@@ -3142,6 +3142,7 @@ def movimento_de_producao(request):
     ordens_conversao_subproduto = OrdemConversaoSubProduto.objects.all()
     ordens_de_producao_produto = OrdemProducaoProduto.objects.all()
     ordens_de_producao_subproduto = OrdemProducaoSubProduto.objects.all()
+    form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto()
     if request.POST:
         form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto(request.POST)
         # resgata ordens de producao subproduto por padrao
@@ -3187,14 +3188,9 @@ def movimento_de_producao(request):
                 movimento_estoque_subproduto = movimento_estoque_subproduto.filter(criado_por=funcionario.user)
                 movimento_estoque_produto = movimento_estoque_produto.filter(criado_por=funcionario.user)
                 ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado_por=funcionario.user)
-    else:
-        form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto()
-        ordens_producao_subproduto = ordens_producao_subproduto[0:10]
-        registros_envio_de_teste = registros_envio_de_teste[0:10]
-        registros_saida_de_teste = registros_saida_de_teste[0:10]
-
+        
     # calcula totais dos sets
-    total_ordem_producao = ordens_producao_subproduto.aggregate(Sum('quantidade'))
+    total_ordem_producao = ordens_de_producao_subproduto.aggregate(Sum('quantidade'))
     total_ordem_producao_produto = ordens_de_producao_produto.aggregate(Sum('quantidade'))
     total_ordem_producao_sub_produto = ordens_de_producao_subproduto.aggregate(Sum('quantidade'))
     total_registro_envio_de_testes = registros_envio_de_teste.aggregate(Sum('quantidade'))
@@ -3237,9 +3233,51 @@ def rastreabilidade_de_producao(request):
     produtos_ativos = ProdutoFinal.objects.filter(ativo=True)
     nao_apagados = LancamentoProdProduto.objects.filter(apagado=False)
     lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
-    lancamentos_disponiveis = nao_apagados.filter(vendido=False)
+    lancamentos_associar = nao_apagados.filter(vendido=False, serial_number=None).order_by('produto__part_number')
+    lancamentos_associar_valores = lancamentos_associar.values(
+        'id',
+        'adicionado_manualmente',
+        'funcionario_adicionou__nome',
+        'criado',
+        'justificativa_adicionado',
+        'ordem_de_producao__id',
+        'produto__id',
+        'produto__part_number',
+        'produto__nome',
+
+        'linhatestelancamentoprodproduto__lancamento_de_producao__id'
+        ).annotate(
+            Count('linhatestelancamentoprodproduto__lancamento_de_producao__id')
+        )
+    lancamentos_disponiveis = nao_apagados.filter(vendido=False).exclude(serial_number=None)
+    lancamentos_disponiveis_valores = lancamentos_disponiveis.values(
+        'id',
+        'adicionado_manualmente',
+        'funcionario_adicionou__nome',
+        'criado',
+        'justificativa_adicionado',
+        'ordem_de_producao__id',
+        'produto__id',
+        'produto__part_number',
+        'produto__nome',
+        'serial_number',
+        )
     lancamentos_vendidos = nao_apagados.filter(vendido=True)
+    lancamentos_vendidos_valores = lancamentos_vendidos.values(
+        'id',
+        'adicionado_manualmente',
+        'funcionario_adicionou__nome',
+        'criado',
+        'justificativa_adicionado',
+        'ordem_de_producao__id',
+        'produto__id',
+        'produto__part_number',
+        'produto__nome',
+        'serial_number',
+        )
+    
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
+
 
 class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
     
@@ -3247,40 +3285,88 @@ class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
         super(FormConfigurarSubProdutosTestaveisDoProduto, self).__init__(*args, **kwargs)
         self.fields['subprodutos_testaveis'].widget.attrs['class'] = 'select2'
         self.fields['subprodutos_testaveis'].help_text = None
+        self.fields['subprodutos_testaveis'].label = u"Sub Produtos Testáveis"
         if self.instance:
             # filtra somente os que participam do subproduto
             subprodutos = self.instance.linhasubprodutodoproduto_set.all()
-            subprodutos = [(s.id, s.subproduto.part_number()) for s in subprodutos]
+            subprodutos = [(s.id, s.subproduto.part_number) for s in subprodutos]
             self.fields['subprodutos_testaveis'].choices = subprodutos
     
     class Meta:
         model = ProdutoFinal
         fields = 'subprodutos_testaveis',
         
+@user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao_configurar(request, produto_id):
     produto = get_object_or_404(ProdutoFinal, pk=produto_id)
     if request.POST:
         form_configurar = FormConfigurarSubProdutosTestaveisDoProduto(request.POST, instance=produto)
         if form_configurar.is_valid():
             produto = form_configurar.save()
-            messages.success(request, u"Produto Configurado")
+            messages.success(request, u"Produto %s Configurado" % produto)
+            return redirect(reverse("producao:rastreabilidade_de_producao") + "#configurar")
     else:
         form_configurar = FormConfigurarSubProdutosTestaveisDoProduto(instance=produto)
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-configurar.html', locals(), context_instance=RequestContext(request),)
 
 
+class FormAssociarLancamentoProdProduto(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormAssociarLancamentoProdProduto, self).__init__(*args, **kwargs)
+        self.fields['funcionario_que_montou'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario_inicio_teste'].widget.attrs['class'] = 'select2'
+        self.fields['data_montagem'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['inicio_teste'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['serial_number'].required = True
+        self.fields['funcionario_que_montou'].required = True
+        self.fields['funcionario_inicio_teste'].required = True
+    
+    def clean_serial_number(self):
+        serial_number = self.cleaned_data['serial_number']
+        if LancamentoProdProduto.objects.filter(serial_number=serial_number).exists():
+            raise ValidationError(u'Erro! Serial Number Já existe!')
+        return serial_number
+        
+    class Meta:
+        model = LancamentoProdProduto
+        fields = 'serial_number', 'funcionario_que_montou', 'data_montagem', 'inicio_teste', \
+            'funcionario_inicio_teste',
+
+class FormLinhaTesteLancamentoProdProduto(forms.ModelForm):
+    
+    class Meta:
+        model = LinhaTesteLancamentoProdProduto
+        fields = 'funcionario_que_testou', 'funcionario_que_montou', 'versao_firmware'
+            
+from django.forms.models import inlineformset_factory
+@user_passes_test(possui_perfil_acesso_producao)
+def rastreabilidade_de_producao_associar_lancamento(request, lancamento_id):
+    lancamento = get_object_or_404(LancamentoProdProduto, pk=lancamento_id)
+    lancamento_associa_form = FormAssociarLancamentoProdProduto(instance=lancamento)
+    LancamentoFormSet = inlineformset_factory(LancamentoProdProduto, LinhaTesteLancamentoProdProduto, extra=0, can_delete=False, form=FormLinhaTesteLancamentoProdProduto)
+    testes_de_lancamento_form = LancamentoFormSet(instance=lancamento)
+    if request.POST:
+        lancamento_associa_form = FormAssociarLancamentoProdProduto(request.POST, instance=lancamento)
+        testes_de_lancamento_form = LancamentoFormSet(request.POST, instance=lancamento)
+        if lancamento_associa_form.is_valid() and testes_de_lancamento_form.is_valid():
+            lancamento = lancamento_associa_form.save()
+            testes = testes_de_lancamento_form.save()
+            messages.success(request, u"Sucesso! Lançamento de Produção #%s Associado a Serial %s" % (lancamento.id, lancamento.serial_number))
+            return redirect(reverse("producao:rastreabilidade_de_producao"))
+
+    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-associar.html', locals(), context_instance=RequestContext(request),)
+    
 class FormAdicionarLancamentoProdProduto(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormAdicionarLancamentoProdProduto, self).__init__(*args, **kwargs)
-        self.fields['inicio_teste'].widget.attrs['class'] = 'datepicker'
-        self.fields['data_montagem'].widget.attrs['class'] = 'datepicker'
-        self.fields['funcionario_inicio_teste'].widget.attrs['class'] = 'select2'
-        self.fields['ordem_de_producao'].widget.attrs['class'] = 'select2'
-        self.fields['funcionario_que_montou'].widget.attrs['class'] = 'select2'
-        
+        self.fields['produto'].widget.attrs['class'] = 'select2'
+        self.fields['justificativa_adicionado'].label = u"Justificativa para a adição"
+        self.fields['justificativa_adicionado'].required = True
     class Meta:
         model = LancamentoProdProduto
+        fields = 'produto', 'justificativa_adicionado'
         
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao_adicionar(request):
@@ -3288,7 +3374,18 @@ def rastreabilidade_de_producao_adicionar(request):
         form_adicionar_lancamento = FormAdicionarLancamentoProdProduto(request.POST)
         if form_adicionar_lancamento.is_valid():
             lancamento = form_adicionar_lancamento.save()
+            lancamento.funcionario_adicionou = request.user.funcionario
+            lancamento.save()
             messages.success(request, u"Lançamento #%s adicionado com sucesso!" % lancamento.id)
+            # lancando linhas de teste de subprodutos
+            # para cada subproduto testável deste produto, criar uma linha de testes
+            for subproduto_testavel in lancamento.produto.subprodutos_testaveis.all():
+                linha = LinhaTesteLancamentoProdProduto.objects.create(
+                    lancamento_de_producao=lancamento,
+                    subproduto_testavel=subproduto_testavel
+                )
+                messages.info(request, u"Linha de Teste #%s do Lançamento #%s (%s) criado para Sub Produto %s " % (linha.id, lancamento.id, lancamento.produto.part_number, linha.subproduto_testavel))
+            
             return redirect(reverse("producao:rastreabilidade_de_producao"))
     else:
         form_adicionar_lancamento = FormAdicionarLancamentoProdProduto()
@@ -3301,3 +3398,83 @@ def rastreabilidade_de_producao_checar_quantitativos(request):
         lancamentos = LancamentoProdProduto.objects.filter(ordem_de_producao__produto=produto, vendido=False, apagado=False)
         tabela_produtos.append((produto, lancamentos.count()))
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-checar-quantitativos.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def controle_de_testes_producao(request):
+    testes_perda = FalhaDeTeste.objects.filter(tipo='perda')
+    testes_reparo = FalhaDeTeste.objects.filter(tipo='reparo')
+    return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
+
+class FormAdicionaFalhaDeTeste(forms.ModelForm):
+    
+    class Meta:
+        model = FalhaDeTeste
+        fields = 'tipo', 'codigo', 'descricao'
+
+@user_passes_test(possui_perfil_acesso_producao)
+def controle_de_testes_producao_adicionar_falha(request):
+    form_adiciona_falha = FormAdicionaFalhaDeTeste()
+    if request.POST:
+        form_adiciona_falha = FormAdicionaFalhaDeTeste(request.POST)
+        if form_adiciona_falha.is_valid():
+            falha = form_adiciona_falha.save()
+            falha.criado_por = request.user
+            messages.success(request, u"Sucesso! Falha adicionada.")
+            return redirect(reverse('producao:controle_de_testes_producao'))
+    return render_to_response('frontend/producao/producao-controle-de-testes-adicionar-falha.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_producao)
+def registrar_nota_fiscal_emitida(request):
+    notas_registradas = NotaFiscalLancamentosProducao.objects.all()
+    return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida.html', locals(), context_instance=RequestContext(request),)
+
+class FormAdicionarNotaFiscalLancamentosProducao(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        lancamentos_selecionados = kwargs.pop('lancamentos_selecionados', None)
+        super(FormAdicionarNotaFiscalLancamentosProducao, self).__init__(*args, **kwargs)
+        self.fields['lancamentos_de_producao'].queryset = LancamentoProdProduto.objects.filter(vendido=False, apagado=False).exclude(serial_number=None)
+        self.fields['lancamentos_de_producao'].widget.attrs['class'] = 'select2'
+        if lancamentos_selecionados:
+            self.fields['lancamentos_de_producao'].initial = lancamentos_selecionados
+    
+    class Meta:
+        model = NotaFiscalLancamentosProducao
+
+@user_passes_test(possui_perfil_acesso_producao)
+def registrar_nota_fiscal_emitida_adicionar(request):
+    nao_apagados = LancamentoProdProduto.objects.filter(apagado=False)
+    lancamentos_disponiveis = nao_apagados.filter(vendido=False).exclude(serial_number=None)
+    lancamentos_disponiveis_valores = lancamentos_disponiveis.values(
+        'id',
+        'adicionado_manualmente',
+        'funcionario_adicionou__nome',
+        'criado',
+        'justificativa_adicionado',
+        'ordem_de_producao__id',
+        'produto__id',
+        'produto__part_number',
+        'produto__nome',
+        )
+    
+    if request.GET:
+        # possui lancamentos selecionados
+        lancamentos_selecionados = request.GET.getlist('lancamento', None)
+        form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(lancamentos_selecionados=lancamentos_selecionados)
+    if request.POST:
+        form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(request.POST, lancamentos_selecionados=lancamentos_selecionados)
+        if form_adiciona_nota.is_valid():
+            registro = form_adiciona_nota.save()
+            messages.success(request, u"Sucesso! Nota %s Registrada!" % registro.notafiscal)
+            # marca cada lancamento_de_producao como vendido
+            registro.lancamentos_de_producao.update(
+                vendido=True,
+                data_vendido=datetime.datetime.now(),
+                funcionario_vendeu=request.user.funcionario,
+                cliente_associado=registro.cliente_associado
+            )
+            return redirect(reverse("producao:registrar_nota_fiscal_emitida"))
+        
+        
+    return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida-adicionar.html', locals(), context_instance=RequestContext(request),)
+    

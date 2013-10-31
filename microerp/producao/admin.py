@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
+from django import forms
 from django.contrib import admin
-
-from django.contrib import messages
 
 from models import EstoqueFisico
 from models import PosicaoEstoque
@@ -38,14 +37,35 @@ from models import LinhaTesteLancamentoProdProduto
 from models import NotaFiscalLancamentosProducao
 from models import MovimentoEstoqueSubProduto
 from models import MovimentoEstoqueProduto
+from models import FalhaDeTeste
+from models import LancamentoDeFalhaDeTeste
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
     model = LinhaFornecedorFabricanteComponente
 
 class ArquivoAnexoComponenteInline(admin.StackedInline):
-    model = ArquivoAnexoComponente
     extra = 0
+    model = ArquivoAnexoComponente
+
+
+class LinhaTesteLancamentoProdProdutoInline(admin.TabularInline):
+    extra=0
+    model = LinhaTesteLancamentoProdProduto
+
+class LancamentoProdProdutoForm(forms.ModelForm):
+    class Meta:
+        model = LancamentoProdProduto
+
+    def serial_number(self):
+        """
+        Return None instead of empty string
+        """
+        return self.cleaned_data.get('serial_number') or None
+
+class LancamentoProdProdutoAdmin(admin.ModelAdmin):
+    inlines = [LinhaTesteLancamentoProdProdutoInline]
+    form = LancamentoProdProdutoForm
 
 
 class ComponenteAdmin(admin.ModelAdmin):
@@ -59,8 +79,8 @@ class PosicaoEstoqueAdmin(admin.ModelAdmin):
 
 
 class LancamentoComponenteInline(admin.StackedInline):
-    model = LancamentoComponente
     extra= 0
+    model = LancamentoComponente
 
 
 # ADMIN ACTIONS
@@ -77,9 +97,8 @@ lancar_no_estoque.short_description = u"Lançar Nota no Estoque"
 
 
 class PosicaoEstoqueInline(admin.StackedInline):
-    model = PosicaoEstoque
     extra = 0
-
+    model = PosicaoEstoque
 
 class NotaFiscalAdmin(admin.ModelAdmin):
     list_filter = 'status',  'tipo', 'fabricante_fornecedor',
@@ -92,14 +111,14 @@ class NotaFiscalAdmin(admin.ModelAdmin):
 # SUBPRODUTOS
 
 class LinhaSubProdutoAgregadoInLine(admin.StackedInline):
-    model = LinhaSubProdutoAgregado
     extra= 0
+    model = LinhaSubProdutoAgregado
     fk_name = "subproduto_principal"
 
 class OpcaoLinhaSubProdutoAdmin(admin.StackedInline):
-    model = OpcaoLinhaSubProduto
     extra = 0
-
+    model = OpcaoLinhaSubProduto
+    
 class LinhaSubProdutoAdmin(admin.ModelAdmin):
     #filter_horizontal = 'componentes_alternativos',
     list_filter = 'subproduto',
@@ -200,9 +219,11 @@ admin.site.register(AtividadeDeOrdemDeCompra)
 admin.site.register(ComponentesDaOrdemDeCompra)
 admin.site.register(RequisicaoDeCompra)
 admin.site.register(OrdemConversaoSubProduto)
-admin.site.register(LancamentoProdProduto)
+admin.site.register(LancamentoProdProduto, LancamentoProdProdutoAdmin)
 admin.site.register(LinhaTesteLancamentoProdProduto)
 
 admin.site.register(NotaFiscalLancamentosProducao)
 admin.site.register(MovimentoEstoqueSubProduto)
 admin.site.register(MovimentoEstoqueProduto)
+admin.site.register(FalhaDeTeste)
+admin.site.register(LancamentoDeFalhaDeTeste)

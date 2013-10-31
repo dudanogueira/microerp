@@ -1,0 +1,104 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Controle de Testes{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="fa fa-th"></i> <i class="fa fa-retweet"></i>  Controle de Testes da Produção</h1>
+
+	<ul class="nav nav-tabs">
+    <li class="active"><a href="#lancamento-de-falha" data-toggle="tab">Lançamento de Falhas</a></li>
+		<li class=""><a href="#falha-tipo-perda" data-toggle="tab">Falhas de Perda</a></li>
+		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab">Falhas de Reparo</a></li>
+	</ul>
+	
+	<div id="myTabContent" class="tab-content">
+		
+		<div class="tab-pane fade in active" id="lancamento-de-falha">
+			<h2>Lançamento de Falha</h2>
+		</div>
+			
+		<div class="tab-pane fade in" id="falha-tipo-perda">
+			<h2>Falha do Tipo Perda</h2>
+			<a class="btn btn-primary" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+			<a class="btn btn-suce">IMprimir</a>
+			
+			<div id="testes-de-perda">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Código</th>
+							<th>Descrição</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for falha in testes_perda %}
+						<tr>
+							<td>{{falha.id}}</td>
+							<td>{{falha.codigo}}</td>
+							<td>{{falha.descricao}}</td>
+						</tr>
+						{% endfor %}
+					
+					</tbody>
+				</table>
+			</div>
+			
+		</div>
+				
+		<div class="tab-pane fade in" id="falha-tipo-reparo">
+			<h2>Falha do Tipo Reparo</h2>
+			<a class="btn btn-primary" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+			
+			{{testes_reparo}}
+			
+		</div>
+		
+		
+	</div>
+
+
+	
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+		var activeTab = $('[href=' + location.hash + ']');
+		activeTab && activeTab.click();
+    $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");
+				
+});
+
+$('.nav-tabs').on("click", '.nav-tabs li a', function(e){
+	e.preventDefault();
+
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	// ajax load from data-url
+	pane.tab('show');		
+})
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+
+
+</script>
+
+{% endaddtoblock %}
+
+{% include "frontend/producao/producao-menu.html" %}
+
+{% endblock%}

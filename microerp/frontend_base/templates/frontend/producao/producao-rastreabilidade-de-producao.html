@@ -7,75 +7,183 @@
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-barcode"></i> Rastreabilidade de Produção</h1>
 
-	<div class="row-fluid">
-		<div class="span5">
-			<h2>Lançamentos de Produto</h2>
-		</div>
-		
-		<div class="span7">
-			<p class="btn-group">
-			<a href="{% url "producao:rastreabilidade_de_producao_adicionar" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
-			<a role="button" href="#modal-apagar-lancamento" class="btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i> Apagar</a>
-			
-			</p>
-		</div>
-		
-		<!-- Modal -->
-		<div id="modal-apagar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		  <div class="modal-header">
-		    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-		    <h3 id="myModalLabel">Apagar Lançamentos</h3>
-		  </div>
-		  <div class="modal-body">
-				<form method="POST">
-					{% csrf_token %}
-		    {{form_remover_lancamentos}}
-		  </div>
-		  <div class="modal-footer">
-		    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-		    <button class="btn btn-primary">Save changes</button>
-		  </div>
-		</div>
-		
-	</div>
-	
+	<h2>Lançamentos de Produto</h2>		
+
 	<ul class="nav nav-tabs">
-		<li class="active"><a href="#lancamentos-disponiveis" data-toggle="tab">Disponíveis</a></li>
-		<li class=""><a href="#lancamentos-vendidos" data-toggle="tab">Vendidos</a></li>
-		<li class=""><a href="#lancamentos-apagados" data-toggle="tab">Apagados</a></li>
-	  <li class=""><a href="#configurar" data-toggle="tab">Configurar Testes</a></li>
-		<li class=""><a href="#checar-quantitativos" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:rastreabilidade_de_producao_checar_quantitativos" %}">Checar Quantitativos</a></li>
+		<li class="active"><a href="#associar-dados" data-toggle="tab"><i class="fa fa-asterisk"></i> Associar Dados</a></li>
+		<li><a href="#lancamentos-disponiveis" data-toggle="tab"><i class="fa fa-arrow-right"></i> Disponíveis para Venda</a></li>
+		<li class=""><a href="#lancamentos-vendidos" data-toggle="tab"><i class="fa fa-dollar"></i> Vendidos</a></li>
+		<li class=""><a href="#lancamentos-apagados" data-toggle="tab"> <i class="fa fa-trash-o"></i> Apagados</a></li>
+	  <li class=""><a href="#configurar" data-toggle="tab"><i class="fa fa-cogs"></i> Configurar Testes</a></li>
+		<li class=""><a href="#checar-quantitativos" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:rastreabilidade_de_producao_checar_quantitativos" %}"><i class="fa fa-search"></i> Checar Quantitativos</a></li>
 		
 	</ul>
 	
 	<div id="myTabContent" class="tab-content">
 		
-		<div class="tab-pane fade in active" id="lancamentos-disponiveis">
-			<h2>Lançamentos Disponíveis</h2>
-			<ul>
-			{% for lancamento in lancamentos_disponiveis %}
-				<li>#{{lancamento.id}} - {{lancamento}} - Linhas de Teste: {{lancamento.linhatestelancamentoprodproduto_set.count}}</li>
+		<div class="tab-pane fade in active" id="associar-dados">
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Associar Dados</h2>
+				</div>
+			
+				<div class="span6">
+					<p class="btn-group">
+					<a href="{% url "producao:rastreabilidade_de_producao_adicionar" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
+					<a role="button" href="#modal-apagar-lancamento" class="btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i> Apagar</a>
+					</p>
+				</div>
+			</div>
+
+				{% regroup lancamentos_associar_valores by produto__part_number as lancamentos_group_list %}
+				{% for lancamento in lancamentos_group_list %}
+				<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+				<div id="lancamento-produtos-associar">
+					<table class="table table-condensed table-hover table-rounded">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Testes</th>
+								<th>Manual / Ordem de Produção</th>
+								<th>Criado</th>
+								<th>Ações</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for lancamento in lancamento.list %}
+							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
+								<td>{{lancamento.id}}</td>
+								<td><span class="badge badge-warning">{{lancamento.linhatestelancamentoprodproduto__lancamento_de_producao__id__count}}</span></td>
+								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
+								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+								<td>
+									<a data-toggle="tooltip" title="Associar a Serial Number" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
+								</td>
+							</tr>
+							{% endfor %}
+					
+						</tbody>
+					</table>
+				</div>
+				{% empty %}
+					<div class="alert alert-warning">
+					<i class="fa fa-exclamation fa-2x fa-left"></i> Nenhum Lançamento de Produção Disponível.<br />
+					Execute uma <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a> de um Produto<br />
+				</div>
+				{% endfor %}
+		</div>
+		
+		<div class="tab-pane fade in" id="lancamentos-disponiveis">
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Lançamentos Disponíveis</h2>
+				</div>
+			
+				<div class="span6">
+					<p class="btn-group">
+					<button form="vender_selecionados" type="submit"  class="btn btn-primary"><i class="fa fa-dollar"></i> vender selecionados</button>
+				</p>
+				</div>
+			</div>
+			
+			{% regroup lancamentos_disponiveis_valores by produto__part_number as lancamentos_disponiveis_group_list %}
+			<form method="GET" action="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" name="vender_selecionados" id="vender_selecionados">
+			{% for lancamento in lancamentos_disponiveis_group_list %}
+				<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+				<div id="lancamentos-disponiveis-venda">
+					<table class="table table-condensed table-hover table-rounded">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Serial Number</th>
+								<th>Manual / Ordem de Produção</th>
+								<th>Criado</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for lancamento in lancamento.list %}
+							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
+								<td><input type="checkbox" name="lancamento" value="{{lancamento.id}}"><label for="lancamento-{{lancamento.id}}">{{lancamento.id}}</label></td>
+								<td>{{lancamento.serial_number}}</td>
+								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
+								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+							</tr>
+							{% endfor %}
+					
+						</tbody>
+					</table>
+				</div>
+			{% empty %}
+			<p class="alert alert-warning">
+				<i class="fa fa-exclamation fa-2x fa-left"></i> Nenhum Lançamento de Produção Disponível.<br />
+				Execute uma <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a> de um Produto,<br />
+				Depois Associe Dados a esta produção para poder realizar a venda.
+			</p>
 			{% endfor %}
-			</ul>
+			</form>
+
 		</div>
 		
 		<div class="tab-pane fade in" id="lancamentos-vendidos">
-			<h2>Lançamentos vendidos</h2>
-			{{lancamentos_vendidos}}
+			<h2>Lançamentos Vendidos</h2>
+			
+			{% regroup lancamentos_vendidos by produto__part_number as lancamentos_vendidos_group_list %}
+			{% for lancamento in lancamentos_vendidos_group_list %}
+			<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+			<div id="lancamento-produtos-vendidos">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Serial</th>
+							<th>Cliente</th>
+							<th>Data de Venda</th>
+							<th>Vendedor</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for lancamento in lancamento.list %}
+						<tr>
+							<td>{{lancamento.id}}</td>
+							<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
+							<td>{{lancamento.cliente_associado}}</td>
+							<td>{{lancamento.data_vendido|date:"SHORT_DATETIME_FORMAT"}}</td>
+							<td>{{lancamento.funcionario_vendeu}}</td>
+							<td>
+								<a data-toggle="tooltip" title="Associar a Serial Number" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
+							</td>
+						</tr>
+						{% endfor %}
+				
+					</tbody>
+				</table>
+			</div>
+			{% empty %}
+				<div class="alert alert-warning">
+				<i class="fa fa-exclamation fa-2x fa-left"></i> Nenhum Lançamento de Produção Disponível.<br />
+				Execute uma <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a> de um Produto<br />
+			</div>
+			{% endfor %}
+			
+			
+			
+			
+			
+			
+
 		</div>
 		
 		<div class="tab-pane fade in" id="lancamentos-apagados">
-			<h2>Lançamentos apagados</h2>
+			<h2>Lançamentos Apagados</h2>
 			{{lancamentos_apagados}}
 		</div>
 		
-
 		<div class="tab-pane fade in" id="configurar">
-			<ul>
+			<h2>Configurar Testes</h2>
 				{% for produto in produtos_ativos %}
-				<li><a href="{% url "producao:rastreabilidade_de_producao_configurar" produto.id %}">{{produto}}</a></li>
+				<p>{% if produto.subprodutos_testaveis.count %}<span class="badge badge badge-success">Configurado</span>{% else %}<span class="badge badge badge-important">Não Configurado</span>{% endif %} <a href="{% url "producao:rastreabilidade_de_producao_configurar" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
+				
 				{% endfor %}
-			</ul>
 		</div>
 
 		<div class="tab-pane fade in" id="checar-quantitativos">
@@ -83,6 +191,24 @@
 		
 	</div>
 
+	
+	<!-- Modal -->
+	<div id="modal-apagar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-header">
+	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	    <h3 id="myModalLabel">Apagar Lançamentos</h3>
+	  </div>
+	  <div class="modal-body">
+			<form method="POST" name="remover_lancamentos">
+				{% csrf_token %}
+	    {{form_remover_lancamentos}}
+			</form>
+	  </div>
+	  <div class="modal-footer">
+	    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+	    <button class="btn btn-primary" form="remover_lancamentos">Apagar</button>
+	  </div>
+	</div>
 	
 {% endblock %}
 
@@ -136,7 +262,24 @@ $('.nav-tabs').on("click", '.ajaxtab', function(e){
 var activeTab = $('[href=' + location.hash + ']');
 activeTab && activeTab.click();
 
+$('.nav-tabs').on("click", '.nav-tabs li a', function(e){
+	e.preventDefault();
 
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	// ajax load from data-url
+	pane.tab('show');		
+})
+
+$('.tooltip_item').tooltip()
+
+//check on div click
+$("tr").click(function() {
+    var checkbox = $(this).find("input[type='checkbox']");
+		checkbox.attr('checked', !checkbox.attr('checked'));
+		$(this).toggleClass('alert-info');
+});
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}
