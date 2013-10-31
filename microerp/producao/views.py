@@ -3265,10 +3265,10 @@ def rastreabilidade_de_producao(request):
     lancamentos_vendidos = nao_apagados.filter(vendido=True)
     lancamentos_vendidos_valores = lancamentos_vendidos.values(
         'id',
-        'adicionado_manualmente',
-        'funcionario_adicionou__nome',
+        'data_vendido',
+        'funcionario_vendeu__nome',
         'criado',
-        'justificativa_adicionado',
+        'cliente_associado',
         'ordem_de_producao__id',
         'produto__id',
         'produto__part_number',
@@ -3321,6 +3321,8 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
         self.fields['serial_number'].required = True
         self.fields['funcionario_que_montou'].required = True
         self.fields['funcionario_inicio_teste'].required = True
+        if self.instance.vendido or self.instance.serial_number:
+            self.fields['serial_number'].widget = forms.HiddenInput()
     
     def clean_serial_number(self):
         serial_number = self.cleaned_data['serial_number']

@@ -98,6 +98,7 @@
 								<th>Serial Number</th>
 								<th>Manual / Ordem de Produção</th>
 								<th>Criado</th>
+								<th>Ações</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -107,6 +108,7 @@
 								<td>{{lancamento.serial_number}}</td>
 								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
 								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+								<td><a data-toggle="tooltip" title="Alterar Dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a></td>
 							</tr>
 							{% endfor %}
 					
@@ -148,9 +150,9 @@
 							<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
 							<td>{{lancamento.cliente_associado}}</td>
 							<td>{{lancamento.data_vendido|date:"SHORT_DATETIME_FORMAT"}}</td>
-							<td>{{lancamento.funcionario_vendeu}}</td>
+							<td>{{lancamento.funcionario_vendeu__nome}}</td>
 							<td>
-								<a data-toggle="tooltip" title="Associar a Serial Number" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
+								<a data-toggle="tooltip" title="Alterar dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
 							</td>
 						</tr>
 						{% endfor %}
