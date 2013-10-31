@@ -763,15 +763,15 @@ class SubProduto(models.Model):
             dic_componentes = linha.subproduto_agregado.dicionario_quantidades_utilizadas_padrao(dic_componentes, fator_multiplicador=linha.quantidade)
         return dic_componentes
 
-    def part_number(self):
-        pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        return "%s-SUB%s" % (pn_prepend, "%05d" % self.id)
-
     def save(self):
         """Auto-populate an empty slug field from the MyModel name and
         if it conflicts with an existing slug then append a number and try
         saving again.
         """
+
+        if not self.part_number:
+            pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
+            self.part_number = "%s-SUB%s" % (pn_prepend, "%05d" % self.id,)
 
         if not self.slug:
             self.slug = slugify(self.nome)
@@ -906,6 +906,7 @@ class SubProduto(models.Model):
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
     nome = models.CharField(blank=False, max_length=100)
     slug = models.SlugField(u"Abreviação", blank=True, null=True, unique=True, help_text=u"Abreviação para diretórios e urls")
+    part_number = models.CharField(blank=True, max_length=100)
     descricao = models.TextField(u"Descrição", blank=True)
     possui_tags = models.BooleanField(default=True, help_text="Se este campo for marcado, as Linhas do Sub Produto deverão ser alocadas para uma TAG única.")
     tipo_de_teste = models.IntegerField(blank=False, null=False, default=0, choices=TIPO_DE_TESTES_SUBPRODUTO)
