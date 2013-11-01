@@ -1541,8 +1541,8 @@ class MovimentoEstoqueProduto(models.Model):
 
 class FalhaDeTeste(models.Model):
     tipo = models.CharField(blank=True, max_length=100, choices=TIPO_FALHA_DE_TESTE_CHOICES, default="perda")
-    codigo = models.CharField(blank=False, max_length=100, unique=True)
-    descricao = models.TextField(blank=True)
+    codigo = models.CharField("Código", blank=False, max_length=100, unique=True)
+    descricao = models.TextField(u"Descrição", blank=True)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

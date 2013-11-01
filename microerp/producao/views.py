@@ -3203,13 +3203,16 @@ def movimento_de_producao(request):
 
 
 class FormRemoverLancamentoProdProduto(forms.Form):
-    
     id_lancamentos = forms.CharField(required=True, help_text="Formato: 12,34,56,67,..")
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
+
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao(request):
-    if request.POST:
+    serial_number_q = request.GET.get('serial_number', None)
+    cliente_q = request.GET.get('cliente', None)
+    form_remover_lancamentos = FormRemoverLancamentoProdProduto()
+    if request.POST.get('apagar-lancamentos-btn', None):
         form_remover_lancamentos = FormRemoverLancamentoProdProduto(request.POST)
         if form_remover_lancamentos.is_valid():
             ids = form_remover_lancamentos.cleaned_data['id_lancamentos'].split(",")
@@ -3228,11 +3231,11 @@ def rastreabilidade_de_producao(request):
                 else:
                     messages.warning(request, u'Lançamento #%s não encontrado.' % id_lancamento)
                     
-    else:
-        form_remover_lancamentos = FormRemoverLancamentoProdProduto()
+
+                
+        
     produtos_ativos = ProdutoFinal.objects.filter(ativo=True)
     nao_apagados = LancamentoProdProduto.objects.filter(apagado=False)
-    lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
     lancamentos_associar = nao_apagados.filter(vendido=False, serial_number=None).order_by('produto__part_number')
     lancamentos_associar_valores = lancamentos_associar.values(
         'id',
@@ -3263,17 +3266,40 @@ def rastreabilidade_de_producao(request):
         'serial_number',
         )
     lancamentos_vendidos = nao_apagados.filter(vendido=True)
+    # filtra os vendidos
+    if request.GET:
+        if serial_number_q:
+            lancamentos_vendidos = lancamentos_vendidos.filter(serial_number__icontains=serial_number_q)
+        if cliente_q:
+            lancamentos_vendidos = lancamentos_vendidos.filter(cliente_associado__icontains=cliente_q)
     lancamentos_vendidos_valores = lancamentos_vendidos.values(
+    'id',
+    'data_vendido',
+    'funcionario_vendeu__nome',
+    'criado',
+    'cliente_associado',
+    'ordem_de_producao__id',
+    'produto__id',
+    'produto__part_number',
+    'produto__nome',
+    'serial_number',
+    )
+    lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
+    lancamentos_apagados_valores = lancamentos_apagados.values(
         'id',
-        'data_vendido',
+        'serial_number',
         'funcionario_vendeu__nome',
+        'data_vendido',
+        'funcionario_apagou__nome',
+        'data_apagado',
         'criado',
+        'justificativa_apagado',
         'cliente_associado',
         'ordem_de_producao__id',
         'produto__id',
         'produto__part_number',
         'produto__nome',
-        'serial_number',
+        
         )
     
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
@@ -3332,14 +3358,21 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
         
     class Meta:
         model = LancamentoProdProduto
-        fields = 'serial_number', 'funcionario_que_montou', 'data_montagem', 'inicio_teste', \
-            'funcionario_inicio_teste',
+        fields = 'serial_number', 'funcionario_que_montou', 'data_montagem', 'funcionario_inicio_teste', 'inicio_teste', 
+            
 
 class FormLinhaTesteLancamentoProdProduto(forms.ModelForm):
     
+    def __init__(self, *args, **kwargs):
+        sugerir_funcionarios_linhas = kwargs.pop('sugerir', True)
+        super(FormLinhaTesteLancamentoProdProduto, self).__init__(*args, **kwargs)
+        self.fields['funcionario_que_montou'].widget.attrs.update({'class' : 'herda_montou'})
+        self.fields['funcionario_que_testou'].widget.attrs.update({'class' : 'herda_testou'})
+    
+    
     class Meta:
         model = LinhaTesteLancamentoProdProduto
-        fields = 'funcionario_que_testou', 'funcionario_que_montou', 'versao_firmware'
+        fields = 'funcionario_que_montou', 'funcionario_que_testou', 'versao_firmware'
             
 from django.forms.models import inlineformset_factory
 @user_passes_test(possui_perfil_acesso_producao)

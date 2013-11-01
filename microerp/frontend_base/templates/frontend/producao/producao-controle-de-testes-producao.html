@@ -5,9 +5,9 @@
 <title>{%block title %}{{block.super}} - Produção - Controle de Testes{% endblock %}</title>
 
 {% block content %}
-	<h1><i class="fa fa-th"></i> <i class="fa fa-retweet"></i>  Controle de Testes da Produção</h1>
+	<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i>  Controle de Testes da Produção</h1>
 
-	<ul class="nav nav-tabs">
+	<ul class="nav nav-tabs" id="nav-tab-principal">
     <li class="active"><a href="#lancamento-de-falha" data-toggle="tab">Lançamento de Falhas</a></li>
 		<li class=""><a href="#falha-tipo-perda" data-toggle="tab">Falhas de Perda</a></li>
 		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab">Falhas de Reparo</a></li>
@@ -21,8 +21,8 @@
 			
 		<div class="tab-pane fade in" id="falha-tipo-perda">
 			<h2>Falha do Tipo Perda</h2>
-			<a class="btn btn-primary" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
-			<a class="btn btn-suce">IMprimir</a>
+			<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+			<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
 			
 			<div id="testes-de-perda">
 				<table class="table table-condensed table-hover table-rounded">
@@ -50,9 +50,33 @@
 				
 		<div class="tab-pane fade in" id="falha-tipo-reparo">
 			<h2>Falha do Tipo Reparo</h2>
-			<a class="btn btn-primary" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+
+
+			<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+			<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
 			
-			{{testes_reparo}}
+			<div id="testes-de-perda">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Código</th>
+							<th>Descrição</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for falha in testes_reparo %}
+						<tr>
+							<td>{{falha.id}}</td>
+							<td>{{falha.codigo}}</td>
+							<td>{{falha.descricao}}</td>
+						</tr>
+						{% endfor %}
+					
+					</tbody>
+				</table>
+			</div>
+			
 			
 		</div>
 		
@@ -89,7 +113,9 @@ $(document).on("click", "#imprimir", function(e){
 	$(this).hide();
 	$("#menu-lateral").hide();
 	$("#global-top-menu").hide();
+	$(".adicionar-falha-btn").hide();
 	$("#main-content").css("padding-top", 0);
+	$("#nav-tab-principal").hide();
 	$("#content").removeClass('span9').addClass('span11');
 });
 

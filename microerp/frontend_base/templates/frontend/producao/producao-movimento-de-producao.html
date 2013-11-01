@@ -220,43 +220,6 @@
 
 	    <div class="tab-pane fade in" id="movimentacao-sub-produto">
         
-				<h2>Ordem de Produção de Sub Produto</h2>
-				<div id="ordem-de-producao-sub-produto">
-					<table class="table table-condensed table-hover table-rounded">
-						<thead>
-							<tr>
-								<th>ID</th>
-								<th>Sub Produto</th>
-								<th>Descrição</th>
-								<th>Quantidade</th>
-								<th>Funcionário Produtor</th>
-								<th>Data de Produção</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for ordem in ordens_producao_subproduto %}
-							<tr>
-								<td>{{ordem.id}}</td>
-								<td><a href="{% url "producao:ver_subproduto" ordem.subproduto.id %}">{{ordem.subproduto.part_number}}</a></td>
-								<td>{{ordem.subproduto.descricao}}</td>
-								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
-								<td>{{ordem.funcionario_produtor}}</td>
-								<td>{{ordem.data_producao|date:"SHORT_DATE_FORMAT"}}</td>
-							</tr>
-							{% endfor %}
-							<tr>
-								<td></td>
-								<td></td>
-								<td></td>
-								<td><strong><small>Total: {{total_ordem_producao.quantidade__sum}}</small></strong></td>
-								<td></td>
-								<td></td>
-							</tr>
-						
-						</tbody>
-					</table>
-				</div>
-				
 				<h2>Envio de Sub Produto Montado para Teste</h2>
 				<div id="envio-de-subproduto-montado-para-teste">
 					

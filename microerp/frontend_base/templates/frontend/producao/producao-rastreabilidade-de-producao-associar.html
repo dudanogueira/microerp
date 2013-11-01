@@ -82,7 +82,6 @@ activeTab && activeTab.click();
 
 $('.nav-tabs').on("click", '.nav-tabs li a', function(e){
 	e.preventDefault();
-
 	var href = this.hash;
 	window.location.hash = this.hash;
 	var pane = $(this);
@@ -90,8 +89,15 @@ $('.nav-tabs').on("click", '.nav-tabs li a', function(e){
 	pane.tab('show');		
 })
 
-$('.tooltip_item').tooltip()
+$('.tooltip_item').tooltip();
 
+$("#id_funcionario_que_montou").change(function(){
+	$(".herda_montou").val( $(this).val());
+});
+
+$("#id_funcionario_inicio_teste").change(function(){
+	$(".herda_testou").val( $(this).val());
+});
 
 
 </script>

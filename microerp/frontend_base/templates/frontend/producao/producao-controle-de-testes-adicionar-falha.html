@@ -10,9 +10,8 @@
 	<form method="POST">
 		{% csrf_token %}
 		{{form_adiciona_falha.as_p}}
-		<button type="submit"><i class="fa fa-plus"></i> Adicionar</button>
+		<button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
 	</form>
-
 	
 {% endblock %}
 
