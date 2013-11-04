@@ -99,6 +99,7 @@ urlpatterns = patterns('',
     # controle de testes
     url(r'^controle-de-testes-producao/$', 'producao.views.controle_de_testes_producao', name='controle_de_testes_producao'),
     url(r'^controle-de-testes-producao/adicionar-falha/$', 'producao.views.controle_de_testes_producao_adicionar_falha', name='controle_de_testes_producao_adicionar_falha'),
+    url(r'^controle-de-testes-producao/lancar-falha/$', 'producao.views.controle_de_testes_producao_lancar_falha', name='controle_de_testes_producao_lancar_falha'),
     # registrar nota fiscal emitida
     url(r'^registrar-nota-fiscal-emitida/$', 'producao.views.registrar_nota_fiscal_emitida', name='registrar_nota_fiscal_emitida'),
     url(r'^registrar-nota-fiscal-emitida/adicionar/$', 'producao.views.registrar_nota_fiscal_emitida_adicionar', name='registrar_nota_fiscal_emitida_adicionar'),

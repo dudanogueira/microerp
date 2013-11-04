@@ -1311,12 +1311,17 @@ class LancamentoProdProduto(models.Model):
         return self.ordem_de_producao.produto
     
     serial_number = models.CharField(null=True, blank=False, max_length=100, default=None)
-    funcionario_que_montou = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="lancamento_de_producao_produto_montado_set")
-    data_montagem = models.DateField(blank=True, null=True, default=datetime.datetime.today)
-    inicio_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today)
-    funcionario_inicio_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_iniciado_set", blank=True, null=True)
+    funcionario_que_montou = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="lancamento_de_producao_produto_montado_set", verbose_name=u"Funcionário que montou")
+    data_montagem = models.DateField("Data de Montagem", blank=True, null=True, default=datetime.datetime.today)
+    funcionario_inicio_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_iniciado_set", blank=True, null=True, verbose_name=u"Funcionário que iniciou o teste"  )
+    inicio_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today, verbose_name="Início de Teste")
+    funcionario_relalizou_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_realizado_set", blank=True, null=True, verbose_name=u"Funcionário que iniciou o teste"  )
+    realizacao_procedimento_de_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today, verbose_name=u"Realização de Procedimento de Teste")
+    funcionario_finalizou_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_finalizado_set", blank=True, null=True, verbose_name=u"Funcionário que finalizou o teste"  )
+    fim_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today, verbose_name="Fim de Teste")
     cliente_associado = models.CharField(blank=True, null=True,  max_length=100)
     ordem_de_producao = models.ForeignKey(OrdemProducaoProduto, blank=True, null=True)
+    observacoes = models.TextField(u"Observações", blank=True)
     produto = models.ForeignKey(ProdutoFinal)
     # meta
     ## adicao
@@ -1443,7 +1448,6 @@ class OrdemDeCompra(models.Model):
 
 class AtividadeDeOrdemDeCompra(models.Model):
     
-    
     class Meta:
         ordering = ('data',)
     
@@ -1473,7 +1477,9 @@ class AtividadeDeOrdemDeCompra(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class ComponentesDaOrdemDeCompra(models.Model):
-        
+    
+    class Meta:
+        ordering = ['-criado']
         
     def valor_total(self):
         return float(self.quantidade_comprada) * float(self.valor)
@@ -1503,6 +1509,11 @@ class RequisicaoDeCompra(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class NotaFiscalLancamentosProducao(models.Model):
+    
+    class Meta:
+        ordering = ['-criado']
+    
+    
     notafiscal = models.CharField(blank=False, null=False, max_length=100)
     lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto)
     cliente_associado = models.CharField(blank=False, null=False, max_length=100)
@@ -1511,6 +1522,11 @@ class NotaFiscalLancamentosProducao(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class MovimentoEstoqueSubProduto(models.Model):
+    
+    class Meta:
+        ordering = ['-criado']
+    
+    
     subproduto = models.ForeignKey(SubProduto)
     situacao = models.CharField(blank=False, max_length=100, null=False, choices=SITUACAO_MOVIMENTO_ESTOQUE_SUBPRODUTO_CHOICES, default=0)
     operacao = models.CharField(blank=False, null=False, max_length=100, choices=OPERACAO_MOVIMENTO_ESTOQUE_PRODUTO_CHOICES, default='adiciona')
@@ -1526,6 +1542,10 @@ class MovimentoEstoqueSubProduto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class MovimentoEstoqueProduto(models.Model):
+    
+    class Meta:
+        ordering = ['-criado']
+        
     produto = models.ForeignKey(ProdutoFinal)
     operacao = models.CharField(blank=True, max_length=100, choices=OPERACAO_MOVIMENTO_ESTOQUE_PRODUTO_CHOICES, default='adiciona')
     quantidade_movimentada = models.IntegerField(blank=False, null=False)
@@ -1533,6 +1553,7 @@ class MovimentoEstoqueProduto(models.Model):
     quantidade_nova = models.IntegerField(blank=False, null=False)
     justificativa = models.TextField(blank=False, null=False)
     ordem_de_producao = models.ForeignKey(OrdemProducaoProduto, blank=True, null=True)
+    registro_de_nota_fiscal = models.ForeignKey('NotaFiscalLancamentosProducao', null=True, blank=True)
     # meta
     criado_manualmente = models.BooleanField(default=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
@@ -1540,6 +1561,13 @@ class MovimentoEstoqueProduto(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class FalhaDeTeste(models.Model):
+    
+    class Meta:
+        ordering = ['-criado']
+        
+    def __unicode__(self):
+        return "%s - %s: %s" % (self.tipo.upper(), self.codigo, self.descricao)
+    
     tipo = models.CharField(blank=True, max_length=100, choices=TIPO_FALHA_DE_TESTE_CHOICES, default="perda")
     codigo = models.CharField("Código", blank=False, max_length=100, unique=True)
     descricao = models.TextField(u"Descrição", blank=True)
@@ -1549,17 +1577,41 @@ class FalhaDeTeste(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class LancamentoDeFalhaDeTeste(models.Model):
+    
+    class Meta:
+        ordering = ['-criado']
+        
+    def clean(self):
+        # quantidade_total_testada = quantidade_funcional_direta + quantidade_perdida + quantidade_a_reparar
+        total_testado_calculado = self.quantidade_funcional_direta + self.quantidade_perdida + self.quantidade_a_reparar
+        if self.quantidade_total_testada != total_testado_calculado:
+            raise ValidationError('Total Testado deve ser igual à soma de Quantidade de: Funcional Direto + Quantidade Perdida + Quantidade a Reparar')
+    #    if self.quantidade_reparada > self.quantidade_funcional:
+    #        raise ValidationError('Quantidade reparada não pode ser maior que funcional!')
+    #   
+        if self.quantidade_funcional != self.quantidade_funcional_reparada + self.quantidade_funcional_direta:
+            raise ValidationError('Quantidade Funcional deve ser a Quantidade Funcional Direta + Quantidade Funcional Reparada: %s + %s' % (self.quantidade_funcional_direta, self.quantidade_funcional_reparada))
+    
     subproduto = models.ForeignKey(SubProduto)
-    quantidade_total_testada = models.IntegerField(blank=False, null=False)
-    quantidade_funcional = models.IntegerField(blank=False, null=False)
-    quantidade_perdida = models.IntegerField(blank=False, null=False)
-    quantidade_reparada = models.IntegerField(blank=False, null=False)
-    quantidade_funcional_direta = models.IntegerField(blank=False, null=False)
-    quantidade_funcional_reparada = models.IntegerField(blank=False, null=False)
+    quantidade_total_testada = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_funcional_direta = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_perdida = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_a_reparar = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_funcional_reparada = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_funcional = models.IntegerField(blank=False, null=False, default=0)
     data_lancamento = models.DateField(blank=False, default=datetime.datetime.today)
     funcionario_testador = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Testador")
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class LinhaLancamentoFalhaDeTeste(models.Model):
+    lancamento_teste = models.ForeignKey(LancamentoDeFalhaDeTeste)
+    quantidade = models.IntegerField(blank=False, null=False)
+    falha = models.ForeignKey(FalhaDeTeste)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
     

@@ -6,13 +6,11 @@
 
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-barcode"></i> Rastreabilidade de Produção</h1>
-	<h2>Associar Serial Number a Lançamento de Produção de Produto</h2>
-		
-	<h4>{{lancamento}}</h4>
+	<h2>Associar Serial Number a Lançamento de Produção #{{lancamento.id}}</h2>
+
 	<form method="POST">
 		{% csrf_token %}
 		{{testes_de_lancamento_form.management_form}}
-		<h2>Lançamento</h2>
 		{{lancamento_associa_form.as_p}}
 		{% if lancamento.linhatestelancamentoprodproduto_set.count %}
 		<h2>Registros de teste</h2>
@@ -40,8 +38,6 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
-		
-				
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,

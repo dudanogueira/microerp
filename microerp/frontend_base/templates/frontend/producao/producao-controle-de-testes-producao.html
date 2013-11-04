@@ -8,21 +8,38 @@
 	<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i>  Controle de Testes da Produção</h1>
 
 	<ul class="nav nav-tabs" id="nav-tab-principal">
-    <li class="active"><a href="#lancamento-de-falha" data-toggle="tab">Lançamento de Falhas</a></li>
-		<li class=""><a href="#falha-tipo-perda" data-toggle="tab">Falhas de Perda</a></li>
-		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab">Falhas de Reparo</a></li>
+    <li class="active"><a href="#lancamento-de-falha" data-toggle="tab"><i class="fa fa-rocket"></i> Lançamento de Falhas</a></li>
+		<li class=""><a href="#falha-tipo-perda" data-toggle="tab"><i class="fa fa-chain-broken"></i> Falhas de Perda</a></li>
+		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab"><i class="fa fa-wrench"></i> Falhas de Reparo</a></li>
 	</ul>
 	
 	<div id="myTabContent" class="tab-content">
 		
 		<div class="tab-pane fade in active" id="lancamento-de-falha">
-			<h2>Lançamento de Falha</h2>
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Lançamento de Falha</h2>					
+				</div>
+				<div class="span6">
+					<a href="{% url "producao:controle_de_testes_producao_lancar_falha" %}" class="btn btn-primary"><i class="fa fa-rocket"></i> Lançar Falha</a>
+					
+				</div>
+				
+			</div>
+			
 		</div>
 			
 		<div class="tab-pane fade in" id="falha-tipo-perda">
-			<h2>Falha do Tipo Perda</h2>
-			<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
-			<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Falha do Tipo Perda</h2>
+				</div>
+				<div class="span6">
+					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
+					
+				</div>
+			</div>
 			
 			<div id="testes-de-perda">
 				<table class="table table-condensed table-hover table-rounded">
@@ -49,12 +66,16 @@
 		</div>
 				
 		<div class="tab-pane fade in" id="falha-tipo-reparo">
-			<h2>Falha do Tipo Reparo</h2>
-
-
-			<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
-			<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
-			
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Falha do Tipo Perda</h2>
+				</div>
+				<div class="span6">
+					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
+					
+				</div>
+			</div>			
 			<div id="testes-de-perda">
 				<table class="table table-condensed table-hover table-rounded">
 					<thead>

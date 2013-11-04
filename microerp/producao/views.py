@@ -7,6 +7,9 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
+
+from django import forms
+
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Q, Sum, Count
@@ -49,6 +52,10 @@ from producao.models import MovimentoEstoqueSubProduto
 from producao.models import MovimentoEstoqueProduto
 from producao.models import FalhaDeTeste
 from producao.models import NotaFiscalLancamentosProducao
+from producao.models import LancamentoDeFalhaDeTeste
+from producao.models import LinhaLancamentoFalhaDeTeste
+
+from rh.models import Funcionario
 
 ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     ('', '-----'),
@@ -56,10 +63,6 @@ ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
     (1, 'Média'),
     (2, 'Urgente'),
 )
-
-from rh.models import Funcionario
-
-from django import forms
 
 #
 # DECORATORS
@@ -3338,15 +3341,28 @@ def rastreabilidade_de_producao_configurar(request, produto_id):
 
 class FormAssociarLancamentoProdProduto(forms.ModelForm):
     
+    required_css_class = 'required'
+    
     def __init__(self, *args, **kwargs):
         super(FormAssociarLancamentoProdProduto, self).__init__(*args, **kwargs)
         self.fields['funcionario_que_montou'].widget.attrs['class'] = 'select2'
         self.fields['funcionario_inicio_teste'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario_relalizou_teste'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario_finalizou_teste'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario_finalizou_teste'].required = True
         self.fields['data_montagem'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['data_montagem'].required = True
         self.fields['inicio_teste'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['realizacao_procedimento_de_teste'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['fim_teste'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['fim_teste'].required = True
         self.fields['serial_number'].required = True
+        self.fields['serial_number'].label = "Serial Number %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria')
         self.fields['funcionario_que_montou'].required = True
         self.fields['funcionario_inicio_teste'].required = True
+        self.fields['inicio_teste'].required = True
+        self.fields['funcionario_relalizou_teste'].required = True
+        self.fields['realizacao_procedimento_de_teste'].required = True
         if self.instance.vendido or self.instance.serial_number:
             self.fields['serial_number'].widget = forms.HiddenInput()
     
@@ -3358,7 +3374,7 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
         
     class Meta:
         model = LancamentoProdProduto
-        fields = 'serial_number', 'funcionario_que_montou', 'data_montagem', 'funcionario_inicio_teste', 'inicio_teste', 
+        fields = 'observacoes', 'serial_number', 'funcionario_que_montou', 'data_montagem', 'funcionario_inicio_teste', 'inicio_teste', 'funcionario_relalizou_teste', 'realizacao_procedimento_de_teste', 'funcionario_finalizou_teste', 'fim_teste', 
             
 
 class FormLinhaTesteLancamentoProdProduto(forms.ModelForm):
@@ -3368,18 +3384,19 @@ class FormLinhaTesteLancamentoProdProduto(forms.ModelForm):
         super(FormLinhaTesteLancamentoProdProduto, self).__init__(*args, **kwargs)
         self.fields['funcionario_que_montou'].widget.attrs.update({'class' : 'herda_montou'})
         self.fields['funcionario_que_testou'].widget.attrs.update({'class' : 'herda_testou'})
-    
+        self.fields['funcionario_que_testou'].required=True
+        self.fields['funcionario_que_montou'].required=True
+        self.fields['versao_firmware'].required=True
     
     class Meta:
         model = LinhaTesteLancamentoProdProduto
         fields = 'funcionario_que_montou', 'funcionario_que_testou', 'versao_firmware'
             
-from django.forms.models import inlineformset_factory
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao_associar_lancamento(request, lancamento_id):
     lancamento = get_object_or_404(LancamentoProdProduto, pk=lancamento_id)
     lancamento_associa_form = FormAssociarLancamentoProdProduto(instance=lancamento)
-    LancamentoFormSet = inlineformset_factory(LancamentoProdProduto, LinhaTesteLancamentoProdProduto, extra=0, can_delete=False, form=FormLinhaTesteLancamentoProdProduto)
+    LancamentoFormSet = forms.models.inlineformset_factory(LancamentoProdProduto, LinhaTesteLancamentoProdProduto, extra=0, can_delete=False, form=FormLinhaTesteLancamentoProdProduto)
     testes_de_lancamento_form = LancamentoFormSet(instance=lancamento)
     if request.POST:
         lancamento_associa_form = FormAssociarLancamentoProdProduto(request.POST, instance=lancamento)
@@ -3440,14 +3457,40 @@ def controle_de_testes_producao(request):
     testes_reparo = FalhaDeTeste.objects.filter(tipo='reparo')
     return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
 
-class FormAdicionaFalhaDeTeste(forms.ModelForm):
+class FormLancaFalhaDeTeste(forms.ModelForm):
     
+    required_css_class = 'required'
+    
+    def clean_quantidade_total_testada(self):
+        quantidade_total_testada = self.cleaned_data['quantidade_total_testada']
+        if quantidade_total_testada == 0:
+            raise ValidationError(u"Erro! Não é possível lançar falha com 0 quantidade testada")
+        else:
+            return quantidade_total_testada    
+    
+    class Meta:
+        model = LancamentoDeFalhaDeTeste
+ 
+@user_passes_test(possui_perfil_acesso_producao)
+def controle_de_testes_producao_lancar_falha(request):
+    '''Lança falhas e seus quantitativos, totais funcionais, etc'''
+    lancamento_teste_form = FormLancaFalhaDeTeste()
+    LancamentoFormSet = forms.models.inlineformset_factory(LancamentoDeFalhaDeTeste, LinhaLancamentoFalhaDeTeste, extra=1, can_delete=False)
+    lancamentos_falhas_form = LancamentoFormSet()
+    if request.POST:
+        lancamento_teste_form = FormLancaFalhaDeTeste(request.POST)
+        lancamentos_falhas_form = LancamentoFormSet(request.POST)
+    return render_to_response('frontend/producao/producao-controle-de-testes-lancar-falha.html', locals(), context_instance=RequestContext(request),)
+
+
+class FormAdicionaFalhaDeTeste(forms.ModelForm):
     class Meta:
         model = FalhaDeTeste
         fields = 'tipo', 'codigo', 'descricao'
 
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao_adicionar_falha(request):
+    '''Adiciona item à tabela de testes, com código, etc'''
     form_adiciona_falha = FormAdicionaFalhaDeTeste()
     if request.POST:
         form_adiciona_falha = FormAdicionaFalhaDeTeste(request.POST)
@@ -3508,8 +3551,44 @@ def registrar_nota_fiscal_emitida_adicionar(request):
                 funcionario_vendeu=request.user.funcionario,
                 cliente_associado=registro.cliente_associado
             )
+            # calcula quantidades a ser removida do total produzido do produto, para cada tipo de produto
+            produtos_vendidos = {}
+            for lancamento in registro.lancamentos_de_producao.all():
+                try:
+                    produtos_vendidos[lancamento.produto.id] += 1
+                except:
+                    produtos_vendidos[lancamento.produto.id] = 1
+            # realizar movimento decrementando a quantidade de total produzido do produto, vinculando ainda com a notafiscal gerada
+            for item in produtos_vendidos.iteritems():
+                try:
+                    produto = ProdutoFinal.objects.get(pk=int(item[0]))
+                    quantidade_movimentada = item[1]
+                    # encontrou o produto
+                    if produto.total_produzido > quantidade_movimentada:
+                        # possui mais do que quer remover
+                        quantidade_anterior = produto.total_produzido
+                        quantidade_nova = int(produto.total_produzido) - int(quantidade_movimentada)
+                        produto.total_produzido = quantidade_nova
+                        movimento = MovimentoEstoqueProduto.objects.create(
+                            produto = produto,
+                            quantidade_movimentada = quantidade_movimentada,
+                            quantidade_anterior = produto.total_produzido,
+                            quantidade_nova = quantidade_nova,
+                            operacao = "remove",
+                            criado_por = request.user,
+                            registro_de_nota_fiscal = registro,
+                            justificativa = "Nota Fiscal Emitida: %s" % registro.notafiscal
+                        )
+                        produto.save()
+                        movimento.save()
+                        messages.success(request, u"Sucesso! Removido %s Produtos %s como Produzido" % (movimento.quantidade_movimentada, movimento.produto))
+                    else:
+                        messages.error(request, u"Erro! Impossível registrar movimentação em %s. Quantidade Movimentada %s é maior que Estoque do Produto %s" % (produto, quantidade_movimentada, produto.total_produzido))
+                except:
+                    raise
+                    messages.warning(request, u"Não foi possível encontrar o produto ID: %s" % item[0])
+                    
             return redirect(reverse("producao:registrar_nota_fiscal_emitida"))
-        
         
     return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida-adicionar.html', locals(), context_instance=RequestContext(request),)
     

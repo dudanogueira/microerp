@@ -39,6 +39,7 @@ from models import MovimentoEstoqueSubProduto
 from models import MovimentoEstoqueProduto
 from models import FalhaDeTeste
 from models import LancamentoDeFalhaDeTeste
+from models import LinhaLancamentoFalhaDeTeste
 
 class LinhaFornecedorFabricanteComponenteInline(admin.TabularInline):
     extra=0
@@ -66,6 +67,15 @@ class LancamentoProdProdutoForm(forms.ModelForm):
 class LancamentoProdProdutoAdmin(admin.ModelAdmin):
     inlines = [LinhaTesteLancamentoProdProdutoInline]
     form = LancamentoProdProdutoForm
+
+
+class LancamentoDeFalhaDeTesteInline(admin.TabularInline):
+    extra=0
+    model = LinhaLancamentoFalhaDeTeste
+
+class LancamentoDeFalhaDeTesteAdmin(admin.ModelAdmin):
+    model = LancamentoDeFalhaDeTeste
+    inlines = [LancamentoDeFalhaDeTesteInline]
 
 
 class ComponenteAdmin(admin.ModelAdmin):
@@ -221,9 +231,9 @@ admin.site.register(RequisicaoDeCompra)
 admin.site.register(OrdemConversaoSubProduto)
 admin.site.register(LancamentoProdProduto, LancamentoProdProdutoAdmin)
 admin.site.register(LinhaTesteLancamentoProdProduto)
-
 admin.site.register(NotaFiscalLancamentosProducao)
 admin.site.register(MovimentoEstoqueSubProduto)
 admin.site.register(MovimentoEstoqueProduto)
 admin.site.register(FalhaDeTeste)
-admin.site.register(LancamentoDeFalhaDeTeste)
+admin.site.register(LancamentoDeFalhaDeTeste, LancamentoDeFalhaDeTesteAdmin)
+admin.site.register(LinhaLancamentoFalhaDeTeste)

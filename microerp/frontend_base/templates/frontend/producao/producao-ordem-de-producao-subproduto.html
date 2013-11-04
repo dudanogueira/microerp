@@ -31,6 +31,7 @@
 				<div class="alert alert-info nomargin">
 					<h4>{{quantidade_solicitada}} Unidades</h4>
 				</div>
+				<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
 					
 		</div>
 		
@@ -40,11 +41,9 @@
 		<form method="POST" class="nomargin" name="confirmar-produto" action="{% url "producao:ordem_de_producao_subproduto_confirmar" subproduto.id quantidade_solicitada %}">
 			{% csrf_token %}
 
-			<input type="hidden" name="configuracao" value="{{conf}}">
-			{{form_configurador_producao_subproduto.as_p}}
-			<button class="btn btn-danger" type="submit"><i class="fa fa-thumbs-up"></i> Confirmar Produção!</button>
-			
-			<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
+			<input type="hidden" name="configuracao" class="form" value="{{conf}}">
+			{{form_configurador_producao_subproduto}} 
+			<button class="btn btn-danger" type="submit"><i class="fa fa-thumbs-up"></i> Confirmar </button>
 		</form>
 		{% else %}
 		<h1>Somente o gerente pode ordenar produção!</h1>
