@@ -3374,7 +3374,7 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
         
     class Meta:
         model = LancamentoProdProduto
-        fields = 'observacoes', 'serial_number', 'funcionario_que_montou', 'data_montagem', 'funcionario_inicio_teste', 'inicio_teste', 'funcionario_relalizou_teste', 'realizacao_procedimento_de_teste', 'funcionario_finalizou_teste', 'fim_teste', 
+        fields = 'serial_number', 'funcionario_que_montou', 'data_montagem', 'funcionario_inicio_teste', 'inicio_teste', 'funcionario_relalizou_teste', 'realizacao_procedimento_de_teste', 'funcionario_finalizou_teste', 'fim_teste', 'observacoes'
             
 
 class FormLinhaTesteLancamentoProdProduto(forms.ModelForm):
@@ -3459,31 +3459,50 @@ def controle_de_testes_producao(request):
 
 class FormLancaFalhaDeTeste(forms.ModelForm):
     
-    required_css_class = 'required'
-    
-    def clean_quantidade_total_testada(self):
-        quantidade_total_testada = self.cleaned_data['quantidade_total_testada']
-        if quantidade_total_testada == 0:
-            raise ValidationError(u"Erro! Não é possível lançar falha com 0 quantidade testada")
-        else:
-            return quantidade_total_testada    
-    
+    def __init__(self, *args, **kwargs):
+        super(FormLancaFalhaDeTeste, self).__init__(*args, **kwargs)
+        self.fields['subproduto'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario_testador'].widget.attrs['class'] = 'select2'
+        self.fields['data_lancamento'].widget.attrs['class'] = 'datepicker'
+        self.fields['quantidade_perdida'].widget = forms.HiddenInput()
+        self.fields['quantidade_funcional_direta'].widget = forms.HiddenInput()
+
     class Meta:
         model = LancamentoDeFalhaDeTeste
+ 
+ 
+class LinhaLancamentoFalhaDeTesteForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaLancamentoFalhaDeTesteForm, self).__init__(*args, **kwargs)
+        self.fields['quantidade'].required=True
+        #self.fields['falha'].widget.attrs['class'] = 'select2'
+    
+    class Meta:
+        model = LinhaLancamentoFalhaDeTeste
  
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao_lancar_falha(request):
     '''Lança falhas e seus quantitativos, totais funcionais, etc'''
     lancamento_teste_form = FormLancaFalhaDeTeste()
-    LancamentoFormSet = forms.models.inlineformset_factory(LancamentoDeFalhaDeTeste, LinhaLancamentoFalhaDeTeste, extra=1, can_delete=False)
+    LancamentoFormSet = forms.models.inlineformset_factory(LancamentoDeFalhaDeTeste, LinhaLancamentoFalhaDeTeste, extra=1, can_delete=False, form=LinhaLancamentoFalhaDeTesteForm)
     lancamentos_falhas_form = LancamentoFormSet()
     if request.POST:
         lancamento_teste_form = FormLancaFalhaDeTeste(request.POST)
         lancamentos_falhas_form = LancamentoFormSet(request.POST)
+        if lancamento_teste_form.is_valid() and lancamentos_falhas_form.is_valid():
+            lancamento_teste = lancamento_teste_form.save()
+            falhas = lancamentos_falhas_form.save()
+            messages.success(request, u"Sucesso! Falhas Lançadas!")
     return render_to_response('frontend/producao/producao-controle-de-testes-lancar-falha.html', locals(), context_instance=RequestContext(request),)
 
-
 class FormAdicionaFalhaDeTeste(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormAdicionaFalhaDeTeste, self).__init__(*args, **kwargs)
+        self.fields['descricao'].required = True
+    
+    
     class Meta:
         model = FalhaDeTeste
         fields = 'tipo', 'codigo', 'descricao'

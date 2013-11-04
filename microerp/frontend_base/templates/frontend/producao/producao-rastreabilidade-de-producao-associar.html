@@ -14,10 +14,11 @@
 		{{lancamento_associa_form.as_p}}
 		{% if lancamento.linhatestelancamentoprodproduto_set.count %}
 		<h2>Registros de teste</h2>
-		
 		{% for form in testes_de_lancamento_form %}
+		<div class="well well-small">
 			<h3>{{form.instance.subproduto_testavel}}</h3>
-			{{form.as_p}}
+			{{form}}
+		</div>
 		{% endfor %}
 		{% endif %}
 		

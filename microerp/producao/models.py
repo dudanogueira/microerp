@@ -1315,7 +1315,7 @@ class LancamentoProdProduto(models.Model):
     data_montagem = models.DateField("Data de Montagem", blank=True, null=True, default=datetime.datetime.today)
     funcionario_inicio_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_iniciado_set", blank=True, null=True, verbose_name=u"Funcionário que iniciou o teste"  )
     inicio_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today, verbose_name="Início de Teste")
-    funcionario_relalizou_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_realizado_set", blank=True, null=True, verbose_name=u"Funcionário que iniciou o teste"  )
+    funcionario_relalizou_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_realizado_set", blank=True, null=True, verbose_name=u"Funcionário que realizou o teste"  )
     realizacao_procedimento_de_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today, verbose_name=u"Realização de Procedimento de Teste")
     funcionario_finalizou_teste = models.ForeignKey('rh.Funcionario', related_name="lancamento_de_producao_produto_teste_finalizado_set", blank=True, null=True, verbose_name=u"Funcionário que finalizou o teste"  )
     fim_teste = models.DateField(blank=True, null=True,  default=datetime.datetime.today, verbose_name="Fim de Teste")
@@ -1514,8 +1514,8 @@ class NotaFiscalLancamentosProducao(models.Model):
         ordering = ['-criado']
     
     
-    notafiscal = models.CharField(blank=False, null=False, max_length=100)
-    lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto)
+    notafiscal = models.CharField(blank=False, null=False, max_length=100, verbose_name="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'))
+    lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto, verbose_name=u"Lançamentos de Produção")
     cliente_associado = models.CharField(blank=False, null=False, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
@@ -1568,9 +1568,9 @@ class FalhaDeTeste(models.Model):
     def __unicode__(self):
         return "%s - %s: %s" % (self.tipo.upper(), self.codigo, self.descricao)
     
-    tipo = models.CharField(blank=True, max_length=100, choices=TIPO_FALHA_DE_TESTE_CHOICES, default="perda")
+    tipo = models.CharField(blank=False, null=False, max_length=100, choices=TIPO_FALHA_DE_TESTE_CHOICES, default="perda")
     codigo = models.CharField("Código", blank=False, max_length=100, unique=True)
-    descricao = models.TextField(u"Descrição", blank=True)
+    descricao = models.TextField(u"Descrição", blank=False, null=False)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
@@ -1581,25 +1581,13 @@ class LancamentoDeFalhaDeTeste(models.Model):
     class Meta:
         ordering = ['-criado']
         
-    def clean(self):
-        # quantidade_total_testada = quantidade_funcional_direta + quantidade_perdida + quantidade_a_reparar
-        total_testado_calculado = self.quantidade_funcional_direta + self.quantidade_perdida + self.quantidade_a_reparar
-        if self.quantidade_total_testada != total_testado_calculado:
-            raise ValidationError('Total Testado deve ser igual à soma de Quantidade de: Funcional Direto + Quantidade Perdida + Quantidade a Reparar')
-    #    if self.quantidade_reparada > self.quantidade_funcional:
-    #        raise ValidationError('Quantidade reparada não pode ser maior que funcional!')
-    #   
-        if self.quantidade_funcional != self.quantidade_funcional_reparada + self.quantidade_funcional_direta:
-            raise ValidationError('Quantidade Funcional deve ser a Quantidade Funcional Direta + Quantidade Funcional Reparada: %s + %s' % (self.quantidade_funcional_direta, self.quantidade_funcional_reparada))
-    
     subproduto = models.ForeignKey(SubProduto)
     quantidade_total_testada = models.IntegerField(blank=False, null=False, default=0)
     quantidade_funcional_direta = models.IntegerField(blank=False, null=False, default=0)
     quantidade_perdida = models.IntegerField(blank=False, null=False, default=0)
-    quantidade_a_reparar = models.IntegerField(blank=False, null=False, default=0)
-    quantidade_funcional_reparada = models.IntegerField(blank=False, null=False, default=0)
+    quantidade_reparada_funcional = models.IntegerField(blank=False, null=False, default=0)
     quantidade_funcional = models.IntegerField(blank=False, null=False, default=0)
-    data_lancamento = models.DateField(blank=False, default=datetime.datetime.today)
+    data_lancamento = models.DateField(blank=False, default=datetime.datetime.today, verbose_name=u"Data de Lançamento")
     funcionario_testador = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Testador")
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
@@ -1613,5 +1601,4 @@ class LinhaLancamentoFalhaDeTeste(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
-    
     
