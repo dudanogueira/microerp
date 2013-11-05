@@ -3353,9 +3353,12 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
         self.fields['data_montagem'].widget.attrs.update({'class' : 'datepicker'})
         self.fields['data_montagem'].required = True
         self.fields['inicio_teste'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['inicio_teste'].label = u"Data de Início"
         self.fields['realizacao_procedimento_de_teste'].widget.attrs.update({'class' : 'datepicker'})
+        self.fields['realizacao_procedimento_de_teste'].label = u"Data de Realização"
         self.fields['fim_teste'].widget.attrs.update({'class' : 'datepicker'})
         self.fields['fim_teste'].required = True
+        self.fields['fim_teste'].label = u"Data de Término"
         self.fields['serial_number'].required = True
         self.fields['serial_number'].label = "Serial Number %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria')
         self.fields['funcionario_que_montou'].required = True
@@ -3382,8 +3385,8 @@ class FormLinhaTesteLancamentoProdProduto(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         sugerir_funcionarios_linhas = kwargs.pop('sugerir', True)
         super(FormLinhaTesteLancamentoProdProduto, self).__init__(*args, **kwargs)
-        self.fields['funcionario_que_montou'].widget.attrs.update({'class' : 'herda_montou'})
-        self.fields['funcionario_que_testou'].widget.attrs.update({'class' : 'herda_testou'})
+        self.fields['funcionario_que_montou'].widget.attrs.update({'class' : 'herda_montou select2'})
+        self.fields['funcionario_que_testou'].widget.attrs.update({'class' : 'herda_testou select2'})
         self.fields['funcionario_que_testou'].required=True
         self.fields['funcionario_que_montou'].required=True
         self.fields['versao_firmware'].required=True
@@ -3453,6 +3456,7 @@ def rastreabilidade_de_producao_checar_quantitativos(request):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao(request):
+    lancamentos_falha = LancamentoDeFalhaDeTeste.objects.all()
     testes_perda = FalhaDeTeste.objects.filter(tipo='perda')
     testes_reparo = FalhaDeTeste.objects.filter(tipo='reparo')
     return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
@@ -3466,34 +3470,94 @@ class FormLancaFalhaDeTeste(forms.ModelForm):
         self.fields['data_lancamento'].widget.attrs['class'] = 'datepicker'
         self.fields['quantidade_perdida'].widget = forms.HiddenInput()
         self.fields['quantidade_funcional_direta'].widget = forms.HiddenInput()
+        self.fields['quantidade_total_testada'].required = True
+        
+    def clean_quantidade_total_testada(self):
+        quantidade_total_testada = self.cleaned_data.get('quantidade_total_testada')
+        if quantidade_total_testada == 0:
+            raise ValidationError('Erro, não pode ser 0.')
+        return quantidade_total_testada
+        
 
     class Meta:
         model = LancamentoDeFalhaDeTeste
  
- 
-class LinhaLancamentoFalhaDeTesteForm(forms.ModelForm):
-    
+class LinhaLancamentoFalhaDeTesteFormReparo(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(LinhaLancamentoFalhaDeTesteForm, self).__init__(*args, **kwargs)
+        super(LinhaLancamentoFalhaDeTesteFormReparo, self).__init__(*args, **kwargs)
         self.fields['quantidade'].required=True
-        #self.fields['falha'].widget.attrs['class'] = 'select2'
+        self.fields['falha'].required = True
+        self.fields['falha'].widget.attrs['class'] = 'select2'
+        self.fields['falha'].queryset = FalhaDeTeste.objects.filter(tipo="reparo")
     
     class Meta:
         model = LinhaLancamentoFalhaDeTeste
+
+class LinhaLancamentoFalhaDeTesteFormPerda(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(LinhaLancamentoFalhaDeTesteFormPerda, self).__init__(*args, **kwargs)
+        self.fields['quantidade'].required=True
+        self.fields['falha'].widget.attrs['class'] = 'select2'
+        self.fields['falha'].queryset = FalhaDeTeste.objects.filter(tipo="perda")
+        self.fields['falha'].required = True
+    
+    class Meta:
+        model = LinhaLancamentoFalhaDeTeste
+
  
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao_lancar_falha(request):
     '''Lança falhas e seus quantitativos, totais funcionais, etc'''
     lancamento_teste_form = FormLancaFalhaDeTeste()
-    LancamentoFormSet = forms.models.inlineformset_factory(LancamentoDeFalhaDeTeste, LinhaLancamentoFalhaDeTeste, extra=1, can_delete=False, form=LinhaLancamentoFalhaDeTesteForm)
-    lancamentos_falhas_form = LancamentoFormSet()
+    LancamentoFormSetReparo = forms.models.inlineformset_factory(LancamentoDeFalhaDeTeste, LinhaLancamentoFalhaDeTeste, extra=1, can_delete=False, form=LinhaLancamentoFalhaDeTesteFormReparo)
+    LancamentoFormSetPerda = forms.models.inlineformset_factory(LancamentoDeFalhaDeTeste, LinhaLancamentoFalhaDeTeste, extra=1, can_delete=False, form=LinhaLancamentoFalhaDeTesteFormPerda)
+    lancamentos_falhas_reparo_form = LancamentoFormSetReparo(prefix="reparo")
+    lancamentos_falhas_perda_form = LancamentoFormSetPerda(prefix="perda")
     if request.POST:
-        lancamento_teste_form = FormLancaFalhaDeTeste(request.POST)
-        lancamentos_falhas_form = LancamentoFormSet(request.POST)
-        if lancamento_teste_form.is_valid() and lancamentos_falhas_form.is_valid():
-            lancamento_teste = lancamento_teste_form.save()
-            falhas = lancamentos_falhas_form.save()
-            messages.success(request, u"Sucesso! Falhas Lançadas!")
+        if 'adicionar_falha_reparo' in request.POST:
+            cp = request.POST.copy()
+            cp['reparo-TOTAL_FORMS'] = int(cp['reparo-TOTAL_FORMS'])+ 1
+            lancamentos_falhas_reparo_form = LancamentoFormSetReparo(cp,prefix='reparo')
+            lancamentos_falhas_perda_form = LancamentoFormSetPerda(cp, prefix="perda")
+            lancamento_teste_form = FormLancaFalhaDeTeste(cp)
+        elif 'adicionar_falha_perda' in request.POST:
+            cp = request.POST.copy()
+            cp['perda-TOTAL_FORMS'] = int(cp['perda-TOTAL_FORMS'])+ 1
+            lancamentos_falhas_reparo_form = LancamentoFormSetReparo(cp,prefix='reparo')
+            lancamentos_falhas_perda_form = LancamentoFormSetPerda(cp, prefix="perda")
+            lancamento_teste_form = FormLancaFalhaDeTeste(cp)
+        elif 'lancar_testes' in request.POST:
+            lancamento_teste_form = FormLancaFalhaDeTeste(request.POST)
+            lancamentos_falhas_reparo_form = LancamentoFormSetReparo(request.POST, prefix='reparo')
+            lancamentos_falhas_perda_form = LancamentoFormSetPerda(request.POST, prefix='perda')
+            if lancamento_teste_form.is_valid() and lancamentos_falhas_reparo_form.is_valid() and lancamentos_falhas_perda_form.is_valid():
+                lancamento_teste = lancamento_teste_form.save()
+                messages.success(request, u"Informações do Teste Registrado com Sucesso!")
+                if lancamentos_falhas_reparo_form.is_valid():
+                    try:
+                        for form in lancamentos_falhas_reparo_form: 
+                            falha = form.save(commit=False)
+                            falha.lancamento_teste = lancamento_teste
+                            if falha.quantidade and falha.falha:
+                                falha.save()
+                        messages.info(request, u"Informações de Falha de Reparo Registrado com Sucesso!")
+                    except:
+                        messages.error(request, u"Erro ao Salvar as falhas de reparo.")
+                        raise
+                if lancamentos_falhas_perda_form.is_valid():
+                    try:
+                        for form in lancamentos_falhas_perda_form: 
+                            falha = form.save(commit=False)
+                            falha.lancamento_teste = lancamento_teste
+                            if falha.quantidade and falha.falha:
+                                falha.save()
+                        messages.info(request, u"Informações de Falha de Perda Registrado com Sucesso!")
+                    except:
+                        messages.error(request, u"Erro ao Salvar as falhas de perda.")
+                        raise
+                
+                
+                return redirect(reverse("producao:controle_de_testes_producao"))
     return render_to_response('frontend/producao/producao-controle-de-testes-lancar-falha.html', locals(), context_instance=RequestContext(request),)
 
 class FormAdicionaFalhaDeTeste(forms.ModelForm):
@@ -3526,7 +3590,7 @@ def registrar_nota_fiscal_emitida(request):
     return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida.html', locals(), context_instance=RequestContext(request),)
 
 class FormAdicionarNotaFiscalLancamentosProducao(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         lancamentos_selecionados = kwargs.pop('lancamentos_selecionados', None)
         super(FormAdicionarNotaFiscalLancamentosProducao, self).__init__(*args, **kwargs)
@@ -3553,7 +3617,6 @@ def registrar_nota_fiscal_emitida_adicionar(request):
         'produto__part_number',
         'produto__nome',
         )
-    
     if request.GET:
         # possui lancamentos selecionados
         lancamentos_selecionados = request.GET.getlist('lancamento', None)
@@ -3565,7 +3628,7 @@ def registrar_nota_fiscal_emitida_adicionar(request):
             messages.success(request, u"Sucesso! Nota %s Registrada!" % registro.notafiscal)
             # marca cada lancamento_de_producao como vendido
             registro.lancamentos_de_producao.update(
-                vendido=True,
+                #vendido=True,
                 data_vendido=datetime.datetime.now(),
                 funcionario_vendeu=request.user.funcionario,
                 cliente_associado=registro.cliente_associado
@@ -3591,7 +3654,7 @@ def registrar_nota_fiscal_emitida_adicionar(request):
                         movimento = MovimentoEstoqueProduto.objects.create(
                             produto = produto,
                             quantidade_movimentada = quantidade_movimentada,
-                            quantidade_anterior = produto.total_produzido,
+                            quantidade_anterior = quantidade_anterior,
                             quantidade_nova = quantidade_nova,
                             operacao = "remove",
                             criado_por = request.user,

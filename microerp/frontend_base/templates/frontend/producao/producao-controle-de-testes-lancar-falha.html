@@ -22,7 +22,7 @@
 			<div class="row-fluid ">
 		    <div class="span3">
 		        {{ lancamento_teste_form.quantidade_total_testada.errors }}
-		        <label for="id_subject">Total Testado</i></label>
+		        <label for="id_subject">Total Testado</label>
 		        {{ lancamento_teste_form.quantidade_total_testada }}
 		    </div>
 				<div class="span1">
@@ -38,7 +38,7 @@
 				</div>
 		    <div class="span4">
 		        {{ lancamento_teste_form.quantidade_perdida.errors }}
-		        <label for="id_quantidade_perdida">Quantidade Perdida</label>
+		        <label for="id_quantidade_perdida">Total de Perda</label>
 						<h1 id="resultado-quantidade-perdida">0</h1>
 		        {{ lancamento_teste_form.quantidade_perdida }}
 		    </div>
@@ -64,7 +64,7 @@
 				</div>
 		    <div class="span4">
 		        {{ lancamento_teste_form.quantidade_funcional_direta.errors }}
-		        <label for="quantidade_funcional_direta">Funcionando Sem Parar</label>
+		        <label for="quantidade_funcional_direta">Total Funcionando Sem Reparar</label>
 		        {{ lancamento_teste_form.quantidade_funcional_direta }}
 						<h1 id="resultado-total-funcionando-sem-parar">0</h1>
 		    </div>
@@ -90,31 +90,39 @@
 				
 				
 			</div>
-			
 		</div>
 		
-
-		<h2>Falhas</h2>
-		{{lancamentos_falhas_form.management_form}}
-		<div class='table'>
-		{% for form in lancamentos_falhas_form.forms %}
-		    
-		    <table class='no_error well well-small'>
-		        {{ form.as_table }}
-		    </table>
-		{% endfor %}
-    </div>
+		<hr />
+		<div class="row-fluid">
+			<div class="span6">
+				<h2>Falhas de Reparo</h2>
+				<button class="btn btn-primary" name="adicionar_falha_reparo">Adicionar Falha de Reparo</button>
+				{{lancamentos_falhas_reparo_form.management_form}}
+				{% for form in lancamentos_falhas_reparo_form %}
+				<div class="well well-small" id="form-reparo-{{forloop.counter}}">
+					{{form}}
+				</div>
+				{% endfor %}
+				
+			</div>
+			
+			<div class="span6">
+				<h2>Falhas de Perda</h2>
+				<button class="btn btn-primary" name="adicionar_falha_perda">Adicionar Falha de Perda</button>
+				
+				{{lancamentos_falhas_perda_form.management_form}}
+				{% for form in lancamentos_falhas_perda_form %}
+				<div class="well well-small">
+					{{form}}
+				</div>
+				{% endfor %}
+			</div>
+			
+		</div>
+		<hr />
 		<p class="btn-group">
-			<a type="button" id="add_more" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar mais Falhas</a>
-			<button type="submit" id="enviar" class="btn btn-danger"><i class="fa fa-launch"></i> Lançar Falhas</button>
+			<button type="submit" id="enviar" class="btn btn-danger" name="lancar_testes" value="lanca"><i class="fa fa-launch"></i> Lançar Falhas</button>
 		</p>
-		<script>
-		    $('#add_more').click(function() {
-						alert();
-		        cloneMore('div.table:last', 'service');
-		    });
-		</script>
-		
 		
 	</form>
 	
@@ -132,6 +140,7 @@
 
 $(document).ready(function() {
     $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");
+		calcula_tabela();
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
@@ -140,9 +149,14 @@ $(document).ready(function() {
 				});
 		});
 		
+		
 });
 
 $( "#id_quantidade_funcional, #id_quantidade_total_testada, #id_quantidade_reparada_funcional" ).change(function() {
+	calcula_tabela();
+});
+
+function calcula_tabela(){
 	// calc 1 - quantidade_perdida
 	calculo = $('#id_quantidade_total_testada').val() - $('#id_quantidade_funcional').val();
 	$('#resultado-quantidade-perdida').html(calculo);
@@ -151,7 +165,9 @@ $( "#id_quantidade_funcional, #id_quantidade_total_testada, #id_quantidade_repar
 	// calc 2	
 	calculo2 = $('#id_quantidade_funcional').val() - $('#id_quantidade_reparada_funcional').val();
 	$("#resultado-total-funcionando-sem-parar").html(calculo2);
-});
+}
+
+
 
 function cloneMore(selector, type) {
     var newElement = $(selector).clone(true);

@@ -11,7 +11,93 @@
 	<form method="POST">
 		{% csrf_token %}
 		{{testes_de_lancamento_form.management_form}}
-		{{lancamento_associa_form.as_p}}
+		<p>
+			
+	    {{ lancamento_associa_form.serial_number.errors }}
+	    <label for="id_serial_number">{{lancamento_associa_form.serial_number.label}}</label>
+	    {{ lancamento_associa_form.serial_number }}
+		</p>
+		<h4>Montagem</h4>
+		<div class="row-fluid">
+			<div class="span6">
+		    {{ lancamento_associa_form.funcionario_que_montou.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_que_montou.label}}</label>
+		    {{ lancamento_associa_form.funcionario_que_montou }}
+				
+			</div>
+			
+			<div class="span6">
+		    {{ lancamento_associa_form.data_montagem.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.data_montagem.label}}</label>
+		    {{ lancamento_associa_form.data_montagem }}
+				
+			</div>
+			
+		</div>
+
+		<h4>Início do Teste</h4>
+		<div class="row-fluid">
+			<div class="span6">
+		    {{ lancamento_associa_form.funcionario_inicio_teste.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_inicio_teste.label}}</label>
+		    {{ lancamento_associa_form.funcionario_inicio_teste }}
+				
+			</div>
+			
+			<div class="span6">
+		    {{ lancamento_associa_form.inicio_teste.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.inicio_teste.label}}</label>
+		    {{ lancamento_associa_form.inicio_teste }}
+				
+			</div>
+			
+		</div>
+
+		<h4>Execução do Teste</h4>
+		<div class="row-fluid">
+			<div class="span6">
+		    {{ lancamento_associa_form.funcionario_relalizou_teste.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_relalizou_teste.label}}</label>
+		    {{ lancamento_associa_form.funcionario_relalizou_teste }}
+			</div>
+			
+			<div class="span6">
+		    {{ lancamento_associa_form.realizacao_procedimento_de_teste.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.realizacao_procedimento_de_teste.label}}</label>
+		    {{ lancamento_associa_form.realizacao_procedimento_de_teste }}
+				
+			</div>
+			
+		</div>
+		
+		<h4>Finalização do Teste</h4>
+		<div class="row-fluid">
+			<div class="span6">
+		    {{ lancamento_associa_form.funcionario_finalizou_teste.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_finalizou_teste.label}}</label>
+		    {{ lancamento_associa_form.funcionario_finalizou_teste }}
+			</div>
+			
+			<div class="span6">
+		    {{ lancamento_associa_form.fim_teste.errors }}
+		    <label for="id_serial_number">{{lancamento_associa_form.fim_teste.label}}</label>
+		    {{ lancamento_associa_form.fim_teste }}
+				
+			</div>
+			
+		</div>
+		
+		<hr />
+		<p class="well well-small">
+			
+	    {{ lancamento_associa_form.observacoes.errors }}
+	    <label for="id_serial_number">{{lancamento_associa_form.observacoes.label}}</label>
+	    {{ lancamento_associa_form.observacoes }}
+			
+			
+		</p>
+
+		
 		{% if lancamento.linhatestelancamentoprodproduto_set.count %}
 		<h2>Registros de teste</h2>
 		{% for form in testes_de_lancamento_form %}

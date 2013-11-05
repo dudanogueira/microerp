@@ -18,13 +18,40 @@
 		<div class="tab-pane fade in active" id="lancamento-de-falha">
 			<div class="row-fluid">
 				<div class="span6">
-					<h2>Lançamento de Falha</h2>					
+					<h2>Lançamentos de Falha</h2>
 				</div>
 				<div class="span6">
 					<a href="{% url "producao:controle_de_testes_producao_lancar_falha" %}" class="btn btn-primary"><i class="fa fa-rocket"></i> Lançar Falha</a>
 					
 				</div>
-				
+			</div>
+			<div id="testes-de-perda">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Sub Produto</th>
+							<th>Testado</th>
+							<th>Funcional</th>
+							<th>Perda</th>
+							<th>Reparado</th>
+							<th>Sem Reparar</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for falha in lancamentos_falha %}
+						<tr>
+							<td>{{falha.id}}</td>
+							<td><a href="{% url "producao:ver_produto" falha.subproduto.id %}">{{falha.subproduto.part_number}}</a></td>
+							<td>{{falha.quantidade_total_testada}}</td>
+							<td>{{falha.quantidade_funcional}}</td>
+							<td>{{falha.quantidade_perdida}}</td>
+							<td>{{falha.quantidade_reparada_funcional}}</td>
+							<td>{{falha.quantidade_funcional_direta}}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
 			</div>
 			
 		</div>

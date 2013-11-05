@@ -1578,9 +1578,12 @@ class FalhaDeTeste(models.Model):
 
 class LancamentoDeFalhaDeTeste(models.Model):
     
+    def __unicode__(self):
+        return u"Lançamento de Falha para %s" % self.subproduto
+    
     class Meta:
         ordering = ['-criado']
-        
+
     subproduto = models.ForeignKey(SubProduto)
     quantidade_total_testada = models.IntegerField(blank=False, null=False, default=0)
     quantidade_funcional_direta = models.IntegerField(blank=False, null=False, default=0)
