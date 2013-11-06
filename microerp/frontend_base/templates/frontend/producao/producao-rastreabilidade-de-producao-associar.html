@@ -100,12 +100,37 @@
 		
 		{% if lancamento.linhatestelancamentoprodproduto_set.count %}
 		<h2>Registros de teste</h2>
-		{% for form in testes_de_lancamento_form %}
+		{% for form in testes_de_lancamento_form.forms %}
 		<div class="well well-small">
 			<h4>{{form.instance.subproduto_testavel.part_number}} - {{form.instance.subproduto_testavel.nome}}</h4>
-			{{form}}
+						{{form.id}}
+				<div class="row-fluid">
+					<div class="span5">
+				    {{ form.funcionario_que_montou.errors }}
+				    <label for="id_funcionario_que_montou">{{form.funcionario_que_montou.label}}</label>
+				    {{ form.funcionario_que_montou }}
+						
+					</div>
+					
+					<div class="span5">
+				    {{ form.funcionario_que_testou.errors }}
+				    <label for="id_funcionario_que_testou">{{form.funcionario_que_testou.label}}</label>
+				    {{ form.funcionario_que_testou }}
+						
+					</div>
+					
+					<div class="span2">
+				    {{ form.versao_firmware.errors }}
+				    <label for="id_versao_firmware">{{form.versao_firmware.label}}</label>
+				    {{ form.versao_firmware }}
+					</div>
+					
+					
+					
+				</div>
 		</div>
 		{% endfor %}
+		
 		{% endif %}
 		
 
@@ -180,11 +205,12 @@ $('.nav-tabs').on("click", '.nav-tabs li a', function(e){
 $('.tooltip_item').tooltip();
 
 $("#id_funcionario_que_montou").change(function(){
-	$(".herda_montou").val( $(this).val());
+	var valor = $(this).val();
+	$(".herda_montou").val(valor).trigger('change');
 });
 
 $("#id_funcionario_inicio_teste").change(function(){
-	$(".herda_testou").val( $(this).val());
+	$(".herda_testou").val( $(this).val()).trigger('change');
 });
 
 
