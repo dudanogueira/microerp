@@ -1130,6 +1130,7 @@ class ProdutoFinal(models.Model):
             self.slug = slugify(self.nome)
         
         if not self.part_number:
+            super(ProdutoFinal, self).save()
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
             self.part_number = "%s-PRO%s" % (pn_prepend, "%05d" % self.id,)
 
@@ -1323,6 +1324,7 @@ class LancamentoProdProduto(models.Model):
     ordem_de_producao = models.ForeignKey(OrdemProducaoProduto, blank=True, null=True)
     observacoes = models.TextField(u"Observações", blank=True)
     produto = models.ForeignKey(ProdutoFinal)
+    nota_fiscal = models.ForeignKey('NotaFiscalLancamentosProducao', blank=True, null=True)
     # meta
     ## adicao
     adicionado_manualmente = models.BooleanField(default=True)
@@ -1517,6 +1519,8 @@ class NotaFiscalLancamentosProducao(models.Model):
     notafiscal = models.CharField(blank=False, null=False, max_length=100, verbose_name="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'))
     lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto, verbose_name=u"Lançamentos de Produção")
     cliente_associado = models.CharField(blank=False, null=False, max_length=100)
+    data_saida = models.DateField("Data de Saída", default=datetime.datetime.today)
+    observacoes = models.TextField(u"Observações", blank=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1581,6 +1585,12 @@ class LancamentoDeFalhaDeTeste(models.Model):
     def __unicode__(self):
         return u"Lançamento de Falha para %s" % self.subproduto
     
+    def total_perda(self):
+        return self.linhalancamentofalhadeteste_set.filter(falha__tipo='perda').aggregate(Sum('quantidade'))['quantidade__sum']
+    
+    def total_reparo(self):
+        return self.linhalancamentofalhadeteste_set.filter(falha__tipo='reparo').aggregate(Sum('quantidade'))['quantidade__sum']
+
     class Meta:
         ordering = ['-criado']
 
@@ -1598,6 +1608,7 @@ class LancamentoDeFalhaDeTeste(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class LinhaLancamentoFalhaDeTeste(models.Model):
+        
     lancamento_teste = models.ForeignKey(LancamentoDeFalhaDeTeste)
     quantidade = models.IntegerField(blank=False, null=False)
     falha = models.ForeignKey(FalhaDeTeste)

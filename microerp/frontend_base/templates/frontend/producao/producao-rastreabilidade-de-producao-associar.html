@@ -102,7 +102,7 @@
 		<h2>Registros de teste</h2>
 		{% for form in testes_de_lancamento_form %}
 		<div class="well well-small">
-			<h3>{{form.instance.subproduto_testavel}}</h3>
+			<h4>{{form.instance.subproduto_testavel.part_number}} - {{form.instance.subproduto_testavel.nome}}</h4>
 			{{form}}
 		</div>
 		{% endfor %}
@@ -121,7 +121,12 @@
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-
+<style type="text/css">
+#id_observacoes{
+	width: 100px;
+	height: 100px;
+}
+</style> 
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");

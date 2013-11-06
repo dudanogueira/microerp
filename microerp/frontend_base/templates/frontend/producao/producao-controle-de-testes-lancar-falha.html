@@ -97,23 +97,55 @@
 			<div class="span6">
 				<h2>Falhas de Reparo</h2>
 				<button class="btn btn-primary" name="adicionar_falha_reparo">Adicionar Falha de Reparo</button>
+				<div id="alerta-falhas-reparo">
+				
+				</div>
 				{{lancamentos_falhas_reparo_form.management_form}}
 				{% for form in lancamentos_falhas_reparo_form %}
-				<div class="well well-small" id="form-reparo-{{forloop.counter}}">
-					{{form}}
+				<div class="" id="form-reparo-{{forloop.counter}}">
+					<div class="row-fluid">
+						<div class="span3">
+			        {{ form.quantidade.errors }}
+			        <label for="quantidade_funcional_direta">Quantidade</label>
+			        {{ form.quantidade }}
+						</div>
+						
+						<div class="span9">
+							
+			        {{ form.falha.errors }}
+			        <label for="quantidade_funcional_direta">Falha</label>
+			        {{ form.falha }}
+						</div>
+					</div>
 				</div>
 				{% endfor %}
-				
 			</div>
 			
 			<div class="span6">
 				<h2>Falhas de Perda</h2>
 				<button class="btn btn-primary" name="adicionar_falha_perda">Adicionar Falha de Perda</button>
 				
+				<div id="alerta-falhas-perda">
+				
+				</div>
+				
 				{{lancamentos_falhas_perda_form.management_form}}
 				{% for form in lancamentos_falhas_perda_form %}
-				<div class="well well-small">
-					{{form}}
+				<div class="" id="form-perda-{{forloop.counter}}">
+					<div class="row-fluid">
+						<div class="span3">
+			        {{ form.quantidade.errors }}
+			        <label for="quantidade_funcional_direta">Quantidade</label>
+			        {{ form.quantidade }}
+						</div>
+						
+						<div class="span9">
+							
+			        {{ form.falha.errors }}
+			        <label for="quantidade_funcional_direta">Falha</label>
+			        {{ form.falha }}
+						</div>
+					</div>
 				</div>
 				{% endfor %}
 			</div>
@@ -121,7 +153,7 @@
 		</div>
 		<hr />
 		<p class="btn-group">
-			<button type="submit" id="enviar" class="btn btn-danger" name="lancar_testes" value="lanca"><i class="fa fa-launch"></i> Lançar Falhas</button>
+			<button type="submit" id="lancar_testes" class="btn btn-danger" name="lancar_testes" value="lanca"><i class="fa fa-launch"></i> Lançar Falhas</button>
 		</p>
 		
 	</form>
@@ -137,6 +169,31 @@
 {% addtoblock "js" %}
 
 <script>
+
+$('#lancar_testes').click(function(e){
+	// checa quantidade perdida
+	var soma = 0
+	$('.checa_quantidade_perda').each(function(){
+		soma += Number($(this).val());
+	});
+	perda = $('#id_quantidade_perdida').val()
+	if ( perda != soma){
+		alert('Erro! Quantidade de Perda (' + perda +') deve ser igual à quantidade de falhas lançadas! ('+ soma +')')
+		$("#alerta-falhas-perda").html('<div class="alert alert-danger">Atenção! Preencha o formulário abaixo identificando a(s) ' + perda + ' falhas apontada</div>');
+		e.preventDefault();
+	}
+	// checa quantidade de reparo
+	var soma = 0
+	$('.checa_quantidade_reparo').each(function(){
+		soma += Number($(this).val());
+	});
+	reparo = $('#id_quantidade_reparada_funcional').val()
+	if ( reparo != soma){
+		alert('Erro! Quantidade de Reparo (' + reparo +') deve ser igual à quantidade de falhas lançadas! ('+ soma +')')
+		$("#alerta-falhas-reparo").html('<div class="alert alert-danger">Atenção! Preencha o formulário abaixo identificando a(s) ' + reparo + ' falhas apontada</div>');
+		e.preventDefault();
+	}
+});
 
 $(document).ready(function() {
     $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");

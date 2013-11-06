@@ -17,6 +17,7 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
@@ -25,8 +26,6 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
-		
-				
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
@@ -34,6 +33,9 @@ $(document).ready(function() {
         
 				});
 		});
+		$.fn.select2.defaults=$.extend($.fn.select2.defaults, {
+		        formatNoMatches: function () { return "Esse produto não tem sub-produto associado."; },
+		    });
 		
 });
 

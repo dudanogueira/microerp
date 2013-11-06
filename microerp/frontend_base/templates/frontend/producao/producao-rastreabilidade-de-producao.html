@@ -7,8 +7,6 @@
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-barcode"></i> Rastreabilidade de Produção</h1>
 
-	<h2>Lançamentos de Produto</h2>		
-
 	<ul class="nav nav-tabs">
 		<li class="active"><a href="#associar-dados" id="menu-associar-dados" data-toggle="tab"><i class="fa fa-asterisk"></i> Associar Dados</a></li>
 		<li><a href="#lancamentos-disponiveis" data-toggle="tab"><i class="fa fa-arrow-right"></i> Disponíveis para Venda</a></li>
@@ -37,7 +35,7 @@
 
 				{% regroup lancamentos_associar_valores by produto__part_number as lancamentos_group_list %}
 				{% for lancamento in lancamentos_group_list %}
-				<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+				<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
 				<div id="lancamento-produtos-associar">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -90,13 +88,13 @@
 			{% regroup lancamentos_disponiveis_valores by produto__part_number as lancamentos_disponiveis_group_list %}
 			<form method="GET" action="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" name="vender_selecionados" id="vender_selecionados">
 			{% for lancamento in lancamentos_disponiveis_group_list %}
-				<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+				<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
 				<div id="lancamentos-disponiveis-venda">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
 							<tr>
 								<th>ID</th>
-								<th>Serial Number</th>
+								<th>Serial Number {{nome_empresa}}</th>
 								<th>Manual / Ordem de Produção</th>
 								<th>Criado</th>
 								<th>Ações</th>
@@ -141,22 +139,25 @@
 				</div>
 			</div>
 			<form method="get" class="form form-inline">
-							<label for="id_serial_number">Serial number: </label><input id="id_serial_number" name="serial_number" type="text" value="{% if serial_number_q %}{{serial_number_q}}{% endif %}">
+							<label for="id_serial_number">Serial Number {{nome_empresa}}: </label><input id="id_serial_number" name="serial_number" type="text" value="{% if serial_number_q %}{{serial_number_q}}{% endif %}">
 			<label for="id_cliente">Cliente: </label><input id="id_cliente" name="cliente" type="text" value="{% if cliente_q %}{{cliente_q}}{% endif %}">
-							<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button> <a href="./#lancamentos-vendidos">limpar</a>
+							<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button> <a class="btn btn-danger" href="./#lancamentos-vendidos">limpar</a>
 			</form>			
 			{% regroup lancamentos_vendidos_valores by produto__part_number as lancamentos_vendidos_group_list %}
 			{% for lancamento in lancamentos_vendidos_group_list %}
-			<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+			<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
 			<div id="lancamento-produtos-vendidos">
 				<table class="table table-condensed table-hover table-rounded">
 					<thead>
 						<tr>
 							<th>ID</th>
-							<th>Serial</th>
+							<th>Serial Number {{nome_empresa}}</th>
+							<th>Nota Fiscal {{nome_empresa}}</th>
 							<th>Cliente</th>
 							<th>Data de Venda</th>
-							<th>Vendedor</th>
+							<th>Usuário</th>
+							<th>Observação</th>
+							<th>Ações</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -164,9 +165,11 @@
 						<tr>
 							<td>{{lancamento.id}}</td>
 							<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
+							<td>{{lancamento.nota_fiscal__notafiscal}}</td>
 							<td>{{lancamento.cliente_associado}}</td>
 							<td>{{lancamento.data_vendido|date:"SHORT_DATETIME_FORMAT"}}</td>
 							<td>{{lancamento.funcionario_vendeu__nome}}</td>
+							<td>{{lancamento.observacoes}}</td>
 							<td>
 								<a data-toggle="tooltip" title="Alterar dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
 							</td>
@@ -189,9 +192,16 @@
 		<div class="tab-pane fade in" id="lancamentos-apagados">
 			<h2>Lançamentos Apagados</h2>
 			
+			<form method="get" class="form form-inline">
+							<label for="id_serial_number">Serial Number {{nome_empresa}}: </label><input id="id_serial_number" name="serial_number" type="text" value="{% if serial_number_q %}{{serial_number_q}}{% endif %}">
+			<label for="id_cliente">Cliente: </label><input id="id_cliente" name="cliente" type="text" value="{% if cliente_q %}{{cliente_q}}{% endif %}">
+							<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button> <a class="btn btn-danger" href="./#lancamentos-apagados">limpar</a>
+			</form>			
+			
+			
 			{% regroup lancamentos_apagados_valores by produto__part_number as lancamentos_apagados_group_list %}
 			{% for lancamento in lancamentos_apagados_group_list %}
-			<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+			<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
 			<div id="lancamento-produtos-apagados">
 				<table class="table table-condensed table-hover table-rounded">
 					<thead>
@@ -327,6 +337,12 @@ $("tr").click(function() {
 		checkbox.attr('checked', !checkbox.attr('checked'));
 		$(this).toggleClass('alert-info');
 });
+
+{% if form_remover_lancamentos.errors %}
+	$('#modal-apagar-lancamento').modal('show');
+{% endif %}
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

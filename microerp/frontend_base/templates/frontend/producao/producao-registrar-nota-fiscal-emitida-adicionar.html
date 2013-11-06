@@ -7,7 +7,6 @@
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-dollar"></i> Adicionar Nota Fiscal Emitida</h1>
 	{% if lancamentos_selecionados %}
-		<h2>Adicione a Nota</h2>
 		<form method="post">
 			{% csrf_token %}
 			{{form_adiciona_nota.as_p}}
@@ -74,6 +73,15 @@
 $(document).ready(function() {
     $("#menu-producao-registrar-nota-emitida, #top-menu-producao").addClass("active");
 });
+
+$('.datepicker').each(function() {
+   $(this).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+    
+		});
+});
+
 //check on div click
 $("tr").click(function() {
     var checkbox = $(this).find("input[type='checkbox']");

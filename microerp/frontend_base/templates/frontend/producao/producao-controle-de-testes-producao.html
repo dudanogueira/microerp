@@ -42,7 +42,7 @@
 						{% for falha in lancamentos_falha %}
 						<tr>
 							<td>{{falha.id}}</td>
-							<td><a href="{% url "producao:ver_produto" falha.subproduto.id %}">{{falha.subproduto.part_number}}</a></td>
+							<td><a href="{% url "producao:ver_produto" falha.subproduto.id %}">{{falha.subproduto.part_number}} {{falha.subproduto.nome}}</a></td>
 							<td>{{falha.quantidade_total_testada}}</td>
 							<td>{{falha.quantidade_funcional}}</td>
 							<td>{{falha.quantidade_perdida}}</td>
