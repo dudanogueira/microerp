@@ -148,13 +148,14 @@
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
 <style type="text/css">
 #id_observacoes{
-	width: 100px;
-	height: 100px;
+	width: 300px;
+	height: 50px;
 }
 </style> 
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
+		$("#id_serial_number").focus();
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
