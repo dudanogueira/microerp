@@ -133,38 +133,85 @@
 		</div>
 		
 		<div class="tab-pane fade in" id="indicadores">
-			<h2>Filtrar por Sub Produto</h2>
-			{% if filtro_subproduto and filtro %}
-				{{falhas}}
-			{% else %}
-			
+			<h4>Filtrar por Sub Produto</h4>
+
 				<form method="POST" id="filtrar-por-subproduto">
 						{% csrf_token %}
-						<div class="row-fluid">
+					<div class="row-fluid">
 				
-					<div class="span2">
-							<h4>{{form_filtrar_falha_por_produto.inicio.label}}</h4>
+						<div class="span2">
+							{{form_filtrar_falha_por_produto.inicio.label}}<br />
 							{{ form_filtrar_falha_por_produto.inicio.errors }}
 							{{form_filtrar_falha_por_produto.inicio}}
-					</div>
+						</div>
 
-					<div class="span2">
-						<h4>{{form_filtrar_falha_por_produto.fim.label}}</h4>
+						<div class="span2">
+						{{form_filtrar_falha_por_produto.fim.label}}<br />
 						{{ form_filtrar_falha_por_produto.fim.errors }}
 						{{form_filtrar_falha_por_produto.fim}}
 					</div>
 				
-					<div class="span8">
-						<h4>{{form_filtrar_falha_por_produto.subproduto.label}}</h4>
+						<div class="span8">
+						{{form_filtrar_falha_por_produto.subproduto.label}}<br />
 						{{form_filtrar_falha_por_produto.fim.erros}}
 						{{form_filtrar_falha_por_produto.subproduto}}
+						</div>
+
 					</div>
-				</div>
 					<button id="filtrar-por-subproduto-btn" name="filtrar-por-subproduto-btn" value="filtrar" class="btn btn-primary">Filtrar por Sub Produto</button>
 				</form>
+
+				{% if filtro and filtro_subproduto %}
+				<h5>Falhas</h5>
+				<strong>Total de Perda</strong>: {% if total_por_tipo_perda.total %}{{total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
+				<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
+				<h5>Testes</h5>
+				<strong>Total Funcional Direto</strong> {% if total_funcional_direto.total %}{{total_funcional_direto.total}}{% else %}0{% endif %}<br />
+					{% endif %}
+				<hr />
+			
+
+			<h4>Filtrar por Funcionário</h4>
+			
+			<form method="POST" id="filtrar-por-subproduto">
+					{% csrf_token %}
+				<div class="row-fluid">
+			
+					<div class="span2">
+						{{fom_filtrar_falha_por_funcionario.inicio.label}}<br />
+						{{ fom_filtrar_falha_por_funcionario.inicio.errors }}
+						{{fom_filtrar_falha_por_funcionario.inicio}}
+					</div>
+
+					<div class="span2">
+					{{fom_filtrar_falha_por_funcionario.fim.label}}<br />
+					{{fom_filtrar_falha_por_funcionario.fim.errors }}
+					{{fom_filtrar_falha_por_funcionario.fim}}
+				</div>
+			
+					<div class="span8">
+					{{fom_filtrar_falha_por_funcionario.funcionario.label}}<br />
+					{{fom_filtrar_falha_por_funcionario.funcionario.erros}}
+					{{fom_filtrar_falha_por_funcionario.funcionario}}
+					</div>
+
+				</div>
+				<button id="filtrar-por-funcionario-btn" name="filtrar-por-funcionario-btn" value="filtrar" class="btn btn-primary">Filtrar por Funcionário</button>
+			</form>
+
+			{% if filtro %}
+			<h5>Falhas</h5>
+			<strong>Total de Perda</strong>: {% if total_por_tipo_perda.total %}{{total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
+			<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
+			
+			<h5>Testes</h5>
+			<strong>Total Testado</strong>: {{total_testado.total}}<br />
+			<strong>Total Reparado</strong>: {{total_reparado.total}}<br />
+			<strong>Total Perda</strong>: {{total_perda.total}}<br />
 			
 			{% endif %}
-			<h2>Filtrar por Funcionário</h2>
+			
+			
 		</div>
 		
 	</div>

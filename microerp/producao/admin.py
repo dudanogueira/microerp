@@ -74,6 +74,8 @@ class LancamentoDeFalhaDeTesteInline(admin.TabularInline):
     model = LinhaLancamentoFalhaDeTeste
 
 class LancamentoDeFalhaDeTesteAdmin(admin.ModelAdmin):
+    list_display = 'subproduto', 'quantidade_total_testada', 'quantidade_funcional', 'quantidade_perdida', 'quantidade_reparada_funcional', 'quantidade_funcional_direta'
+    list_filter = 'subproduto', 'funcionario_testador'
     model = LancamentoDeFalhaDeTeste
     inlines = [LancamentoDeFalhaDeTesteInline]
 
@@ -202,6 +204,10 @@ class RegistroSaidaDeTesteSubProdutoAdmin(admin.ModelAdmin):
     list_display = 'funcionario', 'quantidade', 'subproduto', 'criado', 'criado_por'
 
 
+class LinhaLancamentoFalhaDeTesteAdmin(admin.ModelAdmin):
+    list_filter = 'falha__tipo', 'lancamento_teste__subproduto', 'lancamento_teste__data_lancamento', 'lancamento_teste__funcionario_testador' 
+    list_display = 'quantidade', 'falha', 'lancamento_teste',
+
 admin.site.register(OrdemProducaoSubProduto)
 admin.site.register(OrdemProducaoProduto)
 admin.site.register(EstoqueFisico)
@@ -236,4 +242,4 @@ admin.site.register(MovimentoEstoqueSubProduto)
 admin.site.register(MovimentoEstoqueProduto)
 admin.site.register(FalhaDeTeste)
 admin.site.register(LancamentoDeFalhaDeTeste, LancamentoDeFalhaDeTesteAdmin)
-admin.site.register(LinhaLancamentoFalhaDeTeste)
+admin.site.register(LinhaLancamentoFalhaDeTeste, LinhaLancamentoFalhaDeTesteAdmin)

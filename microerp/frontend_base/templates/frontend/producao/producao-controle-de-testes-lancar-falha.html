@@ -222,25 +222,7 @@ function calcula_tabela(){
 	// calc 2	
 	calculo2 = $('#id_quantidade_funcional').val() - $('#id_quantidade_reparada_funcional').val();
 	$("#resultado-total-funcionando-sem-parar").html(calculo2);
-}
-
-
-
-function cloneMore(selector, type) {
-    var newElement = $(selector).clone(true);
-    var total = $('#id_' + type + '-TOTAL_FORMS').val();
-    newElement.find(':input').each(function() {
-        var name = $(this).attr('name').replace('-' + (total-1) + '-','-' + total + '-');
-        var id = 'id_' + name;
-        $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
-    });
-    newElement.find('label').each(function() {
-        var newFor = $(this).attr('for').replace('-' + (total-1) + '-','-' + total + '-');
-        $(this).attr('for', newFor);
-    });
-    total++;
-    $('#id_' + type + '-TOTAL_FORMS').val(total);
-    $(selector).after(newElement);
+	$('#id_quantidade_funcional_direta').val(calculo2)
 }
 
 </script>

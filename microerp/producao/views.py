@@ -3524,23 +3524,32 @@ class FormFiltrarFalhasPorSubProduto(forms.Form):
     def __init__(self, *args, **kwargs):
         super(FormFiltrarFalhasPorSubProduto, self).__init__(*args, **kwargs)
         self.fields['subproduto'].widget.attrs['class'] = 'select2'
-        self.fields['subproduto'].required=True
         self.fields['inicio'].widget.attrs['class'] = 'datepicker input-small'
-        self.fields['inicio'].required=True
         self.fields['fim'].widget.attrs['class'] = 'datepicker input-small'
-        self.fields['fim'].required=True
     
-    inicio = forms.DateField(label=u"Início", required=True)
-    fim = forms.DateField(label=u"Fim", required=True)
-    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True), empty_label=None)
+    inicio = forms.DateField(label=u"Início", required=False)
+    fim = forms.DateField(label=u"Fim", required=False)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True), empty_label='Escolha um Sub Produto', required=False)
 
+class FormFiltrarFalhasPorFuncionario(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super(FormFiltrarFalhasPorFuncionario, self).__init__(*args, **kwargs)
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
+        self.fields['inicio'].widget.attrs['class'] = 'datepicker input-small'
+        self.fields['fim'].widget.attrs['class'] = 'datepicker input-small'
+    
+    inicio = forms.DateField(label=u"Início", required=False)
+    fim = forms.DateField(label=u"Fim", required=False)
+    funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), empty_label='Escolha um Funcionário', required=False, label="Funcionário Testador")
+    
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao(request):
     form_filtrar_falha_por_produto = FormFiltrarFalhasPorSubProduto()
+    fom_filtrar_falha_por_funcionario = FormFiltrarFalhasPorFuncionario()
     lancamentos_falha = LancamentoDeFalhaDeTeste.objects.all()
     testes_perda = FalhaDeTeste.objects.filter(tipo='perda')
     testes_reparo = FalhaDeTeste.objects.filter(tipo='reparo')
-    # filtra falhas
+    # filtra falhas por subproduto
     if request.POST.get('filtrar-por-subproduto-btn', None):
         form_filtrar_falha_por_produto = FormFiltrarFalhasPorSubProduto(request.POST)
         if form_filtrar_falha_por_produto.is_valid():
@@ -3550,11 +3559,60 @@ def controle_de_testes_producao(request):
             inicio = form_filtrar_falha_por_produto.cleaned_data['inicio']
             fim = form_filtrar_falha_por_produto.cleaned_data['fim']
             subproduto = form_filtrar_falha_por_produto.cleaned_data['subproduto']
-            falhas = LinhaLancamentoFalhaDeTeste.objects.filter(
-                lancamento_teste__subproduto=subproduto,
-                lancamento_teste__data_lancamento__range=(inicio,fim)
-            )
-            
+            falhas = LinhaLancamentoFalhaDeTeste.objects.all()
+            lancamentos = LancamentoDeFalhaDeTeste.objects.all()
+            if inicio and fim:
+                falhas = falhas.filter(
+                    lancamento_teste__data_lancamento__range=(inicio,fim)
+                )
+                lancamentos = lancamentos.filter(
+                    data_lancamento__range=(inicio,fim)
+                )
+            if subproduto:
+                falhas = falhas.filter(
+                    lancamento_teste__subproduto=subproduto
+                )
+                lancamentos = lancamentos.filter(
+                    subproduto=subproduto
+                )
+            # total por tipo de falha
+            total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
+            total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
+            # total funcional direto do lancamento
+            total_funcional_direto = lancamentos.aggregate(total=Sum('quantidade_funcional_direta'))
+    # filtra falhas por funcionario
+    if request.POST.get('filtrar-por-funcionario-btn', None):
+        fom_filtrar_falha_por_funcionario = FormFiltrarFalhasPorFuncionario(request.POST)
+        if fom_filtrar_falha_por_funcionario.is_valid():
+            messages.info(request, u"Filtrando por Funcionário")
+            filtro_funcionario = True
+            filtro = True
+            inicio = fom_filtrar_falha_por_funcionario.cleaned_data['inicio']
+            fim = fom_filtrar_falha_por_funcionario.cleaned_data['fim']
+            funcionario = fom_filtrar_falha_por_funcionario.cleaned_data['funcionario']
+            falhas = LinhaLancamentoFalhaDeTeste.objects.all()
+            lancamentos = LancamentoDeFalhaDeTeste.objects.all()
+            if inicio and fim:
+                falhas = falhas.filter(
+                    lancamento_teste__data_lancamento__range=(inicio,fim)
+                )
+                lancamentos = lancamentos.filter(
+                    data_lancamento__range=(inicio,fim)
+                )
+            if funcionario:
+                falhas = falhas.filter(
+                    lancamento_teste__funcionario_testador=funcionario
+                )
+                lancamentos = lancamentos.filter(
+                    funcionario_testador=funcionario
+                )
+            # totais de falha
+            total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
+            total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
+            # totais do lancamento
+            total_testado = lancamentos.aggregate(total=Sum('quantidade_total_testada'))
+            total_reparado = lancamentos.aggregate(total=Sum('quantidade_reparada_funcional'))
+            total_perda = lancamentos.aggregate(total=Sum('quantidade_perdida'))
     return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
 
 class FormLancaFalhaDeTeste(forms.ModelForm):
