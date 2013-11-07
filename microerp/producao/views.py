@@ -501,8 +501,8 @@ class ArquivoAnexoComponenteForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_componentes(request):
-    componentes_encontrados = Componente.objects.filter(ativo=True)
-    componentes_inativos = Componente.objects.filter(ativo=False)
+    componentes_encontrados = Componente.objects.filter(ativo=True).order_by('part_number')
+    componentes_inativos = Componente.objects.filter(ativo=False).order_by('part_number')
     if request.POST:
         if request.POST.get('adicionar-tipo-componente', None):
             tipo_componente_form = TipoComponenteAdd(request.POST)
@@ -1134,8 +1134,8 @@ class AgregarSubProdutoForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_subprodutos(request):
-    subprodutos_encontrados = SubProduto.objects.filter(ativo=True)
-    subprodutos_inativos = SubProduto.objects.filter(ativo=False)
+    subprodutos_encontrados = SubProduto.objects.filter(ativo=True).order_by('part_number')
+    subprodutos_inativos = SubProduto.objects.filter(ativo=False).order_by('part_number')
     if request.GET:
         q_subproduto = request.GET.get('q_subproduto', None)
         if q_subproduto:
@@ -1210,7 +1210,7 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
 
     quantidade_maxima_permitida = forms.IntegerField(required=True)
     quantidade_preenchida = forms.IntegerField(required=True)
-    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.all(), empty_label=None)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True), empty_label=None)
     funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all(), required=True)
     data_envio = forms.DateField(label=u"Data de Envio", required=False, initial=datetime.date.today())
 
@@ -1742,7 +1742,7 @@ def ver_produto_apagar_anexo(request, produto_id, anexo_id):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
-    produtos_encontrados = ProdutoFinal.objects.filter(ativo=True)
+    produtos_encontrados = ProdutoFinal.objects.filter(ativo=True).order_by('part_number')
     if request.GET:
         q_produto = request.GET.get('q_produto', True)
         if q_produto:
@@ -1752,7 +1752,7 @@ def listar_produtos(request):
                 produtos_encontrados = produtos_encontrados.filter(
                     Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
                 )
-    produtos_inativos = ProdutoFinal.objects.filter(ativo=False)
+    produtos_inativos = ProdutoFinal.objects.filter(ativo=False).order_by('part_number')
         
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
 
@@ -2542,14 +2542,14 @@ def registro_de_testes(request):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def totalizador_de_producao(request):
-    produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
-    subprodutos = SubProduto.objects.all().order_by('-total_funcional')
+    produtos = ProdutoFinal.objects.filter(ativo=True).order_by('part_number')
+    subprodutos = SubProduto.objects.filter(ativo=True).order_by('part_number')
     return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-totalizador-producao.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def producao_combinada(request):
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
-    subprodutos = SubProduto.objects.all().order_by('-total_funcional')
+    subprodutos = SubProduto.objects.filter(ativo=True).order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -2732,7 +2732,7 @@ def qeps_componentes(request):
 @user_passes_test(possui_perfil_acesso_producao)
 def preparar_producao_semanal(request):
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
-    subprodutos = SubProduto.objects.all().order_by('-total_funcional')
+    subprodutos = SubProduto.objects.filter(ativo=True).order_by('-total_funcional')
     return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -3209,13 +3209,41 @@ class FormRemoverLancamentoProdProduto(forms.Form):
     id_lancamentos = forms.CharField(required=True, help_text="Formato: 12,34,56,67,..", label="ID Lançamentos")
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
+class FormFiltraLancamentosApagados(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormFiltraLancamentosApagados, self).__init__(*args, **kwargs)
+        self.fields['serial_number'].widget.attrs['class'] = 'input-medium'
+        self.fields['nota_fiscal'].widget.attrs['class'] = 'input-medium'
+        self.fields['cliente'].widget.attrs['class'] = 'input-medium'
+        self.fields['data_apagado'].widget.attrs['class'] = 'input-medium datepicker'
+        
+    serial_number = forms.CharField(label="Serial Number %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
+    nota_fiscal = forms.CharField(label="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
+    cliente = forms.CharField(required=False)
+    data_apagado = forms.DateField(label=u"Data Apagado", required=False)
 
+class FormFiltraLancamentosVendidos(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormFiltraLancamentosVendidos, self).__init__(*args, **kwargs)
+        self.fields['serial_number'].widget.attrs['class'] = 'input-medium'
+        self.fields['nota_fiscal'].widget.attrs['class'] = 'input-medium'
+        self.fields['cliente'].widget.attrs['class'] = 'input-medium'
+        self.fields['data_de_venda'].widget.attrs['class'] = 'input-medium datepicker'
+        
+    
+    serial_number = forms.CharField(label="Serial %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
+    nota_fiscal = forms.CharField(label="Nota Fiscal", required=False)
+    cliente = forms.CharField(required=False)
+    data_de_venda = forms.DateField(label=u"Data de Venda", required=False)
+    
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao(request):
     nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
-    serial_number_q = request.GET.get('serial_number', None)
-    cliente_q = request.GET.get('cliente', None)
     form_remover_lancamentos = FormRemoverLancamentoProdProduto()
+    form_filtrar_lancamentos_vendidos = FormFiltraLancamentosVendidos()
+    form_filtrar_lancamentos_apagados = FormFiltraLancamentosApagados()
     if request.POST.get('apagar-lancamentos-btn', None):
         form_remover_lancamentos = FormRemoverLancamentoProdProduto(request.POST)
         if form_remover_lancamentos.is_valid():
@@ -3271,11 +3299,23 @@ def rastreabilidade_de_producao(request):
         )
     lancamentos_vendidos = nao_apagados.filter(vendido=True)
     # filtra os vendidos
-    if request.GET:
-        if serial_number_q:
-            lancamentos_vendidos = lancamentos_vendidos.filter(serial_number__icontains=serial_number_q)
-        if cliente_q:
-            lancamentos_vendidos = lancamentos_vendidos.filter(cliente_associado__icontains=cliente_q)
+    if request.POST and request.POST.get('filtra-lancamentos-vendidos-btn', None):
+        form_filtrar_lancamentos_vendidos = form_filtrar_lancamentos_vendidos = FormFiltraLancamentosVendidos(request.POST)
+        if form_filtrar_lancamentos_vendidos.is_valid():
+            serial_number_q = form_filtrar_lancamentos_vendidos.cleaned_data['serial_number']
+            cliente_q = form_filtrar_lancamentos_vendidos.cleaned_data['cliente']
+            nota_fiscal_q = form_filtrar_lancamentos_vendidos.cleaned_data['nota_fiscal']
+            data_de_venda_q = form_filtrar_lancamentos_vendidos.cleaned_data['data_de_venda']
+            if serial_number_q:
+                lancamentos_vendidos = lancamentos_vendidos.filter(serial_number__icontains=serial_number_q)
+            if cliente_q:
+                lancamentos_vendidos = lancamentos_vendidos.filter(cliente_associado__icontains=cliente_q)
+            if nota_fiscal_q:
+                lancamentos_vendidos = lancamentos_vendidos.filter(nota_fiscal__notafiscal__icontains=nota_fiscal_q)
+            if data_de_venda_q:
+                lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__day=data_de_venda_q.day, data_vendido__month=data_de_venda_q.month, data_vendido__year=data_de_venda_q.year)
+        
+        
     lancamentos_vendidos_valores = lancamentos_vendidos.values(
     'id',
     'data_vendido',
@@ -3291,13 +3331,25 @@ def rastreabilidade_de_producao(request):
     'observacoes',
     'nota_fiscal__notafiscal',
     )
+    # apagados
     lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
-    if request.GET:
-        if serial_number_q:
-            lancamentos_apagados = lancamentos_apagados.filter(serial_number__icontains=serial_number_q)
-        if cliente_q:
-            lancamentos_apagados = lancamentos_apagados.filter(cliente_associado__icontains=cliente_q)
-    
+    if request.POST and request.POST.get('filtra-lancamentos-apagados-btn', None):
+        form_filtrar_lancamentos_apagados = FormFiltraLancamentosApagados(request.POST)
+        if form_filtrar_lancamentos_apagados.is_valid():
+            serial_number_q = form_filtrar_lancamentos_apagados.cleaned_data['serial_number']
+            cliente_q = form_filtrar_lancamentos_apagados.cleaned_data['cliente']
+            nota_fiscal_q = form_filtrar_lancamentos_apagados.cleaned_data['nota_fiscal']
+            data_apagado_q = form_filtrar_lancamentos_apagados.cleaned_data['data_apagado']
+            # filtra
+            if serial_number_q:
+                lancamentos_apagados = lancamentos_apagados.filter(serial_number__icontains=serial_number_q)
+            if cliente_q:
+                lancamentos_apagados = lancamentos_apagados.filter(cliente_associado__icontains=cliente_q)
+            if nota_fiscal_q:
+                lancamentos_apagados = lancamentos_apagados.filter(nota_fiscal__notafiscal__icontains=nota_fiscal_q)
+            if data_apagado_q:
+                lancamentos_apagados = lancamentos_apagados.filter(data_apagado__day=data_apagado_q.day, data_apagado__month=data_apagado_q.month, data_apagado__year=data_apagado_q.year)
+            
     lancamentos_apagados_valores = lancamentos_apagados.values(
         'id',
         'serial_number',
@@ -3312,6 +3364,7 @@ def rastreabilidade_de_producao(request):
         'produto__id',
         'produto__part_number',
         'produto__nome',
+        'nota_fiscal__notafiscal',
         
         )
     
@@ -3465,11 +3518,43 @@ def rastreabilidade_de_producao_checar_quantitativos(request):
         tabela_produtos.append((produto, lancamentos.count()))
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-checar-quantitativos.html', locals(), context_instance=RequestContext(request),)
 
+
+class FormFiltrarFalhasPorSubProduto(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormFiltrarFalhasPorSubProduto, self).__init__(*args, **kwargs)
+        self.fields['subproduto'].widget.attrs['class'] = 'select2'
+        self.fields['subproduto'].required=True
+        self.fields['inicio'].widget.attrs['class'] = 'datepicker input-small'
+        self.fields['inicio'].required=True
+        self.fields['fim'].widget.attrs['class'] = 'datepicker input-small'
+        self.fields['fim'].required=True
+    
+    inicio = forms.DateField(label=u"Início", required=True)
+    fim = forms.DateField(label=u"Fim", required=True)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True), empty_label=None)
+
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao(request):
+    form_filtrar_falha_por_produto = FormFiltrarFalhasPorSubProduto()
     lancamentos_falha = LancamentoDeFalhaDeTeste.objects.all()
     testes_perda = FalhaDeTeste.objects.filter(tipo='perda')
     testes_reparo = FalhaDeTeste.objects.filter(tipo='reparo')
+    # filtra falhas
+    if request.POST.get('filtrar-por-subproduto-btn', None):
+        form_filtrar_falha_por_produto = FormFiltrarFalhasPorSubProduto(request.POST)
+        if form_filtrar_falha_por_produto.is_valid():
+            messages.info(request, u"Filtrando por Sub Produto")
+            filtro_subproduto = True
+            filtro = True
+            inicio = form_filtrar_falha_por_produto.cleaned_data['inicio']
+            fim = form_filtrar_falha_por_produto.cleaned_data['fim']
+            subproduto = form_filtrar_falha_por_produto.cleaned_data['subproduto']
+            falhas = LinhaLancamentoFalhaDeTeste.objects.filter(
+                lancamento_teste__subproduto=subproduto,
+                lancamento_teste__data_lancamento__range=(inicio,fim)
+            )
+            
     return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
 
 class FormLancaFalhaDeTeste(forms.ModelForm):
@@ -3563,7 +3648,9 @@ def controle_de_testes_producao_lancar_falha(request):
             lancamentos_falhas_reparo_form = LancamentoFormSetReparo(request.POST, prefix='reparo')
             lancamentos_falhas_perda_form = LancamentoFormSetPerda(request.POST, prefix='perda')
             if lancamento_teste_form.is_valid() and lancamentos_falhas_reparo_form.is_valid() and lancamentos_falhas_perda_form.is_valid():
-                lancamento_teste = lancamento_teste_form.save()
+                lancamento_teste = lancamento_teste_form.save(commit=False)
+                lancamento_teste.criado_por = request.user
+                lancamento_teste_form.save()
                 messages.success(request, u"Informações do Teste Registrado com Sucesso!")
                 if lancamentos_falhas_reparo_form.is_valid():
                     try:
@@ -3595,9 +3682,10 @@ def controle_de_testes_producao_lancar_falha(request):
 class FormAdicionaFalhaDeTeste(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
+        tipo = kwargs.pop('tipo', None)
         super(FormAdicionaFalhaDeTeste, self).__init__(*args, **kwargs)
         self.fields['descricao'].required = True
-    
+        self.fields['tipo'].initial = tipo
     
     class Meta:
         model = FalhaDeTeste
@@ -3606,14 +3694,14 @@ class FormAdicionaFalhaDeTeste(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao_adicionar_falha(request):
     '''Adiciona item à tabela de testes, com código, etc'''
-    form_adiciona_falha = FormAdicionaFalhaDeTeste()
+    form_adiciona_falha = FormAdicionaFalhaDeTeste(tipo=request.GET.get('tipo', 'perda'))
     if request.POST:
         form_adiciona_falha = FormAdicionaFalhaDeTeste(request.POST)
         if form_adiciona_falha.is_valid():
             falha = form_adiciona_falha.save()
             falha.criado_por = request.user
             messages.success(request, u"Sucesso! Falha adicionada.")
-            return redirect(reverse('producao:controle_de_testes_producao'))
+            return redirect(reverse('producao:controle_de_testes_producao')+ "#falha-tipo-%s" % falha.tipo)
     return render_to_response('frontend/producao/producao-controle-de-testes-adicionar-falha.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -3629,6 +3717,7 @@ class FormAdicionarNotaFiscalLancamentosProducao(forms.ModelForm):
         self.fields['lancamentos_de_producao'].queryset = LancamentoProdProduto.objects.filter(vendido=False, apagado=False).exclude(serial_number=None)
         self.fields['lancamentos_de_producao'].widget.attrs['class'] = 'select2'
         self.fields['data_saida'].widget.attrs['class'] = 'datepicker'
+        self.fields['cliente_associado'].widget.attrs['class'] = 'input-xlarge'
         if lancamentos_selecionados:
             self.fields['lancamentos_de_producao'].initial = lancamentos_selecionados
     

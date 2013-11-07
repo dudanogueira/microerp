@@ -11,6 +11,8 @@
     <li class="active"><a href="#lancamento-de-falha" data-toggle="tab"><i class="fa fa-rocket"></i> Lançamento de Falhas</a></li>
 		<li class=""><a href="#falha-tipo-perda" data-toggle="tab"><i class="fa fa-chain-broken"></i> Falhas de Perda</a></li>
 		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab"><i class="fa fa-wrench"></i> Falhas de Reparo</a></li>
+		<li class=""><a href="#indicadores" data-toggle="tab"><i class="fa fa-wrench"></i> Indicadores</a></li>
+		
 	</ul>
 	
 	<div id="myTabContent" class="tab-content">
@@ -36,18 +38,20 @@
 							<th>Perda</th>
 							<th>Reparado</th>
 							<th>Sem Reparar</th>
+							<th>Usuário</th>
 						</tr>
 					</thead>
 					<tbody>
 						{% for falha in lancamentos_falha %}
 						<tr>
 							<td>{{falha.id}}</td>
-							<td><a href="{% url "producao:ver_produto" falha.subproduto.id %}">{{falha.subproduto.part_number}} {{falha.subproduto.nome}}</a></td>
+							<td><a href="{% url "producao:ver_subproduto" falha.subproduto.id %}">{{falha.subproduto.part_number}} {{falha.subproduto.nome}}</a></td>
 							<td>{{falha.quantidade_total_testada}}</td>
 							<td>{{falha.quantidade_funcional}}</td>
 							<td>{{falha.quantidade_perdida}}</td>
 							<td>{{falha.quantidade_reparada_funcional}}</td>
 							<td>{{falha.quantidade_funcional_direta}}</td>
+							<td>{{falha.criado_por}}</td>
 						</tr>
 						{% endfor %}
 					</tbody>
@@ -62,7 +66,7 @@
 					<h2>Falha do Tipo Perda</h2>
 				</div>
 				<div class="span6">
-					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}?tipo=perda"><i class="fa fa-plus"></i> Adicionar Falha</a>
 					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
 					
 				</div>
@@ -95,10 +99,10 @@
 		<div class="tab-pane fade in" id="falha-tipo-reparo">
 			<div class="row-fluid">
 				<div class="span6">
-					<h2>Falha do Tipo Perda</h2>
+					<h2>Falha do Tipo Reparo</h2>
 				</div>
 				<div class="span6">
-					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}"><i class="fa fa-plus"></i> Adicionar Falha</a>
+					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}?tipo=reparo"><i class="fa fa-plus"></i> Adicionar Falha</a>
 					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
 					
 				</div>
@@ -128,6 +132,40 @@
 			
 		</div>
 		
+		<div class="tab-pane fade in" id="indicadores">
+			<h2>Filtrar por Sub Produto</h2>
+			{% if filtro_subproduto and filtro %}
+				{{falhas}}
+			{% else %}
+			
+				<form method="POST" id="filtrar-por-subproduto">
+						{% csrf_token %}
+						<div class="row-fluid">
+				
+					<div class="span2">
+							<h4>{{form_filtrar_falha_por_produto.inicio.label}}</h4>
+							{{ form_filtrar_falha_por_produto.inicio.errors }}
+							{{form_filtrar_falha_por_produto.inicio}}
+					</div>
+
+					<div class="span2">
+						<h4>{{form_filtrar_falha_por_produto.fim.label}}</h4>
+						{{ form_filtrar_falha_por_produto.fim.errors }}
+						{{form_filtrar_falha_por_produto.fim}}
+					</div>
+				
+					<div class="span8">
+						<h4>{{form_filtrar_falha_por_produto.subproduto.label}}</h4>
+						{{form_filtrar_falha_por_produto.fim.erros}}
+						{{form_filtrar_falha_por_produto.subproduto}}
+					</div>
+				</div>
+					<button id="filtrar-por-subproduto-btn" name="filtrar-por-subproduto-btn" value="filtrar" class="btn btn-primary">Filtrar por Sub Produto</button>
+				</form>
+			
+			{% endif %}
+			<h2>Filtrar por Funcionário</h2>
+		</div>
 		
 	</div>
 
@@ -136,6 +174,11 @@
 {% endblock %}
 
 {% block auxiliar-menu %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
 {% addtoblock "js" %}
 
 <script>
@@ -155,6 +198,14 @@ $('.nav-tabs').on("click", '.nav-tabs li a', function(e){
 	// ajax load from data-url
 	pane.tab('show');		
 })
+$('.datepicker').each(function() {
+   $(this).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+    
+		});
+});
+
 
 $(document).on("click", "#imprimir", function(e){
 	e.preventDefault();

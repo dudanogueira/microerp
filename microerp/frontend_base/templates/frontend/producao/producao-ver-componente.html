@@ -24,34 +24,60 @@
 <ul class="nav nav-tabs">
 	<li class="active"><a href="#valores" data-toggle="tab">Informações</a></li>
 	<li><a href="#participacao" data-toggle="tab">Participações
-        
-		{% if componente.total_unico_participacoes %}
-		<span class="badge badge-important">{{componente.total_unico_participacoes}}</span>
-		{% endif %}
+
+		
+		<span class="badge badge-important">
+			{% if componente.total_unico_participacoes %}
+				{{componente.total_unico_participacoes}}
+			{% else %}
+				0
+			{% endif %}
+		</span>
+
 
 	</a></li>
 	<li><a href="#fornecimento" data-toggle="tab">Fornecedores
-		{% if fornecedores.count %}
-		<span class="badge badge-success">{{fornecedores.count}}</span>
-		{% endif %}
+		
+		<span class="badge badge-success">
+			{% if fornecedores.count %}
+				{{fornecedores.count}}
+			{% else %}
+				0	
+			{% endif %}
+		</span>
+
       
 	</a></li>
 	<li><a href="#fabricacao" data-toggle="tab">Fabricantes
-		{% if fabricantes.count %}
-		<span class="badge badge-info">{{fabricantes.count}}</span>
-		{% endif %}
+		
+		<span class="badge badge-info">
+			{% if fabricantes.count %}
+				{{fabricantes.count}}
+			{% else %}
+			0
+			{% endif %}
+		</span>
 
 	</a></li>
 	<li><a href="#memoria" data-toggle="tab">Memória
-		{% if componente.linhafornecedorfabricantecomponente_set.count %}
-		<span class="badge badge-warning">{{componente.linhafornecedorfabricantecomponente_set.count}}</span>
-		{% endif %}
+		<span class="badge badge-warning">
+			{% if componente.linhafornecedorfabricantecomponente_set.count %}
+				{{componente.linhafornecedorfabricantecomponente_set.count}}
+			{% else %}
+				0
+			{% endif %}
+		</span>
       
 	</a></li>
 	<li><a href="#arquivos" data-toggle="tab">Documentos Técnicos 
-		{% if componente.arquivoanexocomponente_set.count %}
-		<span class="badge">{{componente.arquivoanexocomponente_set.count}}</span>
-		{% endif %}
+		
+		<span class="badge">
+			{% if componente.arquivoanexocomponente_set.count %}
+				{{componente.arquivoanexocomponente_set.count}}
+			{% else %}
+				0
+			{% endif %}
+		</span>
 	</a></li> 
 </ul>
 

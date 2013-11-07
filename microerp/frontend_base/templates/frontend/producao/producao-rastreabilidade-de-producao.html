@@ -94,7 +94,7 @@
 						<thead>
 							<tr>
 								<th>ID</th>
-								<th>Serial Number {{nome_empresa}}</th>
+								<th>Serial {{nome_empresa}}</th>
 								<th>Manual / Ordem de Produção</th>
 								<th>Criado</th>
 								<th>Ações</th>
@@ -138,11 +138,41 @@
 				</p>
 				</div>
 			</div>
-			<form method="get" class="form form-inline">
-							<label for="id_serial_number">Serial Number {{nome_empresa}}: </label><input id="id_serial_number" name="serial_number" type="text" value="{% if serial_number_q %}{{serial_number_q}}{% endif %}">
-			<label for="id_cliente">Cliente: </label><input id="id_cliente" name="cliente" type="text" value="{% if cliente_q %}{{cliente_q}}{% endif %}">
-							<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button> <a class="btn btn-danger" href="./#lancamentos-vendidos">limpar</a>
-			</form>			
+			<form method="POST">
+				{% csrf_token %}
+				<div class="row-fluid">
+				
+					<div class="span3">
+					{{form_filtrar_lancamentos_vendidos.serial_number.label}}<br />
+					{{form_filtrar_lancamentos_vendidos.serial_number.errors}}
+					{{form_filtrar_lancamentos_vendidos.serial_number}}					
+					</div>
+				
+					<div class="span3">
+						{{form_filtrar_lancamentos_vendidos.nota_fiscal.label}}<br />
+						{{form_filtrar_lancamentos_vendidos.nota_fiscal.errors}}
+						{{form_filtrar_lancamentos_vendidos.nota_fiscal}}					
+						
+						</div>
+				
+					<div class="span3">
+						{{form_filtrar_lancamentos_vendidos.cliente.label}}<br />
+						{{form_filtrar_lancamentos_vendidos.cliente.errors}}
+						{{form_filtrar_lancamentos_vendidos.cliente}}					
+						
+					</div>
+				
+					<div class="span3">
+						{{form_filtrar_lancamentos_vendidos.data_de_venda.label}}<br />
+						{{form_filtrar_lancamentos_vendidos.data_de_venda.errors}}
+						{{form_filtrar_lancamentos_vendidos.data_de_venda}}					
+						
+					</div>
+				</div>
+				
+				<button type="submit" class="btn btn-primary" name="filtra-lancamentos-vendidos-btn" name="filtra-lancamentos-vendidos-btn" value="filtrar" >Filtrar</button>
+			</form>
+			
 			{% regroup lancamentos_vendidos_valores by produto__part_number as lancamentos_vendidos_group_list %}
 			{% for lancamento in lancamentos_vendidos_group_list %}
 			<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
@@ -151,8 +181,8 @@
 					<thead>
 						<tr>
 							<th>ID</th>
-							<th>Serial Number {{nome_empresa}}</th>
-							<th>Nota Fiscal {{nome_empresa}}</th>
+							<th>Serial {{nome_empresa}}</th>
+							<th>Nota Fiscal</th>
 							<th>Cliente</th>
 							<th>Data de Venda</th>
 							<th>Usuário</th>
@@ -165,9 +195,9 @@
 						<tr>
 							<td>{{lancamento.id}}</td>
 							<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
-							<td>{{lancamento.nota_fiscal__notafiscal}}</td>
+							<td><span class="badge badge-info">{{lancamento.nota_fiscal__notafiscal}}</span></td>
 							<td>{{lancamento.cliente_associado}}</td>
-							<td>{{lancamento.data_vendido|date:"SHORT_DATETIME_FORMAT"}}</td>
+							<td>{{lancamento.data_vendido|date:"SHORT_DATE_FORMAT"}}</td>
 							<td>{{lancamento.funcionario_vendeu__nome}}</td>
 							<td>{{lancamento.observacoes}}</td>
 							<td>
@@ -192,12 +222,41 @@
 		<div class="tab-pane fade in" id="lancamentos-apagados">
 			<h2>Lançamentos Apagados</h2>
 			
-			<form method="get" class="form form-inline">
-							<label for="id_serial_number">Serial Number {{nome_empresa}}: </label><input id="id_serial_number" name="serial_number" type="text" value="{% if serial_number_q %}{{serial_number_q}}{% endif %}">
-			<label for="id_cliente">Cliente: </label><input id="id_cliente" name="cliente" type="text" value="{% if cliente_q %}{{cliente_q}}{% endif %}">
-							<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button> <a class="btn btn-danger" href="./#lancamentos-apagados">limpar</a>
-			</form>			
 			
+			<form method="POST">
+				{% csrf_token %}
+				<div class="row-fluid">
+				
+					<div class="span3">
+					{{form_filtrar_lancamentos_apagados.serial_number.label}}<br />
+					{{form_filtrar_lancamentos_apagados.serial_number.errors}}
+					{{form_filtrar_lancamentos_apagados.serial_number}}					
+					</div>
+				
+					<div class="span3">
+						{{form_filtrar_lancamentos_apagados.nota_fiscal.label}}<br />
+						{{form_filtrar_lancamentos_apagados.nota_fiscal.errors}}
+						{{form_filtrar_lancamentos_apagados.nota_fiscal}}					
+						
+						</div>
+				
+					<div class="span3">
+						{{form_filtrar_lancamentos_apagados.cliente.label}}<br />
+						{{form_filtrar_lancamentos_apagados.cliente.errors}}
+						{{form_filtrar_lancamentos_apagados.cliente}}					
+						
+					</div>
+				
+					<div class="span3">
+						{{form_filtrar_lancamentos_apagados.data_apagado.label}}<br />
+						{{form_filtrar_lancamentos_apagados.data_apagado.errors}}
+						{{form_filtrar_lancamentos_apagados.data_apagado}}					
+						
+					</div>
+				</div>
+				
+				<button type="submit" class="btn btn-primary" name="filtra-lancamentos-apagados-btn" name="filtra-lancamentos-apagados-btn" value="filtrar" >Filtrar</button>
+			</form>
 			
 			{% regroup lancamentos_apagados_valores by produto__part_number as lancamentos_apagados_group_list %}
 			{% for lancamento in lancamentos_apagados_group_list %}
@@ -207,13 +266,12 @@
 					<thead>
 						<tr>
 							<th>ID</th>
-							<th>Serial</th>
+							<th>Serial {{nome_empresa}}</th>
+							<th>Nota Fiscal</th>
 							<th>Cliente</th>
-							<th>Vendedor</th>
-							<th>Data de Criação</th>
-							<th>Funcionário Apagou</th>
 							<th>Data Apagado</th>
-							
+							<th>Usuário</th>
+							<th>Ações</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -221,11 +279,13 @@
 						<tr data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_apagado}}" class="tooltip_item">
 							<td>{{lancamento.id}}</td>
 							<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
+							<td><span class="badge badge-info">{{lancamento.nota_fiscal__notafiscal}}</span></td>
 							<td>{{lancamento.cliente_associado}}</td>
-							<td>{% if lancamento.funcionario_vendeu__nome %}{{lancamento.funcionario_vendeu__nome}} em {{lancamento.data_vendido|date:"SHORT_DATETIME_FORMAT"}}{% endif %}</td>
-							<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							<td>{{lancamento.funcionario_apagou__nome}}</td>
 							<td>{{lancamento.data_apagado|date:"SHORT_DATETIME_FORMAT"}}</td>
+							<td>
+								<a data-toggle="tooltip" title="Associar a Serial Number" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
+							</td>
 						</tr>
 						{% endfor %}
 				

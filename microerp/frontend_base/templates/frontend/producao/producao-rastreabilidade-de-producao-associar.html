@@ -12,7 +12,6 @@
 		{% csrf_token %}
 		{{testes_de_lancamento_form.management_form}}
 		<p>
-			
 	    {{ lancamento_associa_form.serial_number.errors }}
 	    <label for="id_serial_number">{{lancamento_associa_form.serial_number.label}}</label>
 	    {{ lancamento_associa_form.serial_number }}
