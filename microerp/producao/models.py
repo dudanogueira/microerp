@@ -770,6 +770,7 @@ class SubProduto(models.Model):
         """
 
         if not self.part_number:
+            super(SubProduto, self).save()
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
             self.part_number = "%s-SUB%s" % (pn_prepend, "%05d" % self.id,)
 
