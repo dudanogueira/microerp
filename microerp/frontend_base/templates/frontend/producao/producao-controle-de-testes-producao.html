@@ -199,7 +199,7 @@
 				<button id="filtrar-por-funcionario-btn" name="filtrar-por-funcionario-btn" value="filtrar" class="btn btn-primary">Filtrar por Funcionário</button>
 			</form>
 
-			{% if filtro %}
+			{% if filtro and filtro_funcionario %}
 			<h5>Falhas</h5>
 			<strong>Total de Perda</strong>: {% if total_por_tipo_perda.total %}{{total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
 			<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
