@@ -3528,7 +3528,7 @@ class FormFiltrarFalhasPorSubProduto(forms.Form):
     
     inicio = forms.DateField(label=u"Início", required=False)
     fim = forms.DateField(label=u"Fim", required=False)
-    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True), empty_label='Escolha um Sub Produto', required=False)
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.filter(ativo=True, tipo_de_teste=2), empty_label='Escolha um Sub Produto', required=False)
 
 class FormFiltrarFalhasPorFuncionario(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -3623,6 +3623,7 @@ class FormLancaFalhaDeTeste(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(FormLancaFalhaDeTeste, self).__init__(*args, **kwargs)
         self.fields['subproduto'].widget.attrs['class'] = 'select2'
+        self.fields['subproduto'].queryset = SubProduto.objects.filter(tipo_de_teste=2)
         self.fields['funcionario_testador'].widget.attrs['class'] = 'select2'
         self.fields['data_lancamento'].widget.attrs['class'] = 'datepicker'
         self.fields['quantidade_perdida'].widget = forms.HiddenInput()
