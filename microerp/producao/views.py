@@ -3574,8 +3574,8 @@ def controle_de_testes_producao(request):
                 lancamentos = lancamentos.filter(
                     subproduto=subproduto
                 )
-            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
-            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
             # total por tipo de falha
             total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
             total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
@@ -3610,8 +3610,8 @@ def controle_de_testes_producao(request):
             # totais de falha
             total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
             total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
-            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
-            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
             # totais do lancamento
             total_testado = lancamentos.aggregate(total=Sum('quantidade_total_testada'))
             total_reparado = lancamentos.aggregate(total=Sum('quantidade_reparada_funcional'))
