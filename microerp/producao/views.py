@@ -7,7 +7,6 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
-
 from django import forms
 
 from django.core.exceptions import ValidationError
@@ -3434,7 +3433,7 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
     
     def clean_serial_number(self):
         serial_number = self.cleaned_data['serial_number']
-        if LancamentoProdProduto.objects.filter(serial_number=serial_number).exists():
+        if LancamentoProdProduto.objects.filter(serial_number=serial_number).exclude(id=self.instance.id).exists():
             raise ValidationError(u'Erro! Serial Number Já existe!')
         return serial_number
         
@@ -3575,6 +3574,8 @@ def controle_de_testes_producao(request):
                 lancamentos = lancamentos.filter(
                     subproduto=subproduto
                 )
+            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
             # total por tipo de falha
             total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
             total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
@@ -3609,6 +3610,8 @@ def controle_de_testes_producao(request):
             # totais de falha
             total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
             total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
+            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo').order_by('falha__codigo').annotate(total=Sum('quantidade'))
             # totais do lancamento
             total_testado = lancamentos.aggregate(total=Sum('quantidade_total_testada'))
             total_reparado = lancamentos.aggregate(total=Sum('quantidade_reparada_funcional'))
@@ -3765,6 +3768,12 @@ def controle_de_testes_producao_adicionar_falha(request):
 @user_passes_test(possui_perfil_acesso_producao)
 def registrar_nota_fiscal_emitida(request):
     notas_registradas = NotaFiscalLancamentosProducao.objects.all()
+    lancamentos_de_producao_values = LancamentoProdProduto.objects.values(
+        'nota_fiscal__notafiscal',
+        'nota_fiscal__cliente_associado',
+        'serial_number',
+    ).order_by('nota_fiscal__notafiscal')
+
     return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida.html', locals(), context_instance=RequestContext(request),)
 
 class FormAdicionarNotaFiscalLancamentosProducao(forms.ModelForm):
@@ -3796,71 +3805,69 @@ def registrar_nota_fiscal_emitida_adicionar(request):
         'produto__id',
         'produto__part_number',
         'produto__nome',
+        'serial_number'
         )
     if request.GET:
         # possui lancamentos selecionados
         lancamentos_selecionados = request.GET.getlist('lancamento', None)
         form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(lancamentos_selecionados=lancamentos_selecionados)
     if request.POST:
-        # confere se estoque está todo OK, caso contrário não permite adicionar
-        # novas notas.
-        estoque_consistente = True
-        for produto in ProdutoFinal.objects.filter(ativo=True):
-            #lancamentos = LancamentoProdProduto.objects.filter(produto=produto, vendido=False, apagado=False)
-            lancamentos = produto.lancamentoprodproduto_set.filter(vendido=False, apagado=False).exclude(serial_number=None).exclude(serial_number='')
-            if produto.total_produzido != lancamentos.count():
-                estoque_consistente = False
-        ##
-        if estoque_consistente:
-            form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(request.POST, lancamentos_selecionados=lancamentos_selecionados)
-            if form_adiciona_nota.is_valid():
-                registro = form_adiciona_nota.save()
+        form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(request.POST, lancamentos_selecionados=lancamentos_selecionados)
+        if form_adiciona_nota.is_valid():
+            lancamentos_vendidos_obj = form_adiciona_nota.cleaned_data['lancamentos_de_producao']
+            # assume estoque OK
+            estoque_consistente = True
+            # monta o dicionario com valores por produto
+            produtos_vendidos = {}
+            for lancamento in lancamentos_vendidos_obj:
+                try:
+                    produtos_vendidos[lancamento.produto.id] += 1
+                except:
+                    produtos_vendidos[lancamento.produto.id] = 1
+            # monta lista de produtos
+            produtos_vendidos_obj = ProdutoFinal.objects.filter(id__in=produtos_vendidos.keys())
+            # confere se todos os produtos vendidos possuem total_produzido maior que quantidade
+            for produto in produtos_vendidos_obj:
+                if produtos_vendidos[produto.id] > produto.total_produzido:
+                    messages.error(request, u"Impossível continuar: Produto %s possui somente %s Produzidos" % (produto, produto.total_produzido))
+                    estoque_consistente = False
+                if produto.total_produzido != produto.lancamentos_disponiveis().count():
+                    messages.error(request, u"Impossível continuar: Estoque Incosistente para produto %s" % produto)
+                    estoque_consistente = False
+            # feitas as checagens,
+            # registrar o lancamento
+            if estoque_consistente:
+                registro = form_adiciona_nota.save(commit=False)
+                registro.criado_por = request.user
+                registro.save()
                 messages.success(request, u"Sucesso! Nota %s Registrada!" % registro.notafiscal)
-                # marca cada lancamento_de_producao como vendido
-                registro.lancamentos_de_producao.update(
-                    vendido=True,
-                    data_vendido=datetime.datetime.now(),
-                    funcionario_vendeu=request.user.funcionario,
-                    cliente_associado=registro.cliente_associado
-                )
-                # calcula quantidades a ser removida do total produzido do produto, para cada tipo de produto
-                produtos_vendidos = {}
-                for lancamento in registro.lancamentos_de_producao.all():
-                    lancamento.nota_fiscal = registro
+                # atualiza os lancamentos
+                for lancamento in lancamentos_vendidos_obj:
+                    lancamento.vendido=True
+                    lancamento.data_vendido=datetime.datetime.now()
+                    lancamento.funcionario_vendeu=request.user.funcionario
+                    lancamento.cliente_associado=registro.cliente_associado
                     lancamento.save()
-                    try:
-                        produtos_vendidos[lancamento.produto.id] += 1
-                    except:
-                        produtos_vendidos[lancamento.produto.id] = 1
-                # realizar movimento decrementando a quantidade de total produzido do produto, vinculando ainda com a notafiscal gerada
-                for item in produtos_vendidos.iteritems():
-                    try:
-                        produto = ProdutoFinal.objects.get(pk=int(item[0]))
-                        quantidade_movimentada = item[1]
-                        # encontrou o produto
-                        if produto.total_produzido > quantidade_movimentada:
-                            # possui mais do que quer remover
-                            quantidade_anterior = produto.total_produzido
-                            quantidade_nova = int(produto.total_produzido) - int(quantidade_movimentada)
-                            produto.total_produzido = quantidade_nova
-                            movimento = MovimentoEstoqueProduto.objects.create(
-                                produto = produto,
-                                quantidade_movimentada = quantidade_movimentada,
-                                quantidade_anterior = quantidade_anterior,
-                                quantidade_nova = quantidade_nova,
-                                operacao = "remove",
-                                criado_por = request.user,
-                                registro_de_nota_fiscal = registro,
-                                justificativa = "Nota Fiscal Emitida: %s" % registro.notafiscal
-                            )
-                            produto.save()
-                            movimento.save()
-                            messages.success(request, u"Sucesso! Removido %s Produtos %s como Produzido" % (movimento.quantidade_movimentada, movimento.produto))
-                        else:
-                            messages.error(request, u"Erro! Impossível registrar movimentação em %s. Quantidade Movimentada %s é maior que Estoque do Produto %s" % (produto, quantidade_movimentada, produto.total_produzido))
-                    except:
-                        raise
-                        messages.warning(request, u"Não foi possível encontrar o produto ID: %s" % item[0])
+                # realiza e registra o movimento
+                for produto in produtos_vendidos_obj:
+                    quantidade_movimentada = produtos_vendidos[produto.id]
+                    if produto.total_produzido >= quantidade_movimentada:
+                    # possui mais do que quer remover
+                        quantidade_anterior = produto.total_produzido
+                        quantidade_nova = int(produto.total_produzido) - int(quantidade_movimentada)
+                        produto.total_produzido = quantidade_nova
+                        movimento = MovimentoEstoqueProduto.objects.create(
+                            produto = produto,
+                            quantidade_movimentada = quantidade_movimentada,
+                            quantidade_anterior = quantidade_anterior,
+                            quantidade_nova = quantidade_nova,
+                            operacao = "remove",
+                            criado_por = request.user,
+                            registro_de_nota_fiscal = registro,
+                            justificativa = "Nota Fiscal Emitida: %s" % registro.notafiscal
+                        )
+                        produto.save()
+                        messages.success(request, u"Sucesso! Removido %s Produtos %s como Produzido" % (movimento.quantidade_movimentada, movimento.produto))
                     
                 return redirect(reverse("producao:registrar_nota_fiscal_emitida"))
         

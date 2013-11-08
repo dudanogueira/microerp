@@ -65,6 +65,9 @@ class LancamentoProdProdutoForm(forms.ModelForm):
         return self.cleaned_data.get('serial_number') or None
 
 class LancamentoProdProdutoAdmin(admin.ModelAdmin):
+    list_filter = 'produto', 'cliente_associado', 'nota_fiscal'
+    list_display = 'produto', 'serial_number', 'nota_fiscal', 'cliente_associado'
+    search_fields = 'produto__part_number', 'serial_number', 'nota_fiscal__notafiscal', 'cliente_associado'
     inlines = [LinhaTesteLancamentoProdProdutoInline]
     form = LancamentoProdProdutoForm
 

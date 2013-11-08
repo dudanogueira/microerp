@@ -1150,7 +1150,7 @@ class ProdutoFinal(models.Model):
                 break
 
     def lancamentos_disponiveis(self):
-        return LancamentoProdProduto.objects.filter(ordem_de_producao__produto=self, vendido=False, apagado=False)
+        return self.lancamentoprodproduto_set.filter(produto=self, vendido=False, apagado=False)
 
     ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
@@ -1516,12 +1516,15 @@ class NotaFiscalLancamentosProducao(models.Model):
     class Meta:
         ordering = ['-criado']
     
+    def __unicode__(self):
+        return u"%s" % self.notafiscal
     
     notafiscal = models.CharField(blank=False, null=False, max_length=100, verbose_name="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'))
     lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto, verbose_name=u"Lançamentos de Produção")
     cliente_associado = models.CharField(blank=False, null=False, max_length=100)
     data_saida = models.DateField("Data de Saída", default=datetime.datetime.today)
     observacoes = models.TextField(u"Observações", blank=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

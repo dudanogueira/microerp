@@ -13,7 +13,6 @@
 			<button type="submit" class="btn btn-primary"><i class="fa fa-dollar"></i> Registrar Nota Fiscal</button>
 		</form>
 	{% else %}
-		<h2>Selecione os Lançamentos</h2>
 		<div id="lancamentos-disponiveis">
 			<div class="row-fluid">
 				<div class="span6">
@@ -30,22 +29,27 @@
 			{% regroup lancamentos_disponiveis_valores by produto__part_number as lancamentos_disponiveis_group_list %}
 			<form method="GET" action="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" name="vender_selecionados" id="vender_selecionados">
 			{% for lancamento in lancamentos_disponiveis_group_list %}
-				<h3>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h3>
+				<h2>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h2>
 				<div id="lancamentos-disponiveis-venda">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
 							<tr>
 								<th>ID</th>
+								<th>Serial {{nome_empresa}}</th>
 								<th>Manual / Ordem de Produção</th>
 								<th>Criado</th>
+								<th>Ações</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for lancamento in lancamento.list %}
 							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
 								<td><input type="checkbox" name="lancamento" value="{{lancamento.id}}"><label for="lancamento-{{lancamento.id}}">{{lancamento.id}}</label></td>
+								<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
 								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao.id}}{% endif %}</td>
 								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+								<td>								<a data-toggle="tooltip" title="Alterar Dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
+								</td>
 							</tr>
 							{% endfor %}
 					

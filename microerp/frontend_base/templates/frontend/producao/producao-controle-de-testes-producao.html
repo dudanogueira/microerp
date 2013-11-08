@@ -37,7 +37,7 @@
 							<th>Funcional</th>
 							<th>Perda</th>
 							<th>Reparado</th>
-							<th>Sem Reparar</th>
+							<th>Func s/ reparar</th>
 							<th>Usuário</th>
 						</tr>
 					</thead>
@@ -167,8 +167,52 @@
 				<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
 				<h5>Testes</h5>
 				<strong>Total Funcional Direto</strong> {% if total_funcional_direto.total %}{{total_funcional_direto.total}}{% else %}0{% endif %}<br />
-					{% endif %}
+
 				<hr />
+				
+				
+				<h4>Resultado de Falhas de Reparo:</h4>
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>Código</th>
+							<th>Descrição</th>
+							<th>Quantidade</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for linha in total_por_falha_reparo %}
+							<tr>
+								<td>{{linha.falha__codigo}}</td>
+								<td>{{linha.falha__descricao}}</td>
+								<td>{{linha.total}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+				<h4>Resultado de Falhas de Perda:</h4>
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>Código</th>
+							<th>Descrição</th>
+							<th>Quantidade</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for linha in total_por_falha_perda %}
+							<tr>
+								<td>{{linha.falha__codigo}}</td>
+								<td>{{linha.falha__descricao}}</td>
+								<td>{{linha.total}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				<hr />
+				
+							{% endif %}
 			
 
 			<h4>Filtrar por Funcionário</h4>
@@ -200,14 +244,55 @@
 			</form>
 
 			{% if filtro and filtro_funcionario %}
-			<h5>Falhas</h5>
+			<h4>Falhas</h4>
 			<strong>Total de Perda</strong>: {% if total_por_tipo_perda.total %}{{total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
 			<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
 			
-			<h5>Testes</h5>
+			<h4>Testes</h4>
 			<strong>Total Testado</strong>: {{total_testado.total}}<br />
 			<strong>Total Reparado</strong>: {{total_reparado.total}}<br />
 			<strong>Total Perda</strong>: {{total_perda.total}}<br />
+			
+			<h4>Resultado de Falhas de Reparo:</h4>
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Código</th>
+						<th>Descrição</th>
+						<th>Quantidade</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for linha in total_por_falha_reparo %}
+						<tr>
+							<td>{{linha.falha__codigo}}</td>
+							<td>{{linha.falha__descricao}}</td>
+							<td>{{linha.total}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<h4>Resultado de Falhas de Perda:</h4>
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Código</th>
+						<th>Descrição</th>
+						<th>Quantidade</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for linha in total_por_falha_perda %}
+						<tr>
+							<td>{{linha.falha__codigo}}</td>
+							<td>{{linha.falha__descricao}}</td>
+							<td>{{linha.total}}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
 			
 			{% endif %}
 			

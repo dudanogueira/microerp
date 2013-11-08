@@ -100,7 +100,7 @@
 								
 								
 								<strong>Lançamentos de Produção Disponível:</strong> {{produto.lancamentos_disponiveis.count}}<br />
-								
+
 								{% ifnotequal  produto.lancamentos_disponiveis.count produto.total_produzido %}
 								<div class="alert alert-danger">Estoque Inconsistente com Produção</div>
 								{% endifnotequal %}
@@ -139,7 +139,7 @@
             <thead>
                 <tr>
                     <th>Item</th>
-                    <th>SubProduto</th>
+                    <th>Sub Produto</th>
 										<th>Quantidade</th>
                     <th>Nome</th>
                     <th>Descrição</th>

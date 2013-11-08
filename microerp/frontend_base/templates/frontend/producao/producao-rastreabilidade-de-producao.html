@@ -51,7 +51,7 @@
 							{% for lancamento in lancamento.list %}
 							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
 								<td>{{lancamento.id}}</td>
-								<td><span class="badge badge-warning">{{lancamento.linhatestelancamentoprodproduto__lancamento_de_producao__id__count}}</span></td>
+								<td><span class="badge badge-success">{{lancamento.linhatestelancamentoprodproduto__lancamento_de_producao__id__count}}</span></td>
 								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
 								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 								<td>
@@ -104,7 +104,7 @@
 							{% for lancamento in lancamento.list %}
 							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
 								<td><input type="checkbox" name="lancamento" value="{{lancamento.id}}"><label for="lancamento-{{lancamento.id}}">{{lancamento.id}}</label></td>
-								<td>{{lancamento.serial_number}}</td>
+								<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
 								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
 								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 								<td><a data-toggle="tooltip" title="Alterar Dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a></td>
@@ -131,7 +131,6 @@
 				<div class="span6">
 					<h2>Lançamentos Vendidos</h2>
 				</div>
-
 				<div class="span6">
 					<p class="btn-group">
 					<a role="button" href="#modal-apagar-lancamento" class="btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i> Apagar</a>
@@ -186,7 +185,7 @@
 							<th>Cliente</th>
 							<th>Data de Venda</th>
 							<th>Usuário</th>
-							<th>Observação</th>
+							<th>Observação da Nota</th>
 							<th>Ações</th>
 						</tr>
 					</thead>
@@ -281,8 +280,8 @@
 							<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
 							<td><span class="badge badge-info">{{lancamento.nota_fiscal__notafiscal}}</span></td>
 							<td>{{lancamento.cliente_associado}}</td>
-							<td>{{lancamento.funcionario_apagou__nome}}</td>
 							<td>{{lancamento.data_apagado|date:"SHORT_DATETIME_FORMAT"}}</td>
+							<td>{{lancamento.funcionario_apagou__nome}}</td>
 							<td>
 								<a data-toggle="tooltip" title="Associar a Serial Number" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
 							</td>

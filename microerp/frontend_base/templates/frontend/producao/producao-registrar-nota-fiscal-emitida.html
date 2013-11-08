@@ -9,26 +9,26 @@
 	<p>
 		<a href="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
 	</p>
-	<table class="table table-condensed table-hover table-rounded">
-		<thead>
-			<tr>
-				<th>Nota Fiscal</th>
-				<th>Cliente</th>
-				<th>Lançamentos</th>
-				<th>Criada</th>
-			</tr>
-		</thead>
-		<tbody>
-			{% for registro in notas_registradas %}
-			<tr>
-				<td>{{registro.notafiscal}}</td>
-				<td>{{registro.cliente_associado}}</td>
-				<td>{{registro.lancamentos_de_producao.all|join:","}}</td>
-				<td>{{registro.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-			</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	
+
+	{% regroup lancamentos_de_producao_values by nota_fiscal__notafiscal as notas_group_list %}
+
+	{% for nota in notas_group_list %}
+		
+	<h4>Nota Fiscal: <span class="badge badge-info">{{ nota.grouper }}</span> - Cliente: {{nota.list.0.nota_fiscal__cliente_associado}}</h4>
+
+	<ul>
+		{% for lancamento in nota.list %}
+		<li>
+			Serial Number <span class="badge badge-warning">{{lancamento.serial_number}}</span>
+		</li>
+		{% endfor %}
+	</ul>
+		
+
+	
+	{% endfor %}
+
 {% endblock %}
 
 {% block auxiliar-menu %}
