@@ -439,7 +439,8 @@
 										<th>Opções</th>
                     <th>Padrão:QTD</th>
                     <th>Padrão:DESCRIÇÃO</th>
-                    <th>Custo</th>
+                    <th>Custo Total</th>
+										<th>Custo Unitário</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -475,6 +476,7 @@
                     <td>
                         <span class="label">R$ {{linha.custo|floatformat:2}}</span>
 										</td>
+										<td>{{linha.opcao_padrao.componente.part_number}}</td>
 										<td>
                             {% if request.user.perfilacessoproducao.gerente %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
@@ -707,10 +709,6 @@ $(document).ready(function() {
     {% if form_remove_funcional.errors %}
     $('#remover-funcional').modal('show');
     {% endif %}
-		
-
-		
-		
 		
 		
 		$( ".datepicker" ).datepicker({

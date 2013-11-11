@@ -15,27 +15,40 @@
     <li class=""><a href="#movimentacao-sub-produto" data-toggle="tab">Movimentação de Sub Produtos</a></li>
 	</ul>	
 	
-	<form method="POST" class="form form-inline">
+	
+	<form method="POST" class="filtra-produto form form-inline">
 		{% csrf_token %}
 		<div class="row-fluid">
 			<div class="span4">
-				{{form_filtro_movimento_subproduto.inicio.label}}:<br />{{form_filtro_movimento_subproduto.inicio}}
+				{{form_filtro_movimento.inicio.label}}:<br />{{form_filtro_movimento.inicio}}
 			</div>
-			
+
 			<div class="span4">
-				{{form_filtro_movimento_subproduto.fim.label}}:<br />{{form_filtro_movimento_subproduto.fim}}
+				{{form_filtro_movimento.fim.label}}:<br />{{form_filtro_movimento.fim}}
 			</div>
-			
+
 			<div class="span4">
-					{{form_filtro_movimento_subproduto.funcionario.errors}}
-				{{form_filtro_movimento_subproduto.funcionario.label}}:<br />{{form_filtro_movimento_subproduto.funcionario}}
+					{{form_filtro_movimento.funcionario.errors}}
+				{{form_filtro_movimento.funcionario.label}}:<br />{{form_filtro_movimento.funcionario}}
 			</div>
-			
 		</div>
-		<br />
-		<button type="submit" class="btn btn-primary" name="filtrar-movimento-subprodutos-btn" value="filtrar"><i class="fa fa-filter"></i> Filtrar</button> <a href="." class="btn btn-info">Limpar Filtro</a>
+		<div class="row-fluid">
+
+			<div class="span6">
+					{{form_filtro_movimento.subproduto.errors}}
+				{{form_filtro_movimento.subproduto.label}}:<br />{{form_filtro_movimento.subproduto}}
+			</div>
+			
+			<div class="span6">
+					{{form_filtro_movimento.produto.errors}}
+				{{form_filtro_movimento.produto.label}}:<br />{{form_filtro_movimento.produto}}
+			</div>
+		</div>
+			
+		<button type="submit" class="btn btn-primary" name="filtrar-movimento-produtos-btn" value="filtrar"><i class="fa fa-filter"></i> Filtrar</button> <button name="clear"  value="clear" href="." class="btn btn-info">Limpar Filtro</button>
 
 	</form>
+	
 	
 	<div id="myTabContent" class="tab-content">
 
@@ -44,14 +57,16 @@
 				
 				<small>* Registros gerados somente através do processo de <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a>.</small>
 				
+				
 				<div id="ordem-de-producao-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
 							<tr>
 								<th>ID</th>
 								<th>Produto</th>
+								<th>Nome</th>
 								<th>Descrição</th>
-								<th>Quantidade</th>
+								<th>Quant</th>
 								<th>Funcionário</th>
 								<th>Data de Movimento</th>
 							</tr>
@@ -60,14 +75,16 @@
 							{% for ordem in ordens_de_producao_produto %}
 							<tr>
 								<td>{{ordem.id}}</td>
-								<td><a href="{% url "producao:ver_produto" ordem.produto.id %}">{{ordem.produto.part_number}} - {{ordem.produto.nome}}</a></td>
+								<td><a href="{% url "producao:ver_produto" ordem.produto.id %}">{{ordem.produto.part_number}}</a></td>
+								<td>{{ordem.produto.nome}}</td>
 								<td>{{ordem.produto.descricao}}</td>
 								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
 								<td>{{ordem.criado_por.funcionario}}</td>
-								<td>{{ordem.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+								<td>{{ordem.criado|date:"SHORT_DATE_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td></td>
@@ -86,32 +103,35 @@
 				
 				<small>* Registros gerados somente através do processo de <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a>.</small>
 				
+		
+				
 				<div id="ordem-de-producao-sub-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
 							<tr>
 								<th>ID</th>
 								<th>Sub Produto</th>
+								<th>Nome</th>
 								<th>Descrição</th>
-								<th>Quantidade</th>
+								<th>Quant</th>
 								<th>Funcionário</th>
 								<th>Data de Produção</th>
-								<th>Data de Criação</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for ordem in ordens_de_producao_subproduto %}
 							<tr>
 								<td>{{ordem.id}}</td>
-								<td><a href="{% url "producao:ver_produto" ordem.subproduto.id %}">{{ordem.subproduto.part_number}} - {{ordem.subproduto.nome}}</a></td>
+								<td><a href="{% url "producao:ver_produto" ordem.subproduto.id %}">{{ordem.subproduto.part_number}}</a></td>
+								<td>{{ordem.subproduto.nome}}</td>
 								<td>{{ordem.subproduto.descricao}}</td>
 								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
-								<td>{{ordem.criado_por.funcionario}}</td>
+								<td>{{ordem.funcionario_produtor}}</td>
 								<td>{{ordem.data_producao|date:"SHORT_DATE_FORMAT"}}</td>
-								<td>{{ordem.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td></td>
@@ -126,7 +146,8 @@
 			</div>
 			
 			<div class="tab-pane fade in" id="conversao-sub-produto">
-				<h2>Conversão de Sub Produto</h2>
+				<h2>Conversão de Sub Produto*</h2>
+				<small>* Conversão de Sub Produto A para Sub Produto B</small>
 				
 				<div id="ordem-de-producao-sub-produto">
 					<table class="table table-condensed table-hover table-rounded">
@@ -134,10 +155,12 @@
 							<tr>
 								<th>ID</th>
 								<th>Sub Produto A</th>
+								<th>Nome A</th>
 								<th>Sub Produto B</th>
-								<th>Quantidade</th>
-								<th>Funcionário</th>
-								<th>Data de Conversão</th>
+								<th>Nome B</th>
+								<th>Quant.</th>
+								<th>Funcionário Produtor</th>
+								<th>Data Conversão</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -145,13 +168,18 @@
 							<tr>
 								<td>{{ordem.id}}</td>
 								<td><a href="{% url "producao:ver_produto" ordem.subproduto_original.id %}">{{ordem.subproduto_original.part_number}}</a></td>
+								<td><a href="{% url "producao:ver_produto" ordem.subproduto_original.id %}">{{ordem.subproduto_original.nome}}</a></td>
 								<td><a href="{% url "producao:ver_produto" ordem.subproduto_destino.id %}">{{ordem.subproduto_destino.part_number}}</a></td>
+								<td><a href="{% url "producao:ver_produto" ordem.subproduto_destino.id %}">{{ordem.subproduto_destino.nome}}</a></td>
+								
 								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
 								<td>{{ordem.criado_por.funcionario}}</td>
-								<td>{{ordem.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+								<td>{{ordem.criado|date:"SHORT_DATE_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
+								<td></td>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td></td>
@@ -171,34 +199,35 @@
 			<div class="tab-pane fade in" id="movimentacao-produto">
 				<h2>Movimentação de Produto*</h2>
 				
-				<small>* Registros gerados através do processo de <a href="{% url "producao:ordem_de_producao" %}">ordem de produção do produto</a> mais as movimentações manuais.</small>
+				<small>* Registros gerados através dos processos de movimentações manuais dos produtos.</small>
+				
+			
+				
 				<div id="movimentacao-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
 							<tr>
 								<th>ID</th>
 								<th>Produto</th>
-								<th>Descrição</th>
-								<th>Quantidade</th>
+								<th>Nome</th>
+								<th>Quant</th>
 								<th>Operação</th>
 								<th>Antes / Depois</th>
-								<th>Funcionário</th>
-								<th>Data de Movimento</th>
-								<th>Manual</th>
+								<th>Data de Alteração</th>
+								<th>Funcionário Produtor</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for movimento in movimento_estoque_produto %}
 							<tr data-toggle="tooltip" title="Justificativa: {{movimento.justificativa}}" class="tooltip_item">
 								<td>{{movimento.id}}</td>
-								<td><a href="{% url "producao:ver_produto" movimento.produto.id %}">{{movimento.produto.part_number}} - {{movimento.produto.nome}}</a></td>
-								<td>{{movimento.produto.descricao}}</td>
+								<td><a href="{% url "producao:ver_produto" movimento.produto.id %}">{{movimento.produto.part_number}}</a></td>
+								<td>{{movimento.produto.nome}}</td>
 								<td><span class="badge badge-warning">{{movimento.quantidade_movimentada}} und</span></td>
 								<td>{{movimento.get_operacao_display}}</td>
 								<td>{{movimento.quantidade_anterior}} -> {{movimento.quantidade_nova}}</td>
-								<td>{{movimento.criado_por}}</td>
-								<td>{{movimento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-								<td>{{movimento.criado_manualmente|yesno|capfirst}}</td>
+								<td>{{movimento.criado|date:"SHORT_DATE_FORMAT"}}</td>
+								<td>{{movimento.criado_por.funcionario}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
@@ -217,7 +246,6 @@
 				</div>
 			</div>
 	
-
 	    <div class="tab-pane fade in" id="movimentacao-sub-produto">
         
 				<h2>Envio de Sub Produto Montado para Teste</h2>
@@ -228,7 +256,8 @@
 							<tr>
 								<th>ID</th>
 								<th>Sub Produto</th>
-								<th>Quantidade</th>
+								<th>Nome</th>
+								<th>Quant</th>
 								<th>Funcionário</th>
 								<th>Data de Envio</th>
 								<th>Data de Criação</th>
@@ -239,13 +268,14 @@
 							<tr>
 								<td>{{registro.id}}</td>
 								<td><a href="{% url "producao:ver_subproduto" registro.subproduto.id %}">{{registro.subproduto.part_number}}</a></td>
+								<td>{{registro.subproduto.nome}}</td>
 								<td><span class="badge badge-warning">{{registro.quantidade}} und</span></td>
 								<td>{{registro.funcionario}}</td>
 								<td>{{registro.data_envio|date:"SHORT_DATE_FORMAT"}}</td>
-								<td>{{registro.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td><strong><small>Total: {{total_registro_envio_de_testes.quantidade__sum}}</small></strong></td>
@@ -266,7 +296,8 @@
 							<tr>
 								<th>ID</th>
 								<th>Sub Produto</th>
-								<th>Quantidade</th>
+								<th>Nome</th>
+								<th>Quant</th>
 								<th>Funcionário</th>
 								<th>Data de Envio</th>
 								<th>Data de Criação</th>
@@ -277,13 +308,14 @@
 							<tr>
 								<td>{{registro.id}}</td>
 								<td><a href="{% url "producao:ver_subproduto" registro.subproduto.id %}">{{registro.subproduto.part_number}}</a></td>
+								<td>{{registro.subproduto.nome}}</td>
 								<td><span class="badge badge-warning">{{registro.quantidade}} und</span></td>
 								<td>{{registro.funcionario}}</td>
 								<td>{{registro.data_envio|date:"SHORT_DATE_FORMAT"}}</td>
-								<td>{{registro.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td><strong><small>Total: {{total_registro_saida_de_testes.quantidade__sum}}</small></strong></td>
@@ -297,8 +329,8 @@
 					
 				</div>
 				
-				<h2>Movimentações de Sub Produto</h2>
-				<small>* Registros gerados através do processo de <a href="{% url "producao:ordem_de_producao" %}">ordem de produção do sub produto</a> mais as movimentações manuais.</small>
+				<h2>Movimentação de Sub Produto</h2>
+				<small>* Registros gerados através dos processos de movimentações manuais dos sub produtos.</small>
 				
 				<div id="envio-de-subproduto-testado-para-funcional">
 					<table class="table table-condensed table-hover table-rounded">
@@ -306,13 +338,13 @@
 							<tr>
 								<th>ID</th>
 								<th>Sub Produto</th>
-								<th>Quantidade</th>
+								<th>Nome</th>
+								<th>Quant</th>
 								<th>Operação</th>
 								<th>Antes / Depois</th>
 								<th>Situação</th>
-								<th>Funcionário</th>
-								<th>Data de Criação</th>
-								<th>Manual</th>
+								<th>Data de Alteração</th>
+								<th>Funcionário Produtor</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -320,17 +352,18 @@
 							<tr data-toggle="tooltip" title="Justificativa: {{movimento.justificativa}}" class="tooltip_item">
 								<td>{{movimento.id}}</td>
 								<td><a data-toggle="tooltip" title="first tooltip" href="{% url "producao:ver_subproduto" movimento.subproduto.id %}">{{movimento.subproduto.part_number}}</a></td>
+								<td>{{movimento.subproduto.nome}}</td>
 								<td><span class="badge badge-warning" >{{movimento.quantidade_movimentada}} und</span></td>
 								<td>{{movimento.get_operacao_display}}</td>
 								
 								<td>{{movimento.quantidade_anterior}} -> {{movimento.quantidade_nova}}</td>
 								<td>{{movimento.get_situacao_display}}</td>
 								<td>{{movimento.criado_por.funcionario}}</td>
-								<td>{{movimento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-								<td>{{movimento.criado_manualmente|yesno|capfirst}}</td>
+								<td>{{movimento.criado|date:"SHORT_DATE_FORMAT"}}</td>
 							</tr>
 							{% endfor %}
 							<tr>
+								<td></td>
 								<td></td>
 								<td></td>
 								<td><strong><small>Total: {{total_movimento_estoque_subproduto.quantidade_movimentada__sum}}</small></strong></td>

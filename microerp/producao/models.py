@@ -226,8 +226,6 @@ class Componente(models.Model):
                 valor += linha.quantidade
         return valor
     
-
-    
     def total_unico_participacoes(self):
         return self.opcaolinhasubproduto_set.count() + self.linhacomponenteavulsodoproduto_set.count()
         

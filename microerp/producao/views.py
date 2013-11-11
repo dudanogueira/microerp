@@ -3122,39 +3122,50 @@ def requisicao_de_compra_atendido(request, requisicao_id):
     requisicao.save()
     return redirect(reverse('producao:requisicao_de_compra'))
 
-class FormFiltraMovimentoProducaoSubProduto(forms.Form):
+class FormFiltraMovimento(forms.Form):
     
     inicio = forms.DateField(label=u"Início", required=False)
     fim = forms.DateField(label=u"Fim", required=False)
-    funcionario = forms.ModelChoiceField(label=u"Funcionário Produtor", queryset=Funcionario.objects.all(), required=False, empty_label="Todos")
+    funcionario = forms.ModelChoiceField(label=u"Funcionário", queryset=Funcionario.objects.all(), required=False, empty_label="Todos os Funcionários")
+    subproduto = forms.ModelChoiceField(label=u"Sub Produto", queryset=SubProduto.objects.all(), required=False, empty_label="Todos os Sub Produtos")
+    produto = forms.ModelChoiceField(label=u"Produto", queryset=ProdutoFinal.objects.all(), required=False, empty_label="Todos os Produtos")
     
     def __init__(self, *args, **kwargs):
-        super(FormFiltraMovimentoProducaoSubProduto, self).__init__(*args, **kwargs)
-        self.fields['inicio'].widget.attrs.update({'class' : 'datepicker'})
-        self.fields['fim'].widget.attrs.update({'class' : 'datepicker'})
+        super(FormFiltraMovimento, self).__init__(*args, **kwargs)
+        self.fields['inicio'].widget.attrs.update({'class' : 'datepicker input-small'})
+        self.fields['fim'].widget.attrs.update({'class' : 'datepicker input-small'})
         self.fields['funcionario'].widget.attrs['class'] = 'select2 input-small'
+        self.fields['subproduto'].widget.attrs['class'] = 'select2 input-small'
+        self.fields['produto'].widget.attrs['class'] = 'select2 input-small'
 
+        
 @user_passes_test(possui_perfil_acesso_producao)
 def movimento_de_producao(request):
     registros_envio_de_teste = RegistroEnvioDeTesteSubProduto.objects.all()
     registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
     registros_saida_de_teste = RegistroSaidaDeTesteSubProduto.objects.all()
-    movimento_estoque_subproduto = MovimentoEstoqueSubProduto.objects.all()
-    movimento_estoque_produto = MovimentoEstoqueProduto.objects.all()
+    movimento_estoque_subproduto = MovimentoEstoqueSubProduto.objects.filter(criado_manualmente=False)
+    movimento_estoque_produto = MovimentoEstoqueProduto.objects.filter(criado_manualmente=False)
     ordens_conversao_subproduto = OrdemConversaoSubProduto.objects.all()
     ordens_de_producao_produto = OrdemProducaoProduto.objects.all()
     ordens_de_producao_subproduto = OrdemProducaoSubProduto.objects.all()
-    form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto()
+    form_filtro_movimento = FormFiltraMovimento()
     if request.POST:
-        form_filtro_movimento_subproduto = FormFiltraMovimentoProducaoSubProduto(request.POST)
+        form_filtro_movimento = FormFiltraMovimento(request.POST)
         # resgata ordens de producao subproduto por padrao
-        if form_filtro_movimento_subproduto.is_valid():
-            inicio = form_filtro_movimento_subproduto.cleaned_data['inicio']
-            fim = form_filtro_movimento_subproduto.cleaned_data['fim']
-            funcionario = form_filtro_movimento_subproduto.cleaned_data['funcionario']
+        if form_filtro_movimento.is_valid():
+            inicio = form_filtro_movimento.cleaned_data['inicio']
+            fim = form_filtro_movimento.cleaned_data['fim']
+            # define fim como fim do dia, para acertar a busca por campos com hora
+            if fim:
+                fim = datetime.datetime(fim.year, fim.month, fim.day, 23, 59)
+            funcionario = form_filtro_movimento.cleaned_data['funcionario']
+            subproduto = form_filtro_movimento.cleaned_data['subproduto']
+            produto = form_filtro_movimento.cleaned_data['produto']
+        if not request.POST.get('clear', None):
             # valores preenchidos resgatados, filtrar
             # primeiro, ordens de producao
-            # somente preencheu a data de inciio
+            # somente preencheu a data de incio
             if inicio and not fim:
                 ordens_de_producao_subproduto = ordens_de_producao_subproduto.filter(data_producao__gte=inicio)
                 ordens_de_producao_produto = ordens_de_producao_produto.filter(criado__gte=inicio)
@@ -3190,7 +3201,18 @@ def movimento_de_producao(request):
                 movimento_estoque_subproduto = movimento_estoque_subproduto.filter(criado_por=funcionario.user)
                 movimento_estoque_produto = movimento_estoque_produto.filter(criado_por=funcionario.user)
                 ordens_conversao_subproduto = ordens_conversao_subproduto.filter(criado_por=funcionario.user)
-        
+            # filtra por produto
+            if produto:
+                movimento_estoque_produto = movimento_estoque_produto.filter(produto=produto)
+                ordens_de_producao_produto = ordens_de_producao_produto.filter(produto=produto)
+            if subproduto:
+                ordens_de_producao_subproduto = ordens_de_producao_subproduto.filter(subproduto=subproduto)
+                registros_envio_de_teste = registros_envio_de_teste.filter(subproduto=subproduto)
+                registros_saida_de_teste = registros_saida_de_teste.filter(subproduto=subproduto)
+                movimento_estoque_subproduto = movimento_estoque_subproduto.filter(subproduto=subproduto)
+                ordens_conversao_subproduto = ordens_conversao_subproduto.filter(subproduto_original=subproduto)
+        else:
+            form_filtro_movimento = FormFiltraMovimento()
     # calcula totais dos sets
     total_ordem_producao = ordens_de_producao_subproduto.aggregate(Sum('quantidade'))
     total_ordem_producao_produto = ordens_de_producao_produto.aggregate(Sum('quantidade'))
@@ -3202,7 +3224,6 @@ def movimento_de_producao(request):
     total_ordem_conversao_subproduto = ordens_conversao_subproduto.aggregate(Sum('quantidade'))
     
     return render_to_response('frontend/producao/producao-movimento-de-producao.html', locals(), context_instance=RequestContext(request),)
-
 
 class FormRemoverLancamentoProdProduto(forms.Form):
     id_lancamentos = forms.CharField(required=True, help_text="Formato: 12,34,56,67,..", label="ID Lançamentos")
