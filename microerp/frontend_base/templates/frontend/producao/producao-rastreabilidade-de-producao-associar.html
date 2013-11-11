@@ -11,11 +11,17 @@
 	<form method="POST">
 		{% csrf_token %}
 		{{testes_de_lancamento_form.management_form}}
+		
+		{% if not lancamento_associa_form.instance.serial_number %}
 		<p>
 	    {{ lancamento_associa_form.serial_number.errors }}
 	    <label for="id_serial_number">{{lancamento_associa_form.serial_number.label}}</label>
-	    {{ lancamento_associa_form.serial_number }}
+	    {{ lancamento_associa_form.serial_number }}<Br />
+			<small>Atenção ao digitar estes dados, pois não poderão ser alterados futuramente.</small>
 		</p>
+		{% else %}
+		<h2 class="badge badge-warning">{{lancamento_associa_form.instance.serial_number}}</h2>
+		{% endif %}
 		<h4>Montagem</h4>
 		<div class="row-fluid">
 			<div class="span6">

@@ -1517,11 +1517,10 @@ class NotaFiscalLancamentosProducao(models.Model):
     def __unicode__(self):
         return u"%s" % self.notafiscal
     
-    notafiscal = models.CharField(blank=False, null=False, max_length=100, verbose_name="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'))
+    notafiscal = models.CharField(blank=False, null=False, help_text=u"Atenção ao digitar estes dados, pois não poderão ser alterados futuramente.", max_length=100, verbose_name="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'))
     lancamentos_de_producao = models.ManyToManyField(LancamentoProdProduto, verbose_name=u"Lançamentos de Produção")
     cliente_associado = models.CharField(blank=False, null=False, max_length=100)
     data_saida = models.DateField("Data de Saída", default=datetime.datetime.today)
-    observacoes = models.TextField(u"Observações", blank=True)
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")

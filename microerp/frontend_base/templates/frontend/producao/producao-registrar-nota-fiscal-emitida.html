@@ -15,12 +15,12 @@
 
 	{% for nota in notas_group_list %}
 		
-	<h4>Nota Fiscal: <span class="badge badge-info">{{ nota.grouper }}</span> - Cliente: {{nota.list.0.nota_fiscal__cliente_associado}}</h4>
+	<h4>Nota Fiscal: <span class="badge badge-info">{{ nota.grouper }}</span>- 	{{nota.list.0.nota_fiscal__data_saida|date:"SHORT_DATE_FORMAT"}} - Cliente: {{nota.list.0.nota_fiscal__cliente_associado}}</h4>
 
 	<ul>
 		{% for lancamento in nota.list %}
 		<li>
-			Serial Number <span class="badge badge-warning">{{lancamento.serial_number}}</span>
+			Serial {{nome_empresa}} <span class="badge badge-warning">{{lancamento.serial_number}}</span> - Produto: {{lancamento.produto__part_number}} - {{lancamento.produto__nome}}
 		</li>
 		{% endfor %}
 	</ul>
