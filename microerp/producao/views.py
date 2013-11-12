@@ -3420,7 +3420,7 @@ def rastreabilidade_de_producao(request):
         'produto__part_number',
         'produto__nome',
         'nota_fiscal__notafiscal',        
-        )
+        ).order_by('produto__part_number', '-data_apagado')
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
 
 class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
