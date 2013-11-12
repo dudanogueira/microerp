@@ -1738,7 +1738,6 @@ def ver_produto_apagar_anexo(request, produto_id, anexo_id):
         messages.error(request, u"Erro! Anexo %s não Apagado!" % anexo)
     return(redirect(reverse('producao:ver_produto', args=[anexo.produto.id,]) + "#arquivos"))
 
-
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
     produtos_encontrados = ProdutoFinal.objects.filter(ativo=True).order_by('part_number')
@@ -1751,22 +1750,20 @@ def listar_produtos(request):
                 produtos_encontrados = produtos_encontrados.filter(
                     Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
                 )
-    produtos_inativos = ProdutoFinal.objects.filter(ativo=False).order_by('part_number')
-        
+    produtos_inativos = ProdutoFinal.objects.filter(ativo=False).order_by('part_number')    
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_produto(request):
     if request.POST:
         form = ProdutoFinalForm(request.POST, request.FILES)
-        produto = form.save()
-        messages.success(request, u"Sucesso! Produto adicionado.")
-        return redirect(reverse("producao:ver_produto", args=[produto.id],))
+        if form.is_valid():
+            produto = form.save()
+            messages.success(request, u"Sucesso! Produto adicionado.")
+            return redirect(reverse("producao:ver_produto", args=[produto.id],))
     else:
         form = ProdutoFinalForm()
     return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
-
-
 
 @user_passes_test(possui_perfil_acesso_producao)
 def inativar_produto(request, produto_id):
@@ -3231,7 +3228,7 @@ def movimento_de_producao(request):
                 registros_saida_de_teste = registros_saida_de_teste.filter(subproduto=subproduto)
                 movimento_estoque_subproduto = movimento_estoque_subproduto.filter(subproduto=subproduto)
                 ordens_conversao_subproduto = ordens_conversao_subproduto.filter(subproduto_original=subproduto)
-            if registros:
+            if registros != 'todos':
                 ordens_de_producao_subproduto = ordens_de_producao_subproduto.all()[0:registros]
                 ordens_de_producao_produto = ordens_de_producao_produto.all()[0:registros]
                 registros_envio_de_teste = registros_envio_de_teste.all()[0:registros]
@@ -3351,10 +3348,13 @@ def rastreabilidade_de_producao(request):
     if request.POST and request.POST.get('filtra-lancamentos-vendidos-btn', None):
         form_filtrar_lancamentos_vendidos = form_filtrar_lancamentos_vendidos = FormFiltraLancamentosVendidos(request.POST)
         if form_filtrar_lancamentos_vendidos.is_valid():
+            vendidos_filtro = True
             serial_number_q = form_filtrar_lancamentos_vendidos.cleaned_data['serial_number']
             cliente_q = form_filtrar_lancamentos_vendidos.cleaned_data['cliente']
             nota_fiscal_q = form_filtrar_lancamentos_vendidos.cleaned_data['nota_fiscal']
             data_de_venda_q = form_filtrar_lancamentos_vendidos.cleaned_data['data_de_venda']
+
+            lancamentos_vendidos = LancamentoProdProduto.objects.filter(apagado=False, vendido=True)            
             if serial_number_q:
                 lancamentos_vendidos = lancamentos_vendidos.filter(serial_number__icontains=serial_number_q)
             if cliente_q:
@@ -3363,8 +3363,9 @@ def rastreabilidade_de_producao(request):
                 lancamentos_vendidos = lancamentos_vendidos.filter(nota_fiscal__notafiscal__icontains=nota_fiscal_q)
             if data_de_venda_q:
                 lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__day=data_de_venda_q.day, data_vendido__month=data_de_venda_q.month, data_vendido__year=data_de_venda_q.year)
-        
-        
+    else:
+        lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__month=datetime.date.today().month, data_vendido__year=datetime.date.today().year)
+
     lancamentos_vendidos_valores = lancamentos_vendidos.values(
     'id',
     'data_vendido',
@@ -3379,12 +3380,14 @@ def rastreabilidade_de_producao(request):
     'justificativa_adicionado',
     'observacoes',
     'nota_fiscal__notafiscal',
-    )
+    ).order_by('produto__part_number', '-data_vendido')
     # apagados
+    
     lancamentos_apagados = LancamentoProdProduto.objects.filter(apagado=True)
     if request.POST and request.POST.get('filtra-lancamentos-apagados-btn', None):
         form_filtrar_lancamentos_apagados = FormFiltraLancamentosApagados(request.POST)
         if form_filtrar_lancamentos_apagados.is_valid():
+            apagados_filtro = True
             serial_number_q = form_filtrar_lancamentos_apagados.cleaned_data['serial_number']
             cliente_q = form_filtrar_lancamentos_apagados.cleaned_data['cliente']
             nota_fiscal_q = form_filtrar_lancamentos_apagados.cleaned_data['nota_fiscal']
@@ -3398,7 +3401,10 @@ def rastreabilidade_de_producao(request):
                 lancamentos_apagados = lancamentos_apagados.filter(nota_fiscal__notafiscal__icontains=nota_fiscal_q)
             if data_apagado_q:
                 lancamentos_apagados = lancamentos_apagados.filter(data_apagado__day=data_apagado_q.day, data_apagado__month=data_apagado_q.month, data_apagado__year=data_apagado_q.year)
-            
+    else:
+        lancamentos_apagados = lancamentos_apagados.filter(data_apagado__month=datetime.date.today().month, data_apagado__year=datetime.date.today().year)
+        
+
     lancamentos_apagados_valores = lancamentos_apagados.values(
         'id',
         'serial_number',
@@ -3413,12 +3419,9 @@ def rastreabilidade_de_producao(request):
         'produto__id',
         'produto__part_number',
         'produto__nome',
-        'nota_fiscal__notafiscal',
-        
+        'nota_fiscal__notafiscal',        
         )
-    
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
-
 
 class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
     
@@ -3430,7 +3433,7 @@ class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
         if self.instance:
             # filtra somente os que participam do subproduto
             subprodutos = self.instance.linhasubprodutodoproduto_set.all()
-            subprodutos = [(s.id, s.subproduto.part_number) for s in subprodutos]
+            subprodutos = [(s.id, "%s - %s" % (s.subproduto.part_number, s.subproduto.nome)) for s in subprodutos]
             self.fields['subprodutos_testaveis'].choices = subprodutos
     
     class Meta:
@@ -3595,7 +3598,7 @@ class FormFiltrarFalhasPorFuncionario(forms.Form):
 def controle_de_testes_producao(request):
     form_filtrar_falha_por_produto = FormFiltrarFalhasPorSubProduto()
     fom_filtrar_falha_por_funcionario = FormFiltrarFalhasPorFuncionario()
-    lancamentos_falha = LancamentoDeFalhaDeTeste.objects.all()
+    lancamentos_falha = LancamentoDeFalhaDeTeste.objects.all()[0:200]
     testes_perda = FalhaDeTeste.objects.filter(tipo='perda')
     testes_reparo = FalhaDeTeste.objects.filter(tipo='reparo')
     # filtra falhas por subproduto

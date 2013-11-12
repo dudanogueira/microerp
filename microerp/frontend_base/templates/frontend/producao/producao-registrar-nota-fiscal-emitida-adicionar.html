@@ -10,6 +10,7 @@
 		<form method="post">
 			{% csrf_token %}
 			{{form_adiciona_nota.as_p}}
+			<div class="alert alert-danger">Atenção ao digitar estes dados, pois não poderão ser alterados futuramente.</div>
 			<button type="submit" class="btn btn-primary"><i class="fa fa-dollar"></i> Registrar Nota Fiscal</button>
 		</form>
 	{% else %}

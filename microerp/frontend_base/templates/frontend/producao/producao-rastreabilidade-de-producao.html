@@ -130,6 +130,9 @@
 			<div class="row-fluid">
 				<div class="span6">
 					<h2>Lançamentos Vendidos</h2>
+					{% if not vendidos_filtro %}
+					* mostrando os Lançamentos do mês corrente
+					{% endif %}
 				</div>
 				<div class="span6">
 					<p class="btn-group">
@@ -220,6 +223,9 @@
 		
 		<div class="tab-pane fade in" id="lancamentos-apagados">
 			<h2>Lançamentos Apagados</h2>
+			{% if not apagados_filtro %}
+			* mostrando os Lançamentos do mês corrente
+			{% endif %}
 			
 			
 			<form method="POST">
