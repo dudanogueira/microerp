@@ -17,6 +17,9 @@ from rh.models import EntradaFolhaDePonto, Competencia
 from rh.utils import get_weeks
 
 from django import forms
+from django.conf import settings
+
+from almoxarifado.models import ControleDeEquipamento, LinhaControleEquipamento
 
 #
 # FORMULARIOS
@@ -334,3 +337,115 @@ def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, fo
 def matriz_de_competencias(request):
     competencias = Competencia.objects.all()
     return render_to_response('frontend/rh/rh-matriz-de-competencias.html', locals(), context_instance=RequestContext(request),)
+
+
+#
+# CONTROLE DE EPI 
+#
+
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_epi(request):
+    controles_sem_arquivos = ControleDeEquipamento.objects.filter(arquivo_impresso_assinado='')
+    linhas_com_devolucao_vencida = LinhaControleEquipamento.objects.filter(
+            data_devolvido=None,
+            data_previsao_devolucao__lt=datetime.date.today()
+    ).order_by('controle__criado', 'data_previsao_devolucao')
+    return render_to_response('frontend/rh/rh-controle-de-epi.html', locals(), context_instance=RequestContext(request),)
+
+
+class FormControleFerramentasAdicionar(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        tipo = kwargs.pop('tipo', None)
+        super(FormControleFerramentasAdicionar, self).__init__(*args, **kwargs)
+        self.fields['tipo'].initial = tipo
+        self.fields['tipo'].widget = forms.HiddenInput()
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
+    
+    class Meta:
+        model = ControleDeEquipamento
+        fields = 'funcionario', 'observacao', 'tipo'
+
+
+class LinhaControleEquipamentoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaControleEquipamentoForm, self).__init__(*args, **kwargs)
+        self.fields['produto'].widget.attrs['class'] = 'select2'
+        self.fields['quantidade'].widget.attrs['class'] = 'input-small'
+        self.fields['data_previsao_devolucao'].widget.attrs['class'] = 'input-small datepicker'
+    
+    class Meta:
+        model = LinhaControleEquipamento
+        fields = 'produto', 'quantidade', 'data_previsao_devolucao'
+    
+
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_epi_adicionar(request):
+    # form do controle
+    form_adicionar = FormControleFerramentasAdicionar(tipo="epi")
+    # form dos produtos vinculados
+    LinhaDeEquipamentoFormset = forms.models.inlineformset_factory(
+        ControleDeEquipamento,
+        LinhaControleEquipamento,
+        extra=1,
+        can_delete=False,
+        form=LinhaControleEquipamentoForm,
+    )
+    linha_equipamento_form = LinhaDeEquipamentoFormset(prefix="linhaequipamento")
+    
+    if request.POST:
+        if 'adicionar-campos-btn' in request.POST:
+            cp = request.POST.copy()
+            quantidade_adicionar = request.POST.get('quantidade_adicionar', 1)
+            if quantidade_adicionar == '':
+                quantidade_adicionar = 1
+            else:
+                quantidade_adicionar = int(quantidade_adicionar)
+            cp['linhaequipamento-TOTAL_FORMS'] = int(cp['linhaequipamento-TOTAL_FORMS'])+ quantidade_adicionar
+            # devolve o form processado
+            linha_equipamento_form = LinhaDeEquipamentoFormset(cp, prefix="linhaequipamento")
+            form_adicionar = FormControleFerramentasAdicionar(cp, tipo="epi")
+            
+        if 'criar-controle-btn' in request.POST:
+            linha_equipamento_form = LinhaDeEquipamentoFormset(request.POST, prefix="linhaequipamento")
+            form_adicionar = FormControleFerramentasAdicionar(request.POST, tipo="epi")
+            if form_adicionar.is_valid() and linha_equipamento_form.is_valid():
+                controle = form_adicionar.save()
+                for linha_form in linha_equipamento_form:
+                    linha = linha_form.save(commit=False)
+                    linha.controle = controle
+                    linha.save()
+                messages.success(request, "Sucesso! Novo Controle #%s criado" % controle.id)
+                return redirect(reverse("rh:controle_de_epi"))
+    return render_to_response('frontend/rh/rh-controle-de-epi-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+
+class FormVincularArquivoControle(forms.ModelForm):
+
+    class Meta:
+        model = ControleDeEquipamento
+        fields = 'arquivo_impresso_assinado',
+
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_epi_vincular_arquivo(request, controle_id):
+    controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
+    form_vincular = FormVincularArquivoControle(instance=controle)
+    if request.POST:
+        form_vincular = FormVincularArquivoControle(request.POST, request.FILES, instance=controle)
+        if form_vincular.is_valid():
+            controle = form_vincular.save(commit=False)
+            controle.data_arquivo_impresso_assinado_recebido = datetime.date.today()
+            controle.receptor_arquivo_impresso = request.user.funcionario
+            controle.save()
+            messages.success(request, "Arquivo de Controle de EPI salvo com sucesso!")
+            return redirect(reverse("rh:controle_de_epi"))
+    return render_to_response('frontend/rh/rh-controle-de-epi-vincular-arquivo.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_epi_imprimir(request, controle_id):
+    controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
+    local_padrao = getattr(settings, 'LOCAL_PADRAO_DOCUMENTOS', u'Teófilo Otoni, Minas Gerais')
+    return render_to_response('frontend/rh/rh-controle-de-epi-imprimir.html', locals(), context_instance=RequestContext(request),)
+    

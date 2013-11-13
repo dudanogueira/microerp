@@ -22,22 +22,27 @@ urlpatterns = patterns('',
     url(r'^competencias/matriz/$', 'rh.views.matriz_de_competencias', name='matriz_de_competencias'),
     
     # exames medicos
-    url(r'^exames_medicos/$', 'rh.views.exames_medicos', name='exames_medicos'),
-    url(r'^exames_medicos/(?P<exame_id>[0-9]+)/realizado_hoje/$', 'rh.views.exames_medicos_exame_realizado_hoje', name='exame_realizado_hoje'),
-    url(r'^exames_medicos/(?P<exame_id>[0-9]+)/$', 'rh.views.exames_medicos_ver', name='exames_medicos_ver'),
+    url(r'^exames-medicos/$', 'rh.views.exames_medicos', name='exames_medicos'),
+    url(r'^exames-medicos/(?P<exame_id>[0-9]+)/realizado_hoje/$', 'rh.views.exames_medicos_exame_realizado_hoje', name='exame_realizado_hoje'),
+    url(r'^exames-medicos/(?P<exame_id>[0-9]+)/$', 'rh.views.exames_medicos_ver', name='exames_medicos_ver'),
 
     # solicitações de licença
-    url(r'^solicitacao_licencas/$', 'rh.views.solicitacao_licencas', name='solicitacao_licencas'),
-    url(r'^solicitacao_licencas/(?P<solicitacao_id>[0-9]+)/autorizar/$', 'rh.views.solicitacao_licencas_autorizar', name='solicitacao_licencas_autorizar'),
+    url(r'^solicitacao-licencas/$', 'rh.views.solicitacao_licencas', name='solicitacao_licencas'),
+    url(r'^solicitacao-licencas/(?P<solicitacao_id>[0-9]+)/autorizar/$', 'rh.views.solicitacao_licencas_autorizar', name='solicitacao_licencas_autorizar'),
 
     # CONTROLES
     url(r'^controle/ferias/$', 'rh.views.controle_de_ferias', name='controle_de_ferias'),    
 
     # controle de banco de horas
-    url(r'^controle/banco_de_horas/$', 'rh.views.controle_de_banco_de_horas', name='controle_de_banco_de_horas'),    
+    url(r'^controle/banco-de-horas/$', 'rh.views.controle_de_banco_de_horas', name='controle_de_banco_de_horas'),    
 
     
     # demissoes
-    url(r'^processos_demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
+    url(r'^processos-demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
     
+    # controle de epi
+    url(r'^controle-de-epi/$', 'rh.views.controle_de_epi', name='controle_de_epi'),
+    url(r'^controle-de-epi/adicionar/$', 'rh.views.controle_de_epi_adicionar', name='controle_de_epi_adicionar'),
+    url(r'^controle-de-epi/(?P<controle_id>[0-9]+)/vincular-arquivo/$', 'rh.views.controle_de_epi_vincular_arquivo', name='controle_de_epi_vincular_arquivo'),
+    url(r'^controle-de-epi/(?P<controle_id>[0-9]+)/imprimir/$', 'rh.views.controle_de_epi_imprimir', name='controle_de_epi_imprimir'),
 )
