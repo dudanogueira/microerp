@@ -38,7 +38,7 @@
     </p>
     <p>
         {% if request.user.perfilacessorh.gerente and not folha.encerrado and folha.entradafolhadeponto_set.count %}
-        <a href="{% url "rh:controle_banco_de_horas_do_funcionario_gerenciar" funcionario.id folha.id %}" class="btn btn-large btn-success"><i class="icon-thumbs-up icon-white"></i> Fechar e Autorizar esta Folha</a>
+        <a href="{% url "rh:controle_banco_de_horas_do_funcionario_gerenciar" funcionario.id folha.id %}" class="btn btn-large btn-success"><i class="fa fa-thumbs-up fa-white"></i> Fechar e Autorizar esta Folha</a>
         {% endif %}
     </p>
 
@@ -58,7 +58,7 @@
         <div class="accordion-group">
             <div class="accordion-heading in">
                 <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse{{folha.id}}">
-                    <i class="icon icon-plus"></i> Adicionar Nova Entrada na Folha #{{folha.id}}<br />
+                    <i class="fa fa-plus"></i> Adicionar Nova Entrada na Folha #{{folha.id}}<br />
                 </a>
             </div>
             <div id="collapse{{folha.id}}" class="accordion-body collapse {% if form_add_entrada_folha_ponto.errors %}in{%endif%}">

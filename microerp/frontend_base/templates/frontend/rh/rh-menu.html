@@ -1,26 +1,28 @@
 <div class="well sidebar-nav">
   <ul class="nav nav-list">
-    <li class="nav-header"><i class="icon icon-group icon-3x"></i>Recursos  Humanos</li>
-    <li id="menu-rh-home"><a href="{% url "rh:home" %}"><i class="icon-th"></i> Início > RH</a></li>
+    <li class="nav-header"><i class="fa fa-group fa-2x"></i> Recursos  Humanos</li>
+    <li id="menu-rh-home"><a href="{% url "rh:home" %}"><i class="fa fa-th"></i> Início > RH</a></li>
     <li id="menu-rh-funcionarios"><a href="{% url "rh:funcionarios" %}">
             {% if funcionario %}
-                <i class="icon-user"></i>
+                <i class="fa fa-user"></i>
                 Funcionário > {{funcionario}}
             {%else%}
-                <i class="icon-group"></i>
+                <i class="fa fa-group"></i>
                 Funcionários
                 {% if relatorio %}
                 > Relatórios
                 {% endif %}
             {%endif%}
     </a></li>
-    <li id="menu-rh-exames-medicos"><a href="{% url "rh:exames_medicos" %}"><i class="icon-user-md"></i> Exames Médicos</a></li>
-    <li id="menu-rh-solicitacao-licenca"><a href="{% url "rh:solicitacao_licencas" %}"><i class="icon-external-link"></i> Licenças</a></li>
-    <li id="menu-rh-controle-de-ferias"><a href="{% url "rh:controle_de_ferias" %}"><i class="icon-picture"></i> Controle de Férias</a></li>
-    <li id="menu-rh-controle-de-bh"><a href="{% url "rh:controle_de_banco_de_horas" %}"><i class="icon-time"></i> Banco de Horas</a></li>
-    <li id="menu-rh-matriz-de-competencias"><a href="{% url "rh:matriz_de_competencias" %}"><i class="icon-trophy"></i> Matriz de Competências</a></li>
+    <li id="menu-rh-exames-medicos"><a href="{% url "rh:exames_medicos" %}"><i class="fa fa-user-md"></i> Exames Médicos</a></li>
+    <li id="menu-rh-solicitacao-licenca"><a href="{% url "rh:solicitacao_licencas" %}"><i class="fa fa-external-link"></i> Licenças</a></li>
+    <li id="menu-rh-controle-de-ferias"><a href="{% url "rh:controle_de_ferias" %}"><i class="fa fa-picture-o"></i> Controle de Férias</a></li>
+    <li id="menu-rh-controle-de-bh"><a href="{% url "rh:controle_de_banco_de_horas" %}"><i class="fa fa-clock-o"></i> Banco de Horas</a></li>
+    <li id="menu-rh-matriz-de-competencias"><a href="{% url "rh:matriz_de_competencias" %}"><i class="fa fa-trophy"></i> Matriz de Competências</a></li>
+    <li id="menu-rh-controle-de-epi"><a href="{% url "rh:controle_de_epi" %}"><i class="fa fa-umbrella"></i> Controle de EPI</a></li>
+		
     
     
-    <li id="menu-rh-processos-de-demissao"><a href="{% url "rh:processos_demissao" %}"><i class="icon-legal"></i> Demissões</a></li>
+    <li id="menu-rh-processos-de-demissao"><a href="{% url "rh:processos_demissao" %}"><i class="fa fa-legal"></i> Demissões</a></li>
   </ul>
 </div><!--/.well -->

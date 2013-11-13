@@ -1,0 +1,27 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Controle de EPI: Vincular Arquivo{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> RH - Vincular Arquivo ao Controle de EPI #{{controle.id}}</h1>
+<a href="{% url "rh:controle_de_epi" %}"><i class="fa fa-arrow-left"></i> voltar</a>
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+{{form_vincular.as_p}}
+<button class="btn btn-primary" type="submit"><i class="fa fa-paperclip"></i> Vincular Arquivo</button>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}
