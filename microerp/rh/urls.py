@@ -45,4 +45,5 @@ urlpatterns = patterns('',
     url(r'^controle-de-epi/adicionar/$', 'rh.views.controle_de_epi_adicionar', name='controle_de_epi_adicionar'),
     url(r'^controle-de-epi/(?P<controle_id>[0-9]+)/vincular-arquivo/$', 'rh.views.controle_de_epi_vincular_arquivo', name='controle_de_epi_vincular_arquivo'),
     url(r'^controle-de-epi/(?P<controle_id>[0-9]+)/imprimir/$', 'rh.views.controle_de_epi_imprimir', name='controle_de_epi_imprimir'),
+    url(r'^controle-de-epi/(?P<controle_id>[0-9]+)/(?P<linha_id>[0-9]+)/retornar-epi/$', 'rh.views.controle_de_epi_retornar', name='controle_de_epi_retornar'),
 )

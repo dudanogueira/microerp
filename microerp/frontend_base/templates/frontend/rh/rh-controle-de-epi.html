@@ -7,7 +7,7 @@
 
 <h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> RH - Controle de EPI</h1>
 
-<div class="row-fluid">
+<div class="row-fluid" id="sub-menu-controle-epi">
 	
 	<div class="span8">
 		<ul class="nav nav-tabs">
@@ -32,7 +32,7 @@
         <thead>
               <tr>
                   <th>ID</th>
-                  <th>Funcionário</th>
+                  <th>Funcionário Assinante</th>
 									<th>Criado</th>
                   <th>Ações</th>
               </tr>
@@ -42,7 +42,7 @@
 						{% for controle in controles_sem_arquivos %}
 							<td>{{controle.id}}</td>
 							<td>{{controle.funcionario}}</td>
-							<td>{{controle.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{controle.criado|timesince}}</small>)</td>
+							<td>{{controle.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{controle.criado|timesince}}</small>) por {{controle.criado_por.funcionario}}</td></td>
 							<td>
 								<p class='btn-group'>
 									<a href="{% url "rh:controle_de_epi_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
@@ -63,18 +63,38 @@
 				</tbody>
 			</table>
 
-			<h2>Retorno de Equipamento Pendente</h2>
+			<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
 			{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
 			
 			{% for linha in linhas_group_list %}
 			<div class="well well-small">
 			<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
-			<ul>
-			{% for equipamento in linha.list %}
-				<li><strong>{{equipamento.produto}}</strong> QTD: <strong>{{equipamento.quantidade}}</strong>, data de devolução: <strong>{{equipamento.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}</strong></li>
-			{% endfor %}
-			</ul>
-
+			<table class="table table-condensed">
+        <thead>
+              <tr>
+									<th>ID</th>
+                  <th>Código</th>
+                  <th>Produto</th>
+									<th>Quantidade</th>
+                  <th>Data de Devolução</th>
+									<th>Ações</th>
+              </tr>
+         </thead>
+				<tbody>
+					{% for equipamento in linha.list %}
+					<tr>
+						<td>{{equipamento.id}}</td>
+						<td>{{equipamento.produto.codigo}}</td>
+						<td>{{equipamento.produto.nome}}</td>
+						<td>{{equipamento.quantidade}}</td>
+						<td>{{equipamento.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}</td>
+						<td>
+							<a class="btn btn-primary" href="{% url "rh:controle_de_epi_retornar"  equipamento.controle.id equipamento.id %}"><i class="fa fa-thumbs-up"></i> Acusar recebimento</a>
+						</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 			</div>
 			{% endfor %}
 			
@@ -83,9 +103,58 @@
 		</div>
 		
     <div class="tab-pane fade in" id="filtrar">
-			filtrar
+			<form method="POST" action="#filtrar">
+			{% csrf_token %}
+			{{form_filtra_epi}}
+			<button type="submit" class="btn btn-primary" name="filtrar-controleepi-btn">Filtrar</button>
+			</form>
+			{% if controles_do_funcionario %}
+				{% for controle in controles_do_funcionario %}
+			
+				<h1>#{{controle.id}} - {{controle.criado}}</h1>
+			
+	      <table class="table table-condensed table-hover table-rounded">
+	        <thead>
+		      	<tr>
+		          <th>ID</th>
+		          <th>Produto</th>
+							<th>Quantidade</th>
+		          <th>Código CA</th>
+							<th>Devolução</th>
+							<th>Retornado</th>
+		        </tr>
+	        </thead>
+					<tbody>
+						{% for linha in controle.linhacontroleequipamento_set.all %}
+						{% if linha.data_devolvido %}
+								<tr class="alert alert-success">
+						{% else %}
+							{% if linha.pendente %}
+								<tr class="alert alert-danger">
+							{% else %}
+								<tr class="alert alert-info">
+							{% endif%}
+						{% endif %}
+								<td>{{linha.id}}</td>
+								<td>{{linha.produto}}</td>
+								<td>{{linha.quantidade}}</td>
+								<td>{{linha.codigo_ca}}</td>
+								<td>{{linha.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}<br />
+									{% if linha.pendente %}
+										<strong><small>passado  {{linha.data_previsao_devolucao|timesince}}</small></strong>
+									{% else %}
+										<strong><small>daqui há {{linha.data_previsao_devolucao|timeuntil}}</small></strong>
+									{% endif %}
+								</td>
+								<td>{% if linha.data_devolvido %}<i class="fa fa-check"></i> {{linha.data_devolvido|date:"SHORT_DATE_FORMAT"}}{% endif %}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				{% endfor %}
+			{% endif %}
 		</div>
-</div>
+<div>
 		
 
 
@@ -94,10 +163,23 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 <script>
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
+  var activeTab = $('[href=' + location.hash + ']');
+  activeTab && activeTab.click();
+	
 });
+$('#sub-menu-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	pane.tab('show');		
+})
 </script>
 {% endaddtoblock %}
 {% include "frontend/rh/rh-menu.html" %}

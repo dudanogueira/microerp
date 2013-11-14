@@ -7,11 +7,13 @@
 <div class="container">
 	<h1 class="text-center">Ficha de Controle de EPI's</h1>
 	
-	<table>
+	<table style="width:100%">
 		<tr>
-			<td>Nome: {{controle.funcionario.nome}}</td>
-			<td>			Data de Admissão: {{controle.funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}</td>
-			<td>Cargo: {{controle.funcionario.cargo_atual}}</td>
+			<td style="width:20%">Nome: {{controle.funcionario.nome}}</td>
+			<td style="width:20%">			Data de Admissão: {{controle.funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}</td>
+			<td style="width:20%">Cargo: {{controle.funcionario.cargo_atual}}</td>
+			
+			<td style="width:10%"><h1>#{{controle.id}}</h1></td>
 		</tr>
 	</table>
 	
@@ -30,32 +32,33 @@
 		<p>Certifico que me submeti às instruções de segurança do trabalho , orientação e acompanhamento de uso, gaurda e conservação desdes  equipamentos, ficando sobre minha responsabilidade e que caso haja extravio ou avaria, por dolo, imprudência, negligência ou empírica, sobre os  mesmos, terei o valor correspondentes aos EPI’s especificados abaixo nesta ficha descontado do meu salário ou qualquer crédito a que tenha direit (Art. 462 S 1° da CDL), conforme a presente autorização.</p>
 	</p>
 	
-	<div class="row-fluid">
-		
-		<div class="span4">
-			<h6 class="text-center">{{local_padrao}}</h6>
-			<hr />
-			local
-		</div>
-		
-		<div class="span2">
-			<h6 class="text-center">{% now "d/m/Y" %}</h6>
-			<hr />
-			data
-		</div>
-		
-		<div class="span6">
-			<h6>x</h6>
-			<hr />
-			assinatura
-		</div>
-		
-	</div>
+	<table style="width:100%">
+		<tr>
+			<td style="width:20%">
+				<h6>{{local_padrao}}</h6>
+				<hr />
+				<small>local</small>
+			</td>
+			<td style="width:20%">
+				<h6 >{% now "d/m/Y" %}</h6>
+				<hr />
+				<small>data</small>
+			</td>
+			<td style="width:20%">
+				<h6>x</h6>
+				<hr />
+				<small>assinatura</small>
+			</td>
+		</tr>
+	</table>
+	
+	
 	<br />
 	
-  <table class="table table-condensed table-hover table-rounded">
+  <table class="table table-striped">
     <thead>
           <tr>
+							<th>Item</th>
               <th>Material Entregue</th>
               <th>Unidade de Medida</th>
 							<th>Quantidade</th>
@@ -66,6 +69,7 @@
 		<tbody>
 				{% for linha in controle.linhacontroleequipamento_set.all %}
 				<tr>
+					<td>{{forloop.counter}}</td>
 					<td>{{linha.produto}}</td>
 					<td>{{linha.produto.unidade_de_venda}}</td>
 					<td>{{linha.quantidade}}</td>

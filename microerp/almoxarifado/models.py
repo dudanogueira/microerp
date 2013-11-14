@@ -73,6 +73,13 @@ class ControleDeEquipamento(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class LinhaControleEquipamento(models.Model):
+    
+    def pendente(self):
+        if self.data_previsao_devolucao > datetime.date.today():
+            return False
+        else:
+            return True
+    
     controle = models.ForeignKey(ControleDeEquipamento)
     produto = models.ForeignKey('estoque.Produto')
     unidade = models.CharField(blank=True, max_length=10)
