@@ -2,8 +2,10 @@
 {% load sekizai_tags %}
 
 <title>{%block title %}{{block.super}} - RH -> Controle de EPI: Adicionar{% endblock %}</title>
-
 {% block content %}
+
+<label>Option Value :</label>
+<input class="input-xlarge select2-ajax" id="selectbox-o" type="hidden" name="optionvalue" data-placeholder="Choose An Option.." />
 
 <h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> RH - Adicionar Controle de EPI</h1>
 <form method="POST">
@@ -11,11 +13,11 @@
 {{form_adicionar.as_p}}
 <hr />
 <p>
-Adicionar <input name="quantidade_adicionar"> Linhas 
+Adicionar <input name="quantidade_adicionar" value="{{quantidade_adicionar}}"> Equipamentos diferentes. 
 <button type='submit' class="btn btn-primary" name="adicionar-campos-btn" value="adicionar"><i class="fa fa-plus"></i></button>
 </p>
 
-{{linha_equipamento_form.management_form.as_p}}
+{{linha_equipamento_form.management_form}}
 
 {% for form in linha_equipamento_form.forms %}
 <div class="well well-small">
@@ -53,20 +55,19 @@ Adicionar <input name="quantidade_adicionar"> Linhas
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
 
 <script>
+
+
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
 });
 $( ".datepicker" ).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"
-    
 });
 
 </script>

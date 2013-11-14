@@ -224,4 +224,9 @@ def etiquetas_gerar(request):
     return response
         
     
-    
+def ajax_consulta_produto(request):
+    q = request.GET.get('q', None)
+    if q:
+        produtos = Produto.objects.filter(nome__icontains=q)
+    data = [{"id":1,"text":"client1"}, {"id":2,"text":"client2"}]
+    return HttpResponse(data, mimetype='application/json')

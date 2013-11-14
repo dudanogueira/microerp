@@ -68,15 +68,16 @@
           </tr>
     </thead>
 		<tbody>
-				<tr>
 				{% for linha in controle.linhacontroleequipamento_set.all %}
+				<tr>
 					<td>{{linha.produto}}</td>
 					<td>{{linha.produto.unidade_de_venda}}</td>
 					<td>{{linha.quantidade}}</td>
 					<td>{{linha.criado|date:"SHORT_DATE_FORMAT"}}</td>
 					<td></td>
-				{% endfor %}
 				</tr>
+				{% endfor %}
+
 		</tbody>
 	</table>
 			

@@ -39,11 +39,6 @@ from django.http import HttpResponse
 #
 
 
-from django_select2.widgets import Select2Widget
-
-from django_select2 import AutoModelSelect2Field
-
-
 class AdicionarPropostaForm(forms.ModelForm):
     
     class Meta:

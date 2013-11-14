@@ -15,11 +15,14 @@ from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
 from rh.models import EntradaFolhaDePonto, Competencia
 from rh.utils import get_weeks
+from estoque.models import Produto
 
 from django import forms
 from django.conf import settings
 
 from almoxarifado.models import ControleDeEquipamento, LinhaControleEquipamento
+
+from django_select2 import AutoModelSelect2Field, AutoHeavySelect2Widget
 
 #
 # FORMULARIOS
@@ -353,6 +356,10 @@ def controle_de_epi(request):
     return render_to_response('frontend/rh/rh-controle-de-epi.html', locals(), context_instance=RequestContext(request),)
 
 
+class EscolhaDeFuncionario(AutoModelSelect2Field):
+    queryset = Funcionario.objects
+    search_fields = ['nome__icontains', ]
+
 class FormControleFerramentasAdicionar(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -360,21 +367,26 @@ class FormControleFerramentasAdicionar(forms.ModelForm):
         super(FormControleFerramentasAdicionar, self).__init__(*args, **kwargs)
         self.fields['tipo'].initial = tipo
         self.fields['tipo'].widget = forms.HiddenInput()
-        self.fields['funcionario'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario'] = EscolhaDeFuncionario()
     
     class Meta:
         model = ControleDeEquipamento
         fields = 'funcionario', 'observacao', 'tipo'
 
 
+class EscolhaDeProdutos(AutoModelSelect2Field):
+    queryset = Produto.objects
+    search_fields = ['nome__icontains', ]
+
 class LinhaControleEquipamentoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(LinhaControleEquipamentoForm, self).__init__(*args, **kwargs)
-        self.fields['produto'].widget.attrs['class'] = 'select2'
+        self.fields['produto'] = EscolhaDeProdutos()
+        self.fields['quantidade'].required=True
         self.fields['quantidade'].widget.attrs['class'] = 'input-small'
         self.fields['data_previsao_devolucao'].widget.attrs['class'] = 'input-small datepicker'
-    
+
     class Meta:
         model = LinhaControleEquipamento
         fields = 'produto', 'quantidade', 'data_previsao_devolucao'
@@ -384,11 +396,12 @@ class LinhaControleEquipamentoForm(forms.ModelForm):
 def controle_de_epi_adicionar(request):
     # form do controle
     form_adicionar = FormControleFerramentasAdicionar(tipo="epi")
+    quantidade_adicionar = request.POST.get('quantidade_adicionar', 1)
     # form dos produtos vinculados
     LinhaDeEquipamentoFormset = forms.models.inlineformset_factory(
         ControleDeEquipamento,
         LinhaControleEquipamento,
-        extra=1,
+        extra=0,
         can_delete=False,
         form=LinhaControleEquipamentoForm,
     )
