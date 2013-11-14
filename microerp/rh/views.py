@@ -383,7 +383,7 @@ class LinhaControleEquipamentoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(LinhaControleEquipamentoForm, self).__init__(*args, **kwargs)
-        self.fields['produto'] = EscolhaDeProdutos()
+        self.fields['produto'] = EscolhaDeProdutos(auto_id="asddfgljdfglkdfkljdfg")
         self.fields['quantidade'].required=True
         self.fields['quantidade'].widget.attrs['class'] = 'input-small'
         self.fields['data_previsao_devolucao'].widget.attrs['class'] = 'input-small datepicker'
