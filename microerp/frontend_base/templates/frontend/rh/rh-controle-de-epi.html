@@ -66,7 +66,6 @@
 			<h2>Retorno de Equipamento Pendente</h2>
 			{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
 			
-			
 			{% for linha in linhas_group_list %}
 			<div class="well well-small">
 			<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>

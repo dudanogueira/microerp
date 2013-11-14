@@ -367,7 +367,8 @@ class FormControleFerramentasAdicionar(forms.ModelForm):
         super(FormControleFerramentasAdicionar, self).__init__(*args, **kwargs)
         self.fields['tipo'].initial = tipo
         self.fields['tipo'].widget = forms.HiddenInput()
-        self.fields['funcionario'] = EscolhaDeFuncionario()
+        #self.fields['funcionario'] = EscolhaDeFuncionario()
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
     
     class Meta:
         model = ControleDeEquipamento

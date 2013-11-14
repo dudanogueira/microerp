@@ -6,20 +6,16 @@
 {% block content %}
 <div class="container">
 	<h1 class="text-center">Ficha de Controle de EPI's</h1>
-	<div class="row-fluid">
-		<div class="span4">
-			Nome: {{controle.funcionario.nome}}
-		</div>
-		
-		<div class="span4">
-			Data de Admissão: {{controle.funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}
-		</div>
-		
-		<div class="span4">
-			Cargo: {{controle.funcionario.cargo_atual}}
-		</div>
-		
-	</div>
+	
+	<table>
+		<tr>
+			<td>Nome: {{controle.funcionario.nome}}</td>
+			<td>			Data de Admissão: {{controle.funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}</td>
+			<td>Cargo: {{controle.funcionario.cargo_atual}}</td>
+		</tr>
+	</table>
+	
+	
 	<h1 class="text-center">Termo de Responsabilidade</h1>
 	
 	<p>
