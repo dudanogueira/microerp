@@ -78,6 +78,7 @@ class LinhaControleEquipamento(models.Model):
     unidade = models.CharField(blank=True, max_length=10)
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     data_entregue = models.DateField(blank=True, null=True)
+    codigo_ca = models.CharField("Código CA", blank=False, null=False, max_length=100)
     data_previsao_devolucao = models.DateField()
     data_devolvido = models.DateField(blank=True, null=True)
     # metadata
