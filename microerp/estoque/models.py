@@ -72,7 +72,6 @@ class Produto(models.Model):
             soma = float(self.preco_custo) + float(percentual)
             return soma
 
-
     codigo = models.CharField(blank=False, max_length=500)
     nome = models.CharField(blank=False, max_length=300)
     descricao = models.CharField(blank=False, max_length=300)

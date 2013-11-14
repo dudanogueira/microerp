@@ -374,23 +374,31 @@ class FormControleFerramentasAdicionar(forms.ModelForm):
         model = ControleDeEquipamento
         fields = 'funcionario', 'observacao', 'tipo'
 
-
 class EscolhaDeProdutos(AutoModelSelect2Field):
     queryset = Produto.objects
     search_fields = ['nome__icontains', ]
+    field_id = 'nome'
+    
+    def get_results(self, request, term, page, context):
+        produtos = Produto.objects.filter(nome__icontains=term)[0:10]
+        res = [ (produto.pk, produto,) for produto in produtos ]
+        return NO_ERR_RESP, False, res
 
 class LinhaControleEquipamentoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(LinhaControleEquipamentoForm, self).__init__(*args, **kwargs)
-        self.fields['produto'] = EscolhaDeProdutos(auto_id="asddfgljdfglkdfkljdfg")
+        #self.fields['produto'] = EscolhaDeProdutos()
+        self.fields['produto'].widget = forms.HiddenInput()
+        self.fields['produto'].widget.attrs['class'] = 'select2-ajax'
         self.fields['quantidade'].required=True
-        self.fields['quantidade'].widget.attrs['class'] = 'input-small'
+        self.fields['quantidade'].widget.attrs['class'] = 'input-mini'
+        self.fields['codigo_ca'].widget.attrs['class'] = 'input-mini'
         self.fields['data_previsao_devolucao'].widget.attrs['class'] = 'input-small datepicker'
 
     class Meta:
         model = LinhaControleEquipamento
-        fields = 'produto', 'quantidade', 'data_previsao_devolucao'
+        fields = 'produto', 'quantidade', 'codigo_ca', 'data_previsao_devolucao'
     
 
 @user_passes_test(possui_perfil_acesso_rh)

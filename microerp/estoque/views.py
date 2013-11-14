@@ -223,10 +223,20 @@ def etiquetas_gerar(request):
     # retorna
     return response
         
-    
+from django.views.decorators.csrf import csrf_exempt    
+from django.utils import simplejson
+
+@csrf_exempt
 def ajax_consulta_produto(request):
     q = request.GET.get('q', None)
+    c = request.GET.get('callback', None)
     if q:
-        produtos = Produto.objects.filter(nome__icontains=q)
-    data = [{"id":1,"text":"client1"}, {"id":2,"text":"client2"}]
-    return HttpResponse(data, mimetype='application/json')
+        produtos = Produto.objects.filter(
+        Q(nome__icontains=q) |
+        Q(codigo__icontains=q)
+        )
+    result = []
+    for produto in produtos:
+        result.append({"text":"%s - %s" % (produto.codigo,produto.nome), "ID": str(produto.id)})
+    return HttpResponse(simplejson.dumps(result), mimetype='application/json')
+

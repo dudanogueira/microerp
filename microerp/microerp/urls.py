@@ -69,14 +69,10 @@ urlpatterns += patterns('',
     # modulo producao
     url(r'^producao/', include('producao.urls', namespace="producao")),   
     # modulo financeiro
-    url(r'^financeiro/', include('financeiro.urls', namespace="financeiro")),   
-    
+    url(r'^financeiro/', include('financeiro.urls', namespace="financeiro")),
+    # ajax helpers
+    url(r'^ajax/consulta/produtos.json$', 'estoque.views.ajax_consulta_produto', name='ajax_consulta_produto'),
 )
-# django-select2
-urlpatterns += patterns("",
-    url(r"^select2/", include("django_select2.urls")),
-)
-
 
 # DEBUGG
 from django.conf import settings

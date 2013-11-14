@@ -4,8 +4,9 @@
 <title>{%block title %}{{block.super}} - RH -> Controle de EPI: Adicionar{% endblock %}</title>
 {% block content %}
 
+{% url "ajax_consulta_produto" %}
+
 <label>Option Value :</label>
-<input class="input-xlarge select2-ajax" id="selectbox-o" type="hidden" name="optionvalue" data-placeholder="Choose An Option.." />
 
 <h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> RH - Adicionar Controle de EPI</h1>
 <form method="POST">
@@ -13,7 +14,7 @@
 {{form_adicionar.as_p}}
 <hr />
 <p>
-Adicionar <input name="quantidade_adicionar" value="{{quantidade_adicionar}}"> Equipamentos diferentes. 
+Adicionar <input name="quantidade_adicionar"> Linhas 
 <button type='submit' class="btn btn-primary" name="adicionar-campos-btn" value="adicionar"><i class="fa fa-plus"></i></button>
 </p>
 
@@ -27,7 +28,7 @@ Adicionar <input name="quantidade_adicionar" value="{{quantidade_adicionar}}"> E
 			<h4>{{forloop.counter}}</h4>
 		</div>
 
-		<div class="span5">
+		<div class="span4">
 			{{form.produto.errors}}
 			Produto: {{form.produto}}
 		</div>
@@ -37,10 +38,16 @@ Adicionar <input name="quantidade_adicionar" value="{{quantidade_adicionar}}"> E
 			Quantidade:<Br />{{form.quantidade}}
 		</div>
 		
-		<div class="span3">
+		<div class="span2">
 			{{form.data_previsao_devolucao.errors}}
 			Devolução Prevista:<Br />{{form.data_previsao_devolucao}}
 		</div>
+		
+		<div class="span2">
+			{{form.codigo_ca.errors}}
+			Código CA:<Br />{{form.codigo_ca}}
+		</div>
+		
 		
 	</div>
 </div>
@@ -55,18 +62,58 @@ Adicionar <input name="quantidade_adicionar" value="{{quantidade_adicionar}}"> E
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
 
 <script>
 
+
+function movieFormatResult(movie) {
+	var markup = "<table class='movie-result'><tr>";
+	if (movie.posters !== undefined && movie.posters.thumbnail !== undefined) {
+		markup += "<td class='movie-image'><img src='" + movie.posters.thumbnail + "'/></td>";
+	}
+	markup += "<td class='movie-info'><div class='movie-title'>" + movie.title + "</div>";
+	if (movie.critics_consensus !== undefined) {
+		markup += "<div class='movie-synopsis'>" + movie.critics_consensus + "</div>";
+	}
+	else if (movie.synopsis !== undefined) {
+		markup += "<div class='movie-synopsis'>" + movie.synopsis + "</div>";
+	}
+	markup += "</td></tr></table>"
+	return markup;
+}
+
+function movieFormatSelection(movie) {
+	return movie.title;
+}
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
+	
+	$(".select2-ajax").select2({
+		placeholder: "",
+		minimumInputLength: 3,
+		id: function(e) { return e.ID; },
+		ajax: { 
+			url: "{% url "ajax_consulta_produto" %}",
+			type: 'GET',
+			dataType: 'json',
+			data: function(term, page) {
+				return {
+					q: term,
+					page_limit: 10,
+				};
+			},
+			results: function (data) {
+				return {results: data};
+			},
+		},
+	});
 });
+
 $( ".datepicker" ).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"
