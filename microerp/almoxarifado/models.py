@@ -58,7 +58,7 @@ class ControleDeEquipamento(models.Model):
         return os.path.join(
             'controle-de-equipamento/', str(instance.tipo), str(instance.id), filename
           )
-        
+         
     funcionario = models.ForeignKey('rh.Funcionario', verbose_name="Funcionário Solicitante", help_text="Funcionário responsável pela retirada do equipamento.")
     status = models.CharField(blank=False, max_length=100, default="pendente", choices=CONTROLE_DE_EQUIPAMENTO_STATUS_CHOICES)
     observacao = models.TextField(u"Observação", blank=True)
@@ -80,12 +80,15 @@ class LinhaControleEquipamento(models.Model):
         else:
             return True
     
+    def valor_total_consumo(self):
+        return self.quantidade * self.produto.preco_consumo
+    
     controle = models.ForeignKey(ControleDeEquipamento)
     produto = models.ForeignKey('estoque.Produto')
     unidade = models.CharField(blank=True, max_length=10)
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     data_entregue = models.DateField(blank=True, null=True)
-    codigo_ca = models.CharField("Código CA", blank=False, null=False, max_length=100)
+    codigo_ca = models.CharField("Código CA", blank=True, null=True, max_length=100)
     data_previsao_devolucao = models.DateField()
     data_devolvido = models.DateField(blank=True, null=True)
     # metadata

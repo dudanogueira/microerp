@@ -1,10 +1,12 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 
-<title>{%block title %}{{block.super}} - RH -> Controle de EPI: Adicionar{% endblock %}</title>
+<title>{%block title %}{{block.super}} - RH -> Controle de Ferramenta: Adicionar{% endblock %}</title>
 {% block content %}
 
-<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> RH - Adicionar Controle de EPI</h1>
+{% url "ajax_consulta_produto" %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-wrench"></i> RH - Adicionar Controle de Ferramenta</h1>
 <form method="POST">
 {% csrf_token%}
 {{form_adicionar.as_p}}
@@ -39,12 +41,6 @@ Adicionar <input name="quantidade_adicionar"> Linhas
 			Devolução Prevista:<Br />{{form.data_previsao_devolucao}}
 		</div>
 		
-		<div class="span2">
-			{{form.codigo_ca.errors}}
-			Cód. CA:<Br />{{form.codigo_ca}}
-		</div>
-		
-		
 	</div>
 </div>
 {% endfor %}
@@ -66,32 +62,13 @@ Adicionar <input name="quantidade_adicionar"> Linhas
 
 <script>
 
-
-function movieFormatResult(movie) {
-	var markup = "<table class='movie-result'><tr>";
-	if (movie.posters !== undefined && movie.posters.thumbnail !== undefined) {
-		markup += "<td class='movie-image'><img src='" + movie.posters.thumbnail + "'/></td>";
-	}
-	markup += "<td class='movie-info'><div class='movie-title'>" + movie.title + "</div>";
-	if (movie.critics_consensus !== undefined) {
-		markup += "<div class='movie-synopsis'>" + movie.critics_consensus + "</div>";
-	}
-	else if (movie.synopsis !== undefined) {
-		markup += "<div class='movie-synopsis'>" + movie.synopsis + "</div>";
-	}
-	markup += "</td></tr></table>"
-	return markup;
-}
-
-function movieFormatSelection(movie) {
-	return movie.title;
-}
 $(document).ready(function() {
-	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
+	$("#menu-rh-controle-de-ferramenta, #top-menu-rh").addClass("active");
 	
 	$(".select2-ajax").select2({
 		placeholder: "",
 		minimumInputLength: 3,
+		id: function(e) { return e.id; },
 		ajax: { 
 			url: "{% url "ajax_consulta_produto" %}",
 			type: 'GET',

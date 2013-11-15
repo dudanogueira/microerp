@@ -38,10 +38,11 @@ class LinhaControleEquipamentoInLine(admin.TabularInline):
     #formset = LinhaControleEquipamentoInLineFormset
 
 class LinhaControleEquipamentoAdmin(admin.ModelAdmin):
-    pass
+    list_filter = 'controle__tipo', 'controle__funcionario'
     
 class ControleDeEquipamentoAdmin(admin.ModelAdmin):
-    pass
+    list_filter = 'tipo', 'funcionario'
+    search_fields = 'id', 'funcionario__nome', 'linhacontroleequipamento__produto__nome'
     inlines = [LinhaControleEquipamentoInLine]
 
 admin.site.register(ControleDeEquipamento, ControleDeEquipamentoAdmin)

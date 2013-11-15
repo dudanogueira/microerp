@@ -341,36 +341,17 @@ def matriz_de_competencias(request):
     competencias = Competencia.objects.all()
     return render_to_response('frontend/rh/rh-matriz-de-competencias.html', locals(), context_instance=RequestContext(request),)
 
-#
-# CONTROLE DE EPI 
-#
-
-class FormFiltrarControleDeEpi(forms.Form):
+# FORMS CONTROLES DE FERRAMENTA E EPI
+class FormFiltrarControleDeFerramentas(forms.Form):
     
     def __init__(self, *args, **kwargs):
-        super(FormFiltrarControleDeEpi, self).__init__(*args, **kwargs)
+        super(FormFiltrarControleDeFerramentas, self).__init__(*args, **kwargs)
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
         self.fields['funcionario'].empty_label = None
     
     funcionario = forms.ModelChoiceField(queryset=Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None), required=True)
 
-@user_passes_test(possui_perfil_acesso_rh)
-def controle_de_epi(request):
-    form_filtra_epi = FormFiltrarControleDeEpi()
-    if request.POST:
-        form_filtra_epi = FormFiltrarControleDeEpi(request.POST)
-        if form_filtra_epi.is_valid():
-            funcionario = form_filtra_epi.cleaned_data['funcionario']
-            controles_do_funcionario = ControleDeEquipamento.objects.filter(funcionario=funcionario).order_by('criado')
-
-    controles_sem_arquivos = ControleDeEquipamento.objects.filter(arquivo_impresso_assinado='')
-    linhas_com_devolucao_vencida = LinhaControleEquipamento.objects.filter(
-            data_devolvido=None,
-            data_previsao_devolucao__lt=datetime.date.today()
-    ).order_by('controle__criado', 'data_previsao_devolucao')
-    return render_to_response('frontend/rh/rh-controle-de-epi.html', locals(), context_instance=RequestContext(request),)
-
-
+#
 class FormControleFerramentasAdicionar(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -385,6 +366,7 @@ class FormControleFerramentasAdicionar(forms.ModelForm):
         model = ControleDeEquipamento
         fields = 'funcionario', 'observacao', 'tipo'
 
+#
 class LinhaControleEquipamentoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -399,15 +381,143 @@ class LinhaControleEquipamentoForm(forms.ModelForm):
         model = LinhaControleEquipamento
         fields = 'produto', 'quantidade', 'codigo_ca', 'data_previsao_devolucao'
 
+#
+class FormVincularArquivoControle(forms.ModelForm):
+
+    class Meta:
+        model = ControleDeEquipamento
+        fields = 'arquivo_impresso_assinado',
+
+
+#
+# CONTROLE DE FERRAMENTAS
+#
 @user_passes_test(possui_perfil_acesso_rh)
-def controle_de_epi_retornar(request, controle_id, linha_id):
+def controle_de_ferramenta(request):
+    form_filtra_ferramentas = FormFiltrarControleDeFerramentas()
+    if request.POST:
+        form_filtra_ferramentas = FormFiltrarControleDeFerramentas(request.POST)
+        if form_filtra_ferramentas.is_valid():
+            funcionario = form_filtra_ferramentas.cleaned_data['funcionario']
+            controles_do_funcionario = ControleDeEquipamento.objects.filter(funcionario=funcionario, tipo="ferramenta").order_by('criado')
+
+    controles_sem_arquivos = ControleDeEquipamento.objects.filter(arquivo_impresso_assinado='', tipo="ferramenta")
+    linhas_com_devolucao_vencida = LinhaControleEquipamento.objects.filter(
+            controle__tipo="ferramenta",
+            data_devolvido=None,
+            data_previsao_devolucao__lt=datetime.date.today()
+    ).order_by('controle__criado', 'data_previsao_devolucao')
+    return render_to_response('frontend/rh/rh-controle-de-ferramenta.html', locals(), context_instance=RequestContext(request),)
+
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_ferramenta_adicionar(request):
+    # form do controle
+    form_adicionar = FormControleFerramentasAdicionar(tipo="ferramenta")
+    quantidade_adicionar = request.POST.get('quantidade_adicionar', 1)
+    # form dos produtos vinculados
+    LinhaDeEquipamentoFormset = forms.models.inlineformset_factory(
+        ControleDeEquipamento,
+        LinhaControleEquipamento,
+        extra=0,
+        can_delete=False,
+        form=LinhaControleEquipamentoForm,
+    )
+    linha_equipamento_form = LinhaDeEquipamentoFormset(prefix="linhaequipamento")
+    if request.POST:
+        if 'adicionar-campos-btn' in request.POST:
+            cp = request.POST.copy()
+            quantidade_adicionar = request.POST.get('quantidade_adicionar', 1)
+            if quantidade_adicionar == '':
+                quantidade_adicionar = 1
+            else:
+                quantidade_adicionar = int(quantidade_adicionar)
+            cp['linhaequipamento-TOTAL_FORMS'] = int(cp['linhaequipamento-TOTAL_FORMS'])+ quantidade_adicionar
+            # devolve o form processado
+            linha_equipamento_form = LinhaDeEquipamentoFormset(cp, prefix="linhaequipamento")
+            form_adicionar = FormControleFerramentasAdicionar(cp, tipo="epi")
+        if 'criar-controle-btn' in request.POST:
+            linha_equipamento_form = LinhaDeEquipamentoFormset(request.POST, prefix="linhaequipamento")
+            form_adicionar = FormControleFerramentasAdicionar(request.POST, tipo="ferramenta")
+            if form_adicionar.is_valid() and linha_equipamento_form.is_valid():
+                controle = form_adicionar.save(commit=False)
+                controle.criado_por = request.user
+                controle.save()
+                for linha_form in linha_equipamento_form:
+                        linha = linha_form.save(commit=False)
+                        try:
+                            # usuario pediu os campos mas não usou, usando
+                            # try ele desconsidera e nao salva
+                            produto = linha.produto
+                            linha.controle = controle
+                            linha.data_entregue = datetime.date.today()
+                            linha.produto=produto
+                            linha.save()
+                        except:
+                            pass
+                messages.success(request, "Sucesso! Novo Controle #%s criado" % controle.id)
+                return redirect(reverse("rh:controle_de_ferramenta"))
+    return render_to_response('frontend/rh/rh-controle-de-ferramenta-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+
+
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_ferramenta_imprimir(request, controle_id):
+    controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
+    local_padrao = getattr(settings, 'LOCAL_PADRAO_DOCUMENTOS', u'Teófilo Otoni, Minas Gerais')
+    nome_empresa_completo = getattr(settings, 'NOME_EMPRESA_COMPLETO', u'NOME DA EMPRESA LTDA.')
+    total_do_controle = 0
+    for linha in controle.linhacontroleequipamento_set.all():
+        total_do_controle += (linha.quantidade * linha.produto.preco_consumo)
+    return render_to_response('frontend/rh/rh-controle-de-ferramenta-imprimir.html', locals(), context_instance=RequestContext(request),)
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_ferramenta_vincular_arquivo(request, controle_id):
+    controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
+    form_vincular = FormVincularArquivoControle(instance=controle)
+    if request.POST:
+        form_vincular = FormVincularArquivoControle(request.POST, request.FILES, instance=controle)
+        if form_vincular.is_valid():
+            controle = form_vincular.save(commit=False)
+            controle.data_arquivo_impresso_assinado_recebido = datetime.date.today()
+            controle.receptor_arquivo_impresso = request.user.funcionario
+            controle.save()
+            messages.success(request, "Arquivo de Controle de Ferramenta #%s salvo com sucesso!" % controle.id)
+            return redirect(reverse("rh:controle_de_ferramenta"))
+    return render_to_response('frontend/rh/rh-controle-de-ferramenta-vincular-arquivo.html', locals(), context_instance=RequestContext(request),)
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_ferramenta_retornar(request, controle_id, linha_id):
     linha = get_object_or_404(LinhaControleEquipamento, pk=linha_id, controle__id=controle_id)
     linha.data_devolvido = datetime.date.today()
     linha.funcionario_receptor = request.user.funcionario
     linha.save()
-    messages.success(request, u"Sucesso! Linha de Equipamento de EPI #%s marcado como entregue." % linha.id)
-    return redirect(reverse('rh:controle_de_epi') + "#retorno-equipamento-pendente")
+    messages.success(request, u"Sucesso! Linha de Equipamento de Ferramenta #%s marcado como entregue." % linha.id)
+    return redirect(reverse('rh:controle_de_ferramenta') + "#retorno-equipamento-pendente")
+#
+# CONTROLE DE EPI 
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_epi(request):
+    form_filtra_epi = FormFiltrarControleDeFerramentas()
+    if request.POST:
+        form_filtra_epi = FormFiltrarControleDeFerramentas(request.POST)
+        if form_filtra_epi.is_valid():
+            funcionario = form_filtra_epi.cleaned_data['funcionario']
+            controles_do_funcionario = ControleDeEquipamento.objects.filter(funcionario=funcionario, tipo="epi").order_by('criado')
 
+    controles_sem_arquivos = ControleDeEquipamento.objects.filter(arquivo_impresso_assinado='', tipo="epi")
+    linhas_com_devolucao_vencida = LinhaControleEquipamento.objects.filter(
+            controle__tipo="epi",
+            data_devolvido=None,
+            data_previsao_devolucao__lt=datetime.date.today()
+    ).order_by('controle__criado', 'data_previsao_devolucao')
+    return render_to_response('frontend/rh/rh-controle-de-epi.html', locals(), context_instance=RequestContext(request),)
+
+
+
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_epi_adicionar(request):
     # form do controle
@@ -458,12 +568,13 @@ def controle_de_epi_adicionar(request):
 
 
 
-class FormVincularArquivoControle(forms.ModelForm):
-
-    class Meta:
-        model = ControleDeEquipamento
-        fields = 'arquivo_impresso_assinado',
-
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def controle_de_epi_imprimir(request, controle_id):
+    controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
+    local_padrao = getattr(settings, 'LOCAL_PADRAO_DOCUMENTOS', u'Teófilo Otoni, Minas Gerais')
+    return render_to_response('frontend/rh/rh-controle-de-epi-imprimir.html', locals(), context_instance=RequestContext(request),)
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_epi_vincular_arquivo(request, controle_id):
     controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
@@ -475,14 +586,16 @@ def controle_de_epi_vincular_arquivo(request, controle_id):
             controle.data_arquivo_impresso_assinado_recebido = datetime.date.today()
             controle.receptor_arquivo_impresso = request.user.funcionario
             controle.save()
-            messages.success(request, "Arquivo de Controle de EPI salvo com sucesso!")
+            messages.success(request, "Arquivo de Controle de EPI #%s salvo com sucesso!" % controle.id)
             return redirect(reverse("rh:controle_de_epi"))
     return render_to_response('frontend/rh/rh-controle-de-epi-vincular-arquivo.html', locals(), context_instance=RequestContext(request),)
-
-
+#
 @user_passes_test(possui_perfil_acesso_rh)
-def controle_de_epi_imprimir(request, controle_id):
-    controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
-    local_padrao = getattr(settings, 'LOCAL_PADRAO_DOCUMENTOS', u'Teófilo Otoni, Minas Gerais')
-    return render_to_response('frontend/rh/rh-controle-de-epi-imprimir.html', locals(), context_instance=RequestContext(request),)
-    
+def controle_de_epi_retornar(request, controle_id, linha_id):
+    linha = get_object_or_404(LinhaControleEquipamento, pk=linha_id, controle__id=controle_id)
+    linha.data_devolvido = datetime.date.today()
+    linha.funcionario_receptor = request.user.funcionario
+    linha.save()
+    messages.success(request, u"Sucesso! Linha de Equipamento de EPI #%s marcado como entregue." % linha.id)
+    return redirect(reverse('rh:controle_de_epi') + "#retorno-equipamento-pendente")
+#   
