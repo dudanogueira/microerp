@@ -9,10 +9,14 @@
 		<h1><i class="fa fa-th"></i> <i class="fa fa-bar-chart-o"></i> Indicadores do RH</h1>
 		
 	</div>
-	<div class="span4">
+	<div class="span4" id="filtro-indicador">
 		<form method="" class="form form-inline">
+				<p class="btn-group">
 			{{form_seleciona_ano.ano}}
-			<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i></button>
+				<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i></button>
+				<a id="imprimir" class="btn btn-success"><i class="fa fa-print"></i></a>
+			</p>
+			
 		</form>
 		
 	</div>
@@ -103,6 +107,19 @@
 $(document).ready(function() {
     $("#menu-rh-indicadores, #top-menu-rh").addClass("active");
 });
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#selecionar-produto-form").hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#filtro-indicador").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/rh/rh-menu.html" %}
