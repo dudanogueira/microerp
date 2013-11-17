@@ -14,6 +14,8 @@ from django.db.models import Q
 from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
 from rh.models import EntradaFolhaDePonto, Competencia
+from rh.models import PeriodoTrabalhado
+from rh.models import Cargo
 from rh.utils import get_weeks
 from estoque.models import Produto
 
@@ -390,11 +392,28 @@ class FormVincularArquivoControle(forms.ModelForm):
 
 
 #
+class FormReagendaFerramentaPendente(forms.Form):
+    
+    def clean_data_de_reagendamento(self):
+        data = self.cleaned_data['data_de_reagendamento']
+        if data < datetime.date.today():
+            raise forms.ValidationError('Data deve ser no futuro.')
+        return data
+    
+    def __init__(self, *args, **kwargs):
+        super(FormReagendaFerramentaPendente, self).__init__(*args, **kwargs)
+        self.fields['data_de_reagendamento'].widget.attrs['class'] = 'datepicker'
+    
+    
+    data_de_reagendamento = forms.DateField()
+
+#
 # CONTROLE DE FERRAMENTAS
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferramenta(request):
     form_filtra_ferramentas = FormFiltrarControleDeFerramentas()
+    form_reagenda_feramenta = FormReagendaFerramentaPendente() 
     if request.POST:
         form_filtra_ferramentas = FormFiltrarControleDeFerramentas(request.POST)
         if form_filtra_ferramentas.is_valid():
@@ -598,4 +617,71 @@ def controle_de_epi_retornar(request, controle_id, linha_id):
     linha.save()
     messages.success(request, u"Sucesso! Linha de Equipamento de EPI #%s marcado como entregue." % linha.id)
     return redirect(reverse('rh:controle_de_epi') + "#retorno-equipamento-pendente")
-#   
+#
+# INDICADORES DO RH
+#
+# FORMS
+class SelecionaAnoIndicadorRH(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(SelecionaAnoIndicadorRH, self).__init__(*args, **kwargs)
+        # Opções deve ser:
+        #(2012, 'Ano 2012: 20 Admissões, 5 Demissões')
+        anos = PeriodoTrabalhado.objects.dates('inicio', 'year', order='DESC')
+        anos_choice = [(str(a.year), str(a.year)) for a in anos]
+        self.fields['ano'].choices = anos_choice
+        self.fields['ano'].widget.attrs['class'] = 'input-small'
+
+    ano = forms.ChoiceField()
+
+# VIEWS
+@user_passes_test(possui_perfil_acesso_rh)
+def indicadores_do_rh(request):
+    form_seleciona_ano = SelecionaAnoIndicadorRH(request.GET)
+    resultado_admissao = []
+    resultado_demissao = []
+    # cria dicionario com todos os ids de cargo vinculado por
+    #cargo[2013] = (Nome Cargo, 1, 2, 3, 4, ... 12)
+    try:
+        ano = request.GET.get('ano', datetime.date.today().year)
+    except:
+        raise
+        ano = datetime.date.today().year
+
+    if ano:
+        for cargo in Cargo.objects.all():
+            linha_adm = []
+            linha_dem = []
+            linha_total_adm = {}
+            linha_total_dem = {}
+            linha_adm.append(cargo.nome)
+            linha_dem.append(cargo.nome)
+            for month in range(1,13):
+                # admissão
+                admissoes_no_mes = PeriodoTrabalhado.objects.filter(inicio__year=ano, inicio__month=month, funcionario__cargo_inicial=cargo).count()
+                linha_adm.append(admissoes_no_mes)
+                # demissao
+                demissoes_no_mes = PeriodoTrabalhado.objects.filter(fim__year=ano, fim__month=month, funcionario__cargo_atual=cargo).count()
+                linha_dem.append(demissoes_no_mes)
+            resultado_admissao.append(linha_adm)
+            resultado_demissao.append(linha_dem)
+        # totalizadores por mês
+        ## admissao
+        total_admissao_mes = []
+        total_admissao_mes.append("Total")
+        for month in range(1,13):
+            # admissão
+            admissoes_no_mes = PeriodoTrabalhado.objects.filter(inicio__year=ano, inicio__month=month).count()
+            total_admissao_mes.append(admissoes_no_mes)
+        ## admissao
+        total_demissao_mes = []
+        total_demissao_mes.append("Total")
+        for month in range(1,13):
+            # admissão
+            demissoes_no_mes = PeriodoTrabalhado.objects.filter(fim__year=ano, fim__month=month).count()
+            total_demissao_mes.append(demissoes_no_mes)
+        
+        resultados = True
+        ano = str(ano)
+
+    return render_to_response('frontend/rh/rh-indicadores.html', locals(), context_instance=RequestContext(request),)

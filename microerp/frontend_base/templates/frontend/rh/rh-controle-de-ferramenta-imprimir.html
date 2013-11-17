@@ -21,8 +21,7 @@
 	
 	<h1 class="text-center">Termo de Responsabilidade</h1>
 	
-	<p>Declaro que recebi da empresa <strong>{{nome_empresa_completo}}</strong> as ferramentas discriminadas abaixo, para utilizar durante o horário de trabalho, e <strong>me responsabilizo pela guarda e conservação das mesmas</strong>. Caso haja extravio ou avaria, por dolo, imprudência negligência ou imperícia sobre os mesmos, <strong>terei o valor correspondente das ferramentas descontados do meu salário ou qualquer crédito a que tenha direito</strong>.</p>
-	
+	<p>Declaro que recebi da empresa <strong>{{nome_empresa_completo}}</strong> as ferramentas discriminadas abaixo, para utilizar durante o horário de trabalho, e <strong>me responsabilizo pela guarda e conservação das mesmas</strong>. Caso haja extravio ou avaria, por dolo, imprudência negligência ou imperícia sobre os mesmos, <strong>terei o valor de <span class="label label-success">R$ {{total_do_controle|floatformat:2}}</span></strong> correspondente às ferramentas descontados do meu salário ou qualquer crédito a que tenha direito</strong>.</p>
 	
 	<table style="width:100%">
 		<tr>
@@ -53,13 +52,25 @@
               <th>Material Entregue</th>
 							<th>Quantidade</th>
 							<th>Valor Unitário *</th>
-							<th>Valor</th>
+							<th>Valor Total</th>
               <th>Data de Recebimento</th>
 							<th>Devolução Prevista</th>
 							<th>Assinatura Empregado</th>
           </tr>
+					<tr class="alert alert-info">
+						<td></td>
+						<td></td>
+						<td></td>
+						<td><small>* preço de consumo</small></td>
+						<td><span class="label label-success">R$ {{total_do_controle|floatformat:2}}</span></td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					
     </thead>
 		<tbody>
+			
 				{% for linha in controle.linhacontroleequipamento_set.all %}
 				<tr>
 					<td>{{forloop.counter}}</td>
@@ -69,15 +80,15 @@
 					<td>R$ {{linha.valor_total_consumo|floatformat:2}}</td>
 					<td>{{linha.data_entregue|date:"SHORT_DATE_FORMAT"}}</td>
 					<td>{{linha.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}</td>
-					<td></td>
+					<td><small>x</small></td>
 				</tr>
 				{% endfor %}
-				<tr>
+				<tr class="alert alert-info">
 					<td></td>
 					<td></td>
 					<td></td>
 					<td><small>* preço de consumo</small></td>
-					<td><strong>R$ {{total_do_controle|floatformat:2}}</strong></td>
+					<td><span class="label label-success">R$ {{total_do_controle|floatformat:2}}</span></td>
 					<td></td>
 					<td></td>
 					<td></td>

@@ -52,4 +52,6 @@ urlpatterns = patterns('',
     url(r'^controle-de-ferramenta/(?P<controle_id>[0-9]+)/imprimir/$', 'rh.views.controle_de_ferramenta_imprimir', name='controle_de_ferramenta_imprimir'),
     url(r'^controle-de-ferramenta/(?P<controle_id>[0-9]+)/vincular-arquivo/$', 'rh.views.controle_de_ferramenta_vincular_arquivo', name='controle_de_ferramenta_vincular_arquivo'),
     url(r'^controle-de-ferramenta/(?P<controle_id>[0-9]+)/(?P<linha_id>[0-9]+)/retornar-ferramenta/$', 'rh.views.controle_de_ferramenta_retornar', name='controle_de_ferramenta_retornar'),
+    # indicadores
+    url(r'^indicadores/$', 'rh.views.indicadores_do_rh', name='indicadores_do_rh'),
 )

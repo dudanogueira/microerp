@@ -26,8 +26,8 @@
 <div id="controle-epi-content" class="tab-content">
     
     <div class="tab-pane fade in active" id="pendentes">
-			<h2>Sem o Arquivo Impresso e Assinado</h2>
 			
+			<h2>Sem o Arquivo Impresso e Assinado</h2>	
       <table class="table table-condensed table-hover table-rounded">
         <thead>
               <tr>
@@ -70,16 +70,16 @@
 			<div class="well well-small">
 			<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
 			<table class="table table-condensed">
-        <thead>
-              <tr>
-									<th>ID</th>
-                  <th>Código</th>
-                  <th>Produto</th>
-									<th>Quantidade</th>
-                  <th>Data de Devolução</th>
-									<th>Ações</th>
-              </tr>
-         </thead>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Código</th>
+						<th>Produto</th>
+						<th>Quantidade</th>
+						<th>Data de Devolução</th>
+						<th>Ações</th>
+					</tr>
+				</thead>
 				<tbody>
 					{% for equipamento in linha.list %}
 					<tr>
@@ -89,7 +89,9 @@
 						<td>{{equipamento.quantidade}}</td>
 						<td>{{equipamento.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}</td>
 						<td>
-							<a class="btn btn-primary" href="{% url "rh:controle_de_ferramenta_retornar"  equipamento.controle.id equipamento.id %}"><i class="fa fa-thumbs-up"></i> Acusar recebimento</a>
+							<p class="btn-group">
+							<a class="btn btn-success" href="{% url "rh:controle_de_ferramenta_retornar"  equipamento.controle.id equipamento.id %}"><i class="fa fa-thumbs-up"></i> recebido</a>
+						</p>
 						</td>
 					</tr>
 					{% endfor %}
@@ -97,8 +99,7 @@
 			</table>
 			</div>
 			{% endfor %}
-			
-			
+
 			
 		</div>
 		
@@ -182,6 +183,10 @@
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+
 <script>
 $(document).ready(function() {
 	$("#menu-rh-controle-de-ferramentas, #top-menu-rh").addClass("active");
@@ -195,6 +200,17 @@ $('#sub-menu-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){
 	var pane = $(this);
 	pane.tab('show');		
 })
+
+$('#reagendar-btn').on("click", function(e){
+	$('#titulo-atualizar').html($(this).data('titulo'));
+});
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/rh/rh-menu.html" %}

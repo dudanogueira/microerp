@@ -1,0 +1,109 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH>Indicadores do RH{% endblock %}</title>
+
+{% block content %}
+<div class="row-fluid">
+	<div class="span8">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-bar-chart-o"></i> Indicadores do RH</h1>
+		
+	</div>
+	<div class="span4">
+		<form method="" class="form form-inline">
+			{{form_seleciona_ano.ano}}
+			<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i></button>
+		</form>
+		
+	</div>
+</div>
+
+
+{% if resultados %}
+<h2>Funcionários Admitidos em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for linha in resultado_admissao %}
+		<tr>
+			{% for campo in linha %}
+				<td style="text-align: center" {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+		<tr class="alert alert-info">
+			{% for campo in total_admissao_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+
+
+<h2>Funcionários Demitidos em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for linha in resultado_demissao %}
+		<tr>
+			{% for campo in linha %}
+			<td style="text-align: center" {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+				
+			{% endfor %}
+		</tr>
+		{% endfor %}
+		<tr class="alert alert-info">
+			{% for campo in total_demissao_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-indicadores, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}
