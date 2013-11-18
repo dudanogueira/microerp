@@ -97,11 +97,12 @@
 	</tbody>
 </table>
 
+
 <h2>Ativos {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
-			<th style="text-align: center" class="alert"></th>
+			<th style="text-align: center" class="alert">Cargo</th>
 			<th>Janeiro</th>
 			<th>Fevereiro</th>
 			<th>Março</th>
@@ -117,6 +118,13 @@
 		</tr>
 	</thead>
 	<tbody>
+		{% for linha in resultado_ativos %}
+			<tr>
+				{% for campo in linha %}
+				<td>{{campo}}</td>
+				{% endfor %}
+			</tr>
+		{% endfor %}
 		<tr class="alert alert-info">
 			{% for campo in total_ativos_mes %}
 			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>

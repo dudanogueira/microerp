@@ -825,7 +825,8 @@ def indicadores_do_rh(request):
                 # OU
                 # data de fim nao preenchida)
                 # 
-                ativos_no_mes = PeriodoTrabalhado.objects.filter(
+                ativos_cargo_no_mes = AtribuicaoDeCargo.objects.filter(cargo=cargo)
+                ativos_no_mes = ativos_cargo_no_mes.filter(
                     Q(inicio__lte=primeiro_dia, fim=None) | \
                     Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
                 ).count()
@@ -856,9 +857,9 @@ def indicadores_do_rh(request):
             # ativos
             primeiro_dia = datetime.date(ano, mes, 1)
             ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
-            ativos_no_mes = PeriodoTrabalhado.objects.filter(
-                Q(inicio__lt=primeiro_dia, fim__gt=ultimo_dia) | \
-                Q(inicio__lt=primeiro_dia, fim=None)
+            ativos_no_mes = AtribuicaoDeCargo.objects.filter(
+                Q(inicio__lte=primeiro_dia, fim=None) | \
+                Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
             ).count()
             total_ativos_mes.append(ativos_no_mes)
         
