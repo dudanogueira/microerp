@@ -171,7 +171,6 @@ def etiquetas_gerar(request):
         pular_espacos = int(request.GET.get('pular_espacos', 0))
     except:
         pular_espacos = 0
-        
 
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
@@ -184,12 +183,13 @@ def etiquetas_gerar(request):
     c = canvas.Canvas(response)
     
     if lista_produtos:
-        produtos = Produto.objects.filter(id__in=lista_produtos)
+        produtos = Produto.objects.filter(id__in=lista_produtos, ativo=True)
     else:
-        produtos = Produto.objects.all()
+        produtos = Produto.objects.filter(ativo=True)
     total = formato['Colunas'] * formato['Linhas']
+    # ordena por grupo
+    produtos.order_by('tipo')
     objetos_por_pagina = list(chunks(produtos, total))
-    
     
     # SISTEMA DE IMPRESSAO DE AVULSOS
     try:

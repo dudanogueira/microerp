@@ -10,19 +10,17 @@
 <div class="btn-group open">
     <button class="btn dropdown-toggle" data-toggle="dropdown">Ações <span class="caret"></span></button>
     <ul class="dropdown-menu">
-        <li><a href="" class=""><i class="icon-bookmark"></i> Promover Cargo</a></li>
-        <li><a href="#"><i class="icon-money"></i> Promover Salário</a></a></li>
-        <li><a href="#"><i class="icon-home"></i> Solicitar Licença</a></li>
-
+        <li><a href="{% url "rh:promover_funcionario" funcionario.id %}" class=""><i class="fa fa-bookmark"></i> Promover</a></li>
+        <li><a href="#"><i class="fa fa-home"></i> Solicitar Licença</a></li>
         <li class="divider"></li>
-        <li><a href="{% url "rh:demitir_funcionario" funcionario.id %}"><i class="icon-minus"></i> Demitir</a></li>
+        <li><a href="{% url "rh:demitir_funcionario" funcionario.id %}"><i class="fa fa-minus"></i> Demitir</a></li>
     </ul>
 </div>
 
 <div class="btn-group pull-right" id="funcionarios-relatorios-botao">
-    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="icon icon-list-alt icon-white"></i> Controles e Relatórios <span class="caret"></span></button>
+    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="fa fa-list-alt-o"></i> Controles e Relatórios <span class="caret"></span></button>
     <ul class="dropdown-menu">
-        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class=""><i class="icon-time"></i> Controle de Banco de Hora</a></li>
+        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class=""><i class="fa fa-time"></i> Controle de Banco de Hora</a></li>
     </ul>
 </div>
 
@@ -48,17 +46,17 @@
             {% for periodo in funcionario.periodotrabalhado_set.all %}
             {% if not periodo.fim %}
             <div class="alert alert-success">
-                <strong><i class="icon icon-thumbs-up"></i> Período Ativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}
+                <strong><i class="fa fa-thumbs-up"></i> Período Ativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}
             </div>
             {% else %}
             <div class="alert alert-danger">
-                <strong><i class="icon icon-ban-circle"></i>  Período Inativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}. Fim: {{periodo.fim}}
+                <strong><i class="fa fa-ban-circle"></i>  Período Inativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}. Fim: {{periodo.fim}}
             </div>
             {% endif %}
 
             {% endfor %}
             <div class="alert alert-info">
-            <b><i class="icon-certificate"></i> Observação:</b>
+            <b><i class="fa fa-certificate"></i> Observação:</b>
             {{funcionario.observacao}}
             </div>
     </div>
@@ -69,19 +67,19 @@
     <div class="span6">
         <h3>Contatos</h3>
         <div class="well well-small">
-            <p><span class="label label-info"><i class="icon-envelope"></i> Email</span>  <strong>{{funcionario.email}}</strong></p>
-            <p><span class="label label-info"><i class="icon-phone"></i> Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
-            <p><span class="label label-info"><i class="icon-mobile-phone"></i> Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
-            <p><span class="label label-info"><i class="icon-inbox"></i> Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-envelope"></i> Email</span>  <strong>{{funcionario.email}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-phone"></i> Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-mobile-phone"></i> Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-inbox"></i> Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
         </div>
     </div>
     
     <div class="span6">
         <h3>Endereço</h3>
         <div class="well well-small">
-            <p><span class="label label-info"><i class="icon-road"></i> Rua</span>  <strong>{{funcionario.rua}}</strong></p>
-            <p><span class="label label-info"><i class="icon-building"></i> Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
-            <p><span class="label label-info"><i class="icon-tag"></i> CEP</span>  <strong>{{funcionario.cep}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-road"></i> Rua</span>  <strong>{{funcionario.rua}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-building"></i> Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
+            <p><span class="label label-info"><i class="fa fa-tag"></i> CEP</span>  <strong>{{funcionario.cep}}</strong></p>
     
         </div>
     </div>
@@ -95,11 +93,11 @@
         <div class="well">
             
             <div class="alert alert-{{funcionario.banco_de_horas_situacao}}">
-                                <i class="icon icon-time icon-4x pull-left"></i>
+                                <i class="fa fa-time fa-4x pull-left"></i>
                 <h2>Saldo: {% if funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{funcionario.banco_de_horas_saldo|floatformat:1}}</h2>
             <p><i>no Banco de Horas</i></p>
             </div>
-            <a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="icon icon-time icon-white"></i> Gerenciar Folhas de Ponto</a>
+            <a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="fa fa-time-o"></i> Gerenciar Folhas de Ponto</a>
             
         </div>
         <h3>Competências</h3>

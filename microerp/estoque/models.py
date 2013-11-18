@@ -75,6 +75,7 @@ class Produto(models.Model):
     codigo = models.CharField(blank=False, max_length=500)
     nome = models.CharField(blank=False, max_length=300)
     descricao = models.CharField(blank=False, max_length=300)
+    ativo = models.BooleanField(default=True)
     unidade_de_venda = models.CharField(blank=True, max_length=100, choices=PRODUTO_UNIDADE_DE_VENDA_CHOICES, null=True, default='un')
     unidade_de_compra = models.CharField(blank=True, max_length=100, choices=PRODUTO_UNIDADE_DE_VENDA_CHOICES, null=True, default='un')
     fator = models.CharField(blank=True, null=True, max_length=100)

@@ -47,7 +47,6 @@ class Command(BaseCommand):
         
     )
 
-
     def handle(self, *args, **options):
         arquivo = options.get('arquivo')
         formato = options.get('formato')
@@ -127,6 +126,12 @@ class Command(BaseCommand):
                                         print "PRECO_CONSUMIDOR",row[18].value
                                         if row[18].value:
                                             produto.preco_consumo = row[18].value
+                                        
+                                        print "ATIVO",row[23].value
+                                        if row[23].value == "Sim":
+                                            produto.ativo = True
+                                        else:
+                                            produto.ativo = False
                                         
                                         produto.save()
                                 
@@ -211,8 +216,6 @@ class Command(BaseCommand):
                             produto.preco_custo = float(row['PRECO_CUSTO'])
                             print "PRECO DE CUSTO:", produto.preco_custo
                             produto.save()
-
-
 
                 else:
                     print u"ERRO. Arquivo não encontrado. %s" % f

@@ -14,8 +14,8 @@ from django.db.models import Q
 from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
 from rh.models import EntradaFolhaDePonto, Competencia
-from rh.models import PeriodoTrabalhado
-from rh.models import Cargo
+from rh.models import PeriodoTrabalhado, AtribuicaoDeCargo
+from rh.models import Cargo, PromocaoCargo, PromocaoSalario
 from rh.utils import get_weeks
 from estoque.models import Produto
 
@@ -35,16 +35,19 @@ class DemitirFuncionarioForm(forms.Form):
         help_text="Formato: dd/mm/yyyy HH:MM"
     )
 
+#
 class AgendarExameMedicoForm(forms.ModelForm):
     class Meta:
         model = RotinaExameMedico
         fields = ('data',)
 
+#
 class AdicionarFolhaDePontoForm(forms.ModelForm):
     class Meta:
         model = FolhaDePonto
         fields = ('data_referencia',)
 
+#
 class AdicionarEntradaFolhaDePontoForm(forms.ModelForm):
     class Meta:
         model = EntradaFolhaDePonto
@@ -52,6 +55,7 @@ class AdicionarEntradaFolhaDePontoForm(forms.ModelForm):
 
 
 
+#
 class AdicionarArquivoRotinaExameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(AdicionarArquivoRotinaExameForm, self).__init__(*args, **kwargs)
@@ -64,6 +68,7 @@ class AdicionarArquivoRotinaExameForm(forms.ModelForm):
         fields = ('arquivo',)
 
 
+#
 class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
     class Meta:
         model = SolicitacaoDeLicenca
@@ -72,7 +77,6 @@ class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
 #
 # DECORATORS
 #
-
 def possui_perfil_acesso_rh(user, login_url="/"):
     try:
         if user.perfilacessorh and user.funcionario.ativo():
@@ -83,7 +87,6 @@ def possui_perfil_acesso_rh(user, login_url="/"):
 #
 # VIEWS
 #
-
 @user_passes_test(possui_perfil_acesso_rh)
 def home(request):
     # demissoes
@@ -100,18 +103,21 @@ def home(request):
     aniversarios_hoje = Funcionario.objects.filter(nascimento__month=today.month, nascimento__day=today.day)
     return render_to_response('frontend/rh/rh-home.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios(request):
     departamentos = Departamento.objects.all()
     funcionarios_inativos = Funcionario.objects.filter(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos(request):
     relatorio = True
     funcionarios_ativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
     return render_to_response('frontend/rh/rh-funcionarios-listar-ativos.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos_aniversarios(request):
     relatorio = True
@@ -125,6 +131,7 @@ def funcionarios_relatorios_listar_ativos_aniversarios(request):
         lista.append((datetime.date(datetime.date.today().year, mes, 1), funcionarios_ativos,))
     return render_to_response('frontend/rh/rh-funcionarios-listar-aniversarios.html', locals(), context_instance=RequestContext(request),)
         
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def ver_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
@@ -152,12 +159,14 @@ def ver_funcionario(request, funcionario_id):
         
     return render_to_response('frontend/rh/rh-funcionarios-ver.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licencas(request,):
     solicitacoes_abertas = SolicitacaoDeLicenca.objects.filter(status="aberta")
     solicitacoes_autorizada = SolicitacaoDeLicenca.objects.filter(status="autorizada")
     return render_to_response('frontend/rh/rh-solicitacao-licencas.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licenca_add(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
@@ -173,6 +182,7 @@ def solicitacao_licenca_add(request, funcionario_id):
             messages.error(request, "%s" % ' '.join(errors))
     return redirect(reverse('rh:ver_funcionario', args=[funcionario.id,]))
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licencas_autorizar(request, solicitacao_id):
     solicitacao = get_object_or_404(SolicitacaoDeLicenca, pk=solicitacao_id)
@@ -182,6 +192,7 @@ def solicitacao_licencas_autorizar(request, solicitacao_id):
     solicitacao.save()
     return redirect(reverse('rh:solicitacao_licencas'))
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos(request):
     exames_data_pendente = RotinaExameMedico.objects.filter(data=None)
@@ -190,6 +201,7 @@ def exames_medicos(request):
     exames_realizados = RotinaExameMedico.objects.filter(realizado=True)
     return render_to_response('frontend/rh/rh-exames-medicos.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos_ver(request, exame_id):
     exame = get_object_or_404(RotinaExameMedico, id=exame_id)
@@ -205,6 +217,7 @@ def exames_medicos_ver(request, exame_id):
     return render_to_response('frontend/rh/rh-exames-medicos-ver.html', locals(), context_instance=RequestContext(request),)
 
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos_exame_realizado_hoje(request, exame_id):
     '''marca exame como Realizado Hoje'''
@@ -243,12 +256,14 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
 
     return redirect(reverse('rh:exames_medicos_ver', args=[exame.id,]))
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao(request):
     processos_abertos = Demissao.objects.filter(status="andamento")
     processos_fechados = Demissao.objects.filter(status="finalizado")
     return render_to_response('frontend/rh/rh-processos-demissao.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def demitir_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
@@ -295,6 +310,131 @@ def demitir_funcionario(request, funcionario_id):
         form = DemitirFuncionarioForm()
     return render_to_response('frontend/rh/rh-funcionarios-demitir.html', locals(), context_instance=RequestContext(request),)
 
+
+#
+# FORM PROMOVER FUNCIONARIO
+#
+class FormPromoverFuncionario(forms.Form):
+    
+    def clean(self):
+        cleaned_data = super(FormPromoverFuncionario, self).clean()
+        if not self.cleaned_data['novo_cargo'] and not self.cleaned_data['novo_valor_salarial']:
+            raise ValidationError(u"Pelo menos uma promoção deve ser realizada: Cargo ou Salário")
+        return cleaned_data
+    
+    def clean_data_promocao(self):
+        data = self.cleaned_data['data_promocao']
+        if data < datetime.date.today():
+            raise ValidationError(u"Data tem que ser no futuro ou igual a hoje.")
+        if data < self.atribuicao.inicio:
+            raise ValidationError(u"Data tem que ser maior que o início da última atribuição de cargo, %s" % self.atribuicao.inicio)
+            return self.atribuicao.inicio
+        return data
+    
+    def __init__(self, *args, **kwargs):
+        self.atribuicao = kwargs.pop('atribuicao', None)
+        super(FormPromoverFuncionario, self).__init__(*args, **kwargs)
+        self.fields['novo_cargo'].widget.attrs['class'] = 'select2'
+        self.fields['data_promocao'].widget.attrs['class'] = 'datepicker'
+
+    data_promocao = forms.DateField(initial=datetime.date.today(), label=u"Data de Promoção")
+    # cargo
+    novo_cargo = forms.ModelChoiceField(queryset=Cargo.objects.all(), required=False)
+    observacao_cargo = forms.CharField(widget=forms.Textarea, required=False)
+    # salario
+    novo_valor_salarial = forms.DecimalField(max_digits=15, decimal_places=2, required=False)
+    observacao_salarial = forms.CharField(widget=forms.Textarea, required=False)
+
+# promover
+@user_passes_test(possui_perfil_acesso_rh)
+def promover_funcionario(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    # pega a atribuicao de cargo atual, ou se cria
+    if funcionario.periodo_trabalhado_corrente:
+        created, atribuicao = funcionario.periodo_trabalhado_corrente.atribuicao_atual(user=request.user)
+        if atribuicao:
+            if created:
+                messages.warning(request, u"Atenção! Funcionário não possuía Atribuição de Cargo!")
+                messages.success(request, u"Sucesso! Atribuição criada para Cargo %s, Início: %s" % (atribuicao.cargo, atribuicao.inicio))
+            # agora deve mostrar o form da atribuicao atual, descobrir o cargo de destino
+            # ao processar o formulario, criado a próxima atribuição
+            form_promover = FormPromoverFuncionario(atribuicao=atribuicao)
+            if request.POST:
+                form_promover = FormPromoverFuncionario(request.POST, atribuicao=atribuicao)
+                if form_promover.is_valid():
+                    # data promocao
+                    data_promocao = form_promover.cleaned_data['data_promocao']
+                    # promocao salarial
+                    novo_valor = form_promover.cleaned_data['novo_valor_salarial']
+                    novo_cargo = form_promover.cleaned_data['novo_cargo']
+                    # novos valores
+                    if novo_valor:
+                        if funcionario.salario():
+                            valor_origem = funcionario.salario()
+                        else:
+                            valor_origem = novo_valor
+                        # cria instancia do PromocaoSalarial
+                        observacao_salarial = form_promover.cleaned_data['observacao_salarial']
+                        promocao_salarial = funcionario.promocao_salarial_set.create(
+                            data_promocao=data_promocao,
+                            atribuicao_de_cargo=atribuicao,
+                            valor_destino=novo_valor,
+                            valor_origem=valor_origem,
+                            solicitante=request.user.funcionario,
+                            autorizador=request.user.funcionario,
+                            periodo_trabalhado=funcionario.periodo_trabalhado_corrente,
+                            observacao=observacao_salarial,
+                            # opcoes para fazer com passo de autorizacao
+                            aprovado=True,
+                            avaliado=True,
+                            data_resolucao=datetime.date.today(),
+                            criado_por=request.user, 
+                        )
+                        messages.success(request, u'Sucesso! Nova Promoção Salarial #%s Criada para %s' % (promocao_salarial.id, funcionario))
+                    if novo_cargo:
+                        # fecha a atribuicao de cargo atual
+                        atribuicao.fim = data_promocao
+                        atribuicao.save()
+                        atribuicao_origem = atribuicao
+                        messages.info(request, u'Informação: Atribuição de Cargo #%s: %s Fechada em %s' % (atribuicao_origem.id, atribuicao_origem.cargo, atribuicao_origem.fim))
+                        # cria nova atribuicao, com inciio para 1 dia após origem
+                        atribuicao_destino = funcionario.periodo_trabalhado_corrente.atribuicaodecargo_set.create(
+                            cargo=novo_cargo,
+                            inicio=data_promocao + datetime.timedelta(days=1),
+                            criado_por=request.user, 
+                        )
+                        messages.info(request, u'Informação: Nova Atribuição de Cargo #%s: %s Aberta!' % (atribuicao_destino.id, atribuicao_destino.cargo))
+                        # cria a instancia do PromocaoCargo
+                        observacao_cargo = form_promover.cleaned_data['observacao_cargo']
+                        promocao_cargo = funcionario.promocao_cargo_set.create(
+                            data_promocao=data_promocao,
+                            atribuicao_de_origem=atribuicao_origem,
+                            atribuicao_de_destino=atribuicao_destino,
+                            periodo_trabalhado=funcionario.periodo_trabalhado_corrente,
+                            solicitante=request.user.funcionario,
+                            autorizador=request.user.funcionario,
+                            observacao=observacao_cargo,
+                            criado_por=request.user, 
+                            # opcoes para fazer com passo de autorizacao
+                            aprovado=True,
+                            avaliado=True,
+                            data_resolucao=datetime.date.today(),
+                        )
+                        messages.success(request, u"Promoção de Cargo Registrada: #%s para %s" % (promocao_cargo, promocao_cargo.beneficiario))
+                    # retorna para lista de promoções
+                    return redirect(reverse("rh:ver_funcionario", args=[funcionario.id]))
+
+    else:
+        message.error(request, u"Erro. Funcionário não possui perído ativo corrente!")
+    return render_to_response('frontend/rh/rh-funcionarios-promover.html', locals(), context_instance=RequestContext(request),)
+
+# lista promocoes
+@user_passes_test(possui_perfil_acesso_rh)
+def processos_promocao(request):
+    processos_cargo = PromocaoCargo.objects.all()
+    processos_salarial = PromocaoSalario.objects.all()    
+    return render_to_response('frontend/rh/rh-processos-promocao.html', locals(), context_instance=RequestContext(request),)
+
 # controle_de_ferias
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferias(request):
@@ -331,6 +471,7 @@ def controle_banco_de_horas_do_funcionario(request, funcionario_id):
         form_add_entrada_folha_ponto = AdicionarEntradaFolhaDePontoForm()
     return render_to_response('frontend/rh/rh-banco-de-horas-funcionario.html', locals(), context_instance=RequestContext(request),)
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, folha_id):
     folha = get_object_or_404(FolhaDePonto, funcionario__id=funcionario_id, id=folha_id)
@@ -338,6 +479,7 @@ def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, fo
     folha.save()
     return redirect(reverse('rh:controle_banco_de_horas_do_funcionario', args=[folha.funcionario.id,]))
 
+#
 @user_passes_test(possui_perfil_acesso_rh)
 def matriz_de_competencias(request):
     competencias = Competencia.objects.all()
@@ -640,31 +782,57 @@ def indicadores_do_rh(request):
     form_seleciona_ano = SelecionaAnoIndicadorRH(request.GET)
     resultado_admissao = []
     resultado_demissao = []
+    resultado_ativos = []
     # cria dicionario com todos os ids de cargo vinculado por
     #cargo[2013] = (Nome Cargo, 1, 2, 3, 4, ... 12)
     try:
         ano = request.GET.get('ano', datetime.date.today().year)
+        ano = int(ano)
     except:
         raise
         ano = datetime.date.today().year
 
     if ano:
+        import calendar
         for cargo in Cargo.objects.all():
             linha_adm = []
-            linha_dem = []
-            linha_total_adm = {}
-            linha_total_dem = {}
             linha_adm.append(cargo.nome)
+            #
+            linha_dem = []
             linha_dem.append(cargo.nome)
+            #
+            linha_ativo = []
+            linha_ativo.append(cargo.nome)
+            # para cada mês
             for month in range(1,13):
+                mes = month
                 # admissão
                 admissoes_no_mes = PeriodoTrabalhado.objects.filter(inicio__year=ano, inicio__month=month, funcionario__cargo_inicial=cargo).count()
                 linha_adm.append(admissoes_no_mes)
                 # demissao
                 demissoes_no_mes = PeriodoTrabalhado.objects.filter(fim__year=ano, fim__month=month, funcionario__cargo_atual=cargo).count()
                 linha_dem.append(demissoes_no_mes)
+                # ativos
+                # ultimo dia no mes pesquisado
+                primeiro_dia = datetime.date(ano, mes, 1)
+                ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
+                # filtra todos os periodos trabalhados do ano onde:
+                # (data de inicio seja menor que o primeiro dia
+                # E
+                # a data de fim maior que o último dia)
+                # OU
+                # (data de inicio seja menor que o primeiro dia
+                # OU
+                # data de fim nao preenchida)
+                # 
+                ativos_no_mes = PeriodoTrabalhado.objects.filter(
+                    Q(inicio__lte=primeiro_dia, fim=None) | \
+                    Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
+                ).count()
+                linha_ativo.append(ativos_no_mes)
             resultado_admissao.append(linha_adm)
             resultado_demissao.append(linha_dem)
+            resultado_ativos.append(linha_ativo)
         # totalizadores por mês
         ## admissao
         total_admissao_mes = []
@@ -673,13 +841,27 @@ def indicadores_do_rh(request):
             # admissão
             admissoes_no_mes = PeriodoTrabalhado.objects.filter(inicio__year=ano, inicio__month=month).count()
             total_admissao_mes.append(admissoes_no_mes)
-        ## admissao
+        ## demissao
         total_demissao_mes = []
         total_demissao_mes.append("Total")
         for month in range(1,13):
-            # admissão
+            # demissao
             demissoes_no_mes = PeriodoTrabalhado.objects.filter(fim__year=ano, fim__month=month).count()
             total_demissao_mes.append(demissoes_no_mes)
+        ## ativos
+        total_ativos_mes = []
+        total_ativos_mes.append("Total")
+        for month in range(1,13):
+            mes = month
+            # ativos
+            primeiro_dia = datetime.date(ano, mes, 1)
+            ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
+            ativos_no_mes = PeriodoTrabalhado.objects.filter(
+                Q(inicio__lt=primeiro_dia, fim__gt=ultimo_dia) | \
+                Q(inicio__lt=primeiro_dia, fim=None)
+            ).count()
+            total_ativos_mes.append(ativos_no_mes)
+        
         
         resultados = True
         ano = str(ano)

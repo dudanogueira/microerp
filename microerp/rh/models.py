@@ -143,7 +143,7 @@ class Funcionario(models.Model):
     
     def __unicode__(self):
         return self.nome
-    
+
     class Meta:
         verbose_name = u"Funcionário"
         verbose_name_plural = u"Funcionários"
@@ -169,8 +169,8 @@ class Funcionario(models.Model):
             raise ValidationError(u"Número do CPF Inválido!")
     
     def salario(self):
-        if self.promocaosalario_set.filter(aprovado=True).count():
-            return self.promocaosalario_set.filter(aprovado=True).order_by('data')[0].valor
+        if self.periodo_trabalhado_corrente.promocaosalario_set.filter(aprovado=True).count():
+            return self.periodo_trabalhado_corrente.promocaosalario_set.filter(aprovado=True).order_by('-criado')[0].valor_destino
         else:
             return self.salario_inicial
     
@@ -325,7 +325,6 @@ class Funcionario(models.Model):
     def solicitacoes_correcao_aberto(self):
         return self.solicitacao_correcao_set.filter(status="analise", correcao_iniciada=None)
         
-    
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="Usuário do Sistema", blank=True, null=True)
@@ -500,6 +499,21 @@ class PeriodoTrabalhado(models.Model):
         verbose_name_plural = u"Períodos Trabalhados"
         ordering = ['-criado',]
     
+    def atribuicao_atual(self, user=None):
+        '''retorna atribuicao_atual, e cria, se necessário'''
+        atribuicao_atual = self.atribuicaodecargo_set.filter(fim=None).order_by('-inicio')
+        if atribuicao_atual.count() >= 1:
+            return False, atribuicao_atual[0]
+        else:
+            #nao possui nenhuma atribuicao: base de dados legada
+            # deve ser criado atribuição inicial
+            atribuicao = self.atribuicaodecargo_set.create(
+                cargo=self.funcionario.cargo_atual,
+                inicio=self.inicio,
+                criado_por=user,
+            )
+            return True, atribuicao
+    
     funcionario = models.ForeignKey(Funcionario)
     inicio = models.DateField(default=datetime.datetime.today, blank=False)
     fim = models.DateField(blank=True, null=True)
@@ -507,8 +521,23 @@ class PeriodoTrabalhado(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
-class PromocaoSalario(models.Model):
+class AtribuicaoDeCargo(models.Model):
+    ''' Toda Atribuição de cargo deve estar vinculada a um
+    Período Trabalhado.
+    Ela deve ser criada na pós criação de um periodo trabalhado
+    se não existir nenhum, praquele periodo trabalhado,
+    definir data de incio como data admissão, e cargo como cargo_inicial
+    '''
+    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
+    cargo = models.ForeignKey('Cargo')
+    inicio = models.DateField(default=datetime.datetime.today)
+    fim = models.DateField(blank=True, null=True)
+    # metadata
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
+class PromocaoSalario(models.Model):
     def __unicode__(self):
         if self.data_resolucao:
             data_resolucao_str = self.data_resolucao.strftime("%d/%m/%y")
@@ -522,13 +551,11 @@ class PromocaoSalario(models.Model):
             if self.avaliado and not self.aprovado:
                 return u"Promoção de Salário do Funcionário %s DECLINADA no dia %s" % (self.beneficiario, data_resolucao_str)
         
-    
     class Meta:
         verbose_name = u"Promoção Salarial"
         verbose_name_plural = u"Promoções Salariais"
         ordering = ['data_solicitacao']
     
-
     def clean(self):
         if self.aprovado and not self.avaliado:
             raise ValidationError(u"Para aprovar uma Solicitação é preciso marcar como avaliado antes")
@@ -538,19 +565,24 @@ class PromocaoSalario(models.Model):
             raise ValidationError(u"Para aprovar uma Promoção de Salário, é obrigatório um Funcionário Autorizador.")
         if self.avaliado and not self.autorizador:
             raise ValidationError(u"Para avaliar uma Promoção de Salário, é obrigatório um Funcionário Autorizador.")
-    
+
     aprovado = models.BooleanField(default=False)
     avaliado = models.BooleanField(default=False)
     descricao = models.CharField(blank=False, null=False,  max_length=100, verbose_name=u"Descrição")
+    # datas
     data_solicitacao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Solicitação")
     data_resolucao = models.DateField(blank=True, null=True, verbose_name=u"Data de Resolução")
+    data_promocao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Efetivação de Promoção de Cargo")
     beneficiario = models.ForeignKey(Funcionario, related_name="promocao_salarial_set", verbose_name=u"Funcionário Beneficiado")
     solicitante = models.ForeignKey(Funcionario, related_name="solicitacao_promocao_salarial_set", verbose_name=u"Funcionário Solicitante")
     autorizador = models.ForeignKey(Funcionario, related_name="autorizacao_promocao_salarial_set", verbose_name=u"Funcionário que Autorizou a Promoção", blank=True, null=True)
-    valor = models.DecimalField(u"Valor", max_digits=10, decimal_places=2)
+    valor_origem = models.DecimalField(u"Valor de Origem", max_digits=10, decimal_places=2)
+    valor_destino = models.DecimalField(u"Valor de Destino", max_digits=10, decimal_places=2)
     periodo_trabalhado = models.ForeignKey("PeriodoTrabalhado")
+    atribuicao_de_cargo = models.ForeignKey("AtribuicaoDeCargo")
     observacao = models.TextField(blank=True, verbose_name=u"Observações Internas")
     # metadata
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
@@ -588,20 +620,23 @@ class PromocaoCargo(models.Model):
     avaliado = models.BooleanField(default=False)
     aprovado = models.BooleanField(default=False)
     # dados gerais
-    descricao = models.CharField(blank=False, null=False,  max_length=100, verbose_name=u"Descrição")
+    observacao = models.CharField(blank=False, null=False,  max_length=100, verbose_name=u"Observação")
+    # datas
     data_solicitacao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Solicitação de Promoção de Cargo")
     data_resolucao = models.DateField(blank=True, null=True, verbose_name=u"Data de Resolução")
+    data_promocao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Efetivação de Promoção de Cargo")
     # dados da promocao de cargo
     beneficiario = models.ForeignKey(Funcionario, related_name="promocao_cargo_set", verbose_name=u"Funcionário Beneficiado pela Promoção de Cargo")
     solicitante = models.ForeignKey(Funcionario, related_name="solicitacao_promocao_cargo_set", verbose_name=u"Funcionário Solicitante da Promoção de Cargo")
     autorizador = models.ForeignKey(Funcionario, related_name="autorizacao_promocao_cargo_set", verbose_name=u"Funcionário que Autorizou a Promoção de Cargo", blank=True, null=True)
-    cargo_antigo = models.ForeignKey(Cargo, related_name="cargo_antigo_set")
-    cargo_novo = models.ForeignKey(Cargo, related_name="cargo_novo_set")
+    atribuicao_de_origem = models.OneToOneField('AtribuicaoDeCargo', related_name="promocao_de_origem", verbose_name="Atribuição de Origem")
+    atribuicao_de_destino = models.OneToOneField('AtribuicaoDeCargo', related_name="promocao_de_destino", verbose_name="Atribuição de Destino")
     periodo_trabalhado = models.ForeignKey("PeriodoTrabalhado")
     # metadata
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
+
 class SolicitacaoDeLicenca(models.Model):
     
     def __unicode__(self):
@@ -874,7 +909,7 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
       #caso haja alguma promocao e o cargo for diferente do atual...
       promo_cargos = instance.promocao_cargo_set.filter(aprovado=True)
       if promo_cargos.count():
-            ultimo_cargo = promo_cargos.order_by('-criado')[0].cargo_novo
+            ultimo_cargo = promo_cargos.order_by('-criado')[0].atribuicao_de_origem.cargo
             if ultimo_cargo != instance.cargo_atual:
                   instance.cargo_atual = ultimo_cargo
                   instance.save()
@@ -883,7 +918,7 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
       #caso haja alguma promocao de salario diferente do atual...
       promo_salarios = instance.promocao_salarial_set.filter(aprovado=True)
       if promo_salarios.count():
-            ultimo_salario = promo_salarios.order_by('-criado')[0].valor
+            ultimo_salario = instance.salario()
             if ultimo_salario != instance.salario_atual:
                   instance.salario_atual = ultimo_salario
                   instance.save()

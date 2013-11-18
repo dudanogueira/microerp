@@ -97,6 +97,36 @@
 	</tbody>
 </table>
 
+<h2>Ativos {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="alert alert-info">
+			{% for campo in total_ativos_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+
+
 {% endif %}
 
 {% endblock %}
@@ -119,8 +149,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#content").removeClass('span9').addClass('span11');
 });
 
-
 </script>
 {% endaddtoblock %}
 {% include "frontend/rh/rh-menu.html" %}
-{% endblock%}
+{% endblock %}

@@ -8,6 +8,7 @@ urlpatterns = patterns('',
     url(r'^funcionarios/$', 'rh.views.funcionarios', name='funcionarios'),
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/$', 'rh.views.ver_funcionario', name='ver_funcionario'),
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/demitir/$', 'rh.views.demitir_funcionario', name='demitir_funcionario'),
+    url(r'^funcionario/(?P<funcionario_id>[0-9]+)/promover/$', 'rh.views.promover_funcionario', name='promover_funcionario'),
     # funcionario > solicitacao licenca
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/licenca/add/$', 'rh.views.solicitacao_licenca_add', name='solicitacao_licenca_add'),
     # funcionario > relatorios > banco de horas
@@ -35,11 +36,12 @@ urlpatterns = patterns('',
 
     # controle de banco de horas
     url(r'^controle/banco-de-horas/$', 'rh.views.controle_de_banco_de_horas', name='controle_de_banco_de_horas'),    
-
     
     # demissoes
     url(r'^processos-demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
     
+    # promocoes
+    url(r'^promocoes/$', 'rh.views.processos_promocao', name='processos_promocao'),
     # controle de epi
     url(r'^controle-de-epi/$', 'rh.views.controle_de_epi', name='controle_de_epi'),
     url(r'^controle-de-epi/adicionar/$', 'rh.views.controle_de_epi_adicionar', name='controle_de_epi_adicionar'),

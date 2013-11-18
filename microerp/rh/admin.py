@@ -41,6 +41,7 @@ from rh.models import Demissao
 from rh.models import DependenteDeFuncionario
 from rh.models import Feriado
 from rh.models import Competencia
+from rh.models import AtribuicaoDeCargo
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -83,7 +84,6 @@ class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
         DependenteDeFuncionarioInline,
     ]
 
-
 class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
     save_on_top = True
     search_fields = ['funcionario__nome',]
@@ -94,7 +94,7 @@ class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
 
 class PromocaoCargoAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = ('beneficiario', 'data_solicitacao', 'cargo_antigo', 'cargo_novo', 'aprovado', 'avaliado', 'criado')
+    list_display = ('beneficiario', 'data_solicitacao', 'aprovado', 'avaliado', 'criado')
 
 class EntradaFolhaDePontoInline(admin.StackedInline):
     model = EntradaFolhaDePonto
@@ -108,8 +108,15 @@ class FolhaDePontoAdmin(admin.ModelAdmin):
     list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',
     inlines = [EntradaFolhaDePontoInline]
 
+class AtribuicaoDeCargoInline(admin.StackedInline):
+    model = AtribuicaoDeCargo
+    ordering = ['inicio']
+    extra=0
+
 class PeriodoTrabalhadoAdmin(admin.ModelAdmin):
-    list_filter = 'inicio', 'fim', 'funcionario'
+    list_filter = 'inicio', 'fim', 'funcionario', 'funcionario__cargo_atual'
+    list_display = 'id', 'funcionario', 'inicio', 'fim'
+    inlines = [AtribuicaoDeCargoInline]
 
 class FeriadoAdmin(admin.ModelAdmin):
     list_filter = 'importado_por_sync',
@@ -139,6 +146,11 @@ class CompetenciaAdmin(admin.ModelAdmin):
 
 class CargoAdmin(admin.ModelAdmin):
     filter_horizontal = 'competencias',
+    
+class AtribuicaoDeCargoAdmin(admin.ModelAdmin):
+    list_display = 'id', 'periodo_trabalhado', 'cargo', 'inicio', 'fim'
+    list_display_links = list_display
+    list_filter = 'periodo_trabalhado__funcionario',
 
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
@@ -159,3 +171,4 @@ admin.site.register(Feriado, FeriadoAdmin)
 admin.site.register(EntradaFolhaDePonto, EntradaFolhaDePontoAdmin)
 admin.site.register(Competencia, CompetenciaAdmin)
 admin.site.register(Cargo, CargoAdmin)
+admin.site.register(AtribuicaoDeCargo, AtribuicaoDeCargoAdmin)

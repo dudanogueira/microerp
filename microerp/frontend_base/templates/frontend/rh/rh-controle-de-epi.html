@@ -11,8 +11,8 @@
 	
 	<div class="span8">
 		<ul class="nav nav-tabs">
-		    <li class="active"><a href="#pendentes" data-toggle="tab">Pendentes</a></li>
-		    <li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
+			<li class="active"><a href="#pendentes" data-toggle="tab">Pendentes</a></li>
+			<li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
 		
 		</ul>
 		
@@ -23,63 +23,65 @@
 	</div>
 </div>
 
-<div id="controle-epi-content" class="tab-content">
-    
-    <div class="tab-pane fade in active" id="pendentes">
-			<h2>Sem o Arquivo Impresso e Assinado</h2>
-			
-      <table class="table table-condensed table-hover table-rounded">
-        <thead>
-              <tr>
-                  <th>ID</th>
-                  <th>Funcionário Assinante</th>
-									<th>Criado</th>
-                  <th>Ações</th>
-              </tr>
-         </thead>
-				<tbody>
-						<tr>
-						{% for controle in controles_sem_arquivos %}
-							<td>{{controle.id}}</td>
-							<td>{{controle.funcionario}}</td>
-							<td>{{controle.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{controle.criado|timesince}}</small>) por {{controle.criado_por.funcionario}}</td></td>
-							<td>
-								<p class='btn-group'>
-									<a href="{% url "rh:controle_de_epi_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
-									
-									<a href="{% url "rh:controle_de_epi_vincular_arquivo" controle.id %}" class="btn btn-primary"><i class="fa fa-file"></i> </a>
-									
-								</p>
-							</td>
-						</tr>
-						{% empty %}
-						<tr>
-						<td>Nenhum Item</td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-						{% endfor %}
-				</tbody>
-			</table>
 
-			<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
-			{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
-			
-			{% for linha in linhas_group_list %}
-			<div class="well well-small">
+<div id="controle-epi-content" class="tab-content">
+	
+	
+	<div class="tab-pane fade in active" id="pendentes">
+		<h2>Sem o Arquivo Impresso e Assinado</h2>
+		
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Funcionário Assinante</th>
+					<th>Criado</th>
+					<th>Ações</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					{% for controle in controles_sem_arquivos %}
+					<td>{{controle.id}}</td>
+					<td>{{controle.funcionario}}</td>
+					<td>{{controle.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{controle.criado|timesince}}</small>) por {{controle.criado_por.funcionario}}</td></td>
+					<td>
+						<p class='btn-group'>
+							<a href="{% url "rh:controle_de_epi_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
+									
+							<a href="{% url "rh:controle_de_epi_vincular_arquivo" controle.id %}" class="btn btn-primary"><i class="fa fa-file"></i> </a>
+									
+						</p>
+					</td>
+				</tr>
+				{% empty %}
+				<tr>
+					<td>Nenhum Item</td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+		
+		<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
+		{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
+		
+		{% for linha in linhas_group_list %}
+		<div class="well well-small">
 			<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
 			<table class="table table-condensed">
-        <thead>
-              <tr>
-									<th>ID</th>
-                  <th>Código</th>
-                  <th>Produto</th>
-									<th>Quantidade</th>
-                  <th>Data de Devolução</th>
-									<th>Ações</th>
-              </tr>
-         </thead>
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Código</th>
+						<th>Produto</th>
+						<th>Quantidade</th>
+						<th>Data de Devolução</th>
+						<th>Ações</th>
+					</tr>
+				</thead>
 				<tbody>
 					{% for equipamento in linha.list %}
 					<tr>
@@ -95,85 +97,85 @@
 					{% endfor %}
 				</tbody>
 			</table>
-			</div>
-			{% endfor %}
-			
-			
-			
 		</div>
-		
-    <div class="tab-pane fade in" id="filtrar">
-			<form method="POST" action="#filtrar">
+		{% endfor %}
+	</div>
+	
+	<div class="tab-pane fade in" id="filtrar">
+		<form method="POST" action="#filtrar">
 			{% csrf_token %}
 			{{form_filtra_epi}}
 			<button type="submit" class="btn btn-primary" name="filtrar-controleepi-btn">Filtrar</button>
-			</form>
-			{% if controles_do_funcionario %}
-				{% for controle in controles_do_funcionario %}
+		</form>
+		
+		
+		
+		{% if controles_do_funcionario %}
+		{% for controle in controles_do_funcionario %}
 			
-				<hr />
-				{% if not controle.arquivo_impresso_assinado %}
-				<div class"row-fluid">
-					<div class="span10">
-						<h1 class="alert alert-danger">#{{controle.id}} - {{controle.criado}}</h1>
-					</div>
-					<div class="span2">
-						<span class="label label-important">Não assinado ainda</span>
-					</div>
-				</div>
-				{% else %}
-				<div class"row-fluid">
-					<div class="span10">
-						<h1>#{{controle.id}} - {{controle.criado}}</h1>
-					</div>
-					<div class="span2">
-						<br />
-						<a class="btn btn-info" href="{{controle.arquivo_impresso_assinado.url}}">Arquivo Assinado</a>
-					</div>
-				</div>	
-				{% endif %}
-	      <table class="table table-condensed table-hover table-rounded">
-	        <thead>
-		      	<tr>
-		          <th>ID</th>
-		          <th>Produto</th>
-							<th>Quantidade</th>
-		          <th>Código CA</th>
-							<th>Devolução</th>
-							<th>Retornado</th>
-		        </tr>
-	        </thead>
-					<tbody>
-						{% for linha in controle.linhacontroleequipamento_set.all %}
-						{% if linha.data_devolvido %}
-								<tr class="alert alert-success">
-						{% else %}
-							{% if linha.pendente %}
-								<tr class="alert alert-danger">
-							{% else %}
-								<tr class="alert alert-info">
-							{% endif%}
-						{% endif %}
-								<td>{{linha.id}}</td>
-								<td>{{linha.produto}}</td>
-								<td>{{linha.quantidade}}</td>
-								<td>{{linha.codigo_ca}}</td>
-								<td>{{linha.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}<br />
-									{% if linha.pendente %}
-										<strong><small>passado  {{linha.data_previsao_devolucao|timesince}}</small></strong>
-									{% else %}
-										<strong><small>daqui há {{linha.data_previsao_devolucao|timeuntil}}</small></strong>
-									{% endif %}
-								</td>
-								<td>{% if linha.data_devolvido %}<i class="fa fa-check"></i> {{linha.data_devolvido|date:"SHORT_DATE_FORMAT"}}{% endif %}</td>
-							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-				{% endfor %}
-			{% endif %}
+		<hr />
+		{% if not controle.arquivo_impresso_assinado %}
+		<div class"row-fluid">
+			<div class="span10">
+				<h1 class="alert alert-danger">#{{controle.id}} - {{controle.criado}}</h1>
+			</div>
+			<div class="span2">
+				<span class="label label-important">Não assinado ainda</span>
+			</div>
 		</div>
-<div>
+		{% else %}
+		<div class"row-fluid">
+			<div class="span10">
+				<h1>#{{controle.id}} - {{controle.criado}}</h1>
+			</div>
+			<div class="span2">
+				<br />
+				<a class="btn btn-info" href="{{controle.arquivo_impresso_assinado.url}}">Arquivo Assinado</a>
+			</div>
+		</div>	
+		{% endif %}
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>ID</th>
+					<th>Produto</th>
+					<th>Quantidade</th>
+					<th>Código CA</th>
+					<th>Devolução</th>
+					<th>Retornado</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for linha in controle.linhacontroleequipamento_set.all %}
+				{% if linha.data_devolvido %}
+				<tr class="alert alert-success">
+					{% else %}
+					{% if linha.pendente %}<tr class="alert alert-danger">{% else %}<tr class="alert alert-info">{% endif %}
+					{% endif %}
+							<td>{{linha.id}}</td>
+							<td>{{linha.produto}}</td>
+							<td>{{linha.quantidade}}</td>
+							<td>{{linha.codigo_ca}}</td>
+							<td>{{linha.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}<br />
+								{% if linha.pendente %}
+								<strong><small>passado  {{linha.data_previsao_devolucao|timesince}}</small></strong>
+								{% else %}
+								<strong><small>daqui há {{linha.data_previsao_devolucao|timeuntil}}</small></strong>
+								{% endif %}
+							</td>
+							<td>{% if linha.data_devolvido %}<i class="fa fa-check"></i> {{linha.data_devolvido|date:"SHORT_DATE_FORMAT"}}{% endif %}</td>
+					</tr>
+						{% endfor %}
+			</tbody>
+		</table>
+				{% endfor %}
+				{% endif %}
+		
+		
+		
+		
+	</div>
+</div>
 
 {% endblock %}
 
@@ -185,8 +187,8 @@
 <script>
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
-  var activeTab = $('[href=' + location.hash + ']');
-  activeTab && activeTab.click();
+	var activeTab = $('[href=' + location.hash + ']');
+	activeTab && activeTab.click();
 	
 });
 $('#sub-menu-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){

@@ -1,0 +1,141 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - RH - Promoções{% endblock %}</title>
+
+{% block content %}
+
+<h1>Promoções</h1>
+
+
+<div class="row-fluid" id="sub-menu-processo-promocao">
+	
+	<div class="span8">
+		<ul class="nav nav-tabs">
+			<li class="active"><a href="#cargo" data-toggle="tab">Cargo</a></li>
+			<li class=""><a href="#salario" data-toggle="tab">Salário</a></li>
+
+		</ul>
+		
+	</div>
+	
+	<div class="span4">
+	</div>
+</div>
+
+<div id="controle-epi-content" class="tab-content">
+		<div class="tab-pane fade in active" id="cargo">
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Funcionário Beneficiado</th>
+						<th>Cargo Anterior</th>
+						<th>Cargo Promovido</th>
+						<th>Data da Promoção</th>
+						<th>Criação</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						{% for promocao in processos_cargo %}
+						<td>{{promocao.id}}</td>
+						<td>{{promocao.beneficiario}}</td>
+						<td>{{promocao.atribuicao_de_origem.cargo}}</td>
+						<td>{{promocao.atribuicao_de_destino.cargo}}</td>
+						<td>{{promocao.data_promocao|date:"SHORT_DATE_FORMAT"}}</td>
+						<td>{{promocao.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{promocao.criado|timesince}}</small>) por {{promocao.criado_por.funcionario}}</td></td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td>Nenhum Item</td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		
+		<div class="tab-pane fade in" id="salario">
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Funcionário Beneficiado</th>
+						<th>Valor Antes</th>
+						<th>Valor Após</th>
+						<th>Data da Promoção</th>
+						<th>Criação</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						{% for promocao in processos_salarial %}
+						<td>{{promocao.id}}</td>
+						<td>{{promocao.beneficiario}}</td>
+						<td>R$ {{promocao.valor_origem}}</td>
+						<td>R$ {{promocao.valor_destino}}</td>
+						<td>{{promocao.data_promocao|date:"SHORT_DATE_FORMAT"}}</td>
+						<td>{{promocao.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{promocao.criado|timesince}}</small>) por {{promocao.criado_por.funcionario}}</td></td>
+					</tr>
+					{% empty %}
+					<tr>
+						<td>Nenhum Item</td>
+						<td></td>
+						<td></td>
+						<td></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		
+
+	
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    $("#menu-rh-processos-de-promocao, #top-menu-rh").addClass("active");
+		
+		var activeTab = $('[href=' + location.hash + ']');
+		activeTab && activeTab.click();
+		
+		$('.datepicker').each(function() {
+		   $(this).datepicker({
+			inline: true,
+		      dateFormat: "dd/mm/yy"
+    
+				});
+		});
+		
+});
+
+$('#sub-menu-processo-promocao').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}
