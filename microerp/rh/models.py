@@ -909,7 +909,7 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
       #caso haja alguma promocao e o cargo for diferente do atual...
       promo_cargos = instance.promocao_cargo_set.filter(aprovado=True)
       if promo_cargos.count():
-            ultimo_cargo = promo_cargos.order_by('-criado')[0].atribuicao_de_origem.cargo
+            ultimo_cargo = promo_cargos.order_by('-criado')[0].atribuicao_de_destino.cargo
             if ultimo_cargo != instance.cargo_atual:
                   instance.cargo_atual = ultimo_cargo
                   instance.save()
