@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
@@ -807,7 +808,7 @@ def indicadores_do_rh(request):
         # Relacionados a Cargo
         #
         admitidos_cargo = {}
-        for departamento in Departamento.objects.all():
+        for departamento in Departamento.objects.all().order_by('-id'):
             admitidos_cargo[departamento] = {}
             for cargo in departamento.cargo_set.all():
                 admitidos_cargo[departamento][cargo] = []
@@ -843,6 +844,7 @@ def indicadores_do_rh(request):
                 resultado_demissao.append(linha_dem)
                 resultado_ativos.append(linha_ativo)
                 admitidos_cargo[departamento][cargo].append(linha_adm)
+        admitidos_cargo = OrderedDict(sorted(admitidos_cargo.items()))
             
         #
         # Totalizadores
