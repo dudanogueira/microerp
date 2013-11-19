@@ -27,6 +27,7 @@ from cadastro.models import PreCliente
 from cadastro.models import PerfilClienteLogin
 from cadastro.models import Recado
 from cadastro.models import EnderecoCliente
+from cadastro.models import EnderecoEmpresa
 
 from django import forms
 
@@ -118,3 +119,4 @@ admin.site.register(PerfilAcessoRecepcao, PerfilAcessoRecepcaoAdmin)
 admin.site.register(PreCliente, PreClienteAdmin)
 admin.site.register(Recado, RecadoAdmin)
 admin.site.register(PerfilClienteLogin, PerfilClienteLoginAdmin)
+admin.site.register(EnderecoEmpresa)

@@ -517,6 +517,7 @@ class PeriodoTrabalhado(models.Model):
                 cargo=self.funcionario.cargo_atual,
                 inicio=self.inicio,
                 criado_por=user,
+                local_empresa=self.funcionario.endereco_empresa_designado
             )
             return True, atribuicao
     
@@ -538,7 +539,7 @@ class AtribuicaoDeCargo(models.Model):
     cargo = models.ForeignKey('Cargo')
     inicio = models.DateField(default=datetime.datetime.today)
     fim = models.DateField(blank=True, null=True)
-    local_empresa = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local e Endereço da Empresa que foi designado", default=1)
+    local_empresa = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local designado", default=1)
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")

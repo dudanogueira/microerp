@@ -329,5 +329,13 @@ class PerfilAcessoRecepcao(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
 class EnderecoEmpresa(models.Model):
+    
+    def __unicode__(self):
+        return u"%s" % self.nome
+
     cnpj_vinculado = models.CharField(blank=True, max_length=100)
     nome = models.CharField(blank=False, max_length=100)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    

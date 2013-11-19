@@ -72,7 +72,7 @@ class PeriodoTrabalhadoInline(admin.StackedInline):
 class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
     search_fields = 'nome',
     save_on_top = True
-    list_display = ('nome', 'email', 'cargo_atual', 'user')
+    list_display = ('nome', 'email', 'cargo_atual', 'user', 'endereco_empresa_designado')
     list_display_links = list_display
     list_filter = ('cargo_atual',)
     filter_horizontal = 'competencias',
@@ -148,7 +148,7 @@ class CargoAdmin(admin.ModelAdmin):
     filter_horizontal = 'competencias',
     
 class AtribuicaoDeCargoAdmin(admin.ModelAdmin):
-    list_display = 'id', 'periodo_trabalhado', 'cargo', 'inicio', 'fim'
+    list_display = 'id', 'periodo_trabalhado', 'cargo', 'inicio', 'fim', 'local_empresa'
     list_display_links = list_display
     list_filter = 'periodo_trabalhado__funcionario',
 

@@ -18,6 +18,7 @@ from rh.models import PeriodoTrabalhado, AtribuicaoDeCargo
 from rh.models import Cargo, PromocaoCargo, PromocaoSalario, TIPO_DE_CARGO_CHOICES
 from rh.utils import get_weeks
 from estoque.models import Produto
+from cadastro.models import EnderecoEmpresa
 
 from django import forms
 from django.conf import settings
@@ -408,6 +409,7 @@ def promover_funcionario(request, funcionario_id):
                             cargo=novo_cargo,
                             inicio=data_promocao + datetime.timedelta(days=1),
                             criado_por=request.user, 
+                            local_empresa=funcionario.endereco_empresa_designado
                         )
                         messages.info(request, u'Informação: Nova Atribuição de Cargo #%s: %s Aberta!' % (atribuicao_destino.id, atribuicao_destino.cargo))
                         # cria a instancia do PromocaoCargo
@@ -874,6 +876,37 @@ def indicadores_do_rh(request):
             ).count()
             total_ativos_mes.append(ativos_no_mes)
         
+        # retidos
+        total_retidos_mes = []
+        total_retidos_mes.append("Total")
+        for month in range(1,13):
+            mes = month
+            # ativos
+            primeiro_dia = datetime.date(ano, mes, 1)
+            ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
+            retidos = PeriodoTrabalhado.objects.filter(
+                inicio__lte=primeiro_dia, fim=None
+            ).count()
+            total_retidos_mes.append(retidos)
+        
+        
+        # por local de trabalho
+        tabela_local_de_trabalho = {}
+        for local in EnderecoEmpresa.objects.all():
+            linha = []
+            linha.append(local.nome)
+            for month in range(1,13):
+                mes = month
+                primeiro_dia = datetime.date(ano, mes, 1)
+                ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
+                ativos_no_mes = AtribuicaoDeCargo.objects.filter(
+                        local_empresa=local
+                    ).filter(
+                        Q(inicio__lte=primeiro_dia, fim=None) | \
+                        Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
+                    )
+                linha.append(ativos_no_mes.count())
+            tabela_local_de_trabalho[local.id] = linha
         ## campo e escritorio
         tabela_campo_escritorio = {}
         for tipo in TIPO_DE_CARGO_CHOICES:
