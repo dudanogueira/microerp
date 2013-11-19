@@ -12,12 +12,43 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-group"></i> Funcionários Ativos</h1>
 
 
+<div class="accordion" id="departamentos">
+	{% regroup funcionarios_ativos_valores by cargo_atual__departamento__nome as funcionarios_group_list %}
+	{% for group in funcionarios_group_list %}
+	<div class="accordion-group">
+	    <div class="accordion-heading">
+	      <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#departamento-id-{{group.list.0.cargo_atual__departamento__id}}">
+	        <h5>{{group.grouper}}</h5>
+	      </a>
+	    </div>
+	    <div id="departamento-id-{{group.list.0.cargo_atual__departamento__id}}" class="accordion-body collapse in">
+	      <div class="accordion-inner">
+					{% regroup group.list by cargo_atual__nome as regrouped %}
+					{% for group in regrouped %}
+					<h6>{{group.grouper}}</h6>
+						<ul>
+						{% for funcionario in group.list %}
+						<a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario.nome}}</a>
+						{% endfor %}
+						</ul>
+					{% endfor %}
+	      </div>
+	    </div>
+	  </div>
+
+	{% endfor %}
+</div>
+
+
+
+
+
     {% for departamento in departamentos %}
     <div class="well well-large">
-        <h2 class="alert alert-info">Departamento: {{departamento}}</h2>
+        <h4 class="alert alert-info">{{departamento}}</h4>
         {% for cargo in departamento.cargo_set.all %}
         <div class="well">
-        <h3>{{cargo}}</h3>
+        <h5>{{cargo}}</h5>
         <ul>
         {% for funcionario in cargo.funcionario_cargo_atual_set.all %}
         {% if funcionario.periodo_trabalhado_corrente %}

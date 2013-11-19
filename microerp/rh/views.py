@@ -15,7 +15,7 @@ from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
 from rh.models import EntradaFolhaDePonto, Competencia
 from rh.models import PeriodoTrabalhado, AtribuicaoDeCargo
-from rh.models import Cargo, PromocaoCargo, PromocaoSalario
+from rh.models import Cargo, PromocaoCargo, PromocaoSalario, TIPO_DE_CARGO_CHOICES
 from rh.utils import get_weeks
 from estoque.models import Produto
 
@@ -106,10 +106,16 @@ def home(request):
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios(request):
-    departamentos = Departamento.objects.all()
+    funcionarios_ativos = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None).order_by('cargo_atual__departamento__nome', 'cargo_atual__nome')
+    funcionarios_ativos_valores =  funcionarios_ativos.values(
+        'cargo_atual__departamento__nome',
+        'cargo_atual__departamento__id',
+        'cargo_atual__nome',
+        'nome',
+        'id',
+        )
     funcionarios_inativos = Funcionario.objects.filter(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
-
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos(request):
@@ -794,6 +800,9 @@ def indicadores_do_rh(request):
 
     if ano:
         import calendar
+        #
+        # Relacionados a Cargo
+        #
         for cargo in Cargo.objects.all():
             linha_adm = []
             linha_adm.append(cargo.nome)
@@ -834,7 +843,9 @@ def indicadores_do_rh(request):
             resultado_admissao.append(linha_adm)
             resultado_demissao.append(linha_dem)
             resultado_ativos.append(linha_ativo)
-        # totalizadores por mês
+        #
+        # Totalizadores
+        #
         ## admissao
         total_admissao_mes = []
         total_admissao_mes.append("Total")
@@ -863,8 +874,27 @@ def indicadores_do_rh(request):
             ).count()
             total_ativos_mes.append(ativos_no_mes)
         
+        ## campo e escritorio
+        tabela_campo_escritorio = {}
+        for tipo in TIPO_DE_CARGO_CHOICES:
+            linha = []
+            linha.append(tipo[1])
+            for month in range(1,13):
+                mes = month
+                primeiro_dia = datetime.date(ano, mes, 1)
+                ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
+                atribuicoes_cargo = AtribuicaoDeCargo.objects.filter(cargo__tipo=tipo[0])
+                ativos_no_mes = atribuicoes_cargo.filter(
+                    Q(inicio__lte=primeiro_dia, fim=None) | \
+                    Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
+                ).count()
+                linha.append(ativos_no_mes)
+            tabela_campo_escritorio[tipo[0]] = linha 
         
-        resultados = True
+        ## define ano como str
         ano = str(ano)
+        # define que temos resultado
+        resultados = True
+        
 
     return render_to_response('frontend/rh/rh-indicadores.html', locals(), context_instance=RequestContext(request),)

@@ -98,7 +98,7 @@
 </table>
 
 
-<h2>Ativos {{ano}}</h2>
+<h2>Funcionários Ativos {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -124,6 +124,44 @@
 				<td>{{campo}}</td>
 				{% endfor %}
 			</tr>
+		{% endfor %}
+		<tr class="alert alert-info">
+			{% for campo in total_ativos_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+
+<h2>Funcionários Campo X Escritório em {{ano}}</h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Local</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		
+		{% for linha in tabela_campo_escritorio.items %}
+		<tr>
+			{% for campo in linha.1 %}
+				<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
 		{% endfor %}
 		<tr class="alert alert-info">
 			{% for campo in total_ativos_mes %}

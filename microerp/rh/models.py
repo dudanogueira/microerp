@@ -138,6 +138,10 @@ DEMISSAO_FUNCIONARIO_CHOICES = (
     ('finalizado', 'Finalizado'),
 )
 
+TIPO_DE_CARGO_CHOICES = (
+    ('campo', 'Campo'),
+    ('escritorio', 'Escritório'),
+)
 
 class Funcionario(models.Model):
     
@@ -463,6 +467,7 @@ class Cargo(models.Model):
     departamento = models.ForeignKey('Departamento')
     periculosidade = models.DecimalField(u"Periculosidade", max_digits=10, decimal_places=2)
     gratificacao = models.DecimalField(u"Gratificação", max_digits=10, decimal_places=2)
+    tipo = models.CharField(blank=True, max_length=100, choices=TIPO_DE_CARGO_CHOICES, default='escritorio')
     # exames padrao deste cargo
     exame_medico_padrao = models.ManyToManyField('TipoDeExameMedico')
     dias_renovacao_exames = models.IntegerField(blank=False, null=False, default=365)
@@ -875,6 +880,7 @@ def periodo_trabalhado_post_save(signal, instance, sender, **kwargs):
     '''Rotina de pós save:
     Ao criar um periodo trabalhado, cria um exame admissional,
     Define como corrent do funcionario escolhido
+    Cria a Atribuição de Cargo
     '''
     # somente criados
     if not kwargs.get('created'):
@@ -889,11 +895,12 @@ def periodo_trabalhado_post_save(signal, instance, sender, **kwargs):
     for exame_padrao in instance.funcionario.cargo_atual.exame_medico_padrao.all():
         exame.exames.add(exame_padrao)
     exame.save()
-    # define o periodo trablhado como a corrente
+    # define o periodo trabalhado como a corrente
     instance.funcionario.periodo_trabalhado_corrente = instance
     instance.funcionario.save()
-    
-    
+    # roda o method atribuicao_atual() do periodo trabalhado
+    # para, se necessario, criar a atribuicao padrão / inicial
+    created, atribuicoes = instance.atribuicao_atual()
 
 ## FUNCIONARIO SIGNALS
 def funcionario_post_save(signal, instance, sender, **kwargs):
