@@ -389,6 +389,7 @@ class Funcionario(models.Model):
     local_de_trabalho = models.TextField(blank=True)
     membro_cipa = models.BooleanField(default=True)
     periodo_trabalhado_corrente = models.OneToOneField("PeriodoTrabalhado", blank=True, null=True, related_name="periodo_trabalhado_corrente")
+    endereco_empresa_designado = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local e Endereço da Empresa que foi designado", default=1)
     # competencia
     competencias = models.ManyToManyField('Competencia', blank=True, null=True)
     # metadata
@@ -537,6 +538,7 @@ class AtribuicaoDeCargo(models.Model):
     cargo = models.ForeignKey('Cargo')
     inicio = models.DateField(default=datetime.datetime.today)
     fim = models.DateField(blank=True, null=True)
+    local_empresa = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local e Endereço da Empresa que foi designado", default=1)
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
