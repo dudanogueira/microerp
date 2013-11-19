@@ -791,6 +791,7 @@ def indicadores_do_rh(request):
     resultado_admissao = []
     resultado_demissao = []
     resultado_ativos = []
+    teste_ad = {}
     # cria dicionario com todos os ids de cargo vinculado por
     #cargo[2013] = (Nome Cargo, 1, 2, 3, 4, ... 12)
     try:
@@ -805,46 +806,44 @@ def indicadores_do_rh(request):
         #
         # Relacionados a Cargo
         #
-        for cargo in Cargo.objects.all():
-            linha_adm = []
-            linha_adm.append(cargo.nome)
-            #
-            linha_dem = []
-            linha_dem.append(cargo.nome)
-            #
-            linha_ativo = []
-            linha_ativo.append(cargo.nome)
-            # para cada mês
-            for month in range(1,13):
-                mes = month
-                # admissão
-                admissoes_no_mes = PeriodoTrabalhado.objects.filter(inicio__year=ano, inicio__month=month, funcionario__cargo_inicial=cargo).count()
-                linha_adm.append(admissoes_no_mes)
-                # demissao
-                demissoes_no_mes = PeriodoTrabalhado.objects.filter(fim__year=ano, fim__month=month, funcionario__cargo_atual=cargo).count()
-                linha_dem.append(demissoes_no_mes)
-                # ativos
-                # ultimo dia no mes pesquisado
-                primeiro_dia = datetime.date(ano, mes, 1)
-                ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
-                # filtra todos os periodos trabalhados do ano onde:
-                # (data de inicio seja menor que o primeiro dia
-                # E
-                # a data de fim maior que o último dia)
-                # OU
-                # (data de inicio seja menor que o primeiro dia
-                # OU
-                # data de fim nao preenchida)
-                # 
-                ativos_cargo_no_mes = AtribuicaoDeCargo.objects.filter(cargo=cargo)
-                ativos_no_mes = ativos_cargo_no_mes.filter(
-                    Q(inicio__lte=primeiro_dia, fim=None) | \
-                    Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
-                ).count()
-                linha_ativo.append(ativos_no_mes)
-            resultado_admissao.append(linha_adm)
-            resultado_demissao.append(linha_dem)
-            resultado_ativos.append(linha_ativo)
+        admitidos_cargo = {}
+        for departamento in Departamento.objects.all():
+            admitidos_cargo[departamento] = {}
+            for cargo in departamento.cargo_set.all():
+                admitidos_cargo[departamento][cargo] = []
+                linha_adm = []
+                linha_adm.append(cargo.nome)
+                #
+                linha_dem = []
+                linha_dem.append(cargo.nome)
+                #
+                linha_ativo = []
+                linha_ativo.append(cargo.nome)
+                # para cada mês
+                for month in range(1,13):
+                    mes = month
+                    # admissão
+                    admissoes_no_mes = PeriodoTrabalhado.objects.filter(inicio__year=ano, inicio__month=month, funcionario__cargo_inicial=cargo).count()
+                    linha_adm.append(admissoes_no_mes)
+                    # demissao
+                    demissoes_no_mes = PeriodoTrabalhado.objects.filter(fim__year=ano, fim__month=month, funcionario__cargo_atual=cargo).count()
+                    linha_dem.append(demissoes_no_mes)
+                    # ativos
+                    # ultimo dia no mes pesquisado
+                    primeiro_dia = datetime.date(ano, mes, 1)
+                    ultimo_dia = datetime.date(ano, mes, calendar.monthrange(ano,mes)[1])
+                    # filtra todos os periodos trabalhados do ano
+                    ativos_cargo_no_mes = AtribuicaoDeCargo.objects.filter(cargo=cargo)
+                    ativos_no_mes = ativos_cargo_no_mes.filter(
+                        Q(inicio__lte=primeiro_dia, fim=None) | \
+                        Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
+                    ).count()
+                    linha_ativo.append(ativos_no_mes)
+                resultado_admissao.append(linha_adm)
+                resultado_demissao.append(linha_dem)
+                resultado_ativos.append(linha_ativo)
+                admitidos_cargo[departamento][cargo].append(linha_adm)
+            
         #
         # Totalizadores
         #

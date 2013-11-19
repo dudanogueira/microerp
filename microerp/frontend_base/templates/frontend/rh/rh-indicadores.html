@@ -25,9 +25,11 @@
 
 {% if resultados %}
 <h2>Funcionários Admitidos em {{ano}}</h2>
+
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
+			<th style="text-align: center" class="alert alert-info">Departamento</th>
 			<th style="text-align: center" class="alert">Cargo</th>
 			<th>Janeiro</th>
 			<th>Fevereiro</th>
@@ -44,22 +46,26 @@
 		</tr>
 	</thead>
 	<tbody>
-		{% for linha in resultado_admissao %}
-		<tr>
-			{% for campo in linha %}
-				<td style="text-align: center" {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
-			{% endfor %}
-		</tr>
+		{% for dpto, cargos in admitidos_cargo.items %}
+				{% for cargo,retorno in cargos.items %}
+				<tr>
+					{% if forloop.first %}
+						<th class="alert alert-info" rowspan={{cargos.items|length}}>{{dpto}}</th>
+					{% endif %}
+					{% for retorno in retorno.0 %}
+						<td {% if forloop.first%}class="alert"{%endif%}>{{retorno}} </td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
 		{% endfor %}
 		<tr class="alert alert-info">
+			<td></td>
 			{% for campo in total_admissao_mes %}
 			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
 			{% endfor %}
 		</tr>
 	</tbody>
 </table>
-
-
 
 <h2>Funcionários Demitidos em {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
@@ -121,7 +127,7 @@
 		{% for linha in resultado_ativos %}
 			<tr>
 				{% for campo in linha %}
-				<td>{{campo}}</td>
+				<td {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
 				{% endfor %}
 			</tr>
 		{% endfor %}
@@ -135,66 +141,6 @@
 
 
 <h2>Local dos Funcionários</h2>
-<table class="table table-condensed table-hover table-rounded table-bordered">
-	<thead>
-		<tr>
-			<th style="text-align: center" class="alert">Cargo</th>
-			<th>Janeiro</th>
-			<th>Fevereiro</th>
-			<th>Março</th>
-			<th>Abril</th>
-			<th>Maio</th>
-			<th>Junho</th>
-			<th>Julho</th>
-			<th>Agosto</th>
-			<th>Setembro</th>
-			<th>Outubro</th>
-			<th>Novembro</th>
-			<th>Dezembro</th>
-		</tr>
-	</thead>
-	<tbody>
-		{% for item in tabela_local_de_trabalho.values %}
-				<tr>
-					{% for campo in item %}
-					<td>{{campo}}</td>
-					{% endfor %}
-				</tr>
-		{% endfor %}
-	</tbody>
-</table>
-
-<h2>Retenção de Funcionários {{ano}}</h2>
-<table class="table table-condensed table-hover table-rounded table-bordered">
-	<thead>
-		<tr>
-			<th style="text-align: center" class="alert">Cargo</th>
-			<th>Janeiro</th>
-			<th>Fevereiro</th>
-			<th>Março</th>
-			<th>Abril</th>
-			<th>Maio</th>
-			<th>Junho</th>
-			<th>Julho</th>
-			<th>Agosto</th>
-			<th>Setembro</th>
-			<th>Outubro</th>
-			<th>Novembro</th>
-			<th>Dezembro</th>
-		</tr>
-	</thead>
-	<tbody>
-
-			<tr>
-				{% for campo in total_retidos_mes %}
-				<td>{{campo}}</td>
-				{% endfor %}
-			</tr>
-	</tbody>
-</table>
-
-<h2>Funcionários Campo X Escritório em {{ano}}</h2>
-
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -214,11 +160,71 @@
 		</tr>
 	</thead>
 	<tbody>
+		{% for item in tabela_local_de_trabalho.values %}
+				<tr>
+					{% for campo in item %}
+					<td {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+					{% endfor %}
+				</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h2>Retenção de Funcionários {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				{% for campo in total_retidos_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Funcionários Campo X Escritório em {{ano}}</h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Tipo / Local</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
 		
 		{% for linha in tabela_campo_escritorio.items %}
 		<tr>
 			{% for campo in linha.1 %}
-				<td>{{campo}}</td>
+				<td {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
 			{% endfor %}
 		</tr>
 		{% endfor %}
