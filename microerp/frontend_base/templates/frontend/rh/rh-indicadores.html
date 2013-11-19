@@ -134,6 +134,65 @@
 </table>
 
 
+<h2>Local dos Funcionários</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for item in tabela_local_de_trabalho.values %}
+				<tr>
+					{% for campo in item %}
+					<td>{{campo}}</td>
+					{% endfor %}
+				</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+<h2>Retenção de Funcionários {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr>
+				{% for campo in total_retidos_mes %}
+				<td>{{campo}}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
 <h2>Funcionários Campo X Escritório em {{ano}}</h2>
 
 <table class="table table-condensed table-hover table-rounded table-bordered">

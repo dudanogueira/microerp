@@ -27,7 +27,7 @@
 					<h6>{{group.grouper}}</h6>
 						<ul>
 						{% for funcionario in group.list %}
-						<a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario.nome}}</a>
+						<li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario.nome}}</a></li>
 						{% endfor %}
 						</ul>
 					{% endfor %}
