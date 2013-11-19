@@ -326,4 +326,8 @@ class PerfilAcessoRecepcao(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class EnderecoEmpresa(models.Model):
+    cnpj_vinculado = models.CharField(blank=True, max_length=100)
+    nome = models.CharField(blank=False, max_length=100)
