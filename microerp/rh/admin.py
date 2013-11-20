@@ -153,13 +153,24 @@ class AtribuicaoDeCargoAdmin(admin.ModelAdmin):
     list_display_links = list_display
     list_filter = 'periodo_trabalhado__funcionario',
 
+
+def duplicate_event(modeladmin, request, queryset):
+    for object in queryset:
+        object.id = None
+        object.save()
+        
+duplicate_event.short_description = "Duplicar Entrada Selecionada"
+
+class PromocaoSalarioAdmin(admin.ModelAdmin):
+    actions = [duplicate_event]
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
 admin.site.register(Departamento)
 admin.site.register(CursoFuncionario)
 admin.site.register(PeriodoTrabalhado, PeriodoTrabalhadoAdmin)
-admin.site.register(PromocaoSalario)
+admin.site.register(PromocaoSalario, PromocaoSalarioAdmin)
 admin.site.register(PromocaoCargo, PromocaoCargoAdmin)
 admin.site.register(SolicitacaoDeLicenca, SolicitacaoDeLicencaAdmin)
 admin.site.register(FolhaDePonto, FolhaDePontoAdmin)

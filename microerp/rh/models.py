@@ -560,7 +560,7 @@ class PromocaoSalario(models.Model):
             return u"Promoção de Salário do Funcionário %s SOLICITADO no dia %s" % (self.beneficiario, self.data_solicitacao.strftime("%d/%m/%y"))
         else:            
             if self.avaliado and self.aprovado:
-                return u"Promoção de Salário do Funcionário %s APROVADA no dia %s" % (self.beneficiario, data_resolucao_str)
+                return u"Promoção de Salário do Funcionário %s APROVADA no dia %s: %s" % (self.beneficiario, data_resolucao_str, self.valor_destino)
             if self.avaliado and not self.aprovado:
                 return u"Promoção de Salário do Funcionário %s DECLINADA no dia %s" % (self.beneficiario, data_resolucao_str)
         
@@ -585,7 +585,7 @@ class PromocaoSalario(models.Model):
     # datas
     data_solicitacao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Solicitação")
     data_resolucao = models.DateField(blank=True, null=True, verbose_name=u"Data de Resolução")
-    data_promocao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Efetivação de Promoção de Cargo")
+    data_promocao = models.DateField(default=datetime.datetime.today, blank=False, null=False, verbose_name=u"Data da Efetivação de Promoção de Salário")
     beneficiario = models.ForeignKey(Funcionario, related_name="promocao_salarial_set", verbose_name=u"Funcionário Beneficiado")
     solicitante = models.ForeignKey(Funcionario, related_name="solicitacao_promocao_salarial_set", verbose_name=u"Funcionário Solicitante")
     autorizador = models.ForeignKey(Funcionario, related_name="autorizacao_promocao_salarial_set", verbose_name=u"Funcionário que Autorizou a Promoção", blank=True, null=True)
