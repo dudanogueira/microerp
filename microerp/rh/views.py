@@ -144,7 +144,7 @@ def funcionarios_relatorios_listar_ativos_aniversarios(request):
     for mes in meses:
         funcionarios_ativos = Funcionario.objects.filter(nascimento__month=mes).extra(
         #select = {'custom_dt': 'date(nascimento)'}).order_by('-custom_dt'
-        select={'birthmonth': 'MONTH(nascimento)'}, order_by=['birthmonth']
+        select={'birthmonth': 'MONTH(nascimento)', 'brithday': 'DAY(nascimento)'}, order_by=['brithday']
         )
         if funcionarios_ativos:
             lista.append((datetime.date(datetime.date.today().year, mes, 1), funcionarios_ativos,))
