@@ -375,6 +375,7 @@ class Funcionario(models.Model):
     rua = models.CharField(blank=True, null=True,max_length=500, verbose_name=u"Rua")
     numero = models.CharField(blank=True, null=True,max_length=100, verbose_name=u"Número")
     complemento = models.CharField(blank=True, null=True, max_length=200, verbose_name=u"Complemento")
+    ultima_checagem_endereco = models.DateField(default=datetime.datetime.today)
     # salario
     salario_inicial = models.DecimalField(u"Salário Inicial", max_digits=10, decimal_places=2, blank=True, null=True)
     salario_atual = models.DecimalField(u"Salário Atual", max_digits=10, decimal_places=2, blank=True, null=True)
@@ -389,7 +390,7 @@ class Funcionario(models.Model):
     local_de_trabalho = models.TextField(blank=True)
     membro_cipa = models.BooleanField(default=True)
     periodo_trabalhado_corrente = models.OneToOneField("PeriodoTrabalhado", blank=True, null=True, related_name="periodo_trabalhado_corrente")
-    endereco_empresa_designado = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local e Endereço da Empresa que foi designado", default=1)
+    endereco_empresa_designado = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local de Trabalho Designado", default=1)
     # competencia
     competencias = models.ManyToManyField('Competencia', blank=True, null=True)
     # metadata
@@ -535,6 +536,10 @@ class AtribuicaoDeCargo(models.Model):
     se não existir nenhum, praquele periodo trabalhado,
     definir data de incio como data admissão, e cargo como cargo_inicial
     '''
+    
+    def __unicode__(self):
+        return u"Atribuição de Cargo %s, período %s" % (self.cargo, self.periodo_trabalhado)
+    
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     cargo = models.ForeignKey('Cargo')
     inicio = models.DateField(default=datetime.datetime.today)

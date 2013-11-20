@@ -5,24 +5,20 @@
 
 {% block content %}
 
-<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> RH - Controle de EPI</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i> Controle de EPI</h1>
 
 <div class="row-fluid" id="sub-menu-controle-epi">
-	
 	<div class="span8">
 		<ul class="nav nav-tabs">
 			<li class="active"><a href="#pendentes" data-toggle="tab">Pendentes</a></li>
 			<li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
-		
 		</ul>
-		
 	</div>
 	
 	<div class="span4">
 		<a href="{% url "rh:controle_de_epi_adicionar" %}" class="btn btn-primary">Novo Controle</a>
 	</div>
 </div>
-
 
 <div id="controle-epi-content" class="tab-content">
 	

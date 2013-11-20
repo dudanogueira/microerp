@@ -116,6 +116,7 @@ class AtribuicaoDeCargoInline(admin.StackedInline):
 class PeriodoTrabalhadoAdmin(admin.ModelAdmin):
     list_filter = 'inicio', 'fim', 'funcionario', 'funcionario__cargo_atual'
     list_display = 'id', 'funcionario', 'inicio', 'fim'
+    list_display_links = list_display
     inlines = [AtribuicaoDeCargoInline]
 
 class FeriadoAdmin(admin.ModelAdmin):

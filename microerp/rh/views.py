@@ -278,6 +278,68 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
+def processos_admissao(request):
+    processos_admissao_ativos = PeriodoTrabalhado.objects.filter(fim=None)
+    processos_admissao_inativos = PeriodoTrabalhado.objects.exclude(fim=None)
+    return render_to_response('frontend/rh/rh-processos-admissao.html', locals(), context_instance=RequestContext(request),)
+# FORM ADMITIR FUNCIONARIO
+#
+class FormAdmitirFuncionario(forms.ModelForm):
+    
+    periodo_trabalhado_inicio = forms.DateField(label="Data de Admissão")
+    
+    def __init__(self, *args, **kwargs):
+        super(FormAdmitirFuncionario, self).__init__(*args, **kwargs)
+        for key in self.fields.keys():
+            if key not in 'complemento':
+                self.fields[key].required = True
+        self.fields['carteira_profissional_emissao'].widget.attrs['class'] = 'datepicker'
+        self.fields['rg_data'].widget.attrs['class'] = 'datepicker'
+        self.fields['periodo_trabalhado_inicio'].widget.attrs['class'] = 'datepicker'
+        self.fields['cargo_inicial'].widget.attrs['class'] = 'select2'
+        
+    
+    class Meta:
+        model = Funcionario
+        fields = (
+            'nome',
+            'foto',
+            'carteira_profissional_numero',
+            'carteira_profissional_serie',
+            'carteira_profissional_emissao',
+            'rg',
+            'rg_data',
+            'rg_expeditor',
+            'cpf',
+            'pis',
+            'estado_civil',
+            'escolaridade_nivel',
+            'bairro',
+            'cep',
+            'rua',
+            'numero',
+            'complemento',
+            'cargo_inicial',
+            'endereco_empresa_designado',
+        )
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def processos_admissao_admitir(request):
+    admitir=True
+    form_admitir_funcionario = FormAdmitirFuncionario()
+    if request.POST:
+        form_admitir_funcionario = FormAdmitirFuncionario(request.POST)
+        if form_admitir_funcionario.is_valid():
+            novo_funcionario = form_admitir_funcionario.save(commit=False)
+            # cria o periodo trabalhado
+            novo_periodo_trabalhado = PeriodoTrabalhado.objects.create(
+                funcionario=novo_funcionario,
+                inicio=form_admitir_funcionario.cleaned_data['periodo_trabalhado_inicio']
+            )
+        
+    return render_to_response('frontend/rh/rh-processos-admissao-admitir.html', locals(), context_instance=RequestContext(request),)
+#
+@user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao(request):
     processos_abertos = Demissao.objects.filter(status="andamento")
     processos_fechados = Demissao.objects.filter(status="finalizado")

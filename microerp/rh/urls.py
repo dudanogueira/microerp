@@ -40,6 +40,10 @@ urlpatterns = patterns('',
     # demissoes
     url(r'^processos-demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
     
+    # demissoes
+    url(r'^processos-admissao/$', 'rh.views.processos_admissao', name='processos_admissao'),
+    url(r'^processos-admissao/admitir/$', 'rh.views.processos_admissao_admitir', name='processos_admissao_admitir'),
+    
     # promocoes
     url(r'^promocoes/$', 'rh.views.processos_promocao', name='processos_promocao'),
     # controle de epi

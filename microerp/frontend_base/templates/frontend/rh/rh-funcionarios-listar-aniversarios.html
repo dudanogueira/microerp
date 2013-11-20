@@ -17,13 +17,11 @@
 			<option value="{{mes_opcao.month}}" {% ifequal mes_opcao.month mes %}selected{%endifequal%}>{{mes_opcao|date:"F"}}</option> 
 		{% endfor %}
 	</select>
-	
+
 <button type="submit" class="btn btn-primary">Filtrar</button>
 <a href="#" id="imprimir" class="btn btn-success"><i class="fa fa-print"></i></a>	
 </p>
 </form>
-
-
 
 {% if not lista %}
 Nenhuma entrada a exibir
