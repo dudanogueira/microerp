@@ -131,8 +131,8 @@ def funcionarios_relatorios_listar_ativos_aniversarios(request):
     mes_especifico = request.GET.get('mes', None)
     # define opções de mes
     dias = []
-    for mes in range(1,13):
-        dias.append(datetime.date(2013, mes, 1))
+    for mes_dia in range(1,13):
+        dias.append(datetime.date(2013, mes_dia, 1))
     
     if str(mes_especifico).isdigit():
         mes_especifico = int(mes_especifico)
@@ -141,13 +141,13 @@ def funcionarios_relatorios_listar_ativos_aniversarios(request):
     else:
         meses = range(1,13)
     lista = []
-    for mes in meses:
-        funcionarios_ativos = Funcionario.objects.filter(nascimento__month=mes).extra(
+    for mes_query in meses:
+        funcionarios_ativos = Funcionario.objects.filter(nascimento__month=mes_query).extra(
         #select = {'custom_dt': 'date(nascimento)'}).order_by('-custom_dt'
         select={'birthmonth': 'MONTH(nascimento)', 'brithday': 'DAY(nascimento)'}, order_by=['brithday']
         )
         if funcionarios_ativos:
-            lista.append((datetime.date(datetime.date.today().year, mes, 1), funcionarios_ativos,))
+            lista.append((datetime.date(datetime.date.today().year, mes_query, 1), funcionarios_ativos,))
         relatorio = True
     return render_to_response('frontend/rh/rh-funcionarios-listar-aniversarios.html', locals(), context_instance=RequestContext(request),)
         
