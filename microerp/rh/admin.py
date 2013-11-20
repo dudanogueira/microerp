@@ -163,8 +163,8 @@ duplicate_event.short_description = "Duplicar Entrada Selecionada"
 
 class PromocaoSalarioAdmin(admin.ModelAdmin):
     list_filter = 'periodo_trabalhado__funcionario',
-    list_display = 'periodo_trabalhado', 'data_promocao', 'valor_destino'
-    list_display_links = list_display
+    list_display = '__unicode__', 'data_promocao', 'valor_destino'
+    #list_display_links = list_display
     actions = [duplicate_event]
 
 admin.site.register(Funcionario, FuncionarioAdmin)
