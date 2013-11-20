@@ -567,7 +567,7 @@ class PromocaoSalario(models.Model):
     class Meta:
         verbose_name = u"Promoção Salarial"
         verbose_name_plural = u"Promoções Salariais"
-        ordering = ['data_solicitacao']
+        ordering = ['data_promocao']
     
     def clean(self):
         if self.aprovado and not self.avaliado:
