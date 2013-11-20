@@ -128,15 +128,27 @@ def funcionarios_relatorios_listar_ativos(request):
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos_aniversarios(request):
-    relatorio = True
-    meses = range(1,13)
+    mes_especifico = request.GET.get('mes', None)
+    # define opções de mes
+    dias = []
+    for mes in range(1,13):
+        dias.append(datetime.date(2013, mes, 1))
+    
+    if str(mes_especifico).isdigit():
+        mes_especifico = int(mes_especifico)
+        if 12 >= mes_especifico >= 1:
+            meses=[mes_especifico]
+    else:
+        meses = range(1,13)
     lista = []
     for mes in meses:
         funcionarios_ativos = Funcionario.objects.filter(nascimento__month=mes).extra(
         #select = {'custom_dt': 'date(nascimento)'}).order_by('-custom_dt'
         select={'birthmonth': 'MONTH(nascimento)'}, order_by=['birthmonth']
         )
-        lista.append((datetime.date(datetime.date.today().year, mes, 1), funcionarios_ativos,))
+        if funcionarios_ativos:
+            lista.append((datetime.date(datetime.date.today().year, mes, 1), funcionarios_ativos,))
+        relatorio = True
     return render_to_response('frontend/rh/rh-funcionarios-listar-aniversarios.html', locals(), context_instance=RequestContext(request),)
         
 #
@@ -845,7 +857,6 @@ def indicadores_do_rh(request):
                 resultado_ativos.append(linha_ativo)
                 admitidos_cargo[departamento][cargo].append(linha_adm)
         admitidos_cargo = OrderedDict(sorted(admitidos_cargo.items()))
-            
         #
         # Totalizadores
         #
