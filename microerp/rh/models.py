@@ -893,7 +893,7 @@ class GrupoDeCompetencia(models.Model):
 class Competencia(models.Model):
     
     def __unicode__(self):
-        return "%s: %s" % (self.grupo, self.nome)
+        return u"%s: %s" % (self.grupo, self.nome)
     
     grupo = models.ForeignKey('GrupoDeCompetencia')
     nome = models.CharField(blank=True, max_length=100)
