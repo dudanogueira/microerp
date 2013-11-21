@@ -49,6 +49,10 @@ urlpatterns = patterns('',
     
     # promocoes
     url(r'^promocoes/$', 'rh.views.processos_promocao', name='processos_promocao'),
+    
+    # Capacitacao
+    url(r'^capacitacoes/$', 'rh.views.capacitacao_de_procedimentos', name='capacitacao_de_procedimentos'),
+    
     # controle de epi
     url(r'^controle-de-epi/$', 'rh.views.controle_de_epi', name='controle_de_epi'),
     url(r'^controle-de-epi/adicionar/$', 'rh.views.controle_de_epi_adicionar', name='controle_de_epi_adicionar'),

@@ -79,7 +79,7 @@ class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
     list_display = ('nome', 'email', 'cargo_atual', 'user', 'endereco_empresa_designado')
     list_display_links = list_display
     list_filter = ('cargo_atual',)
-    filter_horizontal = 'competencias', 'procedimentos'
+    filter_horizontal = 'competencias',
     inlines = [
         PeriodoTrabalhadoInline,
         IdiomaFuncionarioInline,
@@ -150,7 +150,7 @@ class CompetenciaAdmin(admin.ModelAdmin):
     list_filter = 'grupo',
 
 class CargoAdmin(admin.ModelAdmin):
-    filter_horizontal = 'competencias', 'procedimentos'
+    filter_horizontal = 'competencias', 'subprocedimentos', 'exame_medico_padrao'
     
 class AtribuicaoDeCargoAdmin(admin.ModelAdmin):
     list_display = 'id', 'periodo_trabalhado', 'cargo', 'inicio', 'fim', 'local_empresa'

@@ -1,0 +1,121 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Controle de EPI{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-signal"></i> Capacitação de Procedimentos</h1>
+
+<div class="row-fluid" id="sub-menu-capacitacao-de-procedimentos">
+	
+	<div class="span8">
+		<ul class="nav nav-tabs">
+		    <li class="active"><a href="#sem-capacitacao" data-toggle="tab">Sem Capacitação</a></li>
+		    <li class=""><a href="#capacitacao-defasada" data-toggle="tab">Capacitação Defasada</a></li>
+		</ul>
+		
+	</div>
+	
+	<div class="span4">
+	</div>
+
+</div>
+
+<div id="controle-epi-content" class="tab-content">
+	
+	<div class="tab-pane fade in active" id="sem-capacitacao">
+		<h2>Funcionários Sem Capacitação de Procedimento</h2>
+		{% for item in funcionarios_sem_capacitacao %}
+			<h3>{{item.0.nome}} - {{item.0.cargo_atual}}</h3>
+			
+	    <table class="table table-condensed table-hover table-rounded">
+	      <thead>
+	            <tr>
+	                <th>Procedimento</th>
+	                <th>Sub Procedimento</th>
+									<th>Versão</th>
+									<th>Atualização</th>
+	            </tr>
+	       </thead>
+				<tbody>
+						{% for subprocedimento in item.1 %}
+						<tr>
+							<td>{{subprocedimento.procedimento}}</td>
+							<td>{{subprocedimento}}</td>
+							<td>{{subprocedimento.versao}}</td>
+							<td>{{subprocedimento.atualizado|date:"SHORT_DATETIME_FORMAT"}}</td>
+						</tr>
+						{% endfor %}
+
+				</tbody>
+			</table>
+			
+		{% endfor %}
+	</div>
+	
+	<div class="tab-pane fade in" id="capacitacao-defasada">
+		<h2>Funcionários Com Capacitação Defasada</h2>
+
+		{% for item in funcionarios_capacitacao_desafasa %}
+			<h3>{{item.0.nome}} - {{item.0.cargo_atual}}</h3>
+			
+	    <table class="table table-condensed table-hover table-rounded">
+	      <thead>
+	            <tr>
+	                <th>Procedimento</th>
+	                <th>Sub Procedimento</th>
+									<th>Versão Corrente</th>
+									<th>Versão Treinada</th>
+									<th>Última Capacitação</th>
+	            </tr>
+	       </thead>
+				<tbody>
+						{% for capacitacao in item.1 %}
+						<tr>
+							<td>{{capacitacao.subprocedimento.procedimento}}</td>
+							<td>{{capacitacao.subprocedimento}}</td>
+							<td>{{capacitacao.subprocedimento.versao}}</td>
+							<td>{{capacitacao.versao_treinada}}</td>
+							<td>{{capacitacao.ultima_atualizacao|date:"SHORT_DATE_FORMAT"}}</td>
+						</tr>
+						{% endfor %}
+
+				</tbody>
+			</table>
+			
+		{% endfor %}
+		
+		
+		
+		
+
+	</div>
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+	$("#menu-rh-capacitacao-de-procedimentos, #top-menu-rh").addClass("active");
+	var activeTab = $('[href=' + location.hash + ']');
+	activeTab && activeTab.click();
+});
+$('#sub-menu-capacitacao-de-procedimentos').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	pane.tab('show');		
+})
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

@@ -184,10 +184,10 @@ class Funcionario(models.Model):
         self.save()
 
     def cargo(self, update=False):
-        if self.promocaocargo_set.filter(aprovado=True).count():
-            return self.promocaocargo_set.all().order_by('data')[0].cargo_novo
+        if self.periodo_trabalhado_corrente.promocaocargo_set.filter(aprovado=True).count():
+            return self.periodo_trabalhado_corrente.promocaocargo_set.all().order_by('data_promocao')[0].cargo_novo
         else:
-            return self.cargo_inicial
+            return self.cargo_atual or self.cargo_inicial
     
     def exames_agendados(self):
         return self.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(data__gt=datetime.date.today())
@@ -333,7 +333,11 @@ class Funcionario(models.Model):
     
     def solicitacoes_correcao_aberto(self):
         return self.solicitacao_correcao_set.filter(status="analise", correcao_iniciada=None)
-        
+    
+    # CAPACITACAO DE COMPETENCIAS
+    def competencias_do_cargo(self):
+        return self.cargo_atual.subprocedimentos.all()
+    
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="Usuário do Sistema", blank=True, null=True)
@@ -398,8 +402,6 @@ class Funcionario(models.Model):
     endereco_empresa_designado = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local de Trabalho Designado", default=1)
     # competencia
     competencias = models.ManyToManyField('Competencia', blank=True, null=True)
-    # procedimentos
-    procedimentos = models.ManyToManyField('Procedimento', blank=True, null=True)    
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -483,7 +485,7 @@ class Cargo(models.Model):
     # competencia
     competencias = models.ManyToManyField('Competencia')
     # procedimentos
-    procedimentos = models.ManyToManyField('Procedimento')    
+    subprocedimentos = models.ManyToManyField('SubProcedimento')    
     # metas
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -929,6 +931,7 @@ class CapacitacaoDeSubProcedimento(models.Model):
     def __unicode__(self):
         return u"Capacitação do Sub Procedimento %s para funcionário %s: versão %s" % \
             (self.subprocedimento, self.periodo_trabalhado.funcionario, self.versao_treinada)
+
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     subprocedimento = models.ForeignKey('SubProcedimento')
     versao_treinada = models.IntegerField(blank=False, null=False)

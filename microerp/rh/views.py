@@ -527,6 +527,37 @@ def processos_promocao(request):
     processos_salarial = PromocaoSalario.objects.all()    
     return render_to_response('frontend/rh/rh-processos-promocao.html', locals(), context_instance=RequestContext(request),)
 
+#
+# CAPACITACAO DE PROCEDIMENTOS
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def capacitacao_de_procedimentos(request):
+    # para todos os funcioários ativos
+    funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
+    # quais não estão capacitados
+    funcionarios_sem_capacitacao = []
+    funcionarios_capacitacao_desafasa = []
+    for funcionario in funcionarios:
+        exigidos_no_cargo = funcionario.cargo_atual.subprocedimentos.all()
+        capacitacoes_realizadas = funcionario.periodo_trabalhado_corrente.capacitacaodesubprocedimento_set.all()
+        if exigidos_no_cargo.count() != capacitacoes_realizadas.count():
+            # capacitacoes exigidas e realizadas não confere
+            diferenca = set(exigidos_no_cargo).difference(set(capacitacoes_realizadas))
+            funcionarios_sem_capacitacao.append((funcionario, diferenca))
+        capacitacao_defasada = []
+        for capacitacao in capacitacoes_realizadas:
+            # para todas as capitacoes realizadas, conferir se versao confere com a do subprocedimento
+            if capacitacao.versao_treinada < capacitacao.subprocedimento.versao:
+                capacitacao_defasada.append(capacitacao)
+        if len(capacitacao_defasada) > 0:
+            # relata somente os que possuem capacitacao defasada
+            funcionarios_capacitacao_desafasa.append((funcionario, capacitacao_defasada))
+            
+
+
+    return render_to_response('frontend/rh/rh-capacitacao-de-procedimentos.html', locals(), context_instance=RequestContext(request),)
+
+
 # controle_de_ferias
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferias(request):
