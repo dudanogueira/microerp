@@ -144,7 +144,7 @@ class RotinaExameMedicoAdmin(admin.ModelAdmin):
     date_hierarchy = 'data'
 
 class CompetenciaAdmin(admin.ModelAdmin):
-    list_filter = 'grupo'
+    list_filter = 'grupo',
 
 class CargoAdmin(admin.ModelAdmin):
     filter_horizontal = 'competencias',
