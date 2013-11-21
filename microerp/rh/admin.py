@@ -43,7 +43,9 @@ from rh.models import Feriado
 from rh.models import Competencia
 from rh.models import AtribuicaoDeCargo
 from rh.models import GrupoDeCompetencia
-from rh.models import CapacitacaoDeProcedimento
+from rh.models import CapacitacaoDeSubProcedimento
+from rh.models import Procedimento
+from rh.models import SubProcedimento
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -140,8 +142,8 @@ class DemissaoAdmin(admin.ModelAdmin):
     list_display_links = list_display
 
 class RotinaExameMedicoAdmin(admin.ModelAdmin):
-    list_filter = 'tipo', 'funcionario'
-    list_display = 'id', 'tipo', 'funcionario', 'realizado'
+    list_filter = 'tipo', 'periodo_trabalhado__funcionario'
+    list_display = 'id', 'tipo', 'periodo_trabalhado', 'realizado'
     date_hierarchy = 'data'
 
 class CompetenciaAdmin(admin.ModelAdmin):
@@ -169,6 +171,17 @@ class PromocaoSalarioAdmin(admin.ModelAdmin):
     #list_display_links = list_display
     actions = [duplicate_event]
 
+
+class SubProcedimentoInline(admin.StackedInline):
+    model = SubProcedimento
+    extra = 0
+
+class ProcedimentoAdmin(admin.ModelAdmin):
+    inlines = [SubProcedimentoInline]
+
+class SubProcedimentoAdmin(admin.ModelAdmin):
+    list_filter = 'procedimento',
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
@@ -190,4 +203,6 @@ admin.site.register(GrupoDeCompetencia)
 admin.site.register(Competencia, CompetenciaAdmin)
 admin.site.register(Cargo, CargoAdmin)
 admin.site.register(AtribuicaoDeCargo, AtribuicaoDeCargoAdmin)
-admin.site.register(CapacitacaoDeProcedimento)
+admin.site.register(Procedimento, ProcedimentoAdmin)
+admin.site.register(SubProcedimento, SubProcedimentoAdmin)
+admin.site.register(CapacitacaoDeSubProcedimento)

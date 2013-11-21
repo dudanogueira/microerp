@@ -52,17 +52,17 @@ def funcionario_avatar_img_path(instance, filename):
 
 def funcionario_entrada_folha_ponto_assinada(instance, filename):
     return os.path.join(
-        'funcionarios/', instance.funcionario.uuid, 'folha_de_ponto', str(instance.data_referencia.year), str(instance.data_referencia.month), 'ID-ENTRADA-%d' % instance.id, filename
+        'funcionarios/', instance.periodo_trabalhado.funcionario.uuid, 'folha_de_ponto', str(instance.data_referencia.year), str(instance.data_referencia.month), 'ID-ENTRADA-%d' % instance.id, filename
     )
 
 def funcionario_folha_ponto_assinada(instance, filename):
     return os.path.join(
-        'funcionarios/', instance.folha.funcionario.uuid, 'folha_de_ponto', str(instance.folha.data_referencia.year), str(instance.folha.data_referencia.month), 'ID-FOLHA-%d' % instance.id, filename
+        'funcionarios/', instance.folha.periodo_trabalhado.funcionario.uuid, 'folha_de_ponto', str(instance.folha.data_referencia.year), str(instance.folha.data_referencia.month), 'ID-FOLHA-%d' % instance.id, filename
     )
 
 def funcionario_rotina_exame_medico(instance, filename):
     return os.path.join(
-        'funcionarios/', instance.funcionario.uuid, 'exames_medicos', str(instance.id), "ID-%s-%s" % (instance.id, filename)
+        'funcionarios/', instance.periodo_trabalhado.funcionario.uuid, 'exames_medicos', str(instance.id), "ID-%s-%s" % (instance.id, filename)
     )
 
 SOLICITACAO_LICENCA_STATUS_CHOICES = (
@@ -190,13 +190,13 @@ class Funcionario(models.Model):
             return self.cargo_inicial
     
     def exames_agendados(self):
-        return self.rotinaexamemedico_set.filter(data__gt=datetime.date.today())
+        return self.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(data__gt=datetime.date.today())
 
     def exames_passados(self):
-        return self.rotinaexamemedico_set.filter(data__lt=datetime.date.today())
+        return self.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(data__lt=datetime.date.today())
 
     def exames_data_indefinida(self):
-        return self.rotinaexamemedico_set.filter(data=None)
+        return self.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(data=None)
     
     #
     # ferias
@@ -248,7 +248,7 @@ class Funcionario(models.Model):
         return self.periodo_trabalhado_corrente.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False, status="aberta")
     
     def ferias_dias_total_soma(self):
-        solicitacoes = self.solicitacaodelicenca_set.filter(tipo="ferias")
+        solicitacoes = self.periodo_trabalhado_corrente.solicitacaodelicenca_set.filter(tipo="ferias")
         dias = []
         if solicitacoes:
             for solicitacao in solicitacoes:
@@ -399,7 +399,7 @@ class Funcionario(models.Model):
     # competencia
     competencias = models.ManyToManyField('Competencia', blank=True, null=True)
     # procedimentos
-    procedimentos = models.ManyToManyField('CapacitacaoDeProcedimento', blank=True, null=True)    
+    procedimentos = models.ManyToManyField('Procedimento', blank=True, null=True)    
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -483,7 +483,7 @@ class Cargo(models.Model):
     # competencia
     competencias = models.ManyToManyField('Competencia')
     # procedimentos
-    procedimentos = models.ManyToManyField('CapacitacaoDeProcedimento')    
+    procedimentos = models.ManyToManyField('Procedimento')    
     # metas
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -795,7 +795,7 @@ class RotinaExameMedico(models.Model):
             realizado = u"Realizado"
         else:
             realizado = u"Não Realizado"
-        return "Exame do tipo %s para %s em %s %s" % (self.get_tipo_display(), self.funcionario.nome, data, realizado)
+        return "Exame do tipo %s para %s em %s %s" % (self.get_tipo_display(), self.periodo_trabalhado.funcionario.nome, data, realizado)
     
     def valor_total(self):
         valor_total = 0
@@ -815,7 +815,6 @@ class RotinaExameMedico(models.Model):
     
     data = models.DateTimeField(blank=True, null=True, default=datetime.datetime.now, help_text="Formato: dd/mm/yy hh:mm")
     tipo = models.CharField(blank=True, max_length=100, choices=ROTINA_EXAME_MEDICO_CHOICES)
-    funcionario = models.ForeignKey('Funcionario')
     exames = models.ManyToManyField('TipoDeExameMedico', blank=True, null=True)
     realizado = models.BooleanField(default=False)
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
@@ -889,7 +888,6 @@ class GrupoDeCompetencia(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-
 class Competencia(models.Model):
     
     def __unicode__(self):
@@ -901,15 +899,44 @@ class Competencia(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-class CapacitacaoDeProcedimento(models.Model):
+class Procedimento(models.Model):
     
     def __unicode__(self):
-        return u"Código: %s - %s" % (self.codigo, self.nome)
+        return u"%s - %s" % (self.codigo, self.nome)
     
     codigo = models.CharField(blank=False, null=False, max_length=20)
     nome = models.CharField(blank=True, max_length=100)
+    departamento = models.ForeignKey('Departamento')
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
-
+class SubProcedimento(models.Model):
+    
+    def __unicode__(self):
+        return u"%s - %s, Versão %s" % (self.procedimento.codigo, self.nome, self.versao)
+    
+    procedimento = models.ForeignKey('Procedimento')
+    versao = models.IntegerField(blank=False, null=False, default=0)
+    nome = models.CharField(blank=False, max_length=100)
+    descricao = models.TextField(blank=False)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
+class CapacitacaoDeSubProcedimento(models.Model):
+    
+    def __unicode__(self):
+        return u"Capacitação do Sub Procedimento %s para funcionário %s: versão %s" % \
+            (self.subprocedimento, self.periodo_trabalhado.funcionario, self.versao_treinada)
+    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
+    subprocedimento = models.ForeignKey('SubProcedimento')
+    versao_treinada = models.IntegerField(blank=False, null=False)
+    ultima_atualizacao = models.DateField(default=datetime.datetime.today)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
 class AutorizacaoHoraExtra(models.Model):
     funcionario = models.ForeignKey('Funcionario')
     quantidade_hora_extra = models.IntegerField(blank=False, null=False)
@@ -918,7 +945,6 @@ class AutorizacaoHoraExtra(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
-
 
 # SIGNALS
 
@@ -936,7 +962,6 @@ def periodo_trabalhado_post_save(signal, instance, sender, **kwargs):
     exame = RotinaExameMedico.objects.create(
         tipo='a',
         periodo_trabalhado=instance,
-        funcionario=instance.funcionario,
         data=None,
     )
     for exame_padrao in instance.funcionario.cargo_atual.exame_medico_padrao.all():
