@@ -901,7 +901,6 @@ class Competencia(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-
 class CapacitacaoDeProcedimento(models.Model):
     
     def __unicode__(self):
