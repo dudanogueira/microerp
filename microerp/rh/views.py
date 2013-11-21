@@ -75,7 +75,6 @@ class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
     class Meta:
         model = SolicitacaoDeLicenca
         fields = ('tipo', 'motivo', 'inicio', 'fim')
-
 #
 # DECORATORS
 #
@@ -160,7 +159,6 @@ def ver_funcionario(request, funcionario_id):
         adicionar_folhaponto_form = AdicionarFolhaDePontoForm(request.POST, request.FILES)
         if adicionar_folhaponto_form.is_valid():
             folha = adicionar_folhaponto_form.save(commit=False)
-            folha.funcionario = funcionario
             folha.periodo_trabalhado = funcionario.periodo_trabalhado_corrente
             # gerente, já vai autorizado
             if request.user.perfilacessorh.gerente:
@@ -194,9 +192,9 @@ def solicitacao_licenca_add(request, funcionario_id):
         form = AdicionarSolicitacaoLicencaForm(request.POST)
         if form.is_valid():
             solicitacao = form.save(commit=False)
-            solicitacao.funcionario = funcionario
+            solicitacao.periodo_trabalhado = funcionario.periodo_trabalhado_corrente
             solicitacao.save()
-            messages.success(request, u'Solicitação Adicionada')
+            messages.success(request, u'Sucesso! Solicitação #%s Adicionada' % solicitacao.id)
         else:
             errors = ["%s: %s" % (item[0], str(item[1])) for item in form.errors.items()]
             messages.error(request, "%s" % ' '.join(errors))
@@ -210,6 +208,7 @@ def solicitacao_licencas_autorizar(request, solicitacao_id):
     solicitacao.data_autorizado = datetime.date.today()
     solicitacao.processado_por = request.user.funcionario
     solicitacao.save()
+    messages.success(request, u"Sucesso! Solicitação #%s Autorizada" % solicitacao.id)
     return redirect(reverse('rh:solicitacao_licencas'))
 
 #
@@ -295,6 +294,7 @@ class FormAdmitirFuncionario(forms.ModelForm):
                 self.fields[key].required = True
         self.fields['carteira_profissional_emissao'].widget.attrs['class'] = 'datepicker'
         self.fields['rg_data'].widget.attrs['class'] = 'datepicker'
+        self.fields['nascimento'].widget.attrs['class'] = 'datepicker'
         self.fields['periodo_trabalhado_inicio'].widget.attrs['class'] = 'datepicker'
         self.fields['cargo_inicial'].widget.attrs['class'] = 'select2'
         
@@ -304,6 +304,8 @@ class FormAdmitirFuncionario(forms.ModelForm):
         fields = (
             'nome',
             'foto',
+            'nascimento',
+            'salario_inicial',
             'carteira_profissional_numero',
             'carteira_profissional_serie',
             'carteira_profissional_emissao',
@@ -328,14 +330,17 @@ def processos_admissao_admitir(request):
     admitir=True
     form_admitir_funcionario = FormAdmitirFuncionario()
     if request.POST:
-        form_admitir_funcionario = FormAdmitirFuncionario(request.POST)
+        form_admitir_funcionario = FormAdmitirFuncionario(request.POST, request.FILES)
         if form_admitir_funcionario.is_valid():
-            novo_funcionario = form_admitir_funcionario.save(commit=False)
+            novo_funcionario = form_admitir_funcionario.save()
             # cria o periodo trabalhado
             novo_periodo_trabalhado = PeriodoTrabalhado.objects.create(
                 funcionario=novo_funcionario,
                 inicio=form_admitir_funcionario.cleaned_data['periodo_trabalhado_inicio']
             )
+            novo_funcionario.periodo_trabalhado_corrente = novo_periodo_trabalhado
+            novo_funcionario.save()
+            messages.success(request, u"Sucesso! Novo funcionário (%s) criado/admitido." % novo_funcionario)
         
     return render_to_response('frontend/rh/rh-processos-admissao-admitir.html', locals(), context_instance=RequestContext(request),)
 #
@@ -473,6 +478,10 @@ def promover_funcionario(request, funcionario_id):
                             criado_por=request.user, 
                         )
                         messages.success(request, u'Sucesso! Nova Promoção Salarial #%s Criada para %s' % (promocao_salarial.id, funcionario))
+                        # recalcula o valor hora
+                        valor_hora_anterior = funcionario.valor_hora
+                        funcionario.calcular_valor_hora()
+                        messages.info(request, u'Informação: Valor Hora Recalculado: %s -> %s' % (valor_hora_anterior, funcionario.valor_hora))
                     if novo_cargo:
                         # fecha a atribuicao de cargo atual
                         atribuicao.fim = data_promocao
@@ -534,8 +543,8 @@ def controle_de_banco_de_horas(request):
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_banco_de_horas_do_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
-    folhas_abertas = funcionario.folhadeponto_set.filter(encerrado=False)
-    folhas_fechadas = funcionario.folhadeponto_set.filter(encerrado=True)
+    folhas_abertas = funcionario.periodo_trabalhado_corrente.folhadeponto_set.filter(encerrado=False)
+    folhas_fechadas = funcionario.periodo_trabalhado_corrente.folhadeponto_set.filter(encerrado=True)
     # processo adicionar entrada folha
     if request.POST:
         form_add_entrada_folha_ponto = AdicionarEntradaFolhaDePontoForm(request.POST)
@@ -557,16 +566,22 @@ def controle_banco_de_horas_do_funcionario(request, funcionario_id):
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, folha_id):
-    folha = get_object_or_404(FolhaDePonto, funcionario__id=funcionario_id, id=folha_id)
+    folha = get_object_or_404(FolhaDePonto, periodo_trabalhado__funcionario__id=funcionario_id, id=folha_id)
     folha.encerrado = True
     folha.save()
-    return redirect(reverse('rh:controle_banco_de_horas_do_funcionario', args=[folha.funcionario.id,]))
+    return redirect(reverse('rh:controle_banco_de_horas_do_funcionario', args=[folha.periodo_trabalhado.funcionario.id,]))
 
-#
+# matriz de competencia
 @user_passes_test(possui_perfil_acesso_rh)
 def matriz_de_competencias(request):
     competencias = Competencia.objects.all()
     return render_to_response('frontend/rh/rh-matriz-de-competencias.html', locals(), context_instance=RequestContext(request),)
+
+# adicionar hora extra
+@user_passes_test(possui_perfil_acesso_rh)
+def adicionar_hora_extra(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    return render_to_response('frontend/rh/rh-adicionar-hora-extra.html', locals(), context_instance=RequestContext(request),)
 
 # FORMS CONTROLES DE FERRAMENTA E EPI
 class FormFiltrarControleDeFerramentas(forms.Form):

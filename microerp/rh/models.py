@@ -178,6 +178,11 @@ class Funcionario(models.Model):
         else:
             return self.salario_inicial
     
+    def calcular_valor_hora(self):
+        salario = self.salario_atual or self.salario_inicial
+        self.valor_hora = salario  / 30 / 8
+        self.save()
+
     def cargo(self, update=False):
         if self.promocaocargo_set.filter(aprovado=True).count():
             return self.promocaocargo_set.all().order_by('data')[0].cargo_novo
@@ -266,7 +271,7 @@ class Funcionario(models.Model):
             return None
     
     def banco_de_horas_trabalhadas(self):
-        retorno = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).aggregate(total_trabalhado=Sum('total'))['total_trabalhado']
+        retorno = EntradaFolhaDePonto.objects.filter(folha__periodo_trabalhado__funcionario__id=self.id).aggregate(total_trabalhado=Sum('total'))['total_trabalhado']
         return retorno or 0
     
     def banco_de_horas_esperada(self):
@@ -670,7 +675,7 @@ class SolicitacaoDeLicenca(models.Model):
         delta = self.fim - self.inicio
         return delta
     
-    funcionario = models.ForeignKey(Funcionario)
+    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     motivo = models.TextField(blank=False)
     realizada = models.BooleanField(default=False)
     inicio = models.DateField(u"Início da Licença", default=datetime.datetime.today)
@@ -692,18 +697,17 @@ class FolhaDePonto(models.Model):
         ordering = ['data_referencia',]
     
     def __unicode__(self):
-        return u"Folha de ponto (#%d) para funcionário %s referente ao mês %d de %d" % (self.id, self.funcionario, self.data_referencia.month, self.data_referencia.year)
+        return u"Folha de ponto (#%d) para funcionário %s referente ao mês %d de %d" % (self.id, self.periodo_trabalhado.funcionario, self.data_referencia.month, self.data_referencia.year)
 
     def filename(self):
             return os.path.basename(self.arquivo.name)
 
     def funcionario_mes_ano(self):
-        return "%s: %s/%s" % (self.funcionario, self.data_referencia.month, self.data_referencia.year)
+        return "%s: %s/%s" % (self.periodo_trabalhado.funcionario, self.data_referencia.month, self.data_referencia.year)
 
     def total_horas(self):
         return self.entradafolhadeponto_set.all().aggregate(total_trabalhado=Sum('total'))['total_trabalhado'] or 0
 
-    funcionario = models.ForeignKey(Funcionario)
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     data_referencia = models.DateField(u"Mês e Ano de Referência",default=datetime.datetime.today)
     encerrado = models.BooleanField(default=False)
@@ -717,10 +721,10 @@ class FolhaDePonto(models.Model):
 class EntradaFolhaDePonto(models.Model):
 
     def __unicode__(self):
-        return u"Funcionário %s. de %s a %s: %s" % (self.folha.funcionario, self.inicio, self.fim, self.total)
+        return u"Funcionário %s. de %s a %s: %s" % (self.folha.periodo_trabalhado.funcionario, self.inicio, self.fim, self.total)
     
     def funcionario():
-        return self.folha.funcionario
+        return self.folha.periodo_trabalhado.funcionario
         
     class Meta:
         verbose_name = "Entrada de Folha de Ponto"
@@ -854,7 +858,6 @@ class PerfilAcessoRH(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
-
 class Feriado(models.Model):
     
     def __unicode__(self):
@@ -873,12 +876,33 @@ class Feriado(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
+
+class GrupoDeCompetencia(models.Model):
+    nome = models.CharField(blank=True, max_length=100)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+
 class Competencia(models.Model):
     
     def __unicode__(self):
         return self.nome
     
+    grupo = models.ForeignKey('GrupoDeCompetencia')
     nome = models.CharField(blank=True, max_length=100)
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class AutorizacaoHoraExtra(models.Model):
+    funcionario = models.ForeignKey('Funcionario')
+    quantidade_hora_extra = models.IntegerField(blank=False, null=False)
+    data_execucao = models.DateField(default=datetime.datetime.today)
+    solicitante = models.ForeignKey('Funcionario', related_name="solicitante_horaextra_set")
+    # meta
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 
 # SIGNALS
@@ -915,6 +939,15 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
       ''' Atualiza os campos cargo atual e salario atual sempre 
             que houver promocoes de salario ou cargo
       '''
+      # somente criados
+      if kwargs.get('created'):
+              # definie salario_atual como salario inicial
+              instance.salario_atual = instance.salario_inicial
+              instance.save()
+              # calcular o valor_hora
+              #
+              instance.calcular_valor_hora()
+      
       # consolidacao do cargo:
       # caso ele não possua um cargo promovido, o cargo inicial sera o atual
       if not instance.cargo_atual and instance.cargo_inicial:
@@ -930,7 +963,7 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
                   instance.save()
 
       # atualizacao de salario:
-      #caso haja alguma promocao de salario diferente do atual...
+      # caso haja alguma promocao de salario diferente do atual...
       promo_salarios = instance.promocao_salarial_set.filter(aprovado=True)
       if promo_salarios.count():
             ultimo_salario = instance.salario()

@@ -86,9 +86,9 @@ class FuncionarioAdmin(AdminImageMixin, admin.ModelAdmin):
 
 class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
     save_on_top = True
-    search_fields = ['funcionario__nome',]
-    list_filter = ('status', 'tipo', 'funcionario__cargo_atual__nome', 'inicio')
-    list_display = ('funcionario', 'data_criado', 'tipo', 'inicio', 'fim', 'status')
+    search_fields = ['periodo_trabalhado__funcionario__nome',]
+    list_filter = ('status', 'tipo', 'periodo_trabalhado__funcionario__cargo_atual__nome', 'inicio')
+    list_display = ('periodo_trabalhado', 'data_criado', 'tipo', 'inicio', 'fim', 'status')
     list_display_links = list_display
     date_hierarchy = 'data_criado'
 
@@ -103,9 +103,9 @@ class EntradaFolhaDePontoInline(admin.StackedInline):
 
 class FolhaDePontoAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = ('funcionario_mes_ano', 'funcionario', 'autorizado', 'encerrado', 'funcionario_autorizador', 'total_horas')
+    list_display = ('funcionario_mes_ano', 'periodo_trabalhado', 'autorizado', 'encerrado', 'funcionario_autorizador', 'total_horas')
     date_hierarchy = 'data_referencia'
-    list_filter = 'data_referencia', 'funcionario', 'autorizado', 'encerrado',
+    list_filter = 'data_referencia', 'periodo_trabalhado__funcionario', 'autorizado', 'encerrado',
     inlines = [EntradaFolhaDePontoInline]
 
 class AtribuicaoDeCargoInline(admin.StackedInline):
@@ -128,7 +128,7 @@ class PerfilAcessoRHAdmin(admin.ModelAdmin):
     list_display = 'user',  'analista', 'gerente',
 
 class EntradaFolhaDePontoAdmin(admin.ModelAdmin):
-    list_filter = 'folha__funcionario', 'adicionado_por'
+    list_filter = 'folha__periodo_trabalhado__funcionario', 'adicionado_por'
     list_display = 'folha', 'adicionado_por'
     list_display_links = list_display
 

@@ -14,6 +14,9 @@ urlpatterns = patterns('',
     # funcionario > relatorios > banco de horas
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/controle/banco_de_hora/$', 'rh.views.controle_banco_de_horas_do_funcionario', name='controle_banco_de_horas_do_funcionario'),
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/controle/banco_de_hora/folha/(?P<folha_id>[0-9]+)/$', 'rh.views.controle_banco_de_horas_do_funcionario_gerenciar', name='controle_banco_de_horas_do_funcionario_gerenciar'),
+    # funcionario > hora extra
+    url(r'^funcionario/(?P<funcionario_id>[0-9]+)/hora-extra/$', 'rh.views.adicionar_hora_extra', name='adicionar_hora_extra'),
+    
     
     # funcionarios > relatorios
     url(r'^funcionarios/relatorios/ativos/$', 'rh.views.funcionarios_relatorios_listar_ativos', name='funcionarios_listar_ativos'),

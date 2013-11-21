@@ -12,6 +12,7 @@
     <ul class="dropdown-menu">
         <li><a href="{% url "rh:promover_funcionario" funcionario.id %}" class=""><i class="fa fa-bookmark"></i> Promover</a></li>
         <li><a href="#"><i class="fa fa-home"></i> Solicitar Licença</a></li>
+        <li><a href="{% url "rh:adicionar_hora_extra" funcionario.id %}"><i class="fa fa-flash"></i> Hora Extra</a></li>		
         <li class="divider"></li>
         <li><a href="{% url "rh:demitir_funcionario" funcionario.id %}"><i class="fa fa-minus"></i> Demitir</a></li>
     </ul>
@@ -118,12 +119,11 @@
             </ul>
         </div>
         
-        
         <h3>Solicitações de Licenças</h3>
         <div class="well well-small">
             
             <ul>
-            {% for solicitacao_licenca in funcionario.solicitacaodelicenca_set.all %}
+            {% for solicitacao_licenca in funcionario.periodo_trabalhado_corrente.solicitacaodelicenca_set.all %}
             
             {% if solicitacao_licenca.status == "aberta" %}
                 <li class="alert alert-warning">{{solicitacao_licenca.get_tipo_display}} de {{solicitacao_licenca.inicio|date:"SHORT_DATE_FORMAT"}} a {{solicitacao_licenca.fim|date:"SHORT_DATE_FORMAT"}} <strong>ABERTA</strong></li>
