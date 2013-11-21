@@ -876,6 +876,10 @@ class Feriado(models.Model):
 
 
 class GrupoDeCompetencia(models.Model):
+    
+    def __unicode__(self):
+        return self.nome
+    
     nome = models.CharField(blank=True, max_length=100)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
