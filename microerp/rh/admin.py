@@ -42,6 +42,7 @@ from rh.models import DependenteDeFuncionario
 from rh.models import Feriado
 from rh.models import Competencia
 from rh.models import AtribuicaoDeCargo
+from rh.models import GrupoDeCompetencia
 
 from sorl.thumbnail.admin import AdminImageMixin
 
