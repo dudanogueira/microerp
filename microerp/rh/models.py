@@ -398,6 +398,8 @@ class Funcionario(models.Model):
     endereco_empresa_designado = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local de Trabalho Designado", default=1)
     # competencia
     competencias = models.ManyToManyField('Competencia', blank=True, null=True)
+    # procedimentos
+    procedimentos = models.ManyToManyField('CapacitacaoDeProcedimento', blank=True, null=True)    
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -480,6 +482,8 @@ class Cargo(models.Model):
     dias_renovacao_exames = models.IntegerField(blank=False, null=False, default=365)
     # competencia
     competencias = models.ManyToManyField('Competencia')
+    # procedimentos
+    procedimentos = models.ManyToManyField('CapacitacaoDeProcedimento')    
     # metas
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -896,6 +900,16 @@ class Competencia(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+
+class CapacitacaoDeProcedimento(models.Model):
+    
+    def __unicode__(self):
+        return u"Código: %s - %s" % (self.codigo, self.nome)
+    
+    codigo = models.CharField(blank=False, null=False, max_length=20)
+    nome = models.CharField(blank=True, max_length=100)
+    
 
 class AutorizacaoHoraExtra(models.Model):
     funcionario = models.ForeignKey('Funcionario')
