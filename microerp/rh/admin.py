@@ -143,7 +143,7 @@ class RotinaExameMedicoAdmin(admin.ModelAdmin):
     date_hierarchy = 'data'
 
 class CompetenciaAdmin(admin.ModelAdmin):
-    pass
+    list_filter = 'grupo'
 
 class CargoAdmin(admin.ModelAdmin):
     filter_horizontal = 'competencias',
@@ -184,6 +184,7 @@ admin.site.register(Demissao, DemissaoAdmin)
 admin.site.register(DependenteDeFuncionario)
 admin.site.register(Feriado, FeriadoAdmin)
 admin.site.register(EntradaFolhaDePonto, EntradaFolhaDePontoAdmin)
+admin.site.register(GrupoDeCompetencia)
 admin.site.register(Competencia, CompetenciaAdmin)
 admin.site.register(Cargo, CargoAdmin)
 admin.site.register(AtribuicaoDeCargo, AtribuicaoDeCargoAdmin)
