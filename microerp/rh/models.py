@@ -236,16 +236,16 @@ class Funcionario(models.Model):
             return 0
 
     def ferias_dias_gozados(self):
-        return self.solicitacaodelicenca_set.filter(tipo="ferias", status="autorizada", realizada=True)
+        return self.periodo_trabalhado_corrente.solicitacaodelicenca_set.filter(tipo="ferias", status="autorizada", realizada=True)
         
     def ferias_dias_nao_gozados(self):
-        return self.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False)
+        return self.periodo_trabalhado_corrente.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False)
 
     def ferias_dias_autorizados(self):
-        return self.solicitacaodelicenca_set.filter(tipo="ferias", status='autorizada', realizada=False)
+        return self.periodo_trabalhado_corrente.solicitacaodelicenca_set.filter(tipo="ferias", status='autorizada', realizada=False)
 
     def ferias_dias_agendados(self):
-        return self.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False, status="aberta")
+        return self.periodo_trabalhado_corrente.solicitacaodelicenca_set.filter(tipo="ferias", realizada=False, status="aberta")
     
     def ferias_dias_total_soma(self):
         solicitacoes = self.solicitacaodelicenca_set.filter(tipo="ferias")
@@ -264,7 +264,7 @@ class Funcionario(models.Model):
 
     # BANCO DE HORAS
     def banco_de_horas_ultimo_lancamento(self):
-        ultimo = EntradaFolhaDePonto.objects.filter(folha__funcionario__id=self.id).order_by('-criado').all()
+        ultimo = EntradaFolhaDePonto.objects.filter(folha__periodo_trabalhado__funcionario__id=self.id).order_by('-criado').all()
         if ultimo:
             return ultimo[0]
         else:
@@ -522,7 +522,6 @@ class PeriodoTrabalhado(models.Model):
             atribuicao = self.atribuicaodecargo_set.create(
                 cargo=self.funcionario.cargo_atual,
                 inicio=self.inicio,
-                criado_por=user,
                 local_empresa=self.funcionario.endereco_empresa_designado
             )
             return True, atribuicao
@@ -551,7 +550,6 @@ class AtribuicaoDeCargo(models.Model):
     fim = models.DateField(blank=True, null=True)
     local_empresa = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local designado", default=1)
     # metadata
-    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
@@ -659,7 +657,7 @@ class SolicitacaoDeLicenca(models.Model):
     
     def __unicode__(self):
         return u"Solicitação Licença %s do Funcionário %s entre %s e %s: %s" % \
-            (self.get_tipo_display(), self.funcionario, self.inicio.strftime("%d/%m/%y"), self.fim.strftime("%d/%m/%y"), self.get_status_display())
+            (self.get_tipo_display(), self.periodo_trabalhado, self.inicio.strftime("%d/%m/%y"), self.fim.strftime("%d/%m/%y"), self.get_status_display())
     
     class Meta:
         verbose_name = u"Solicitação de Licença"
@@ -947,6 +945,14 @@ def funcionario_post_save(signal, instance, sender, **kwargs):
               # calcular o valor_hora
               #
               instance.calcular_valor_hora()
+              # 
+              if instance.periodo_trabalhado_corrente:
+                  today = datetime.date.today()
+                  folha,created = instance.periodo_trabalhado_corrente.folhadeponto_set.get_or_create(
+                      data_referencia__month=today.month,
+                      data_referencia__year=today.year,
+                      periodo_trabalhado=instance.periodo_trabalhado_corrente
+                  )              
       
       # consolidacao do cargo:
       # caso ele não possua um cargo promovido, o cargo inicial sera o atual
@@ -978,19 +984,7 @@ def atualizador_promocao_post_save(signal, instance, sender, **kwargs):
     '''
     instance.beneficiario.save()
 
-def cria_folha_ponto_funcionario_criado(signal, instance, sender, **kwargs):
-    '''Após criar o funcionário, este sinal garante também a criação da folha de ponto
-    '''
-    if instance.periodo_trabalhado_corrente:
-        today = datetime.date.today()
-        folha,created = instance.folhadeponto_set.get_or_create(
-            data_referencia__month=today.month,
-            data_referencia__year=today.year,
-            periodo_trabalhado=instance.periodo_trabalhado_corrente
-        )
-
 # SIGNALS CONNECTION
-signals.post_save.connect(cria_folha_ponto_funcionario_criado, sender=Funcionario)
 signals.post_save.connect(funcionario_post_save, sender=Funcionario)
 signals.post_save.connect(atualizador_promocao_post_save, sender=PromocaoCargo)
 signals.post_save.connect(atualizador_promocao_post_save, sender=PromocaoSalario)
