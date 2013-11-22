@@ -533,30 +533,14 @@ def processos_promocao(request):
 @user_passes_test(possui_perfil_acesso_rh)
 def capacitacao_de_procedimentos(request):
     # para todos os funcioários ativos
-    funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
-    # quais não estão capacitados
-    funcionarios_sem_capacitacao = []
-    funcionarios_capacitacao_desafasa = []
-    for funcionario_listado in funcionarios:
-        exigidos_no_cargo = funcionario_listado.cargo_atual.subprocedimentos.all()
-        capacitacoes_realizadas = funcionario_listado.periodo_trabalhado_corrente.capacitacaodesubprocedimento_set.all()
-        if exigidos_no_cargo.count() != capacitacoes_realizadas.count():
-            # capacitacoes exigidas e realizadas não confere
-            if capacitacoes_realizadas:
-                ids_realizados = capacitacoes_realizadas.values_list('subprocedimento_id')
-                diferenca = exigidos_no_cargo.exclude(id__in=ids_realizados)
-                funcionarios_sem_capacitacao.append((funcionario_listado, diferenca))
-        capacitacao_defasada = []
-        for capacitacao in capacitacoes_realizadas:
-            # para todas as capitacoes realizadas, conferir se versao confere com a do subprocedimento
-            if capacitacao.versao_treinada < capacitacao.subprocedimento.versao:
-                capacitacao_defasada.append(capacitacao)
-        if len(capacitacao_defasada) > 0:
-            # relata somente os que possuem capacitacao defasada
-            funcionarios_capacitacao_desafasa.append((funcionario_listado, capacitacao_defasada))
-            
-
-
+    funcionarios_ativos = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None).order_by('cargo_atual__departamento__nome', 'cargo_atual__nome')
+    funcionarios_ativos_valores =  funcionarios_ativos.values(
+        'cargo_atual__departamento__nome',
+        'cargo_atual__departamento__id',
+        'cargo_atual__nome',
+        'nome',
+        'id',
+        )
     return render_to_response('frontend/rh/rh-capacitacao-de-procedimentos.html', locals(), context_instance=RequestContext(request),)
 
 

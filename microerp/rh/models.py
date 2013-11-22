@@ -334,9 +334,25 @@ class Funcionario(models.Model):
     def solicitacoes_correcao_aberto(self):
         return self.solicitacao_correcao_set.filter(status="analise", correcao_iniciada=None)
     
-    # CAPACITACAO DE COMPETENCIAS
-    def competencias_do_cargo(self):
-        return self.cargo_atual.subprocedimentos.all()
+    # CAPACITACAO DE PROCEDIMENTOS
+    def capacitacao_de_procedimento_faltante(self):
+        '''retorna todos os procedimentos que devem ser capacitados'''
+        exigidos_no_cargo = self.cargo_atual.subprocedimentos.all()
+        capacitacoes_realizadas = self.periodo_trabalhado_corrente.capacitacaodesubprocedimento_set.all()
+        ids_realizados = capacitacoes_realizadas.values_list('subprocedimento_id')
+        diferenca = exigidos_no_cargo.exclude(id__in=ids_realizados)
+        return diferenca
+
+    def capacitacao_de_procedimento_defasado(self):
+        capacitacoes_realizadas = self.periodo_trabalhado_corrente.capacitacaodesubprocedimento_set.all()
+        ids_atuais = []
+        for capacitacao in capacitacoes_realizadas:
+            # para todas as capitacoes realizadas, conferir se versao
+            # confere com a do subprocedimento
+            if capacitacao.versao_treinada >= capacitacao.subprocedimento.versao:
+                ids_atuais.append(capacitacao)
+        return capacitacoes_realizadas.exclude(id__in=ids_atuais)
+    # 
     
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)

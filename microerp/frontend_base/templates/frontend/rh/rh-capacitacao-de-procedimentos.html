@@ -22,12 +22,14 @@
 
 </div>
 
+
 <div id="controle-epi-content" class="tab-content">
 	
 	<div class="tab-pane fade in active" id="sem-capacitacao">
 		<h2>Funcionários Sem Capacitação de Procedimento</h2>
-		{% for item in funcionarios_sem_capacitacao %}
-			<h3>{{item.0.nome}} - {{item.0.cargo_atual}}</h3>
+		{% for funcionario in funcionarios_ativos %}
+			{% if funcionario.capacitacao_de_procedimento_faltante %}
+			<h6>{{funcionario}} - {{funcionario.cargo}}</h6>
 			
 	    <table class="table table-condensed table-hover table-rounded">
 	      <thead>
@@ -39,7 +41,7 @@
 	            </tr>
 	       </thead>
 				<tbody>
-						{% for subprocedimento in item.1 %}
+						{% for subprocedimento in funcionario.capacitacao_de_procedimento_faltante %}
 						<tr>
 							<td>{{subprocedimento.procedimento}}</td>
 							<td>{{subprocedimento}}</td>
@@ -50,16 +52,21 @@
 
 				</tbody>
 			</table>
-			
+
+
+			{% endif %}
 		{% endfor %}
+		
 	</div>
 	
 	<div class="tab-pane fade in" id="capacitacao-defasada">
 		<h2>Funcionários Com Capacitação Defasada</h2>
+		
 
-		{% for item in funcionarios_capacitacao_desafasa %}
-			<h3>{{item.0.nome}} - {{item.0.cargo_atual}}</h3>
-			
+		<h2>Funcionários Sem Capacitação de Procedimento</h2>
+		{% for funcionario in funcionarios_ativos %}
+			{% if funcionario.capacitacao_de_procedimento_defasado %}
+			<h6>{{funcionario}} - {{funcionario.cargo}}</h6>
 	    <table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	            <tr>
@@ -71,7 +78,7 @@
 	            </tr>
 	       </thead>
 				<tbody>
-						{% for capacitacao in item.1 %}
+						{% for capacitacao in funcionario.capacitacao_de_procedimento_defasado %}
 						<tr>
 							<td><strong>{{capacitacao.subprocedimento.procedimento.codigo}}</strong>: {{capacitacao.subprocedimento.procedimento.nome}}  </td>
 							<td>{{capacitacao.subprocedimento.nome}}</td>
@@ -83,14 +90,16 @@
 
 				</tbody>
 			</table>
-			
+
+			{% endif %}
 		{% endfor %}
 		
-		
+			
 		
 		
 
 	</div>
+
 </div>
 
 
