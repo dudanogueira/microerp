@@ -537,13 +537,15 @@ def capacitacao_de_procedimentos(request):
     # quais não estão capacitados
     funcionarios_sem_capacitacao = []
     funcionarios_capacitacao_desafasa = []
-    for funcionario in funcionarios:
-        exigidos_no_cargo = funcionario.cargo_atual.subprocedimentos.all()
-        capacitacoes_realizadas = funcionario.periodo_trabalhado_corrente.capacitacaodesubprocedimento_set.all()
+    for funcionario_listado in funcionarios:
+        exigidos_no_cargo = funcionario_listado.cargo_atual.subprocedimentos.all()
+        capacitacoes_realizadas = funcionario_listado.periodo_trabalhado_corrente.capacitacaodesubprocedimento_set.all()
         if exigidos_no_cargo.count() != capacitacoes_realizadas.count():
             # capacitacoes exigidas e realizadas não confere
-            diferenca = set(exigidos_no_cargo).difference(set(capacitacoes_realizadas))
-            funcionarios_sem_capacitacao.append((funcionario, diferenca))
+            if capacitacoes_realizadas:
+                ids_realizados = capacitacoes_realizadas.values_list('subprocedimento_id')
+                diferenca = exigidos_no_cargo.exclude(id__in=ids_realizados)
+                funcionarios_sem_capacitacao.append((funcionario_listado, diferenca))
         capacitacao_defasada = []
         for capacitacao in capacitacoes_realizadas:
             # para todas as capitacoes realizadas, conferir se versao confere com a do subprocedimento
@@ -551,7 +553,7 @@ def capacitacao_de_procedimentos(request):
                 capacitacao_defasada.append(capacitacao)
         if len(capacitacao_defasada) > 0:
             # relata somente os que possuem capacitacao defasada
-            funcionarios_capacitacao_desafasa.append((funcionario, capacitacao_defasada))
+            funcionarios_capacitacao_desafasa.append((funcionario_listado, capacitacao_defasada))
             
 
 

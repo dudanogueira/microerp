@@ -73,8 +73,8 @@
 				<tbody>
 						{% for capacitacao in item.1 %}
 						<tr>
-							<td>{{capacitacao.subprocedimento.procedimento}}</td>
-							<td>{{capacitacao.subprocedimento}}</td>
+							<td><strong>{{capacitacao.subprocedimento.procedimento.codigo}}</strong>: {{capacitacao.subprocedimento.procedimento.nome}}  </td>
+							<td>{{capacitacao.subprocedimento.nome}}</td>
 							<td>{{capacitacao.subprocedimento.versao}}</td>
 							<td>{{capacitacao.versao_treinada}}</td>
 							<td>{{capacitacao.ultima_atualizacao|date:"SHORT_DATE_FORMAT"}}</td>
