@@ -29,15 +29,15 @@
 		<h2>Funcionários Sem Capacitação de Procedimento</h2>
 		{% for funcionario in funcionarios_ativos %}
 			{% if funcionario.capacitacao_de_procedimento_faltante %}
-			<h6>{{funcionario}} - {{funcionario.cargo}}</h6>
-			
-	    <table class="table table-condensed table-hover table-rounded">
+			<div class="well well-small">
+				<h4>{{funcionario}} - {{funcionario.cargo}}</h4>
+				<table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	            <tr>
 	                <th>Procedimento</th>
 	                <th>Sub Procedimento</th>
 									<th>Versão</th>
-									<th>Atualização</th>
+									<th>Atualidade do Procedimento</th>
 	            </tr>
 	       </thead>
 				<tbody>
@@ -52,6 +52,7 @@
 
 				</tbody>
 			</table>
+			</div>
 
 
 			{% endif %}
@@ -61,13 +62,12 @@
 	
 	<div class="tab-pane fade in" id="capacitacao-defasada">
 		<h2>Funcionários Com Capacitação Defasada</h2>
-		
 
-		<h2>Funcionários Sem Capacitação de Procedimento</h2>
 		{% for funcionario in funcionarios_ativos %}
 			{% if funcionario.capacitacao_de_procedimento_defasado %}
-			<h6>{{funcionario}} - {{funcionario.cargo}}</h6>
-	    <table class="table table-condensed table-hover table-rounded">
+			<div class="well well-small">
+				<h4>{{funcionario}} - {{funcionario.cargo}}</h4>
+				<table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	            <tr>
 	                <th>Procedimento</th>
@@ -90,7 +90,7 @@
 
 				</tbody>
 			</table>
-
+			</div>
 			{% endif %}
 		{% endfor %}
 		
