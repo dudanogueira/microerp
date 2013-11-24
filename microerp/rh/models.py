@@ -143,6 +143,11 @@ TIPO_DE_CARGO_CHOICES = (
     ('escritorio', 'Escritório'),
 )
 
+TIPO_TREINAMENTO_CHOICES = (
+    ('adicionar', u'Adição de Competência'),
+    ('atualizar', u'Atualização de Competência'),
+)
+
 class Funcionario(models.Model):
     
     def __unicode__(self):
@@ -355,6 +360,14 @@ class Funcionario(models.Model):
 
     def atribuicao_responsabilidade_nao_treinado(self):
         return self.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.filter(treinamento_realizado=False)
+    
+    def atribuicao_responsabilidade_nao_treinado_adicionar(self):
+        return self.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.filter(treinamento_realizado=False, tipo_de_treinamento="adicionar")
+    
+    def atribuicao_responsabilidade_nao_treinado_atualizar(self):
+        return self.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.filter(treinamento_realizado=False, tipo_de_treinamento="atualizar")
+    
+    
     # 
     
     uuid = UUIDField()
@@ -963,11 +976,12 @@ class CapacitacaoDeSubProcedimento(models.Model):
 class AtribuicaoDeResponsabilidade(models.Model):
     
     def __unicode__(self):
-        return u"Atribuição de Responsabilidade #%s para %s" % (self.id, self.periodo_trabalhado.funcionario.nome)
+        return u"Atribuição de Responsabilidade #%s: %s para %s" % (self.id, self.tipo_de_treinamento.upper(), self.periodo_trabalhado.funcionario.nome)
     
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     subprocedimentos = models.ManyToManyField('SubProcedimento')
     treinamento_realizado = models.BooleanField(default=False)
+    tipo_de_treinamento = models.CharField(blank=True, max_length=100, choices=TIPO_TREINAMENTO_CHOICES)
     horas_treinadas = models.IntegerField(blank=True, null=True)
     data_treinado = models.DateField(blank=True, null=True)
     # meta
@@ -978,8 +992,16 @@ class AtribuicaoDeResponsabilidade(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class AutorizacaoHoraExtra(models.Model):
-    funcionario = models.ForeignKey('Funcionario')
-    quantidade_hora_extra = models.IntegerField(blank=False, null=False)
+    
+    def __unicode__(self):
+        return u"Autorização de %s Hora Extra para %s" % (self.quantidade, self.periodo_trabalhado.funcionario)
+    
+    class Meta:
+        ordering = ['-data_execucao',]
+    
+    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
+    quantidade = models.IntegerField(blank=False, null=False)
+    valor_total = models.DecimalField(u"Valor Total das Horas Extra", max_digits=10, decimal_places=2, blank=True, null=True)
     data_execucao = models.DateField(default=datetime.datetime.today)
     solicitante = models.ForeignKey('Funcionario', related_name="solicitante_horaextra_set")
     # meta

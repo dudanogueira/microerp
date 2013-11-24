@@ -161,6 +161,37 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 	</tbody>
 </table>
 
+<h2>Horas Extra Executadas</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in horas_extra_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+
 <h2>Funcionários com Aumento Salarial</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
@@ -224,7 +255,7 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
-			<th style="text-align: center" class="alert"></th>
+			<th style="text-align: center" class="alert">Tipo de Treino</th>
 			<th>Janeiro</th>
 			<th>Fevereiro</th>
 			<th>Março</th>
@@ -240,6 +271,23 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 		</tr>
 	</thead>
 	<tbody>
+			
+			
+			
+			<tr class="">
+				<td class="alert"><strong>Adição de Competências</strong></td>
+				{% for campo in total_treinamento_procedimento_por_mes_adicao %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+			
+			<tr class="">
+				<td class="alert"><strong>Atualização de Competências</strong></td>
+				{% for campo in total_treinamento_procedimento_por_mes_atualizacao %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+			
 			<tr class="alert alert-info">
 				<td><strong>Total</strong></td>
 				{% for campo in total_treinamento_procedimento_por_mes %}
@@ -248,7 +296,6 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 			</tr>
 	</tbody>
 </table>
-
 
 <h2>Local dos Funcionários</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">

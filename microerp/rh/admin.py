@@ -47,6 +47,7 @@ from rh.models import CapacitacaoDeSubProcedimento
 from rh.models import Procedimento
 from rh.models import SubProcedimento
 from rh.models import AtribuicaoDeResponsabilidade
+from rh.models import AutorizacaoHoraExtra
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -182,6 +183,14 @@ class ProcedimentoAdmin(admin.ModelAdmin):
 class SubProcedimentoAdmin(admin.ModelAdmin):
     list_filter = 'procedimento',
 
+class AtribuicaoDeResponsabilidadeAdmin(admin.ModelAdmin):
+    list_filter = 'tipo_de_treinamento',
+    list_display = 'treinamento_realizado', 'tipo_de_treinamento', 'horas_treinadas', 'periodo_trabalhado'
+
+class AutorizacaoHoraExtraAdmin(admin.ModelAdmin):
+    list_display = 'periodo_trabalhado', 'quantidade', 'valor_total', 'data_execucao', 'solicitante', 'criado'
+
+
 admin.site.register(Funcionario, FuncionarioAdmin)
 admin.site.register(IdiomaFuncionario)
 admin.site.register(ExperienciasProfissionaisFuncionario)
@@ -206,4 +215,5 @@ admin.site.register(AtribuicaoDeCargo, AtribuicaoDeCargoAdmin)
 admin.site.register(Procedimento, ProcedimentoAdmin)
 admin.site.register(SubProcedimento, SubProcedimentoAdmin)
 admin.site.register(CapacitacaoDeSubProcedimento)
-admin.site.register(AtribuicaoDeResponsabilidade)
+admin.site.register(AtribuicaoDeResponsabilidade, AtribuicaoDeResponsabilidadeAdmin)
+admin.site.register(AutorizacaoHoraExtra, AutorizacaoHoraExtraAdmin)

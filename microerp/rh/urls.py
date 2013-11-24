@@ -16,6 +16,7 @@ urlpatterns = patterns('',
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/controle/banco_de_hora/folha/(?P<folha_id>[0-9]+)/$', 'rh.views.controle_banco_de_horas_do_funcionario_gerenciar', name='controle_banco_de_horas_do_funcionario_gerenciar'),
     # funcionario > hora extra
     url(r'^funcionario/(?P<funcionario_id>[0-9]+)/hora-extra/$', 'rh.views.adicionar_hora_extra', name='adicionar_hora_extra'),
+    url(r'^funcionario/(?P<funcionario_id>[0-9]+)/hora-extra/(?P<autorizacao_hora_extra_id>[0-9]+)/imprimir$', 'rh.views.imprimir_hora_extra', name='imprimir_hora_extra'),
     
     
     # funcionarios > relatorios

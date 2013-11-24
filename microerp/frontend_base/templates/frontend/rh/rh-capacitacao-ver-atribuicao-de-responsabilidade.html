@@ -9,16 +9,16 @@
 <h2>Funcionário: {{funcionario}}</h2>
 <a href="{% url "rh:capacitacao_de_procedimentos" %}"><i class="fa fa-arrow-left"></i> Retornar</a>
 
-{% for atribuicao_de_responsabilidade in funcionario.atribuicao_responsabilidade_nao_treinado %}
+{% for atribuicao_de_responsabilidade in atribuicoes %}
 <div class="well well-small">
-				<h3>Atribuição de Responsabilidade #{{atribuicao_de_responsabilidade.id}}</h3>
+				<h3>{{atribuicao_de_responsabilidade.get_tipo_de_treinamento_display}} #{{atribuicao_de_responsabilidade.id}}</h3>
 				<ul>{% for subprocedimento in atribuicao_de_responsabilidade.subprocedimentos.all %}
 					<li>{{subprocedimento}}</li>
 					{% endfor %}
 				</ul>
 				<p class="btn-group">
 					<a href="{% url "rh:capacitacao_de_procedimentos_confirmar" funcionario.id atribuicao_de_responsabilidade.id %}" class="btn btn-success"><i class="fa fa-check"></i> Confirmar</a>
-					<a href="{% url "rh:capacitacao_de_procedimentos_remover_ar" funcionario.id atribuicao_de_responsabilidade.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> Remover</a>
+					<a href="{% url "rh:capacitacao_de_procedimentos_remover_ar" funcionario.id atribuicao_de_responsabilidade.id %}?tipo={{tipo}}" class="btn btn-danger"><i class="fa fa-trash-o"></i> Remover</a>
 				</p>
 			</div>
 {% endfor %}

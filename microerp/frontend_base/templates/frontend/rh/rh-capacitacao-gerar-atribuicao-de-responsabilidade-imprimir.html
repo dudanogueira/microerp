@@ -5,7 +5,7 @@
 
 {% block content %}
 <div class="container">
-	<h1 class="text-center">Atribuição de Responsabilidade</h1>
+	<h1 class="text-center">Atribuição de Responsabilidade {{ar.get_tipo_de_treinamento_display|upper}}</h1>
 	<table style="width:100%">
 		<tr>
 			<td style="width:20%">Nome: {{funcionario.nome}}</td>

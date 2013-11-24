@@ -18,9 +18,11 @@ from rh.models import EntradaFolhaDePonto, Competencia
 from rh.models import PeriodoTrabalhado, AtribuicaoDeCargo
 from rh.models import Cargo, PromocaoCargo, PromocaoSalario, TIPO_DE_CARGO_CHOICES
 from rh.models import AtribuicaoDeResponsabilidade, SubProcedimento, CapacitacaoDeSubProcedimento
+from rh.models import AutorizacaoHoraExtra
 from rh.utils import get_weeks
 from estoque.models import Produto
 from cadastro.models import EnderecoEmpresa
+
 
 from django import forms
 from django.conf import settings
@@ -549,39 +551,58 @@ def capacitacao_de_procedimentos(request):
 def capacitacao_de_procedimentos_gerar_ar(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
     subprocedimentos_id = request.GET.get('subprocedimentos')
+    tipo = request.GET.get('tipo')
+    if tipo == 'adicionar':
+        tipo_treino = 'adicionar'
+    elif tipo == 'atualizar':
+        tipo_treino = 'atualizar'
+    else:
+        tipo_treino = 'adicionar'
     if subprocedimentos_id:
         subprocedimentos_id_list = subprocedimentos_id.split(',')
         subprocedimentos = SubProcedimento.objects.filter(id__in=subprocedimentos_id_list)
-    ar = AtribuicaoDeResponsabilidade.objects.create(
-         periodo_trabalhado=funcionario.periodo_trabalhado_corrente,
-         criado_por=request.user
-    )
-    ar.subprocedimentos = subprocedimentos
-    ar.save()
-    return render_to_response('frontend/rh/rh-capacitacao-gerar-atribuicao-de-responsabilidade-imprimir.html', locals(), context_instance=RequestContext(request),)
+        ar = AtribuicaoDeResponsabilidade.objects.create(
+             periodo_trabalhado=funcionario.periodo_trabalhado_corrente,
+             criado_por=request.user,
+             tipo_de_treinamento=tipo_treino,
+        )
+        ar.subprocedimentos = subprocedimentos
+        ar.save()
+        return render_to_response('frontend/rh/rh-capacitacao-gerar-atribuicao-de-responsabilidade-imprimir.html', locals(), context_instance=RequestContext(request),)
+    else:
+        messages.info(request, 'Nenhum Procedimento escolhido para %s' % funcionario)
+        return redirect(reverse("rh:capacitacao_de_procedimentos"))
+        
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def capacitacao_de_procedimentos_ver_ar(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
-    if funcionario.atribuicao_responsabilidade_nao_treinado():
-        return render_to_response('frontend/rh/rh-capacitacao-ver-atribuicao-de-responsabilidade.html', locals(), context_instance=RequestContext(request),)
-    else:
+    tipo =  request.GET.get('tipo', 'adicionar')
+    if tipo == 'adicionar':
+        atribuicoes = funcionario.atribuicao_responsabilidade_nao_treinado_adicionar()
+    elif tipo == 'atualizar':
+        atribuicoes = funcionario.atribuicao_responsabilidade_nao_treinado_atualizar()
+
+    if not tipo or not atribuicoes:
         messages.info(request, 'Nenhuma Atribuição de Responsabilidade para %s. É Preciso gerar uma nova.' % funcionario)
         return redirect(reverse("rh:capacitacao_de_procedimentos"))
+    return render_to_response('frontend/rh/rh-capacitacao-ver-atribuicao-de-responsabilidade.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_rh)
 def capacitacao_de_procedimentos_remover_ar(request, funcionario_id, atribuicao_responsabilidade_id):
+    tipo = request.GET.get('tipo', 'adicionar')
     atribuicao = get_object_or_404(AtribuicaoDeResponsabilidade, id=atribuicao_responsabilidade_id, periodo_trabalhado__funcionario__id=funcionario_id)
     atribuicao.delete()
     messages.success(request, u"Sucesso! Atribuição de Responsabilidade removida.")
-    return redirect(reverse("rh:capacitacao_de_procedimentos_ver_ar", args=[funcionario_id,]))
+    return redirect(reverse("rh:capacitacao_de_procedimentos_ver_ar", args=[funcionario_id,])+"?tipo=%s" % tipo)
 
 class FormConfirmaAtribuicaoDeResponsabilidade(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormConfirmaAtribuicaoDeResponsabilidade, self).__init__(*args, **kwargs)
         self.fields['data_treinado'].widget.attrs['class'] = 'input-small datepicker'
+        self.fields['data_treinado'].label = "Data de Treinamento"
         self.fields['horas_treinadas'].required = True
     
     class Meta:
@@ -603,17 +624,25 @@ def capacitacao_de_procedimentos_confirmar(request, funcionario_id, atribuicao_r
                     periodo_trabalhado = atribuicao.periodo_trabalhado,
                     subprocedimento=subprocedimento
                 )
+                if created:
+                    # eh uma capacitacao nova!
+                    messages.info(request, u'Uma nova Capacitação de Responsabilidade foi criada.')
+                else:
+                    messages.info(request, u'Atualizando Capacitação de Responsabilidade.')
+                #
                 capacitacao.versao_treinada = subprocedimento.versao
                 capacitacao.ultima_atualizacao = form_atribuicao.cleaned_data['data_treinado']
                 capacitacao.save()
                 # salva a atribuicao
                 atribuicao = form_atribuicao.save(commit=False)
+                # define quem e quando se confirmou a atribuicao
                 atribuicao.confirmado_por = request.user
                 atribuicao.confirmado_data = datetime.datetime.now()
                 atribuicao.treinamento_realizado = True
+                # salva
                 atribuicao.save()
-                
-                # define quem confirmou a atribuicao
+                messages.success(request, u'Atribuição de Responsabilidade Salva')
+                return redirect(reverse("rh:capacitacao_de_procedimentos"))
     return render_to_response('frontend/rh/rh-capacitacao-atribuicao-de-responsabilidade-confirmar.html', locals(), context_instance=RequestContext(request),)
 
 #
@@ -669,11 +698,49 @@ def matriz_de_competencias(request):
     competencias = Competencia.objects.all()
     return render_to_response('frontend/rh/rh-matriz-de-competencias.html', locals(), context_instance=RequestContext(request),)
 
+
+# HORA EXTRA FORM
+class AdicionarHoraExtraForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        periodo_trabalhado = kwargs.pop('periodo_trabalhado', None)
+        super(AdicionarHoraExtraForm, self).__init__(*args, **kwargs)
+        self.fields['periodo_trabalhado'].widget = forms.HiddenInput()
+        self.fields['periodo_trabalhado'].initial = periodo_trabalhado
+        self.fields['data_execucao'].widget.attrs['class'] = 'datepicker'
+        
+    
+    class Meta:
+        model = AutorizacaoHoraExtra
+        fields = 'periodo_trabalhado', 'quantidade', 'data_execucao',
+
 # adicionar hora extra
 @user_passes_test(possui_perfil_acesso_rh)
 def adicionar_hora_extra(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
-    return render_to_response('frontend/rh/rh-adicionar-hora-extra.html', locals(), context_instance=RequestContext(request),)
+    form = AdicionarHoraExtraForm(periodo_trabalhado=funcionario.periodo_trabalhado_corrente)
+    if request.POST:
+        form = AdicionarHoraExtraForm(request.POST, periodo_trabalhado=funcionario.periodo_trabalhado_corrente)
+        if form.is_valid():
+            autorizacao = form.save(commit=False)
+            autorizacao.solicitante = request.user.funcionario
+            autorizacao.valor_total = autorizacao.quantidade * autorizacao.periodo_trabalhado.funcionario.valor_hora
+            autorizacao.save()
+            messages.success(request, u"Sucesso! Autorização de Hora Extra de %s horas (R$ %s) para %s criado" % (autorizacao.quantidade, autorizacao.valor_total, autorizacao.periodo_trabalhado.funcionario))
+            form = AdicionarHoraExtraForm(periodo_trabalhado=funcionario.periodo_trabalhado_corrente)
+    return render_to_response('frontend/rh/rh-hora-extra-adicionar.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_rh)
+def imprimir_hora_extra(request, funcionario_id, autorizacao_hora_extra_id):
+    autorizacao = get_object_or_404(
+        AutorizacaoHoraExtra,
+        id=autorizacao_hora_extra_id,
+        periodo_trabalhado__funcionario__id=funcionario_id
+    )
+    return render_to_response('frontend/rh/rh-hora-extra-imprimir.html', locals(), context_instance=RequestContext(request),)
+
+
 
 # FORMS CONTROLES DE FERRAMENTA E EPI
 class FormFiltrarControleDeFerramentas(forms.Form):
@@ -1056,6 +1123,16 @@ def indicadores_do_rh(request):
                 Q(inicio__lte=primeiro_dia, fim__gt=ultimo_dia)
             ).count()
             total_ativos_mes.append(ativos_no_mes)
+        ## horas_extra
+        horas_extra_mes = []
+        total_ativos_mes.append("Total")
+        for month in range(1,13):
+            mes = month
+            # ativos
+            horas_extra_no_mes = AutorizacaoHoraExtra.objects.filter(
+                data_execucao__month=mes, data_execucao__year=ano
+            ).aggregate(Sum('quantidade'))['quantidade__sum'] or 0
+            horas_extra_mes.append(horas_extra_no_mes)
         
         # retidos
         total_retidos_mes = []
@@ -1127,15 +1204,29 @@ def indicadores_do_rh(request):
         
         # indicadores de treinamento de procedimento
         total_treinamento_procedimento_por_mes=[]
+        total_treinamento_procedimento_por_mes_adicao=[]
+        total_treinamento_procedimento_por_mes_atualizacao=[]
         for month in range(1,13):
             mes = month
             # ativos
             treinados = AtribuicaoDeResponsabilidade.objects.filter(
-                data_treinado__month=mes, data_treinado__year=ano
-            ).aggregate(Sum('horas_treinadas'))
-            total_treinamento_procedimento_por_mes.append(treinados['horas_treinadas__sum'] or 0)
-        
-        
+                data_treinado__month=mes, data_treinado__year=ano, treinamento_realizado=True
+            ).aggregate(Sum('horas_treinadas'))['horas_treinadas__sum'] or 0
+            treinados_adicao = AtribuicaoDeResponsabilidade.objects.filter(
+                data_treinado__month=mes,
+                data_treinado__year=ano,
+                treinamento_realizado=True,
+                tipo_de_treinamento='adicionar'
+            ).aggregate(Sum('horas_treinadas'))['horas_treinadas__sum'] or 0
+            treinados_atualizacao = AtribuicaoDeResponsabilidade.objects.filter(
+                data_treinado__month=mes,
+                data_treinado__year=ano,
+                treinamento_realizado=True,
+                tipo_de_treinamento='atualizar'
+            ).aggregate(Sum('horas_treinadas'))['horas_treinadas__sum'] or 0
+            total_treinamento_procedimento_por_mes.append(treinados)
+            total_treinamento_procedimento_por_mes_adicao.append(treinados_adicao)
+            total_treinamento_procedimento_por_mes_atualizacao.append(treinados_atualizacao)
         
         
         ## define ano como str
