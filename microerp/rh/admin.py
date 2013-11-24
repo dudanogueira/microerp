@@ -46,6 +46,7 @@ from rh.models import GrupoDeCompetencia
 from rh.models import CapacitacaoDeSubProcedimento
 from rh.models import Procedimento
 from rh.models import SubProcedimento
+from rh.models import AtribuicaoDeResponsabilidade
 
 from sorl.thumbnail.admin import AdminImageMixin
 
@@ -98,7 +99,6 @@ class SolicitacaoDeLicencaAdmin(admin.ModelAdmin):
 
 class PromocaoCargoAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = ('beneficiario', 'data_solicitacao', 'aprovado', 'avaliado', 'criado')
 
 class EntradaFolhaDePontoInline(admin.StackedInline):
     model = EntradaFolhaDePonto
@@ -206,3 +206,4 @@ admin.site.register(AtribuicaoDeCargo, AtribuicaoDeCargoAdmin)
 admin.site.register(Procedimento, ProcedimentoAdmin)
 admin.site.register(SubProcedimento, SubProcedimentoAdmin)
 admin.site.register(CapacitacaoDeSubProcedimento)
+admin.site.register(AtribuicaoDeResponsabilidade)

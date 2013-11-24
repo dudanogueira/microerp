@@ -52,6 +52,10 @@ urlpatterns = patterns('',
     
     # Capacitacao
     url(r'^capacitacoes/$', 'rh.views.capacitacao_de_procedimentos', name='capacitacao_de_procedimentos'),
+    url(r'^capacitacoes/funcionario/(?P<funcionario_id>[0-9]+)/gerar-ar/$', 'rh.views.capacitacao_de_procedimentos_gerar_ar', name='capacitacao_de_procedimentos_gerar_ar'),
+    url(r'^capacitacoes/funcionario/(?P<funcionario_id>[0-9]+)/ver/$', 'rh.views.capacitacao_de_procedimentos_ver_ar', name='capacitacao_de_procedimentos_ver_ar'),
+    url(r'^capacitacoes/funcionario/(?P<funcionario_id>[0-9]+)/confirmar/(?P<atribuicao_responsabilidade_id>[0-9]+)/$', 'rh.views.capacitacao_de_procedimentos_confirmar', name='capacitacao_de_procedimentos_confirmar'),
+    url(r'^capacitacoes/funcionario/(?P<funcionario_id>[0-9]+)/remover/(?P<atribuicao_responsabilidade_id>[0-9]+)$', 'rh.views.capacitacao_de_procedimentos_remover_ar', name='capacitacao_de_procedimentos_remover_ar'),
     
     # controle de epi
     url(r'^controle-de-epi/$', 'rh.views.controle_de_epi', name='controle_de_epi'),

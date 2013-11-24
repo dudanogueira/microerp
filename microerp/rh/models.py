@@ -352,6 +352,9 @@ class Funcionario(models.Model):
             if capacitacao.versao_treinada >= capacitacao.subprocedimento.versao:
                 ids_atuais.append(capacitacao)
         return capacitacoes_realizadas.exclude(id__in=ids_atuais)
+
+    def atribuicao_responsabilidade_nao_treinado(self):
+        return self.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.filter(treinamento_realizado=False)
     # 
     
     uuid = UUIDField()
@@ -632,12 +635,12 @@ class PromocaoCargo(models.Model):
         else:
             data_resolucao_str = u"Data Não Definida"
         if not self.avaliado:
-            return u"Promoção de Cargo do Funcionário %s SOLICITADO no dia %s" % (self.beneficiario, self.data_solicitacao.strftime("%d/%m/%y"))
+            return u"Promoção de Cargo do Funcionário %s SOLICITADO no dia %s" % (self.periodo_trabalhado.funcionario, self.data_solicitacao.strftime("%d/%m/%y"))
         else:            
             if self.avaliado and self.aprovado:
-                return u"Promoção de Cargo do Funcionário %s APROVADA no dia %s" % (self.beneficiario, data_resolucao_str)
+                return u"Promoção de Cargo do Funcionário %s APROVADA no dia %s" % (self.periodo_trabalhado.funcionario, data_resolucao_str)
             if self.avaliado and not self.aprovado:
-                return u"Promoção de Cargo do Funcionário %s DECLINADA no dia %s" % (self.beneficiario, data_resolucao_str)
+                return u"Promoção de Cargo do Funcionário %s DECLINADA no dia %s" % (self.periodo_trabalhado.funcionario, data_resolucao_str)
     
     class Meta:
         verbose_name = u"Promoção de Cargo"
@@ -922,8 +925,9 @@ class Procedimento(models.Model):
     def __unicode__(self):
         return u"%s - %s" % (self.codigo, self.nome)
     
-    codigo = models.CharField(blank=False, null=False, max_length=20)
+    codigo = models.CharField(u"Código", blank=False, null=False, max_length=20)
     nome = models.CharField(blank=True, max_length=100)
+    descricao = models.TextField(u"Descrição", blank=True)
     departamento = models.ForeignKey('Departamento')
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
@@ -935,9 +939,9 @@ class SubProcedimento(models.Model):
         return u"%s - %s, Versão %s" % (self.procedimento.codigo, self.nome, self.versao)
     
     procedimento = models.ForeignKey('Procedimento')
-    versao = models.IntegerField(blank=False, null=False, default=0)
+    versao = models.IntegerField(u"Versão", blank=False, null=False, default=0)
     nome = models.CharField(blank=False, max_length=100)
-    descricao = models.TextField(blank=False)
+    descricao = models.TextField(u"Descrição", blank=False)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -948,14 +952,31 @@ class CapacitacaoDeSubProcedimento(models.Model):
         return u"Capacitação do Sub Procedimento %s para funcionário %s: versão %s" % \
             (self.subprocedimento, self.periodo_trabalhado.funcionario, self.versao_treinada)
 
-    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
+    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado', verbose_name="Período Trabalhado")
     subprocedimento = models.ForeignKey('SubProcedimento')
-    versao_treinada = models.IntegerField(blank=False, null=False)
-    ultima_atualizacao = models.DateField(default=datetime.datetime.today)
+    versao_treinada = models.IntegerField(u"Versão Treinada", blank=True, null=True, default=0)
+    ultima_atualizacao = models.DateField("Última Atualização", default=datetime.datetime.today)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+class AtribuicaoDeResponsabilidade(models.Model):
     
+    def __unicode__(self):
+        return u"Atribuição de Responsabilidade #%s para %s" % (self.id, self.periodo_trabalhado.funcionario.nome)
+    
+    periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
+    subprocedimentos = models.ManyToManyField('SubProcedimento')
+    treinamento_realizado = models.BooleanField(default=False)
+    horas_treinadas = models.IntegerField(blank=True, null=True)
+    data_treinado = models.DateField(blank=True, null=True)
+    # meta
+    confirmado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True, related_name="atribuicaoderesponsabilidade_confirmado_set")
+    confirmado_data = models.DateTimeField(blank=True, null=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=False, null=False)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
 class AutorizacaoHoraExtra(models.Model):
     funcionario = models.ForeignKey('Funcionario')
     quantidade_hora_extra = models.IntegerField(blank=False, null=False)

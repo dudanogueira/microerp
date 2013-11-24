@@ -23,17 +23,32 @@
 </div>
 
 
-<div id="controle-epi-content" class="tab-content">
+<div id="capacitacao-de-procedimentos" class="tab-content">
 	
 	<div class="tab-pane fade in active" id="sem-capacitacao">
 		<h2>Funcionários Sem Capacitação de Procedimento</h2>
-		{% for funcionario in funcionarios_ativos %}
-			{% if funcionario.capacitacao_de_procedimento_faltante %}
+		{% for funcionario_listado in funcionarios_ativos %}
+			{% if funcionario_listado.capacitacao_de_procedimento_faltante %}
 			<div class="well well-small">
-				<h4>{{funcionario}} - {{funcionario.cargo}}</h4>
+				<div class="row-fluid">
+					
+					<div class="span6">
+							<h4>{{funcionario_listado}} - {{funcionario_listado.cargo}}</h4>
+					</div>
+
+					<div class="span6 btn-group">
+						<a href="{% url "rh:capacitacao_de_procedimentos_gerar_ar" funcionario_listado.id %}" class="btn btn-primary gerar_atribuicao" data-name="subprocedimentos-{{funcionario_listado.id}}"><i class="fa fa-plus "></i> Gerar Atribuição de Responsabilidade</a>
+						{% if funcionario_listado.atribuicao_responsabilidade_nao_treinado %}
+						<a href="{% url "rh:capacitacao_de_procedimentos_ver_ar" funcionario_listado.id %}" class="btn btn-success teste"><i class="fa fa-check"></i>  Confirmar ({{funcionario_listado.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.count}})</a>
+						{% endif %}
+					</div>
+					
+				</div>
+				
 				<table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	            <tr>
+									<th></th>
 	                <th>Procedimento</th>
 	                <th>Sub Procedimento</th>
 									<th>Versão</th>
@@ -41,20 +56,36 @@
 	            </tr>
 	       </thead>
 				<tbody>
-						{% for subprocedimento in funcionario.capacitacao_de_procedimento_faltante %}
+						{% for subprocedimento in funcionario_listado.capacitacao_de_procedimento_faltante %}
 						<tr>
-							<td>{{subprocedimento.procedimento}}</td>
-							<td>{{subprocedimento}}</td>
-							<td>{{subprocedimento.versao}}</td>
-							<td>{{subprocedimento.atualizado|date:"SHORT_DATETIME_FORMAT"}}</td>
+							<td><input type="checkbox" name="subprocedimentos-{{funcionario_listado.id}}" value="{{subprocedimento.id}}" checked id="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}"></td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								{{subprocedimento.procedimento}}
+								</label>
+							</td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								{{subprocedimento}}
+								</label>
+							</td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								{{subprocedimento.versao}}
+								</label>
+							</td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								
+								{{subprocedimento.atualizado|date:"SHORT_DATETIME_FORMAT"}}
+							</label>
+							</td>
 						</tr>
 						{% endfor %}
 
 				</tbody>
 			</table>
 			</div>
-
-
 			{% endif %}
 		{% endfor %}
 		
@@ -63,10 +94,10 @@
 	<div class="tab-pane fade in" id="capacitacao-defasada">
 		<h2>Funcionários Com Capacitação Defasada</h2>
 
-		{% for funcionario in funcionarios_ativos %}
-			{% if funcionario.capacitacao_de_procedimento_defasado %}
+		{% for funcionario_listado in funcionarios_ativos %}
+			{% if funcionario_listado.capacitacao_de_procedimento_defasado %}
 			<div class="well well-small">
-				<h4>{{funcionario}} - {{funcionario.cargo}}</h4>
+				<h4>{{funcionario_listado}} - {{funcionario_listado.cargo}}</h4>
 				<table class="table table-condensed table-hover table-rounded">
 	      <thead>
 	            <tr>
@@ -78,7 +109,7 @@
 	            </tr>
 	       </thead>
 				<tbody>
-						{% for capacitacao in funcionario.capacitacao_de_procedimento_defasado %}
+						{% for capacitacao in funcionario_listado.capacitacao_de_procedimento_defasado %}
 						<tr>
 							<td><strong>{{capacitacao.subprocedimento.procedimento.codigo}}</strong>: {{capacitacao.subprocedimento.procedimento.nome}}  </td>
 							<td>{{capacitacao.subprocedimento.nome}}</td>
@@ -112,11 +143,13 @@
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
+
+
 $(document).ready(function() {
 	$("#menu-rh-capacitacao-de-procedimentos, #top-menu-rh").addClass("active");
 	var activeTab = $('[href=' + location.hash + ']');
-	activeTab && activeTab.click();
-});
+})
+
 $('#sub-menu-capacitacao-de-procedimentos').on("click", 'ul.nav.nav-tabs li a', function(e){
 	e.preventDefault();	
 	var href = this.hash;
@@ -124,6 +157,22 @@ $('#sub-menu-capacitacao-de-procedimentos').on("click", 'ul.nav.nav-tabs li a', 
 	var pane = $(this);
 	pane.tab('show');		
 })
+
+$('.gerar_atribuicao').click(function(e){
+	var botao = $(this)
+	e.preventDefault();
+	data = $("input[name="+botao.data('name')+"]:checked").map(
+	     function () {return this.value;}).get().join(",");
+ if (data){
+	 novo_href = botao.attr('href') + "?subprocedimentos=" + data
+	 window.location.href = novo_href
+ }else{
+	 alert('Erro, é preciso selecionar pelo menos um Sub Procedimentos');
+ }
+
+
+})
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/rh/rh-menu.html" %}

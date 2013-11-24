@@ -66,26 +66,6 @@ Adicionar <input name="quantidade_adicionar"> Linhas
 
 <script>
 
-
-function movieFormatResult(movie) {
-	var markup = "<table class='movie-result'><tr>";
-	if (movie.posters !== undefined && movie.posters.thumbnail !== undefined) {
-		markup += "<td class='movie-image'><img src='" + movie.posters.thumbnail + "'/></td>";
-	}
-	markup += "<td class='movie-info'><div class='movie-title'>" + movie.title + "</div>";
-	if (movie.critics_consensus !== undefined) {
-		markup += "<div class='movie-synopsis'>" + movie.critics_consensus + "</div>";
-	}
-	else if (movie.synopsis !== undefined) {
-		markup += "<div class='movie-synopsis'>" + movie.synopsis + "</div>";
-	}
-	markup += "</td></tr></table>"
-	return markup;
-}
-
-function movieFormatSelection(movie) {
-	return movie.title;
-}
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
 	

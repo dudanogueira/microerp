@@ -10,13 +10,14 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import user_passes_test
 
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from rh.models import Departamento, Funcionario, Demissao
 from rh.models import FolhaDePonto, RotinaExameMedico, SolicitacaoDeLicenca
 from rh.models import EntradaFolhaDePonto, Competencia
 from rh.models import PeriodoTrabalhado, AtribuicaoDeCargo
 from rh.models import Cargo, PromocaoCargo, PromocaoSalario, TIPO_DE_CARGO_CHOICES
+from rh.models import AtribuicaoDeResponsabilidade, SubProcedimento, CapacitacaoDeSubProcedimento
 from rh.utils import get_weeks
 from estoque.models import Produto
 from cadastro.models import EnderecoEmpresa
@@ -543,7 +544,81 @@ def capacitacao_de_procedimentos(request):
         )
     return render_to_response('frontend/rh/rh-capacitacao-de-procedimentos.html', locals(), context_instance=RequestContext(request),)
 
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def capacitacao_de_procedimentos_gerar_ar(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    subprocedimentos_id = request.GET.get('subprocedimentos')
+    if subprocedimentos_id:
+        subprocedimentos_id_list = subprocedimentos_id.split(',')
+        subprocedimentos = SubProcedimento.objects.filter(id__in=subprocedimentos_id_list)
+    ar = AtribuicaoDeResponsabilidade.objects.create(
+         periodo_trabalhado=funcionario.periodo_trabalhado_corrente,
+         criado_por=request.user
+    )
+    ar.subprocedimentos = subprocedimentos
+    ar.save()
+    return render_to_response('frontend/rh/rh-capacitacao-gerar-atribuicao-de-responsabilidade-imprimir.html', locals(), context_instance=RequestContext(request),)
 
+#
+@user_passes_test(possui_perfil_acesso_rh)
+def capacitacao_de_procedimentos_ver_ar(request, funcionario_id):
+    funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    if funcionario.atribuicao_responsabilidade_nao_treinado():
+        return render_to_response('frontend/rh/rh-capacitacao-ver-atribuicao-de-responsabilidade.html', locals(), context_instance=RequestContext(request),)
+    else:
+        messages.info(request, 'Nenhuma Atribuição de Responsabilidade para %s. É Preciso gerar uma nova.' % funcionario)
+        return redirect(reverse("rh:capacitacao_de_procedimentos"))
+
+@user_passes_test(possui_perfil_acesso_rh)
+def capacitacao_de_procedimentos_remover_ar(request, funcionario_id, atribuicao_responsabilidade_id):
+    atribuicao = get_object_or_404(AtribuicaoDeResponsabilidade, id=atribuicao_responsabilidade_id, periodo_trabalhado__funcionario__id=funcionario_id)
+    atribuicao.delete()
+    messages.success(request, u"Sucesso! Atribuição de Responsabilidade removida.")
+    return redirect(reverse("rh:capacitacao_de_procedimentos_ver_ar", args=[funcionario_id,]))
+
+class FormConfirmaAtribuicaoDeResponsabilidade(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormConfirmaAtribuicaoDeResponsabilidade, self).__init__(*args, **kwargs)
+        self.fields['data_treinado'].widget.attrs['class'] = 'input-small datepicker'
+        self.fields['horas_treinadas'].required = True
+    
+    class Meta:
+        model = AtribuicaoDeResponsabilidade
+        fields = 'horas_treinadas', 'data_treinado'
+
+@user_passes_test(possui_perfil_acesso_rh)
+def capacitacao_de_procedimentos_confirmar(request, funcionario_id, atribuicao_responsabilidade_id):
+    atribuicao = get_object_or_404(AtribuicaoDeResponsabilidade, id=atribuicao_responsabilidade_id, periodo_trabalhado__funcionario__id=funcionario_id)
+    atribuicao.data_treinado = datetime.date.today()
+    form_atribuicao = FormConfirmaAtribuicaoDeResponsabilidade(instance=atribuicao)
+    if request.POST:
+        form_atribuicao = FormConfirmaAtribuicaoDeResponsabilidade(request.POST, instance=atribuicao)
+        if form_atribuicao.is_valid():
+            # verificar se existe a capacitacao deste funcionario
+            for subprocedimento in form_atribuicao.instance.subprocedimentos.all():
+                # pega ou cria a Capacitacao
+                capacitacao,created = CapacitacaoDeSubProcedimento.objects.get_or_create(
+                    periodo_trabalhado = atribuicao.periodo_trabalhado,
+                    subprocedimento=subprocedimento
+                )
+                capacitacao.versao_treinada = subprocedimento.versao
+                capacitacao.ultima_atualizacao = form_atribuicao.cleaned_data['data_treinado']
+                capacitacao.save()
+                # salva a atribuicao
+                atribuicao = form_atribuicao.save(commit=False)
+                atribuicao.confirmado_por = request.user
+                atribuicao.confirmado_data = datetime.datetime.now()
+                atribuicao.treinamento_realizado = True
+                atribuicao.save()
+                
+                # define quem confirmou a atribuicao
+    return render_to_response('frontend/rh/rh-capacitacao-atribuicao-de-responsabilidade-confirmar.html', locals(), context_instance=RequestContext(request),)
+
+#
+#CONTROLES DO FUNCIONARIO
+#
 # controle_de_ferias
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferias(request):
@@ -1013,7 +1088,7 @@ def indicadores_do_rh(request):
                     )
                 linha.append(ativos_no_mes.count())
             tabela_local_de_trabalho[local.id] = linha
-        ## campo e escritorio
+        # campo e escritorio
         tabela_campo_escritorio = {}
         for tipo in TIPO_DE_CARGO_CHOICES:
             linha = []
@@ -1029,6 +1104,39 @@ def indicadores_do_rh(request):
                 ).count()
                 linha.append(ativos_no_mes)
             tabela_campo_escritorio[tipo[0]] = linha 
+        
+        # indicadores de promocao salarial
+        total_promovidos_salario_mes=[]
+        for month in range(1,13):
+            mes = month
+            # ativos
+            promovidos = PromocaoSalario.objects.filter(
+                data_promocao__month=mes, data_promocao__year=ano
+            ).count()
+            total_promovidos_salario_mes.append(promovidos)
+        # indicadores de promocao cargo
+        total_promovidos_cargo_mes=[]
+        for month in range(1,13):
+            mes = month
+            # ativos
+            promovidos = PromocaoCargo.objects.filter(
+                data_promocao__month=mes, data_promocao__year=ano
+            ).count()
+            total_promovidos_cargo_mes.append(promovidos)
+        
+        
+        # indicadores de treinamento de procedimento
+        total_treinamento_procedimento_por_mes=[]
+        for month in range(1,13):
+            mes = month
+            # ativos
+            treinados = AtribuicaoDeResponsabilidade.objects.filter(
+                data_treinado__month=mes, data_treinado__year=ano
+            ).aggregate(Sum('horas_treinadas'))
+            total_treinamento_procedimento_por_mes.append(treinados['horas_treinadas__sum'] or 0)
+        
+        
+        
         
         ## define ano como str
         ano = str(ano)

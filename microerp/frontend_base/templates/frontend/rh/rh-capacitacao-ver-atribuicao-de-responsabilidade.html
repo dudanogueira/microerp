@@ -1,0 +1,52 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Controle de EPI{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-signal"></i> Confirmar Atribuições de Responsabilidade</h1>
+<h2>Funcionário: {{funcionario}}</h2>
+<a href="{% url "rh:capacitacao_de_procedimentos" %}"><i class="fa fa-arrow-left"></i> Retornar</a>
+
+{% for atribuicao_de_responsabilidade in funcionario.atribuicao_responsabilidade_nao_treinado %}
+<div class="well well-small">
+				<h3>Atribuição de Responsabilidade #{{atribuicao_de_responsabilidade.id}}</h3>
+				<ul>{% for subprocedimento in atribuicao_de_responsabilidade.subprocedimentos.all %}
+					<li>{{subprocedimento}}</li>
+					{% endfor %}
+				</ul>
+				<p class="btn-group">
+					<a href="{% url "rh:capacitacao_de_procedimentos_confirmar" funcionario.id atribuicao_de_responsabilidade.id %}" class="btn btn-success"><i class="fa fa-check"></i> Confirmar</a>
+					<a href="{% url "rh:capacitacao_de_procedimentos_remover_ar" funcionario.id atribuicao_de_responsabilidade.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> Remover</a>
+				</p>
+			</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+
+$(document).ready(function() {
+	$("#menu-rh-capacitacao-de-procedimentos, #top-menu-rh").addClass("active");
+	var activeTab = $('[href=' + location.hash + ']');
+})
+
+$('#sub-menu-capacitacao-de-procedimentos').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

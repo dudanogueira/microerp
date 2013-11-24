@@ -47,7 +47,6 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 </style>
 
 <h2>Funcionários Admitidos em {{ano}}</h2>
-
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -88,6 +87,7 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 		</tr>
 	</tbody>
 </table>
+
 
 <h2>Funcionários Demitidos em {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
@@ -161,6 +161,94 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 	</tbody>
 </table>
 
+<h2>Funcionários com Aumento Salarial</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_promovidos_salario_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Funcionários com Promoção de Cargo</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_promovidos_cargo_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Horas de Procedimento Treinadas por Mês</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_treinamento_procedimento_por_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
 
 <h2>Local dos Funcionários</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
@@ -192,6 +280,7 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 	</tbody>
 </table>
 
+
 <h2>Retenção de Funcionários {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
@@ -221,8 +310,8 @@ filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 	</tbody>
 </table>
 
-<h2>Funcionários Campo X Escritório em {{ano}}</h2>
 
+<h2>Funcionários Campo X Escritório em {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
