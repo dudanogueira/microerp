@@ -718,13 +718,15 @@ class AdicionarHoraExtraForm(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_rh)
 def adicionar_hora_extra(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
+    valor_hora = funcionario.calcular_valor_hora()
     form = AdicionarHoraExtraForm(periodo_trabalhado=funcionario.periodo_trabalhado_corrente)
     if request.POST:
         form = AdicionarHoraExtraForm(request.POST, periodo_trabalhado=funcionario.periodo_trabalhado_corrente)
         if form.is_valid():
             autorizacao = form.save(commit=False)
             autorizacao.solicitante = request.user.funcionario
-            autorizacao.valor_total = autorizacao.quantidade * autorizacao.periodo_trabalhado.funcionario.valor_hora
+            valor_hora = funcionario.calcular_valor_hora()
+            autorizacao.valor_total = autorizacao.quantidade * valor_hora
             autorizacao.save()
             messages.success(request, u"Sucesso! Autorização de Hora Extra de %s horas (R$ %s) para %s criado" % (autorizacao.quantidade, autorizacao.valor_total, autorizacao.periodo_trabalhado.funcionario))
             form = AdicionarHoraExtraForm(periodo_trabalhado=funcionario.periodo_trabalhado_corrente)

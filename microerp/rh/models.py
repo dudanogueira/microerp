@@ -187,6 +187,7 @@ class Funcionario(models.Model):
         salario = self.salario_atual or self.salario_inicial
         self.valor_hora = salario  / 30 / 8
         self.save()
+        return self.valor_hora
 
     def cargo(self, update=False):
         if self.periodo_trabalhado_corrente.promocaocargo_set.filter(aprovado=True).count():
