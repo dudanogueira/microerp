@@ -105,8 +105,8 @@
 							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
 								<td><input id="lancamento-{{lancamento.id}}" type="checkbox" name="lancamento" value="{{lancamento.id}}"><label for="lancamento-{{lancamento.id}}">{{lancamento.id}}</label></td>
 								<td><label for="lancamento-{{lancamento.id}}"><span class="badge badge-warning">{{lancamento.serial_number}}</span></label></td>
-								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
-								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+								<td><label for="lancamento-{{lancamento.id}}">{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</label></td>
+								<td><label for="lancamento-{{lancamento.id}}">{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</label></td>
 								<td><a data-toggle="tooltip" title="Alterar Dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a></td>
 							</tr>
 							{% endfor %}
