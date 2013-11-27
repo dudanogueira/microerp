@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-briefcase"></i> Comercial</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> Comercial</h1>
 
 {% if request.user.perfilacessocomercial.gerente %}
 <h4>Como Gerente</h4>
@@ -14,115 +14,18 @@
 {% endif %}
 
 <div class="well well-small">
-    <h2><i class="icon icon-briefcase"></i> Buscar Pré / Cliente</h2>
+    <h2><i class="fa fa-briefcase"></i> Buscar Pré / Cliente</h2>
 
-    <form class="form-search" action="{% url "comercial:home" %}">
+    <form class="form-search" action="{% url "comercial:clientes" %}">
         <input tabindex="1" type="text" class="input-medium search-query" name="cliente" id="cliente_busca" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
-        <button type="submit" class="btn btn-info"><i class="icon icon-white icon-search"></i> Buscar</button>
+        <button type="submit" class="btn btn-info"><i class="fa fa-search"></i> Buscar</button>
         {% if cliente_q %}
-        <a href="."><i class="icon icon-remove"></i> Limpar</a>
+        <a href="."><i class="fa fa-trash-o"></i> Limpar</a>
         {% else %}
-        <a href="{% url "cadastro:preclientes_adicionar" %}" class="btn btn-large btn-success"><i class="icon icon-plus icon-white"></i> Adicionar</a>
+        <a href="{% url "cadastro:preclientes_adicionar" %}" class="btn btn-large btn-success"><i class="fa fa-plus"></i> Adicionar</a>
         {% endif %}
         
     </form>
-
-    {% if cliente_q %}
-        {% if preclientes %}
-            <a href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}" class="btn btn-small btn-primary"><i class="icon-plus icon-white"></i> adicionar pré cliente</a>
-        {% endif %}
-        <div class="tabela-preclientes">
-            <table class="table table-hover table-striped table-condensed">
-                <thead>
-                    <caption><h4 class="alert">Pré Clientes</h4></caption>
-                    <tr>
-                        <th>Pré Cliente</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-        
-                    {% for cliente in preclientes %}
-      
-                    <tr>
-                        <td>{{cliente.nome}}</td>
-                        <td>
-                            {% if "solicitacao"|is_installed_app %}
-                            <a class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="icon-bell-alt"></i></a>
-                            {% endif %}
-
-                            <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='icon-magic'></i></a>
-                            
-                            <a class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_precliente" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="icon-file-alt"></i> </a>
-                            
-                        </td>
-                    </tr>
-                    {% empty %}
-        
-                    <tr>
-                        <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
-                        <td>{% if cliente_q %}
-                            <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
-                            {% endif %}
-                        </td>
-                    </tr>
-  
-                    <tr>
-                        <td></td>
-                        <td>
-                            <a class="btn btn-large btn-info" href="{% url "cadastro:preclientes_adicionar" %}?sugestao={{cliente_q}}"><i class="icon icon-plus icon-white "></i> Adicionar Pré Cliente</a>
-                        </td>
-                    </tr>
-
-                    {% endfor %}
-        
-        
-                </tbody>
-            </table>
-        </div>
-        <hr />
-        <div class="tabela-cliente">
-            <table class="table table-hover table-striped table-condensed">
-            <thead>
-                    <caption><h4 class="alert alert-success" >Clientes</h4></caption>
-                    <tr>
-                        <th>Cliente</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-            <tbody>
-                {% for cliente in clientes %}
-      
-                <tr>
-                    <td>{% if cliente.tipo == "pf" %}
-                            <span class="label">{{cliente.tipo|upper}}</span>
-                        {% else %}
-                            <span class="label label-success">{{cliente.tipo|upper}}</span> 
-                        {% endif %}
-                        {{cliente.nome}}
-                    </td>
-                    <td>
-                        {% if "solicitacao"|is_installed_app %}
-                        <a class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?cliente={{cliente.id}}">{{cliente.solicitacao_set.count}} <i class="icon-bell-alt"></i></a>
-                        {% endif %}
-                        <a class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_cliente" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="icon-file-alt"></i> </a>
-                    </td>
-                </tr>
-                {% empty %}
-        
-                <tr>
-                                            <td class="alert alert-info"><strong>Nenhum Encontrado!</strong></td>
-                    <td>            {% if cliente_q %}
-                        <a href="."><i class="icon icon-remove"></i> Limpar Busca</a>
-                        {% endif %}
-                    </td>
-                </tr>
-
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
-    {% endif %}
 </div>
 
 {% endblock %}

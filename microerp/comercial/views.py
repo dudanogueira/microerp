@@ -10,8 +10,6 @@ from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
-
-from django.db import models
 from django import forms
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -22,10 +20,10 @@ from django.template import RequestContext, loader, Context
 from django.db.models import Count
 
 # APPS MODELS
-from rh.models import Departamento
+from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
-from comercial.models import PropostaComercial
+from comercial.models import PropostaComercial, PerfilAcessoComercial
 from estoque.models import Produto
 
 from django.conf import settings
@@ -44,8 +42,6 @@ class AdicionarPropostaForm(forms.ModelForm):
     class Meta:
         model = PropostaComercial
         fields = 'status', 'probabilidade', 'valor_proposto', 'observacoes'
-    
-    
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
     
@@ -82,6 +78,7 @@ class AdicionarCliente(forms.ModelForm):
         telefone_fixo = self.cleaned_data['telefone_fixo']
         if not telefone_fixo:
             raise forms.ValidationError("Preencha este campo")
+        return telefone_fixo
     
     def clean_cpf(self):
         tipo = self.cleaned_data.get('tipo', None)
@@ -93,6 +90,7 @@ class AdicionarCliente(forms.ModelForm):
                 cpf = BRCPFField().clean(cpf)
             except:
                 raise ValidationError(u"Número do CPF Inválido!")
+        return cpf
             
         
     def clean_cnpj(self):
@@ -105,6 +103,7 @@ class AdicionarCliente(forms.ModelForm):
                 cnpj = BRCNPJField().clean(cnpj)
             except:
                 raise ValidationError(u"Número do CNPJ Inválido!")
+        return cnpj
 
     
     def __init__(self, *args, **kwargs):
@@ -114,6 +113,9 @@ class AdicionarCliente(forms.ModelForm):
         if precliente:
             self.fields['nome'].initial = precliente.nome
             self.fields['observacao'].initial = precliente.dados
+        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.all().values_list('user__funcionario__id')
+        self.fields['funcionario_responsavel'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        
     
     class Meta:
         model = Cliente
@@ -150,19 +152,35 @@ def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def home(request):
     # widget cliente
+    return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def clientes(request):
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
-        clientes = Cliente.objects.filter(nome__icontains=cliente_q)
+        clientes = Cliente.objects.filter(
+            Q(nome__icontains=cliente_q) | \
+            Q(cnpj__icontains=cliente_q) | \
+            Q(cpf__icontains=cliente_q)
+        )
+        #puxa todos os pre clientes, menos os já convertidos)
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
         if not request.user.perfilacessocomercial.gerente:
             clientes = clientes.filter(funcionario_responsavel=request.user.funcionario)
     
-    return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_ver(request, cliente_id):
-    cliente = Cliente.objects.get(pk=cliente_id)
+    cliente = get_object_or_404(Cliente, pk=cliente_id)
+    cliente_q = request.GET.get('cliente', None)
     return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def cliente_editar_proposta(request, cliente_id, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    return render_to_response('frontend/comercial/comercial-cliente-editar-proposta.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def precliente_converter(request, pre_cliente_id):
@@ -178,7 +196,6 @@ def precliente_converter(request, pre_cliente_id):
         form = AdicionarCliente(precliente=precliente)
     return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
 
-
 def propostas_comerciais_cliente(request, cliente_id):
     cliente = Cliente.objects.get(pk=cliente_id)
     propostas_abertas = PropostaComercial.objects.filter(cliente=cliente, status='aberta')
@@ -191,9 +208,9 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
         if form.is_valid:
             proposta = form.save(commit=False)
             proposta.cliente = cliente
-            proposta.adicionado_por = request.user
+            proposta.criador_por = request.user
             proposta.save()
-            return redirect(reverse('comercial:propostas_comerciais_cliente', args=[cliente.id]))
+            return redirect(reverse('comercial:cliente_ver', args=[cliente.id]) + "#tab_propostas")
     else:
         form = AdicionarPropostaForm()
     return render_to_response('frontend/comercial/comercial-propostas-cliente-adicionar.html', locals(), context_instance=RequestContext(request),)
@@ -213,7 +230,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
         if form.is_valid():
             proposta = form.save(commit=False)
             proposta.precliente = precliente
-            proposta.adicionado_por = request.user
+            proposta.criado_por = request.user
             proposta.save()
             return redirect(reverse('comercial:propostas_comerciais_precliente', args=[precliente.id]))
     else:
@@ -222,8 +239,8 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
     
 
 def propostas_comerciais_minhas(request):
-    minhas_propostas = PropostaComercial.objects.filter(adicionado_por=request.user, status="aberta")
-    propostas_em_meus_clientes = PropostaComercial.objects.filter(cliente__funcionario_responsavel=request.user.funcionario, status="aberta").exclude(adicionado_por=request.user)
+    minhas_propostas = PropostaComercial.objects.filter(criado_por=request.user, status="aberta")
+    propostas_em_meus_clientes = PropostaComercial.objects.filter(cliente__funcionario_responsavel=request.user.funcionario, status="aberta").exclude(criado_por=request.user)
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
 #

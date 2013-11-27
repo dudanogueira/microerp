@@ -593,6 +593,9 @@ class SubProduto(models.Model):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return "%s-SUB%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
     
+    class Meta:
+        verbose_name = "Sub Produto"
+    
     def subprodutos_agregados(self, lista=None, retorna_objeto=False):
         '''
         retorna uma lista com os ids ou objetos de todos os subprodutos abaixo, recursivamente
@@ -1042,7 +1045,7 @@ class ProdutoFinal(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        return "%s-PRO%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+        return u"%s-PRO%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
 
     def subprodutos_agregados(self, lista=None, retorna_objeto=False):
         '''
@@ -1149,6 +1152,10 @@ class ProdutoFinal(models.Model):
 
     def lancamentos_disponiveis(self):
         return self.lancamentoprodproduto_set.filter(produto=self, vendido=False, apagado=False)
+    
+    def lancamentos_disponiveis_venda(self):
+        return self.lancamentoprodproduto_set.filter(produto=self, vendido=False, apagado=False).exclude(serial_number=None)
+    
 
     ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=subproduto_local_imagem, blank=True, null=True)
@@ -1395,6 +1402,9 @@ class RegistroValorEstoque(models.Model):
     
     def __unicode__(self):
         return "Registro de estoque em %s no valor de R$%s" % (self.data, self.valor)
+    
+    class Meta:
+        ordering = ('data',)
     
     data = models.DateTimeField(blank=True, default=datetime.datetime.now)
     valor = models.DecimalField("Valor do Estoque", help_text="Valor total do Estoque", max_digits=20, decimal_places=2, default=0)

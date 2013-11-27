@@ -73,12 +73,18 @@ class PropostaComercial(models.Model):
                 obj = self.precliente
             
             
-            return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, self.valor_proposto, self.probabilidade, self.adicionado_por)
+            return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, self.valor_proposto, self.probabilidade, self.criado_por)
     
     def expirado(self):
         
         if datetime.datetime.now() > self.data_expiracao:
             return True
+        else:
+            return False
+    
+    def ultimo_followup(self):
+        if self.followupdepropostacomercial_set.all():
+            return self.followupdepropostacomercial_set.all().order_by('data')[0]
         else:
             return False
     
@@ -88,12 +94,22 @@ class PropostaComercial(models.Model):
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=15))
+    data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
     orcamento_vinculado = models.ForeignKey('Orcamento', blank=True, null=True)
-    follow_up = models.DateTimeField(blank=True, null=True)
     observacoes = models.TextField("Observações", blank=False, null=False)
     # metadata
-    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class FollowUpDePropostaComercial(models.Model):
+    
+    proposta = models.ForeignKey('PropostaComercial')
+    texto = models.TextField(blank=False)
+    data = models.DateTimeField(blank=False, default=datetime.datetime.now)
+    data_expiracao = models.DateField(blank=False, default=datetime.datetime.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
+    # metadata
+    criador_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followup_adicionado_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 

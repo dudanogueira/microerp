@@ -20,7 +20,8 @@
 			<small>Atenção ao digitar estes dados, pois não poderão ser alterados futuramente.</small>
 		</p>
 		{% else %}
-		<h2 class="badge badge-warning">{{lancamento_associa_form.instance.serial_number}}</h2>
+		<h4>Serial Number: <span class="badge badge-warning">{{lancamento_associa_form.instance.serial_number}}</span></h4>
+		{{ lancamento_associa_form.serial_number }}
 		{% endif %}
 		<h4>Montagem</h4>
 		<div class="row-fluid">

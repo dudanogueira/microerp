@@ -657,7 +657,11 @@ def controle_de_ferias(request):
 # controle_de_banco_de_horas
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_banco_de_horas(request):
-    funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
+    funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
+    horas_extra_autorizadas = AutorizacaoHoraExtra.objects.filter(
+        data_execucao__month=datetime.date.today().month,
+        data_execucao__year=datetime.date.today().year,
+    )
     return render_to_response('frontend/rh/rh-controle-de-banco-de-horas.html', locals(), context_instance=RequestContext(request),)
 
 # controle_banco_de_horas_do_funcionario
@@ -1127,7 +1131,7 @@ def indicadores_do_rh(request):
             total_ativos_mes.append(ativos_no_mes)
         ## horas_extra
         horas_extra_mes = []
-        total_ativos_mes.append("Total")
+        horas_extra_mes.append("Total")
         for month in range(1,13):
             mes = month
             # ativos

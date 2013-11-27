@@ -83,7 +83,7 @@ class PerfilAcessoRecepcaoAdmin(admin.ModelAdmin):
 
 class PreClienteAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_display = 'id', 'nome', 'contato', 'dados'
+    list_display = 'id', 'nome', 'contato', 'dados', 'cliente_convertido'
     list_display_links = list_display
     date_hierarchy = "criado"
 

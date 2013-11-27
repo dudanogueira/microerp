@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, urllib
+import datetime, urllib, calendar
 from xml.dom import minidom
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
@@ -1957,7 +1957,6 @@ class SelecionarSubProdutoForm(forms.Form):
     subproduto.widget.attrs['class'] = 'select2'
     quantidade.widget.attrs['class'] = 'input-mini'
 
-
 class SelecionarProdutoForm(forms.Form):
     
     def clean_quantidade(self):
@@ -3261,13 +3260,16 @@ class FormFiltraLancamentosApagados(forms.Form):
         super(FormFiltraLancamentosApagados, self).__init__(*args, **kwargs)
         self.fields['serial_number'].widget.attrs['class'] = 'input-medium'
         self.fields['nota_fiscal'].widget.attrs['class'] = 'input-medium'
-        self.fields['cliente'].widget.attrs['class'] = 'input-medium'
-        self.fields['data_apagado'].widget.attrs['class'] = 'input-medium datepicker'
+        self.fields['cliente'].widget.attrs['class'] = 'input-small'
+        self.fields['data_de_apagado_inicio'].widget.attrs['class'] = 'input-small datepicker'
+        self.fields['data_de_apagado_fim'].widget.attrs['class'] = 'input-small datepicker'
         
     serial_number = forms.CharField(label="Serial Number %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
     nota_fiscal = forms.CharField(label="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
     cliente = forms.CharField(required=False)
-    data_apagado = forms.DateField(label=u"Data Apagado", required=False)
+    data_de_apagado_inicio = forms.DateField(label=u"Apagado: Início", required=False)
+    data_de_apagado_fim = forms.DateField(label=u"Apagado: Fim", required=False)
+    
 
 class FormFiltraLancamentosVendidos(forms.Form):
     
@@ -3275,21 +3277,27 @@ class FormFiltraLancamentosVendidos(forms.Form):
         super(FormFiltraLancamentosVendidos, self).__init__(*args, **kwargs)
         self.fields['serial_number'].widget.attrs['class'] = 'input-medium'
         self.fields['nota_fiscal'].widget.attrs['class'] = 'input-medium'
-        self.fields['cliente'].widget.attrs['class'] = 'input-medium'
-        self.fields['data_de_venda'].widget.attrs['class'] = 'input-medium datepicker'
-        
+        self.fields['cliente'].widget.attrs['class'] = 'input-small'
+        self.fields['data_de_venda_inicio'].widget.attrs['class'] = 'input-small datepicker'
+        self.fields['data_de_venda_fim'].widget.attrs['class'] = 'input-small datepicker'
     
-    serial_number = forms.CharField(label="Serial %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
-    nota_fiscal = forms.CharField(label="Nota Fiscal", required=False)
+    serial_number = forms.CharField(label="Serial Number %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
+    nota_fiscal = forms.CharField(label="Nota Fiscal %s" % getattr(settings, 'NOME_EMPRESA', 'Mestria'), required=False)
     cliente = forms.CharField(required=False)
-    data_de_venda = forms.DateField(label=u"Data de Venda", required=False)
+    data_de_venda_inicio = forms.DateField(label=u"Venda: Início", required=False)
+    data_de_venda_fim = forms.DateField(label=u"Venda: Fim", required=False)
     
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao(request):
     nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
     form_remover_lancamentos = FormRemoverLancamentoProdProduto()
-    form_filtrar_lancamentos_vendidos = FormFiltraLancamentosVendidos()
-    form_filtrar_lancamentos_apagados = FormFiltraLancamentosApagados()
+    # descobre os ranges para 9 meses antes
+    d_atras = datetime.date.today() - relativedelta(months=9)
+    inicio_range = datetime.date(d_atras.year, d_atras.month, 1)
+    ultimo_dia = calendar.monthrange(datetime.date.today().year,datetime.date.today().month)[1]
+    fim_range = datetime.date(datetime.date.today().year, datetime.date.today().month, ultimo_dia)
+    form_filtrar_lancamentos_vendidos = FormFiltraLancamentosVendidos({'data_de_venda_inicio': inicio_range, 'data_de_venda_fim': fim_range})
+    form_filtrar_lancamentos_apagados = FormFiltraLancamentosApagados({'data_de_apagado_inicio': inicio_range, 'data_de_apagado_fim': fim_range})
     if request.POST.get('apagar-lancamentos-btn', None):
         form_remover_lancamentos = FormRemoverLancamentoProdProduto(request.POST)
         if form_remover_lancamentos.is_valid():
@@ -3352,7 +3360,8 @@ def rastreabilidade_de_producao(request):
             serial_number_q = form_filtrar_lancamentos_vendidos.cleaned_data['serial_number']
             cliente_q = form_filtrar_lancamentos_vendidos.cleaned_data['cliente']
             nota_fiscal_q = form_filtrar_lancamentos_vendidos.cleaned_data['nota_fiscal']
-            data_de_venda_q = form_filtrar_lancamentos_vendidos.cleaned_data['data_de_venda']
+            data_de_venda_inicio = form_filtrar_lancamentos_vendidos.cleaned_data['data_de_venda_inicio']
+            data_de_venda_fim = form_filtrar_lancamentos_vendidos.cleaned_data['data_de_venda_fim']
 
             lancamentos_vendidos = LancamentoProdProduto.objects.filter(apagado=False, vendido=True)            
             if serial_number_q:
@@ -3361,10 +3370,10 @@ def rastreabilidade_de_producao(request):
                 lancamentos_vendidos = lancamentos_vendidos.filter(cliente_associado__icontains=cliente_q)
             if nota_fiscal_q:
                 lancamentos_vendidos = lancamentos_vendidos.filter(nota_fiscal__notafiscal__icontains=nota_fiscal_q)
-            if data_de_venda_q:
-                lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__day=data_de_venda_q.day, data_vendido__month=data_de_venda_q.month, data_vendido__year=data_de_venda_q.year)
+            if data_de_venda_inicio and data_de_venda_fim:
+                lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__range=(data_de_venda_inicio, data_de_venda_fim))
     else:
-        lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__month=datetime.date.today().month, data_vendido__year=datetime.date.today().year)
+        lancamentos_vendidos = lancamentos_vendidos.filter(data_vendido__range=(inicio_range, fim_range))
 
     lancamentos_vendidos_valores = lancamentos_vendidos.values(
     'id',
@@ -3391,7 +3400,8 @@ def rastreabilidade_de_producao(request):
             serial_number_q = form_filtrar_lancamentos_apagados.cleaned_data['serial_number']
             cliente_q = form_filtrar_lancamentos_apagados.cleaned_data['cliente']
             nota_fiscal_q = form_filtrar_lancamentos_apagados.cleaned_data['nota_fiscal']
-            data_apagado_q = form_filtrar_lancamentos_apagados.cleaned_data['data_apagado']
+            data_de_apagado_inicio = form_filtrar_lancamentos_apagados.cleaned_data['data_de_apagado_inicio']
+            data_de_apagado_fim = form_filtrar_lancamentos_apagados.cleaned_data['data_de_apagado_fim']
             # filtra
             if serial_number_q:
                 lancamentos_apagados = lancamentos_apagados.filter(serial_number__icontains=serial_number_q)
@@ -3399,10 +3409,11 @@ def rastreabilidade_de_producao(request):
                 lancamentos_apagados = lancamentos_apagados.filter(cliente_associado__icontains=cliente_q)
             if nota_fiscal_q:
                 lancamentos_apagados = lancamentos_apagados.filter(nota_fiscal__notafiscal__icontains=nota_fiscal_q)
-            if data_apagado_q:
-                lancamentos_apagados = lancamentos_apagados.filter(data_apagado__day=data_apagado_q.day, data_apagado__month=data_apagado_q.month, data_apagado__year=data_apagado_q.year)
+            if data_de_apagado_inicio and data_de_apagado_fim:
+                lancamentos_apagados = lancamentos_apagados.filter(data_apagado__range=(data_de_apagado_inicio, data_de_apagado_fim))
+
     else:
-        lancamentos_apagados = lancamentos_apagados.filter(data_apagado__month=datetime.date.today().month, data_apagado__year=datetime.date.today().year)
+        lancamentos_apagados = lancamentos_apagados.filter(data_apagado__range=(inicio_range, fim_range))
         
 
     lancamentos_apagados_valores = lancamentos_apagados.values(
@@ -3419,7 +3430,8 @@ def rastreabilidade_de_producao(request):
         'produto__id',
         'produto__part_number',
         'produto__nome',
-        'nota_fiscal__notafiscal',        
+        'nota_fiscal__notafiscal',   
+        'observacoes',     
         ).order_by('produto__part_number', '-data_apagado')
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
 
@@ -3483,6 +3495,7 @@ class FormAssociarLancamentoProdProduto(forms.ModelForm):
         self.fields['realizacao_procedimento_de_teste'].required = True
         if self.instance.vendido or self.instance.serial_number:
             self.fields['serial_number'].widget = forms.HiddenInput()
+            self.fields['serial_number'].initial = self.instance.serial_number
     
     def clean_serial_number(self):
         serial_number = self.cleaned_data['serial_number']
@@ -3524,6 +3537,8 @@ def rastreabilidade_de_producao_associar_lancamento(request, lancamento_id):
             testes = testes_de_lancamento_form.save()
             messages.success(request, u"Sucesso! Lançamento de Produção #%s Associado a Serial %s" % (lancamento.id, lancamento.serial_number))
             return redirect(reverse("producao:rastreabilidade_de_producao"))
+        else:
+            messages.error(request, u"Erro! Formulário Inválido.")
 
     return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-associar.html', locals(), context_instance=RequestContext(request),)
     
@@ -3683,7 +3698,6 @@ class FormLancaFalhaDeTeste(forms.ModelForm):
         self.fields['quantidade_funcional_direta'].widget = forms.HiddenInput()
         self.fields['quantidade_total_testada'].required = True
     
-    
     def clean(self):
         cleaned_data = self.cleaned_data
         quantidade_total_testada = cleaned_data.get('quantidade_total_testada')
@@ -3702,6 +3716,8 @@ class FormLancaFalhaDeTeste(forms.ModelForm):
             self._errors["quantidade_funcional"] = self.error_class(['Não pode ser MAIOR do que Quantidade Total Testada (%s)' % quantidade_total_testada])
         if quantidade_perdida < 0:
             self._errors["quantidade_perdida"] = self.error_class(['Não pode ser MENOR que 0'])
+        if quantidade_reparada_funcional < 0:
+            self._errors["quantidade_reparada_funcional"] = self.error_class(['Não pode ser MENOR que 0'])
         if quantidade_reparada_funcional > quantidade_funcional:
             self._errors["quantidade_reparada_funcional"] = self.error_class(['Não pode ser MAIOR que Quantidade Funcional (%s)' % quantidade_funcional])
         if quantidade_funcional_direta < 0:
@@ -3852,6 +3868,7 @@ class FormAdicionarNotaFiscalLancamentosProducao(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def registrar_nota_fiscal_emitida_adicionar(request):
+    nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
     nao_apagados = LancamentoProdProduto.objects.filter(apagado=False)
     lancamentos_disponiveis = nao_apagados.filter(vendido=False).exclude(serial_number=None).order_by('produto__part_number')
     lancamentos_disponiveis_valores = lancamentos_disponiveis.values(
@@ -3869,7 +3886,28 @@ def registrar_nota_fiscal_emitida_adicionar(request):
     if request.GET:
         # possui lancamentos selecionados
         lancamentos_selecionados = request.GET.getlist('lancamento', None)
+        produtos_quantidades = LancamentoProdProduto.objects.filter(id__in=lancamentos_selecionados).values('produto__id').annotate(Count("produto__id"))
+        # para cada produto, conferir
+        estoques_consistentes = True
+        quantidades_possiveis = True
+        for produto_referencia in produtos_quantidades:
+            # conferir se estoque está consistente
+            produto = ProdutoFinal.objects.get(pk=produto_referencia['produto__id'])
+            if produto.total_produzido == produto.lancamentos_disponiveis_venda().count():
+                if  produto_referencia['produto__id__count'] > produto.total_produzido:
+                    quantidades_possiveis = False
+                    messages.error(request, u"Erro! Quantidades Impossíveis para Produto %s: Total Produzido: %s, Disponível para venda: %s, Quantidade Solicitada de Venda: %s" % \
+                        (produto, produto.total_produzido, produto.lancamentos_disponiveis_venda().count(), produto_referencia['produto__id__count']))
+            else:
+                estoques_consistentes = False
+                messages.error(
+                        request, u"Erro! Estoque inconsistente para Produto %s: Total Produzido: %s, Disponível para venda: %s" % \
+                        (produto, produto.total_produzido, produto.lancamentos_disponiveis_venda().count())
+                    )
         form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(lancamentos_selecionados=lancamentos_selecionados)
+        if estoques_consistentes and quantidades_possiveis:
+            checagem = 'ok'
+            messages.success(request, u"Sucesso! Checagens de estoque e quantidades estão consistentes!")
     if request.POST:
         form_adiciona_nota = FormAdicionarNotaFiscalLancamentosProducao(request.POST, lancamentos_selecionados=lancamentos_selecionados)
         if form_adiciona_nota.is_valid():
@@ -3890,7 +3928,7 @@ def registrar_nota_fiscal_emitida_adicionar(request):
                 if produtos_vendidos[produto.id] > produto.total_produzido:
                     messages.error(request, u"Impossível continuar: Produto %s possui somente %s Produzidos" % (produto, produto.total_produzido))
                     estoque_consistente = False
-                if produto.total_produzido != produto.lancamentos_disponiveis().count():
+                if produto.total_produzido != produto.lancamentos_disponiveis_venda().count():
                     messages.error(request, u"Impossível continuar: Estoque Incosistente para produto %s" % produto)
                     estoque_consistente = False
             # feitas as checagens,

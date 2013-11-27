@@ -251,8 +251,8 @@
 					</tbody>
 				</table>
 				
-				<h6>Total Estoque X Data
-					<canvas id="canvas" height="300px" width=""></canvas>
+				<h6>Total Estoque X Data</h6>	
+					<canvas id="myChart" width="800" height="400"></canvas>
 				</div>
 				
 			
@@ -273,20 +273,50 @@
 <script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-timepicker-addon.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-sliderAccess.js"></script>
 
-
+<script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
 <script>
 $(document).ready(function() {
 	$("#menu-producao-estoque, #top-menu-producao").addClass("active");
-    var activeTab = $('[href=' + location.hash + ']');
-    activeTab && activeTab.tab('show');
+	var activeTab = $('[href=' + location.hash + ']');
+	activeTab && activeTab.tab('show');
 		
-		$( ".datepicker" ).datepicker({
-			inline: true,
-			dateFormat: "dd/mm/yy"
-		});
-		
+	$( ".datepicker" ).datepicker({
+		inline: true,
+		dateFormat: "dd/mm/yy"
+	});
+	createChart();
 });
 </script>
+
+
+<script>
+        function createChart()
+        {
+            //Get the context of the canvas element we want to select
+            var ctx = document.getElementById("myChart").getContext("2d");
+ 
+            //Create the data object to pass to the chart
+            var data = {
+                labels : [{% for totalizador in totalizadores %}"{{totalizador.data|date:'SHORT_DATE_FORMAT'}}",{%endfor%}],
+                datasets : [
+                            {
+                                fillColor : "rgba(151,187,205,0.5)",
+                                strokeColor : "rgba(151,187,205,1)",
+                                data : [{% for totalizador in totalizadores %}{{totalizador.valor|floatformat:0}},{%endfor%}]
+                            }
+                           ]
+                      };
+ 
+            //The options we are going to pass to the chart
+            options = {
+                barDatasetSpacing : 10,
+                barValueSpacing: 5
+            };
+ 
+            //Create the chart
+            new Chart(ctx).Line(data, options);
+        }
+        </script>
 
 
 {% endaddtoblock %}

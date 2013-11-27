@@ -535,9 +535,9 @@ class PeriodoTrabalhado(models.Model):
     
     def __unicode__(self):
         if not self.fim:
-            return u"Período ATIVO. Funcionário: %s. Admissão: %s" % (self.funcionario, self.inicio.strftime("%d/%m/%y"))
+            return u"Período #%s ATIVO. Funcionário: %s. Admissão: %s" % (self.id, self.funcionario, self.inicio.strftime("%d/%m/%y"))
         else:
-            return u"Período INATIVO. Funcionário: %s. Admissão: %s. Desligamento: %s" % (self.funcionario, self.inicio.strftime("%d/%m/%y"), self.fim.strftime("%d/%m/%y"))
+            return u"Período  #%s INATIVO. Funcionário: %s. Admissão: %s. Desligamento: %s" % (self.id, self.funcionario, self.inicio.strftime("%d/%m/%y"), self.fim.strftime("%d/%m/%y"))
     
     def ativo(self):
         if not self.fim:

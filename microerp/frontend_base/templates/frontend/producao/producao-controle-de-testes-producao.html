@@ -40,6 +40,7 @@
 							<th>Reparado</th>
 							<th>Func s/ reparar</th>
 							<th>Usuário</th>
+							<th>Data do Teste</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -53,6 +54,7 @@
 							<td>{{falha.quantidade_reparada_funcional}}</td>
 							<td>{{falha.quantidade_funcional_direta}}</td>
 							<td>{{falha.criado_por}}</td>
+							<td>{{falha.data_lancamento|date:"SHORT_DATE_FORMAT"}}</td>
 						</tr>
 						{% endfor %}
 					</tbody>

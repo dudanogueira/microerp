@@ -7,7 +7,7 @@
 
 {% if request.user.is_authenticated %}
     {% if request.user.funcionario%}
-    <h1><i class="icon-th"></i> <i class="icon-home"></i> Olá {{request.user.funcionario}}</h1>
+    <h1><i class="fa fa-th"></i> <i class="fa fa-home"></i> Olá {{request.user.funcionario}}</h1>
     
     {# Bloco de Banco de Horas e Férias#}
     <div class="row-fluid">
@@ -15,7 +15,7 @@
         <div class="span6">
             
             <div class="alert alert-{{request.user.funcionario.banco_de_horas_situacao}}">
-                <i class="icon icon-time icon-4x pull-left"></i>
+                <i class="fa fa-clock-o fa-4x pull-left"></i>
                 <h2>Banco de Horas</h2>
         
                 <p><strong>Saldo</strong>: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}
@@ -30,7 +30,7 @@
 
         <div class="span6">
             <div class="alert alert-info">
-                <i class="icon icon-picture icon-4x pull-left"></i>
+                <i class="fa fa-picture-o fa-4x pull-left"></i>
                     <h2>Férias</h2>   
                 {% for ferias in request.user.funcionario.ferias_dias_autorizados %}
                     <p>Autorizado: de <strong>{{ferias.inicio|date:"SHORT_DATE_FORMAT"}}</strong> a <strong>{{ferias.fim|date:"SHORT_DATE_FORMAT"}}</strong></p>
@@ -43,24 +43,25 @@
                 
     </div>
     
-    <div class="alert alert-danger">
-    <i class="icon-user-md icon-4x pull-left"></i>
+		{% if request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
+			<div class="alert alert-danger">
+    <i class="fa fa-user-md fa-4x pull-left"></i>
     <h2>Exames Médicos</h2>
         <ul>
-        {% for exame in request.user.funcionario.rotinaexamemedico_set.all %}
+        {% for exame in request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
         
         
         
             <li>{{exame.get_tipo_display}}
                 {% if exame.data %}
-                <i class="icon-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>
+                <i class="fa fa-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>
                 {% else %}
-                                <i class="icon-time"></i><strong>A Definir</strong>
+                                <i class="fa fa-time"></i><strong>A Definir</strong>
                 {% endif %}
                 {% if exame.realizado %}
-                <em><span class="badge badge-success"><i class="icon-check"></i> realizado</span> há {{exame.data|timesince}}</em>
+                <em><span class="badge badge-success"><i class="fa fa-check"></i> realizado</span> há {{exame.data|timesince}}</em>
                 {% else %}
-                <em><span class="badge badge-success"><i class="icon-time"></i> em {{exame.data|timeuntil}}</span></em>
+                <em><span class="badge badge-success"><i class="fa fa-time"></i> em {{exame.data|timeuntil}}</span></em>
                 
                 {%endif%}
             </li>
@@ -68,65 +69,7 @@
         {% endfor %}
         </ul>
     </div>
-    
-    <div class="">
-    <h2><i class="icon-envelope icon-1x"></i>
- Recados e <i class="icon-bell icon-1x"></i> Solicitações</h2>
- 
- <div class="row-fluid" id="recado-solicitacoes-principal">
-     
-   <div class="span2 well alert-success">
-       <p>
-           <i class="icon-envelope icon-2x"></i>
-           asdasdas dasd asd asd asd asdasdas dasd<br />
-           <strong>De: Fulano, no dia tal tal</strong>
-       </p>
-   </div>
-   
-   <div class="span2 well alert-error">
-       <p>
-           <i class="icon-bell icon-2x"></i>
-           asdasdas dasd asd asd asd asdasdas dasd<br />
-           <strong>De: Fulano, no dia tal tal</strong>
-       </p>
-   </div>
-     
-   <div class="span2 well alert-success">
-       <p>
-           <i class="icon-envelope icon-2x"></i>
-           asdasdas dasd asd asd asd asdasdas dasd<br />
-           <strong>De: Fulano, no dia tal tal</strong>
-       </p>
-   </div>
-   
-   <div class="span2 well alert-error">
-       <p>
-           <i class="icon-bell icon-2x"></i>
-           asdasdas dasd asd asd asd asdasdas dasd<br />
-           <strong>De: Fulano, no dia tal tal</strong>
-       </p>
-   </div>
-   
-     
-   <div class="span2 well alert-success">
-       <p>
-           <i class="icon-envelope icon-2x"></i>
-           asdasdas dasd asd asd asd asdasdas dasd<br />
-           <strong>De: Fulano, no dia tal tal</strong>
-       </p>
-   </div>
-   
-   <div class="span2 well alert-error">
-       <p>
-           <i class="icon-bell icon-2x"></i>
-           asdasdas dasd asd asd asd asdasdas dasd<br />
-           <strong>De: Fulano, no dia tal tal</strong>
-       </p>
-   </div>
-   
- </div>
- 
-    </div>
+    {% endif %}
     {% else %}
 
     <h2 class="alert alert-important">Este usuário não possui Funcionário</h2>

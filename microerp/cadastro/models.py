@@ -53,17 +53,15 @@ class PreCliente(models.Model):
     '''
     Um Pre cliente é convertido depois em Cliente
     '''
-    
     def __unicode__(self):
         return self.nome
-    
     
     class Meta:
         verbose_name = "Pré Cliente"
         verbose_name_plural = "Pré Clientes"
     
     
-    cliente_convertido = models.ForeignKey('Cliente', blank=True, null=True)
+    cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
     dados = models.TextField(blank=True)
@@ -153,6 +151,18 @@ class Cliente(models.Model):
                 raise
                 print "ERRO AO CRIAR O GEOPONTO PARA %s" % self
                 pass
+
+    def propostas_abertas(self):
+        return self.propostacomercial_set.filter(status="aberta")
+        
+    def propostas_convertidas(self):
+        return self.propostacomercial_set.filter(status="convertidas")
+    
+    def propostas_fechadas(self):
+        return self.propostacomercial_set.filter(status="fechadas")
+    
+        
+        
     
     uuid = UUIDField()
     id_referencia = models.IntegerField(blank=True, null=True)
@@ -188,6 +198,8 @@ class EnderecoCliente(models.Model):
     class Meta:
         verbose_name = "Endereço de Cliente"
         verbose_name_plural = "Endereços de Clientes"
+        unique_together = ('principal', 'cliente')
+        ordering = ('-principal',)
     
 
     def save(self, *args, **kwargs):
@@ -201,7 +213,6 @@ class EnderecoCliente(models.Model):
     # telefone
     telefone = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX", verbose_name="Telefone Associado")
     # endereço
-    cidade = models.ForeignKey("Cidade", blank=False, null=False)
     bairro = models.ForeignKey("Bairro")
     cep = models.CharField(blank=True, max_length=100, verbose_name=u"CEP")
     rua = models.CharField(blank=True, max_length=500, verbose_name=u"Rua")
@@ -329,6 +340,7 @@ class PerfilAcessoRecepcao(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
 class EnderecoEmpresa(models.Model):
+    '''unidade da empresa (matriz, filial, etc)'''
     
     def __unicode__(self):
         return u"%s" % self.nome

@@ -32,6 +32,7 @@ from comercial.models import CategoriaContratoFechado
 from comercial.models import Marca
 from comercial.models import Modelo
 from comercial.models import QuantidadeDeMarca
+from comercial.models import FollowUpDePropostaComercial
 
 
 # ADMIN ACTIONS
@@ -81,3 +82,4 @@ admin.site.register(TipodeContratoFechado, TipodeContratoFechadoAdmin)
 admin.site.register(CategoriaContratoFechado)
 admin.site.register(Marca)
 admin.site.register(Modelo)
+admin.site.register(FollowUpDePropostaComercial)

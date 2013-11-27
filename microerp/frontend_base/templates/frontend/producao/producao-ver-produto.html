@@ -97,12 +97,13 @@
 								  </div>
 								</div>
 								
-								
-								
-								<strong>Lançamentos de Produção Disponível:</strong> {{produto.lancamentos_disponiveis.count}}<br />
+								<strong>Lançamentos Disponíveis para Venda:</strong> {{produto.lancamentos_disponiveis_venda.count}}<br />
 
-								{% ifnotequal  produto.lancamentos_disponiveis.count produto.total_produzido %}
+								{% ifnotequal  produto.lancamentos_disponiveis_venda.count produto.total_produzido %}
 								<div class="alert alert-danger">Estoque Inconsistente com Produção</div>
+								{% else %}
+								<div class="alert alert-success">Estoque Consistente com Produção</div>
+								
 								{% endifnotequal %}
                 <strong>Quantidade Estimada de Produção Semanal:</strong> {{produto.quantidade_estimada_producao_semanal}}<br />
 								<strong>Quantidade Máxima de Produto Estocável:</strong> {{produto.quantidade_maxima_estocavel}}

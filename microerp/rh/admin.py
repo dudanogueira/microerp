@@ -143,7 +143,7 @@ class DemissaoAdmin(admin.ModelAdmin):
     list_display_links = list_display
 
 class RotinaExameMedicoAdmin(admin.ModelAdmin):
-    list_filter = 'tipo', 'periodo_trabalhado__funcionario'
+    list_filter = 'tipo', 'periodo_trabalhado__funcionario', 'realizado'
     list_display = 'id', 'tipo', 'periodo_trabalhado', 'realizado'
     date_hierarchy = 'data'
 

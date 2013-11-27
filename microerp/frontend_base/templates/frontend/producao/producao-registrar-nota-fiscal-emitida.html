@@ -15,7 +15,7 @@
 
 	{% for nota in notas_group_list %}
 		
-	<h4>Nota Fiscal: <span class="badge badge-info">{{ nota.grouper }}</span>- 	{{nota.list.0.nota_fiscal__data_saida|date:"SHORT_DATE_FORMAT"}} - Cliente: {{nota.list.0.nota_fiscal__cliente_associado}}</h4>
+	<h4>Nota Fiscal: <span class="badge badge-info">{{ nota.grouper }}</span>- 	Data de Saída: {{nota.list.0.nota_fiscal__data_saida|date:"SHORT_DATE_FORMAT"}} - Cliente: {{nota.list.0.nota_fiscal__cliente_associado}}</h4>
 
 	<ul>
 		{% for lancamento in nota.list %}

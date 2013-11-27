@@ -7,12 +7,16 @@
 {% block content %}
 	<h1><i class="fa fa-th"></i> <i class="fa fa-dollar"></i> Adicionar Nota Fiscal Emitida</h1>
 	{% if lancamentos_selecionados %}
-		<form method="post">
+		{% if checagem %}
+			<form method="post">
 			{% csrf_token %}
 			{{form_adiciona_nota.as_p}}
 			<div class="alert alert-danger">Atenção ao digitar estes dados, pois não poderão ser alterados futuramente.</div>
 			<button type="submit" class="btn btn-primary"><i class="fa fa-dollar"></i> Registrar Nota Fiscal</button>
 		</form>
+		{% else %}
+		<h2>Erro na Checagem de Estoque e Quantidade a ser vendida deste(s) prodto(s)</h2>
+		{% endif %}
 	{% else %}
 		<div id="lancamentos-disponiveis">
 			<div class="row-fluid">

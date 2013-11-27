@@ -6,7 +6,9 @@ urlpatterns = patterns('',
     url(r'^$', 'comercial.views.home', name='home'),
     url(r'^precliente/(?P<pre_cliente_id>[0-9]+)/converter/$', 'comercial.views.precliente_converter', name='precliente_converter'),
     # cliente
-    url(r'^cliente/(?P<cliente_id>[0-9]+)/$', 'comercial.views.cliente_ver', name='cliente_ver'),
+    url(r'^clientes/$', 'comercial.views.clientes', name='clientes'),
+    url(r'^clientes/(?P<cliente_id>[0-9]+)/$', 'comercial.views.cliente_ver', name='cliente_ver'),
+    url(r'^clientes/(?P<cliente_id>[0-9]+)/editar/proposta/(?P<proposta_id>[0-9]+)/$', 'comercial.views.cliente_editar_proposta', name='cliente_editar_proposta'),
     # solicitações
     url(r'^solicitacao/adicionar/$', 'comercial.views.solicitacao_adicionar', name='solicitacao_adicionar'),
     # propostas  cliente

@@ -210,6 +210,11 @@ $(document).ready(function() {
 });
 
 $( "#id_quantidade_funcional, #id_quantidade_total_testada, #id_quantidade_reparada_funcional" ).change(function() {
+	if (/\D/g.test(this.value))
+	    {
+	        // Filter non-digits from input value.
+	        this.value = this.value.replace(/\D/g, '');
+	    }
 	calcula_tabela();
 });
 

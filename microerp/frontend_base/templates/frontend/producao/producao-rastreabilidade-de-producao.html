@@ -103,8 +103,8 @@
 						<tbody>
 							{% for lancamento in lancamento.list %}
 							<tr {% if lancamento.adicionado_manualmente %}data-toggle="tooltip" title="Justificativa: {{lancamento.justificativa_adicionado}}" class="tooltip_item"{% endif %}>
-								<td><input type="checkbox" name="lancamento" value="{{lancamento.id}}"><label for="lancamento-{{lancamento.id}}">{{lancamento.id}}</label></td>
-								<td><span class="badge badge-warning">{{lancamento.serial_number}}</span></td>
+								<td><input id="lancamento-{{lancamento.id}}" type="checkbox" name="lancamento" value="{{lancamento.id}}"><label for="lancamento-{{lancamento.id}}">{{lancamento.id}}</label></td>
+								<td><label for="lancamento-{{lancamento.id}}"><span class="badge badge-warning">{{lancamento.serial_number}}</span></label></td>
 								<td>{% if lancamento.adicionado_manualmente %}Manual: {{lancamento.funcionario_adicionou__nome}}{% else %}Ordem de Produção: #{{lancamento.ordem_de_producao__id}}{% endif %}</td>
 								<td>{{lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 								<td><a data-toggle="tooltip" title="Alterar Dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a></td>
@@ -131,7 +131,7 @@
 				<div class="span6">
 					<h2>Lançamentos Vendidos</h2>
 					{% if not vendidos_filtro %}
-					* mostrando os Lançamentos do mês corrente
+					* mostrando os Lançamentos de {{inicio_range|date:"SHORT_DATE_FORMAT"}} a {{fim_range|date:"SHORT_DATE_FORMAT"}}
 					{% endif %}
 				</div>
 				<div class="span6">
@@ -155,21 +155,29 @@
 						{{form_filtrar_lancamentos_vendidos.nota_fiscal.errors}}
 						{{form_filtrar_lancamentos_vendidos.nota_fiscal}}					
 						
-						</div>
+					</div>
 				
-					<div class="span3">
+					<div class="span2">
 						{{form_filtrar_lancamentos_vendidos.cliente.label}}<br />
 						{{form_filtrar_lancamentos_vendidos.cliente.errors}}
 						{{form_filtrar_lancamentos_vendidos.cliente}}					
 						
 					</div>
 				
-					<div class="span3">
-						{{form_filtrar_lancamentos_vendidos.data_de_venda.label}}<br />
-						{{form_filtrar_lancamentos_vendidos.data_de_venda.errors}}
-						{{form_filtrar_lancamentos_vendidos.data_de_venda}}					
+					<div class="span2">
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio.label}}<br />
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio.errors}}
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio}}					
 						
 					</div>
+					
+					<div class="span2">
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim.label}}<br />
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim.errors}}
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim}}					
+						
+					</div>
+					
 				</div>
 				
 				<button type="submit" class="btn btn-primary" name="filtra-lancamentos-vendidos-btn" name="filtra-lancamentos-vendidos-btn" value="filtrar" >Filtrar</button>
@@ -188,7 +196,7 @@
 							<th>Cliente</th>
 							<th>Data de Venda</th>
 							<th>Usuário</th>
-							<th>Observação da Nota</th>
+							<th>Observações</th>
 							<th>Ações</th>
 						</tr>
 					</thead>
@@ -224,7 +232,7 @@
 		<div class="tab-pane fade in" id="lancamentos-apagados">
 			<h2>Lançamentos Apagados</h2>
 			{% if not apagados_filtro %}
-			* mostrando os Lançamentos do mês corrente
+					* mostrando os Lançamentos de {{inicio_range|date:"SHORT_DATE_FORMAT"}} a {{fim_range|date:"SHORT_DATE_FORMAT"}}
 			{% endif %}
 			
 			
@@ -245,18 +253,24 @@
 						
 						</div>
 				
-					<div class="span3">
+					<div class="span2">
 						{{form_filtrar_lancamentos_apagados.cliente.label}}<br />
 						{{form_filtrar_lancamentos_apagados.cliente.errors}}
 						{{form_filtrar_lancamentos_apagados.cliente}}					
 						
 					</div>
 				
-					<div class="span3">
-						{{form_filtrar_lancamentos_apagados.data_apagado.label}}<br />
-						{{form_filtrar_lancamentos_apagados.data_apagado.errors}}
-						{{form_filtrar_lancamentos_apagados.data_apagado}}					
+					<div class="span2">
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio.label}}<br />
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio.errors}}
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio}}					
 						
+					</div>
+					
+					<div class="span2">
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim.label}}<br />
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim.errors}}
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim}}					
 					</div>
 				</div>
 				
@@ -276,6 +290,7 @@
 							<th>Cliente</th>
 							<th>Data Apagado</th>
 							<th>Usuário</th>
+							<th>Observações</th>
 							<th>Ações</th>
 						</tr>
 					</thead>
@@ -288,6 +303,7 @@
 							<td>{{lancamento.cliente_associado}}</td>
 							<td>{{lancamento.data_apagado|date:"SHORT_DATETIME_FORMAT"}}</td>
 							<td>{{lancamento.funcionario_apagou__nome}}</td>
+							<td>{{lancamento.observacoes}}</td>
 							<td>
 								<a data-toggle="tooltip" title="Associar a Serial Number" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a>
 							</td>
@@ -397,10 +413,12 @@ $('.nav-tabs').on("click", '.nav-tabs li a', function(e){
 $('.tooltip_item').tooltip()
 
 //check on div click
-$("tr").click(function() {
-    var checkbox = $(this).find("input[type='checkbox']");
-		checkbox.attr('checked', !checkbox.attr('checked'));
-		$(this).toggleClass('alert-info');
+$("input[type='checkbox']").change(function() {
+	if (this.checked){
+		$(this).closest("tr").attr('class', 'alert alert-info'); 
+	}else{
+		$(this).closest("tr").attr('class', ''); 
+	}
 });
 
 {% if form_remover_lancamentos.errors %}
