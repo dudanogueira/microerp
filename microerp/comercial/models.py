@@ -84,7 +84,7 @@ class PropostaComercial(models.Model):
     
     def ultimo_followup(self):
         if self.followupdepropostacomercial_set.all():
-            return self.followupdepropostacomercial_set.all().order_by('data')[0]
+            return self.followupdepropostacomercial_set.all().order_by('-data')[0]
         else:
             return False
     
@@ -104,12 +104,18 @@ class PropostaComercial(models.Model):
 
 class FollowUpDePropostaComercial(models.Model):
     
+    def __unicode__(self):
+        return u"Follow Up da Proposta #%s por %s em %s: %s" % (self.proposta.id, self.proposta.cliente or self.proposta.precliente, self.data.date(), self.texto)
+    
+    class Meta:
+        ordering = ('-data',)
+    
     proposta = models.ForeignKey('PropostaComercial')
     texto = models.TextField(blank=False)
     data = models.DateTimeField(blank=False, default=datetime.datetime.now)
     data_expiracao = models.DateField(blank=False, default=datetime.datetime.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
     # metadata
-    criador_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followup_adicionado_set",  blank=True, null=True)
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followup_adicionado_set",  blank=False, null=False)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 

@@ -74,6 +74,9 @@ class ContratoFechadoAdmin(admin.ModelAdmin):
 class TipodeContratoFechadoAdmin(admin.ModelAdmin):
     pass
 
+class FollowUpDePropostaComercialAdmin(admin.ModelAdmin):
+    date_hierarchy = 'data'
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
@@ -82,4 +85,4 @@ admin.site.register(TipodeContratoFechado, TipodeContratoFechadoAdmin)
 admin.site.register(CategoriaContratoFechado)
 admin.site.register(Marca)
 admin.site.register(Modelo)
-admin.site.register(FollowUpDePropostaComercial)
+admin.site.register(FollowUpDePropostaComercial, FollowUpDePropostaComercialAdmin)

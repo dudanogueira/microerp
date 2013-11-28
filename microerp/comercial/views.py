@@ -23,7 +23,7 @@ from django.db.models import Count
 from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
-from comercial.models import PropostaComercial, PerfilAcessoComercial
+from comercial.models import PropostaComercial, PerfilAcessoComercial, FollowUpDePropostaComercial
 from estoque.models import Produto
 
 from django.conf import settings
@@ -155,6 +155,16 @@ def home(request):
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 
+class FormAdicionarFollowUp(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormAdicionarFollowUp, self).__init__(*args, **kwargs)
+        self.fields['proposta'].widget = forms.HiddenInput()
+
+    class Meta:
+        model = FollowUpDePropostaComercial
+        fields = 'proposta', 'texto',
+
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def clientes(request):
     cliente_q = request.GET.get('cliente', False)
@@ -168,18 +178,51 @@ def clientes(request):
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
         if not request.user.perfilacessocomercial.gerente:
             clientes = clientes.filter(funcionario_responsavel=request.user.funcionario)
-    
+    else:
+        clientes = Cliente.objects.all()
+        preclientes = PreCliente.objects.all()
     return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_ver(request, cliente_id):
     cliente = get_object_or_404(Cliente, pk=cliente_id)
     cliente_q = request.GET.get('cliente', None)
+    if request.POST:
+        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
+        if form_adicionar_follow_up.is_valid():
+            follow_up = form_adicionar_follow_up.save(commit=False)
+            follow_up.criado_por = request.user
+            follow_up.save()
+            messages.success(request, u"Sucesso! Novo Follow Up Adicionado")
+    else:
+        form_adicionar_follow_up = FormAdicionarFollowUp()
+
+        
     return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
+
+class FormEditarProposta(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormEditarProposta, self).__init__(*args, **kwargs)
+        self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
+    
+    
+    class Meta:
+        model = PropostaComercial
+        fields = 'probabilidade', 'valor_proposto', 'data_expiracao', 'observacoes'
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_editar_proposta(request, cliente_id, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    if request.POST:
+        form_editar_proposta = FormEditarProposta(request.POST, instance=proposta)
+        if form_editar_proposta.is_valid():
+            proposta_alterada = form_editar_proposta.save()
+            messages.success(request, u"Sucesso! Proposta #%s alterada!" % proposta.id)
+            return redirect(reverse("comercial:cliente_ver", args=[proposta.cliente.id])+"#tab_propostas")
+    else:
+        form_editar_proposta = FormEditarProposta(instance=proposta)
+        
     return render_to_response('frontend/comercial/comercial-cliente-editar-proposta.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
