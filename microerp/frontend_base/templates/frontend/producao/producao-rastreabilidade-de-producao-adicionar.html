@@ -10,9 +10,8 @@
 	<form action="" method="post" accept-charset="utf-8">
 		{% csrf_token %}
 		{{form_adicionar_lancamento.as_p}}	
-		<button type="submit"><i class="fa fa-plus"></i> Adicionar</button>
+		<button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
 	</form>
-	
 {% endblock %}
 
 {% block auxiliar-menu %}

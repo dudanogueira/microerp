@@ -3568,8 +3568,10 @@ class FormAdicionarLancamentoProdProduto(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(FormAdicionarLancamentoProdProduto, self).__init__(*args, **kwargs)
         self.fields['produto'].widget.attrs['class'] = 'select2'
+        self.fields['produto'].queryset = ProdutoFinal.objects.filter(ativo=True)
         self.fields['justificativa_adicionado'].label = u"Justificativa para a adição"
         self.fields['justificativa_adicionado'].required = True
+
     class Meta:
         model = LancamentoProdProduto
         fields = 'produto', 'justificativa_adicionado'
@@ -3958,6 +3960,8 @@ def registrar_nota_fiscal_emitida_adicionar(request):
                 registro = form_adiciona_nota.save(commit=False)
                 registro.criado_por = request.user
                 registro.save()
+                registro.lancamentos_de_producao = lancamentos_vendidos_obj
+                registro.save()
                 messages.success(request, u"Sucesso! Nota %s Registrada!" % registro.notafiscal)
                 # atualiza os lancamentos
                 for lancamento in lancamentos_vendidos_obj:
@@ -3965,6 +3969,7 @@ def registrar_nota_fiscal_emitida_adicionar(request):
                     lancamento.data_vendido=datetime.datetime.now()
                     lancamento.funcionario_vendeu=request.user.funcionario
                     lancamento.cliente_associado=registro.cliente_associado
+                    lancamento.nota_fiscal = registro
                     lancamento.save()
                 # realiza e registra o movimento
                 for produto in produtos_vendidos_obj:
