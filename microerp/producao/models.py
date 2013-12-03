@@ -232,6 +232,7 @@ class Componente(models.Model):
     
     class Meta:
         unique_together = (('identificador', 'tipo'))
+        ordering = ('part_number',)
     
     def posicao_no_estoque(self, estoque):
         try:
@@ -595,6 +596,7 @@ class SubProduto(models.Model):
     
     class Meta:
         verbose_name = "Sub Produto"
+        ordering = ('part_number',)
     
     def subprodutos_agregados(self, lista=None, retorna_objeto=False):
         '''
@@ -1046,6 +1048,9 @@ class ProdutoFinal(models.Model):
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         return u"%s-PRO%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+
+    class Meta:
+        ordering = ('part_number',)
 
     def subprodutos_agregados(self, lista=None, retorna_objeto=False):
         '''

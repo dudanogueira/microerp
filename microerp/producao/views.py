@@ -923,12 +923,20 @@ class FiltroHistoricos(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_estoque(request):
-    data_ultimo_movimento = PosicaoEstoque.objects.all().order_by('-criado')[0].criado.strftime("%d/%m/%Y")
-    data_primeiro_movimento = PosicaoEstoque.objects.all().order_by('-criado').reverse()[0].criado.strftime("%d/%m/%Y")
+    try:
+        data_ultimo_movimento = PosicaoEstoque.objects.all().order_by('-criado')[0].criado.strftime("%d/%m/%Y")
+        data_primeiro_movimento = PosicaoEstoque.objects.all().order_by('-criado').reverse()[0].criado.strftime("%d/%m/%Y")
+    except:
+        data_ultimo_movimento = None
+        data_primeiro_movimento = None
     # totalizadores
     totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')[:10]
-    data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-criado')[0].data.strftime("%d/%m/%Y")
-    data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('-criado').reverse()[0].data.strftime("%d/%m/%Y")
+    try:
+        data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-criado')[0:1].data.strftime("%d/%m/%Y")
+        data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('-criado').reverse()[0].data.strftime("%d/%m/%Y")
+    except:
+        data_ultimo_totalizador = None
+        data_primeiro_totalizador = None
     if request.POST:
         if request.POST.get('consulta-estoque'):
             form_mover_estoque = MoverEstoque()
@@ -971,10 +979,10 @@ def listar_estoque(request):
                     
                 # consulta só estoque
                 if not componente_consultado and estoque_consultado:
-                    historicos = historicos.filter(estoque=estoque_consultado)
+                    historicos = PosicaoEstoque.objects.filter(estoque=estoque_consultado).order_by('-data_entrada')
                     consulta_estoque = True
                     posicoes_estoque = []
-                    for componente_ver in Componente.objects.filter(ativo=True):
+                    for componente_ver in Componente.objects.filter(ativo=True).order_by('part_number'):
                         try:
                             posicao = PosicaoEstoque.objects.filter(componente=componente_ver, estoque=estoque_consultado).order_by('-data_entrada')[0]
                         except:
