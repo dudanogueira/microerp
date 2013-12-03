@@ -536,8 +536,7 @@ class NotaFiscal(models.Model):
         if self.status == 'a':
             # calcula totais dos lancamentos
             # agrega totais dos lancamentos na nota
-            totais = self.lancamentocomponente_set.aggregate(sem=Sum('valor_total_sem_imposto'),com=Sum('valor_total_com_imposto')
-)
+            totais = self.lancamentocomponente_set.aggregate(sem=Sum('valor_total_sem_imposto'),com=Sum('valor_total_com_imposto'))
             self.total_sem_imposto = totais['sem']
             self.total_com_imposto = totais['com']
             if self.tipo == 'i':
@@ -635,9 +634,7 @@ class SubProduto(models.Model):
                 if subproduto['total_funcional'] < valor_a_produzir:
                     return False
         return True
-        
-        
-    
+            
     
     def get_componentes(self, dic=None, conf=None, multiplicador=1, agrega_subproduto_sem_teste=True):
         # componentes
@@ -942,13 +939,19 @@ class LinhaSubProdutoAgregado(models.Model):
     
     def custo(self):
         return self.quantidade * self.subproduto_agregado.custo_total_linhas()
+        
     
     def disponivel_estoque(self):
         if self.quantidade > self.subproduto_agregado.total_funcional:
             return True
         else:
             return False
-        
+    
+    def ipp(self):
+        '''Índice de Peso de Participacao'''
+        total = self.subproduto_principal.custo()
+        ipp = 100 * self.custo() / total
+        return ipp
     
     quantidade = models.IntegerField(help_text=u"Número Inteiro", blank=True, null=True, default=1)
     subproduto_principal = models.ForeignKey('SubProduto', related_name="linhasubprodutos_agregados")
@@ -988,6 +991,13 @@ class LinhaSubProduto(models.Model):
             return valor or 0
         else:
             return 0
+
+
+    def ipp(self):
+        '''Índice de Peso de Participacao'''
+        total = self.subproduto.custo()
+        ipp = 100 * self.custo() / total
+        return ipp
 
     peso = models.IntegerField("Item", blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
@@ -1191,6 +1201,12 @@ class LinhaSubProdutodoProduto(models.Model):
         if self.quantidade == 0:
             raise ValidationError(u'Quantidade não pode ser 0')
     
+    def ipp(self):
+        '''Índice de Peso de Participacao'''
+        total = self.produto.custo()
+        ipp = 100 * self.custo() / total
+        return ipp
+    
     produto = models.ForeignKey('ProdutoFinal')
     quantidade = models.IntegerField(blank=False, null=False, default=1)
     subproduto = models.ForeignKey('SubProduto')
@@ -1213,6 +1229,12 @@ class LinhaComponenteAvulsodoProduto(models.Model):
     def clean(self):
         if self.quantidade == 0:
             raise ValidationError(u"Erro! Quantidade deve ser maior que 0")
+    
+    def ipp(self):
+        '''Índice de Peso de Participacao'''
+        total = self.produto.custo()
+        ipp = 100 * self.custo() / total
+        return ipp
     
     class Meta:
         verbose_name = "Linha de Componente Avulso do Produto"

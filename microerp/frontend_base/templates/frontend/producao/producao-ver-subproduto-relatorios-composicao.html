@@ -19,10 +19,10 @@
 					<th>Preço Total</th>
 					<th>Nacionalidade</th>
 					<th>Lead Time (s)</th>
+					<th>IPP</th>
 				</tr>
 			</thead>
 			<tbody>
-		
 				{% for linha in subproduto.linhasubproduto_set.all %}
 				<tr>
 					<td>{{linha.tag|upper}}</td>
@@ -30,21 +30,21 @@
 					<td>{{linha.opcao_padrao.componente.descricao}}</td>
 					<td>{{linha.opcao_padrao.quantidade}}
 						{{linha.opcao_padrao.componente.medida}}</td>
-						<td>R$ {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
-						<td>R$ {{linha.custo|floatformat:2}}</td>
-						 
-						<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
-						<td>{{linha.opcao_padrao.componente.lead_time}}</td>
-					</tr>
-					{% endfor %}
+					<td>R$ {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
+					<td>R$ {{linha.custo|floatformat:2}}</td>
+					<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
+					<td>{{linha.opcao_padrao.componente.lead_time}}</td>
+					<td>{{linha.ipp|floatformat:2}} %</td>
+				</tr>
+				{% endfor %}
 		
-				</tbody>
-			</table>
+			</tbody>
+		</table>
 		{% endif %}
 
 		
-			{% if subproduto.linhasubprodutos_agregados.all %}
-			<table class="table table-condensed table-hover table-rounded">
+		{% if subproduto.linhasubprodutos_agregados.all %}
+		<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
 						<th>Sub Produto</th>
@@ -52,6 +52,7 @@
 						<th>Quantidade</th>
 						<th>Preço Unitário</th>
 						<th>Preço Total</th>
+						<th>IPP</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -62,14 +63,14 @@
 						<td>{{linha.quantidade}}</td>
 						<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
 						<td>R$ {{linha.custo|floatformat:2}}</td>
+						<td>{{linha.ipp|floatformat:2}} %</td>
 					</tr>
 					{% endfor %}
 				
 				</tbody>
 			</table>
-			{% endif %}
+		{% endif %}
 	</div>
-
 	<h1>Composição de Sub Produtos Agregados</h1>
 	{% for subproduto in subprodutos_abaixo %}
 	<div class="well well-small">
@@ -87,6 +88,7 @@
 						<th>Preço Total</th>
 						<th>Nacionalidade</th>
 						<th>Lead Time (s)</th>
+						<th>IPP</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -97,12 +99,12 @@
 						<td>{{linha.opcao_padrao.componente.descricao}}</td>
 						<td>{{linha.opcao_padrao.quantidade}}
 							{{linha.opcao_padrao.componente.medida}}</td>
-							<td>R$ {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
-							<td>R$ {{linha.custo|floatformat:2}}</td>
-								 
-							<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
-							<td>{{linha.opcao_padrao.componente.lead_time}}</td>
-						</tr>
+						<td>R$ {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
+						<td>R$ {{linha.custo|floatformat:2}}</td>			 
+						<td>{{linha.opcao_padrao.componente.get_nacionalidade_display}}</td>
+						<td>{{linha.opcao_padrao.componente.lead_time}}</td>
+						<td>{{linha.ipp|floatformat:2}} %</td>
+					</tr>
 						{% endfor %}
 				</tbody>
 			</table>
@@ -118,7 +120,8 @@
 							<th>Descrição</th>
 							<th>Quantidade</th>
 							<th>Preço Unitário</th>
-							<th>Preço Total</th>
+							<th>Preço Total </th>
+							<th>IPP</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -129,15 +132,16 @@
 							<td>{{linha.subproduto_agregado.descricao}}</td>
 							<td>{{linha.quantidade}}</td>
 							<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
-							<td>R$ {{linha.custo|floatformat:2}}</td>
+							<td>R$ {{linha.custo|floatformat:2}} ({{linha.ipp|floatformat:2}} % de ipp)</td>
+							<td>{{linha.ipp|floatformat:2}} %</td>
 						</tr>
 						{% endfor %}
 				
 					</tbody>
-				</table>
+			</table>
 			{% endif %}
 	</div>
-			{% endfor %}
+	{% endfor %}
 	
 </div>
 {% endblock %}
