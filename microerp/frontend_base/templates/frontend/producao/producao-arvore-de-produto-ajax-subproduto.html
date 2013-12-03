@@ -7,7 +7,8 @@
 				<th>Componente</th>
 				<th>Descrição</th>
 				<th>Quantidade</th>
-				<th>Preço</th>
+				<th>Preço Unitário</th>
+				<th>Preço Total</th>
 				<th>I/N</th>
 				<th>LT (S)</th>
 				
@@ -21,6 +22,7 @@
 				<td>{{linha.opcao_padrao.componente.descricao}}</td>
 				<td><span class="badge badge-warning">{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida|upper}}</span></td>
 				<td>R$  {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
+				<td>R$  {{linha.custo|floatformat:2}}</td>
 				<td>{{linha.opcao_padrao.componente.nacionalidade|upper}}</td>
 				<td>{{linha.opcao_padrao.componente.lead_time}}</td>
 			</tr>

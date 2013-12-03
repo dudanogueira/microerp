@@ -39,7 +39,8 @@
 							<th>Componente</th>
 							<th>Descrição</th>
 							<th>Quantidade</th>
-							<th>Preço</th>
+							<th>Preço Unitário</th>
+							<th>Preço Total</th>
 							<th>I/N</th>
 							<th>LT (s)</th>
 						</tr>
@@ -52,6 +53,7 @@
 							<td>{{linha.componente.descricao}}</td>
 							<td><span class="badge badge-warning">{{linha.quantidade}} {{linha.componente.medida|upper}}</span></td>
 							<td>R$ {{linha.componente.preco_medio_unitario|floatformat:2}}</td>
+							<td>R$ {{linha.custo|floatformat:2}}</td>
 							<td>{{linha.componente.nacionalidade|upper}}</td>
 							<td>{{linha.componente.lead_time}}</td>
 						</tr>

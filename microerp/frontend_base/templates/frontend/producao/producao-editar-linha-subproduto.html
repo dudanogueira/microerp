@@ -47,7 +47,7 @@
                            <a href="{% url "producao:tornar_padrao_opcao_linha_subproduto" subproduto.id linha.id opcao.id %}" class="btn btn-success">
                                <i class="fa fa-check"></i> padrão</a>
                                <a href="{% url "producao:apagar_opcao_linha_subproduto" opcao.linha.subproduto.id opcao.linha.id opcao.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')">
-                                   <i class="fa fa-trash"></i> 
+                                   <i class="fa fa-trash-o"></i> 
                                </a>
                             {% endif %}
                            

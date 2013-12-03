@@ -416,7 +416,7 @@
 			{% endif %}
 			
 			
-		</div>
+	</div>
     
     <div class="tab-pane fade in" id="linhas-componente">
         
@@ -436,11 +436,11 @@
                     <th>TAG</th>
 										{% endif %}
                     <th>Padrão:COMPONENTE</th>
-										<th>Opções</th>
-                    <th>Padrão:QTD</th>
+					<th>Opções</th>
                     <th>Padrão:DESCRIÇÃO</th>
+                    <th>Padrão:QTD</th>
+					<th>Custo Unitário</th>
                     <th>Custo Total</th>
-										<th>Custo Unitário</th>
                     <th>Ação</th>
                 </tr>
             </thead>
@@ -464,20 +464,22 @@
                         <span class="badge badge-info">{{linha.opcaolinhasubproduto_set.count}}</span>
                     </td>
 										
+                    <td>
+                        {{linha.opcao_padrao.componente.descricao}}
+                    </td>
                     <td>{% if linha.opcao_padrao %}
 											<span class="badge badge-warning">
                         {{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida}}
 											</span>
 											{% endif %}
                     </td>
-                    <td>
-                        {{linha.opcao_padrao.componente.descricao}}
-                    </td>
+					
+					<td>R$ {{linha.opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
                     <td>
                         <span class="label">R$ {{linha.custo|floatformat:2}}</span>
-										</td>
-										<td>{{linha.opcao_padrao.componente.part_number}}</td>
-										<td>
+					</td>
+
+					<td>
                             {% if request.user.perfilacessoproducao.gerente %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
                                 <i class="fa fa-pencil"></i>
@@ -490,8 +492,8 @@
                                 <i class="fa fa-eye-open"></i>
                             </a>                   
                             {% endif %}
-                        </td>
-								</tr>
+					</td>
+				  </tr>
            
                   {% empty %}
                   <tr>
@@ -500,23 +502,10 @@
                       </td>
                   </tr>
                   {% endfor %}
-                  <tr>
-                      <td></td>
-											{% if subproduto.possui_tags %}
-                      <td></td>
-											{% endif %}
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>
-                          <span class="badge badge-success">Total: R$ {{subproduto.custo_total_linhas|floatformat:2}}</span>
-                      </td>
-                      <td></td>
-                  </tr>
+
             </tbody>
-				</table>
-		</div>
+		</table>
+	</div>
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
         
@@ -557,10 +546,11 @@
                     <tr>
                         <th>Item</th>
                         <th>Sub Produto</th>
-												<th>Quantidade</th>
                         <th>Nome</th>
                         <th>Descrição</th>
-                        <th>Custo</th>
+						<th>Qtd.</th>
+						<th>Custo Unit.</th>
+                        <th>Custo Total</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -568,28 +558,19 @@
                     {% for linha in subproduto.linhasubprodutos_agregados.all %}
                     <tr>
                         <td id="linha-id-{{linha.id}}" class="alert-success">{{forloop.counter}}</td>
-                            <td><a href="{% url "producao:ver_subproduto" linha.subproduto_agregado.id %}">{{linha.subproduto_agregado.part_number}}</a></td>
-		                        <td><span class="badge badge-warning">{{linha.quantidade}}</td>
-														
-                            <td>{{linha.subproduto_agregado.nome}}</td>
-                            <td>{{linha.subproduto_agregado.descricao}}</td>
-                            <td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
-                                <td>
+                        <td><a href="{% url "producao:ver_subproduto" linha.subproduto_agregado.id %}">{{linha.subproduto_agregado.part_number}}</a></td>
+						<td>{{linha.subproduto_agregado.nome}}</td>
+                        <td>{{linha.subproduto_agregado.descricao}}</td>
+						<td><span class="badge badge-warning">{{linha.quantidade}}</td>
+						<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
+                       	<td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
+                        <td>
                                     {% if request.user.perfilacessoproducao.gerente %}
                                     <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
                                     {% endif %}
-                                </td>
+                         </td>
                     </tr>
                     {% endfor %}
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-												<td></td>
-                        <td><span class="badge badge-success">Total: R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
-												<td></td>
-                    </tr>
                 
                 </tbody>
         </table>
@@ -647,7 +628,7 @@
         
     </div>
 		
-		<div class="tab-pane fade in" id="relatorios">
+	<div class="tab-pane fade in" id="relatorios">
  		 <p class="btn-group">
  			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='fa fa-print'></i> Impressão da Composição deste Sub Produto</a>
  		 </p>

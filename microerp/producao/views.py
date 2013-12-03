@@ -1128,7 +1128,7 @@ class AgregarSubProdutoForm(forms.ModelForm):
         super(AgregarSubProdutoForm, self).__init__(*args, **kwargs)
         self.fields['subproduto_principal'].initial  = subproduto_principal
         self.fields['subproduto_principal'].widget = forms.HiddenInput()
-        self.fields['subproduto_agregado'].queryset = self.fields['subproduto_agregado'].queryset.exclude(id=subproduto_principal.id)
+        self.fields['subproduto_agregado'].queryset = self.fields['subproduto_agregado'].queryset.exclude(id=subproduto_principal.id).filter(ativo=True)
         self.fields['subproduto_agregado'].widget.attrs['class'] = 'select2'
     
     
