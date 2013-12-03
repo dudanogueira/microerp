@@ -18,10 +18,12 @@
       <a class="btn btn-success" href="?q_produto=todos">Listar Todos</a>
     </form>
 
+	{% if produtos_encontrados %}
 <div class="well well-small alert alert-success">Produtos Ativos</div>
 {% for produto in produtos_encontrados %}
     <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
 {% endfor %}
+{% endif %}
 
 {% if produtos_inativos %}
 <hr />

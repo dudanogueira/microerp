@@ -15,10 +15,12 @@
   <a class="btn btn-success" href="?q_subproduto=todos">Listar Todos</a>
 </form>
 
+{% if subprodutos_encontrados %}
 <div class="well well-small alert alert-success">Sub Produtos Ativos</div>
 {% for subproduto in subprodutos_encontrados %}
     <p><a href="{% url "producao:ver_subproduto" subproduto.id %}"><i class="fa fa-list-ul"></i> {{subproduto}}</a></p>
 {% endfor %}
+{% endif %}
 
 {% if subprodutos_inativos %}
 <hr />

@@ -67,11 +67,12 @@
       <a class="btn btn-success" href="?q_componente=todos">Listar Todos</a>
      </form>
 
-
+	 {% if componentes_encontrados %}
 		 <div class="well well-small alert alert-success">Componentes Ativos</div>
     {% for componente in componentes_encontrados %}
 <p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
     {% endfor %}
+	{% endif %}
 		
 		
 		{% if componentes_inativos %}

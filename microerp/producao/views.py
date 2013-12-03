@@ -517,10 +517,15 @@ def listar_componentes(request):
         if q_componente:
             if q_componente == "todos":
                 componentes_encontrados = Componente.objects.filter(ativo=True)
+                componentes_inativos = Componente.objects.filter(ativo=False).order_by('part_number')
             else:
-                componentes_encontrados = Componente.objects.filter(
+                componentes_encontrados = componentes_encontrados.filter(
                     Q(part_number__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
                 )
+                componentes_inativos = componentes_inativos.filter(
+                    Q(part_number__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
+                )
+                
         
     componente_form = ComponenteFormPreAdd()
     tipo_componente_form = TipoComponenteAdd()
@@ -1139,9 +1144,13 @@ def listar_subprodutos(request):
         q_subproduto = request.GET.get('q_subproduto', None)
         if q_subproduto:
             if q_subproduto == "todos":
-                subprodutos_encontrados = SubProduto.objects.filter(ativo=True)
+                subprodutos_encontrados = SubProduto.objects.filter(ativo=True).order_by('part_number')
+                subprodutos_inativos = SubProduto.objects.filter(ativo=False).order_by('part_number')
             else:
                 subprodutos_encontrados = subprodutos_encontrados.filter(
+                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
+                )
+                subprodutos_inativos = subprodutos_inativos.filter(
                     Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
                 )
     
@@ -1741,6 +1750,7 @@ def ver_produto_apagar_anexo(request, produto_id, anexo_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_produtos(request):
     produtos_encontrados = ProdutoFinal.objects.filter(ativo=True).order_by('part_number')
+    produtos_inativos = ProdutoFinal.objects.filter(ativo=False).order_by('part_number')
     if request.GET:
         q_produto = request.GET.get('q_produto', True)
         if q_produto:
@@ -1750,7 +1760,10 @@ def listar_produtos(request):
                 produtos_encontrados = produtos_encontrados.filter(
                     Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
                 )
-    produtos_inativos = ProdutoFinal.objects.filter(ativo=False).order_by('part_number')    
+                produtos_inativos = produtos_inativos.filter(
+                    Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
+                )
+                
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)

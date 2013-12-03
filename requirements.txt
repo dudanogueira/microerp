@@ -2,7 +2,7 @@ Django==1.5
 PIL==1.1.7
 South==0.7.6
 argparse==1.2.1
-distribute==0.6.24
+distribute==0.7.3
 django-admin-bootstrapped==0.3.2
 django-classy-tags==0.4
 django-extensions==1.1.1
@@ -15,4 +15,3 @@ sorl-thumbnail==11.12
 wsgiref==0.1.2
 workdays==1.0
 Django-Select2==4.0.0
-reportlab==2.7
