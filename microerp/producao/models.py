@@ -1650,7 +1650,7 @@ class LinhaLancamentoFalhaDeTeste(models.Model):
     def __unicode__(self):
         return u"Linha do Teste #%s: %s Falhas %s do Sub Produto %s" % \
             (self.lancamento_teste.id, self.quantidade, self.falha, self.lancamento_teste.subproduto)
-        
+    
     lancamento_teste = models.ForeignKey(LancamentoDeFalhaDeTeste)
     quantidade = models.IntegerField(blank=False, null=False)
     falha = models.ForeignKey(FalhaDeTeste)

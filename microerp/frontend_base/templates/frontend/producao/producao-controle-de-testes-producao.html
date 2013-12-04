@@ -136,168 +136,117 @@
 		</div>
 		
 		<div class="tab-pane fade in" id="indicadores">
-			<h4>Filtrar por Sub Produto</h4>
-
+			<h4>Indicadores</h4>
 				<form method="POST" id="filtrar-por-subproduto">
 						{% csrf_token %}
 					<div class="row-fluid">
 				
 						<div class="span2">
-							{{form_filtrar_falha_por_produto.inicio.label}}<br />
-							{{ form_filtrar_falha_por_produto.inicio.errors }}
-							{{form_filtrar_falha_por_produto.inicio}}
+							{{form_filtrar_falha.inicio.label}}<br />
+							{{ form_filtrar_falha.inicio.errors }}
+							{{form_filtrar_falha.inicio}}
 						</div>
 
 						<div class="span2">
-						{{form_filtrar_falha_por_produto.fim.label}}<br />
-						{{ form_filtrar_falha_por_produto.fim.errors }}
-						{{form_filtrar_falha_por_produto.fim}}
-					</div>
-				
-						<div class="span8">
-						{{form_filtrar_falha_por_produto.subproduto.label}}<br />
-						{{form_filtrar_falha_por_produto.fim.erros}}
-						{{form_filtrar_falha_por_produto.subproduto}}
+						{{form_filtrar_falha.fim.label}}<br />
+						{{ form_filtrar_falha.fim.errors }}
+						{{form_filtrar_falha.fim}}
 						</div>
+				
+						<div class="span4">
+						{{form_filtrar_falha.subproduto.label}}<br />
+						{{form_filtrar_falha.subproduto.erros}}
+						{{form_filtrar_falha.subproduto}}
+						</div>
+						
+						<div class="span4">
+						{{form_filtrar_falha.funcionario.label}}<br />
+						{{form_filtrar_falha.funcionario.erros}}
+						{{form_filtrar_falha.funcionario}}
+						</div>
+						
 
 					</div>
-					<button id="filtrar-por-subproduto-btn" name="filtrar-por-subproduto-btn" value="filtrar" class="btn btn-primary">Filtrar por Sub Produto</button>
+					<button id="filtrar-indicadores-btn" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-primary">Filtrar</button>
 				</form>
-
-				{% if filtro and filtro_subproduto %}
-				<h5>Falhas</h5>
-				<strong>Total de Perda</strong>: {% if total_por_tipo_perda.total %}{{total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
-				<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
-				<h5>Testes</h5>
-				<strong>Total Funcional Direto</strong> {% if total_funcional_direto.total %}{{total_funcional_direto.total}}{% else %}0{% endif %}<br />
-
-				<hr />
 				
-				
-				<h4>Resultado de Falhas de Reparo:</h4>
-				<table class="table table-condensed table-hover table-rounded">
+				{% if filtro %}
+				{% for subprodutodic in lista_dicionario_retorno %}
+				<div class="well well-small">
+					<h4>{{subprodutodic.subproduto}}}</h4>
+					<div class="row-fluid">
+						<div class="span6">
+							<h5>Falhas</h5>
+							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
+							<strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda}}<br />
+							
+							<strong>Total de Reparo</strong>: {% if subprodutodic.total_por_tipo_reparo.total %} {{subprodutodic.total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
+							<strong>Indicador de Reparo</strong>: {{subprodutodic.indicador_reparo}}<br />
+						</div>
+						<div class="span6">
+							<h5>Testes</h5>
+							<strong>Total Testado</strong>: {% if subprodutodic.total_testado.total %}{{subprodutodic.total_testado.total}}{% else %}0{% endif %}<br />
+							<strong>Total Funcional Geral</strong>: {{total_geral_funcional}}<br />
+							<strong>Indicador Funcional Geral:</strong> {{subprodutodic.indicador_funcional_geral}}<br />
+
+							<strong>Total Funcional Sem Reparar:</strong> {% if subprodutodic.total_funcional_direto.total %}{{subprodutodic.total_funcional_direto.total}}{% else %}0{% endif %}<br />
+						<strong>Indicador Funcional Sem Reparar:</strong> {{subprodutodic.indicador_funcional_direto}}<br />
+							
+							
+							
+							
+							
+						</div>
+					</div>
+					<hr />
+					<h5>Resultado de Falhas de Reparo:</h5>
+					<table class="table table-condensed table-hover table-rounded">
 					<thead>
 						<tr>
 							<th>Código</th>
 							<th>Descrição</th>
 							<th>Quantidade</th>
+							<th>%</th>
 						</tr>
 					</thead>
 					<tbody>
-						{% for linha in total_por_falha_reparo %}
+						{% for linha in subprodutodic.total_por_falha_reparo %}
 							<tr>
 								<td>{{linha.falha__codigo}}</td>
 								<td>{{linha.falha__descricao}}</td>
 								<td>{{linha.total}}</td>
+								<td>{% widthratio linha.total subprodutodic.total_por_tipo_reparo.total 100 %} %</td>
 							</tr>
 						{% endfor %}
 					</tbody>
 				</table>
 
-				<h4>Resultado de Falhas de Perda:</h4>
-				<table class="table table-condensed table-hover table-rounded">
+					<h5>Resultado de Falhas de Perda:</h5>
+					<table class="table table-condensed table-hover table-rounded">
 					<thead>
 						<tr>
 							<th>Código</th>
 							<th>Descrição</th>
 							<th>Quantidade</th>
+							<th>%</th>
 						</tr>
 					</thead>
 					<tbody>
-						{% for linha in total_por_falha_perda %}
+						{% for linha in subprodutodic.total_por_falha_perda %}
 							<tr>
 								<td>{{linha.falha__codigo}}</td>
 								<td>{{linha.falha__descricao}}</td>
 								<td>{{linha.total}}</td>
+								<td>{% widthratio linha.total subprodutodic.total_por_tipo_perda.total 100 %} %</td>
 							</tr>
 						{% endfor %}
 					</tbody>
 				</table>
-				<hr />
+				</div>
 				
-							{% endif %}
-			
+				{% endfor %}
+				{% endif %}
 
-			<h4>Filtrar por Funcionário</h4>
-			
-			<form method="POST" id="filtrar-por-subproduto">
-					{% csrf_token %}
-				<div class="row-fluid">
-			
-					<div class="span2">
-						{{fom_filtrar_falha_por_funcionario.inicio.label}}<br />
-						{{ fom_filtrar_falha_por_funcionario.inicio.errors }}
-						{{fom_filtrar_falha_por_funcionario.inicio}}
-					</div>
-
-					<div class="span2">
-					{{fom_filtrar_falha_por_funcionario.fim.label}}<br />
-					{{fom_filtrar_falha_por_funcionario.fim.errors }}
-					{{fom_filtrar_falha_por_funcionario.fim}}
-				</div>
-			
-					<div class="span8">
-					{{fom_filtrar_falha_por_funcionario.funcionario.label}}<br />
-					{{fom_filtrar_falha_por_funcionario.funcionario.erros}}
-					{{fom_filtrar_falha_por_funcionario.funcionario}}
-					</div>
-
-				</div>
-				<button id="filtrar-por-funcionario-btn" name="filtrar-por-funcionario-btn" value="filtrar" class="btn btn-primary">Filtrar por Funcionário</button>
-			</form>
-
-			{% if filtro and filtro_funcionario %}
-			<h4>Falhas</h4>
-			<strong>Total de Perda</strong>: {% if total_por_tipo_perda.total %}{{total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
-			<strong>Total de Reparo</strong>: {% if total_por_tipo_reparo.total %} {{total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
-			
-			<h4>Testes</h4>
-			<strong>Total Testado</strong>: {{total_testado.total}}<br />
-			<strong>Total Reparado</strong>: {{total_reparado.total}}<br />
-			<strong>Total Perda</strong>: {{total_perda.total}}<br />
-			
-			<h4>Resultado de Falhas de Reparo:</h4>
-			<table class="table table-condensed table-hover table-rounded">
-				<thead>
-					<tr>
-						<th>Código</th>
-						<th>Descrição</th>
-						<th>Quantidade</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for linha in total_por_falha_reparo %}
-						<tr>
-							<td>{{linha.falha__codigo}}</td>
-							<td>{{linha.falha__descricao}}</td>
-							<td>{{linha.total}}</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-
-			<h4>Resultado de Falhas de Perda:</h4>
-			<table class="table table-condensed table-hover table-rounded">
-				<thead>
-					<tr>
-						<th>Código</th>
-						<th>Descrição</th>
-						<th>Quantidade</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for linha in total_por_falha_perda %}
-						<tr>
-							<td>{{linha.falha__codigo}}</td>
-							<td>{{linha.falha__descricao}}</td>
-							<td>{{linha.total}}</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-
-			
-			{% endif %}
 			
 			
 		</div>

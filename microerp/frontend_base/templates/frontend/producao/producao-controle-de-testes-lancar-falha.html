@@ -179,7 +179,7 @@ $('#lancar_testes').click(function(e){
 	perda = $('#id_quantidade_perdida').val()
 	if ( perda != soma){
 		alert('Erro! Quantidade de Perda (' + perda +') deve ser igual à quantidade de falhas lançadas! ('+ soma +')')
-		$("#alerta-falhas-perda").html('<div class="alert alert-danger">Atenção! Preencha o formulário abaixo identificando a(s) ' + perda + ' falhas apontada</div>');
+		$("#alerta-falhas-perda").html('<div class="alert alert-danger">Atenção! Preencha o formulário abaixo identificando a(s) ' + perda + ' falhas apontadas</div>');
 		e.preventDefault();
 	}
 	// checa quantidade de reparo
@@ -190,7 +190,7 @@ $('#lancar_testes').click(function(e){
 	reparo = $('#id_quantidade_reparada_funcional').val()
 	if ( reparo != soma){
 		alert('Erro! Quantidade de Reparo (' + reparo +') deve ser igual à quantidade de falhas lançadas! ('+ soma +')')
-		$("#alerta-falhas-reparo").html('<div class="alert alert-danger">Atenção! Preencha o formulário abaixo identificando a(s) ' + reparo + ' falhas apontada</div>');
+		$("#alerta-falhas-reparo").html('<div class="alert alert-danger">Atenção! Preencha o formulário abaixo identificando a(s) ' + reparo + ' falhas apontadas</div>');
 		e.preventDefault();
 	}
 });
