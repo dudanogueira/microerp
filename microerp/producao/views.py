@@ -3649,8 +3649,6 @@ def controle_de_testes_producao(request):
             fim = form_filtrar_falha.cleaned_data['fim']
             subprodutos_analisar = form_filtrar_falha.cleaned_data['subproduto']
             funcionario = form_filtrar_falha.cleaned_data['funcionario']
-            falhas = LinhaLancamentoFalhaDeTeste.objects.all()
-            lancamentos = LancamentoDeFalhaDeTeste.objects.all()
             lista_dicionario_retorno = []
             if subprodutos_analisar:
                 # escolhido somente um subproduto. loop único
@@ -3659,93 +3657,61 @@ def controle_de_testes_producao(request):
                 # escolhido todos os subprodutos. loop somente nos ativos e compostos
                 subprodutos = SubProduto.objects.filter(ativo=True, tipo_de_teste=2)
             for subproduto in subprodutos:
-                if inicio and fim:
-                    falhas = falhas.filter(
-                        lancamento_teste__data_lancamento__range=(inicio,fim)
-                    )
-                    lancamentos = lancamentos.filter(
-                        data_lancamento__range=(inicio,fim)
-                    )
-                if subproduto:
-                    falhas = falhas.filter(
-                        lancamento_teste__subproduto=subproduto
-                    )
-                    lancamentos = lancamentos.filter(
-                        subproduto=subproduto
-                    )
-                if funcionario:
-                    falhas = falhas.filter(
-                        lancamento_teste__funcionario_testador=funcionario
-                    )
-                    lancamentos = lancamentos.filter(
-                        funcionario_testador=funcionario
-                    )
-                total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
-                total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
-                # total por tipo de falha
-                total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
-                total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
-                # total funcional direto do lancamento
-                total_testado = lancamentos.aggregate(total=Sum('quantidade_total_testada'))
-                total_funcional_direto = lancamentos.aggregate(total=Sum('quantidade_funcional_direta'))
-                total_funcional_reparado = lancamentos.aggregate(total=Sum('quantidade_reparada_funcional'))
-                # total funcional (funcional direto + reparados)
-                total_geral_funcional = total_funcional_direto['total'] + total_funcional_reparado['total']
-                # indicadores
-                indicador_funcional_geral = total_geral_funcional / float(total_testado['total'])
-                indicador_funcional_direto = total_funcional_direto['total'] / float(total_testado['total'])
-                indicador_perda = total_por_tipo_perda['total'] / float(total_testado['total'])
-                indicador_reparo = total_por_tipo_reparo['total'] / float(total_testado['total'])
-                dicionario = {
-                        'subproduto': subproduto,
-                        'total_testado': total_testado,
-                        'total_funcional_direto': total_funcional_direto,
-                        'total_geral_funcional': total_geral_funcional,
-                        'indicador_funcional_geral': indicador_funcional_geral,
-                        'indicador_funcional_direto': indicador_funcional_direto,
-                        'total_por_falha_perda': total_por_falha_perda,
-                        'total_por_falha_reparo': total_por_falha_reparo,
-                        'total_por_tipo_perda': total_por_tipo_perda,
-                        'indicador_perda': indicador_perda,
-                        'total_por_tipo_reparo': total_por_tipo_reparo,
-                        'indicador_reparo': indicador_reparo,
-                    }
-                lista_dicionario_retorno.append(dicionario)
-    # filtra falhas por funcionario
-    if request.POST.get('filtrar-por-funcionario-btn', None):
-        fom_filtrar_falha_por_funcionario = FormFiltrarFalhasPorFuncionario(request.POST)
-        if fom_filtrar_falha_por_funcionario.is_valid():
-            messages.info(request, u"Filtrando por Funcionário")
-            filtro_funcionario = True
-            filtro = True
-            inicio = fom_filtrar_falha_por_funcionario.cleaned_data['inicio']
-            fim = fom_filtrar_falha_por_funcionario.cleaned_data['fim']
-            funcionario = fom_filtrar_falha_por_funcionario.cleaned_data['funcionario']
-            falhas = LinhaLancamentoFalhaDeTeste.objects.all()
-            lancamentos = LancamentoDeFalhaDeTeste.objects.all()
-            if inicio and fim:
-                falhas = falhas.filter(
-                    lancamento_teste__data_lancamento__range=(inicio,fim)
-                )
-                lancamentos = lancamentos.filter(
-                    data_lancamento__range=(inicio,fim)
-                )
-            if funcionario:
-                falhas = falhas.filter(
-                    lancamento_teste__funcionario_testador=funcionario
-                )
-                lancamentos = lancamentos.filter(
-                    funcionario_testador=funcionario
-                )
-            # totais de falha
-            total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
-            total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
-            total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
-            total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
-            # totais do lancamento
-            total_testado = lancamentos.aggregate(total=Sum('quantidade_total_testada'))
-            total_reparado = lancamentos.aggregate(total=Sum('quantidade_reparada_funcional'))
-            total_perda = lancamentos.aggregate(total=Sum('quantidade_perdida'))
+                falhas = LinhaLancamentoFalhaDeTeste.objects.all()
+                lancamentos = LancamentoDeFalhaDeTeste.objects.all()
+                if subproduto.lancamentodefalhadeteste_set.count():
+                    if inicio and fim:
+                        falhas = falhas.filter(
+                            lancamento_teste__data_lancamento__range=(inicio,fim)
+                        )
+                        lancamentos = lancamentos.filter(
+                            data_lancamento__range=(inicio,fim)
+                        )
+                    if subproduto:
+                        falhas = falhas.filter(
+                            lancamento_teste__subproduto=subproduto
+                        )
+                        lancamentos = lancamentos.filter(
+                            subproduto=subproduto
+                        )
+                    if funcionario:
+                        falhas = falhas.filter(
+                            lancamento_teste__funcionario_testador=funcionario
+                        )
+                        lancamentos = lancamentos.filter(
+                            funcionario_testador=funcionario
+                        )
+                    total_por_falha_perda = falhas.filter(falha__tipo='perda').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+                    total_por_falha_reparo = falhas.filter(falha__tipo='reparo').values('falha__codigo', 'falha__descricao').order_by('falha__codigo').annotate(total=Sum('quantidade'))
+                    # total por tipo de falha
+                    total_por_tipo_perda = falhas.filter(falha__tipo='perda').aggregate(total=Sum('quantidade'))
+                    total_por_tipo_reparo = falhas.filter(falha__tipo='reparo').aggregate(total=Sum('quantidade'))
+                    # total funcional direto do lancamento
+                    total_testado = lancamentos.aggregate(total=Sum('quantidade_total_testada'))
+                    total_funcional_direto = lancamentos.aggregate(total=Sum('quantidade_funcional_direta'))
+                    total_funcional_reparado = lancamentos.aggregate(total=Sum('quantidade_reparada_funcional'))
+                    # total funcional (funcional direto + reparados)
+                    total_geral_funcional = total_funcional_direto['total'] + total_funcional_reparado['total']
+                    # indicadores
+                    indicador_funcional_geral = total_geral_funcional or 0 / float(total_testado['total'])
+                    indicador_funcional_direto = total_funcional_direto['total'] or 0 / float(total_testado['total'])
+                    indicador_perda = total_por_tipo_perda['total'] or 0 / float(total_testado['total'])
+                    indicador_reparo = total_por_tipo_reparo['total'] or 0 / float(total_testado['total'])
+                    dicionario = {
+                            'subproduto': subproduto,
+                            'total_testado': total_testado,
+                            'total_funcional_direto': total_funcional_direto,
+                            'total_geral_funcional': total_geral_funcional,
+                            'indicador_funcional_geral': indicador_funcional_geral,
+                            'indicador_funcional_direto': indicador_funcional_direto,
+                            'total_por_falha_perda': total_por_falha_perda,
+                            'total_por_falha_reparo': total_por_falha_reparo,
+                            'total_por_tipo_perda': total_por_tipo_perda,
+                            'indicador_perda': indicador_perda,
+                            'total_por_tipo_reparo': total_por_tipo_reparo,
+                            'indicador_reparo': indicador_reparo,
+                        }
+                    lista_dicionario_retorno.append(dicionario)
     return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
 
 class FormLancaFalhaDeTeste(forms.ModelForm):
