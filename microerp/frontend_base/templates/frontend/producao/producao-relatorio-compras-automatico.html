@@ -97,7 +97,7 @@ $(document).ready(function() {
 		$('#calcular-magem').click(function(e){
 			e.preventDefault();
 			//alert($("#margem-qeps")[0].value);
-			$("#qeps-container").load("{% url "producao:qeps_componentes" %}"+"?margem=" +$("#margem-qeps")[0].value)
+			$("#qeps-container").load("{% url "producao:relatorio_compras_automatico" %}"+"?margem=" +$("#margem-qeps")[0].value)
 		});
 });
 

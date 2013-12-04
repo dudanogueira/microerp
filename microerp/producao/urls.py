@@ -77,9 +77,9 @@ urlpatterns = patterns('',
     # ajax auxs
     url(r'^ordem-de-producao/ajax/producao-combinada/$', 'producao.views.producao_combinada', name='producao_combinada'),
     url(r'^ordem-de-producao/ajax/producao-combinada/calcular$', 'producao.views.producao_combinada_calcular', name='producao_combinada_calcular'),
-    url(r'^ordem-de-producao/ajax/qeps/componentes/$', 'producao.views.qeps_componentes', name='qeps_componentes'),
-    url(r'^ordem-de-producao/ajax/preparar-producao-semana/$', 'producao.views.preparar_producao_semanal', name='preparar_producao_semanal'),
-    url(r'^ordem-de-producao/ajax/preparar-producao-semana/calcular$', 'producao.views.preparar_producao_semanal_calcular', name='preparar_producao_semanal_calcular'),
+    url(r'^ordem-de-producao/ajax/relatorio-compra-componentes-automatico/$', 'producao.views.relatorio_compras_automatico', name='relatorio_compras_automatico'),
+    url(r'^ordem-de-producao/ajax/relatorio-compra-componentes/$', 'producao.views.relatorio_compras', name='relatorio_compras'),
+    url(r'^ordem-de-producao/ajax/relatorio-compra-componentes/calcular$', 'producao.views.relatorio_compras_calcular', name='relatorio_compras_calcular'),
     # arvore de produtos
     url(r'^arvore-de-produto/$', 'producao.views.arvore_de_produto', name='arvore_de_produto'),
     url(r'^arvore-de-produto/ajax/subproduto/(?P<subproduto_id>[0-9]+)/parente/(?P<parente>[0-9]+)/$', 'producao.views.arvore_de_produto_ajax_subproduto', name='arvore_de_produto_ajax_subproduto'),

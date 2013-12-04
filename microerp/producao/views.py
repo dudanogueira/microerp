@@ -2098,7 +2098,7 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
         # dar baixa em todos os items do componentes
         for item in componentes.items():
             # longo ou inteiro, é componente
-            if type(item[0]) == long:
+            if type(item[0]) == long or type(item[0]) == int:
                 #descobre posicao atual do componente no estoque produtor
                 posicao_atual = estoque_produtor.posicao_componente(item[0])
                 # remove da posicao atual
@@ -2306,7 +2306,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             # presentes em get_componentes
             
             for item in get_componentes.items():    
-                if type(item[0]) == long:
+                if type(item[0]) == long or type(item[0]) == int:
                     # verifica se possui a quantidade total deste componente em estoque
                     qtd_componente = item[1]
                     posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
@@ -2396,7 +2396,7 @@ def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicita
         # e incremental o total_produzido do produto com a quantidade solicitada
         # longo ou inteiro, é componente
         # registra a ordem de producao do Produto
-        if type(item[0]) == long:
+        if type(item[0]) == long or type(item[0]) == int:
             #descobre posicao atual do componente no estoque produtor
             posicao_atual = estoque_produtor.posicao_componente(item[0])
             # remove da posicao atual
@@ -2470,7 +2470,7 @@ def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
             estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
             #verifica toda a produção conforme a notação de componentes
             for item in get_componentes.items():
-                if type(item[0]) == long:
+                if type(item[0]) == long or type(item[0]) == int:
                     # verifica se possui a quantidade total deste componente em estoque
                     qtd_componente = item[1]
                     posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
@@ -2623,7 +2623,7 @@ def producao_combinada_calcular(request):
         import decimal
         valor_total_compra = 0
         for item in get_componentes.items():
-            if type(item[0]) == long:
+            if type(item[0]) == long or type(item[0]) == int:
                 # verifica se possui a quantidade total deste componente em estoque
                 qtd_componente = item[1]
                 componente = Componente.objects.get(pk=int(item[0]))
@@ -2671,7 +2671,7 @@ def producao_combinada_calcular(request):
     return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
-def qeps_componentes(request):
+def relatorio_compras_automatico(request):
     '''
     Contabilizar a quantidade de componentes de todos os produtos com o
     multiplicador sendo o QEPS. Para cada subproduto com teste encontrado,
@@ -2721,10 +2721,10 @@ def qeps_componentes(request):
     # calcula a tabelas de leadtime
     tabela_items = []
     valor_total_compra = 0
-    valor_item = 0
+    
     for item in dic.items():
-        
-        if type(item[0]) == long:
+        valor_item = 0
+        if type(item[0]) == long or type(item[0]) == int:
             qtd_componente = item[1]
             posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
             componente = Componente.objects.get(pk=int(item[0]))
@@ -2743,21 +2743,23 @@ def qeps_componentes(request):
             
             tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok, link, valor_item))
             
-    return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-qeps-componentes.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/producao/producao-relatorio-compras-automatico.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
-def preparar_producao_semanal(request):
+def relatorio_compras(request):
+    nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.filter(ativo=True).order_by('-total_funcional')
-    return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/producao/producao-ordem-de-producao-relatorio-de-compras.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
-def preparar_producao_semanal_calcular(request):
+def relatorio_compras_calcular(request):
     agora = datetime.datetime.now()
     if request.POST:
         teste = []
         producao_liberada = True
         dic = {}
+        desconsidera_estoque = request.POST.get('desconsidera-subprodutos-estoque', None)
         # para cada um, descobrir se produto ou subproduto
         quantidade_analisada = []
         for key, value in request.POST.iteritems():
@@ -2797,7 +2799,7 @@ def preparar_producao_semanal_calcular(request):
         import decimal
         valor_total_compra = 0
         for item in get_componentes.items():
-            if type(item[0]) == long:
+            if type(item[0]) == long or type(item[0]) == int:
                 # verifica se possui a quantidade total deste componente em estoque
                 qtd_componente = item[1]
                 # aplica a margem de seguranca
@@ -2810,22 +2812,28 @@ def preparar_producao_semanal_calcular(request):
                 # assume-se que pode produzir com estoque, e que não faltaram componentes
                 pode = True
                 faltou = None
-                if float(qtd_componente) > float(posicao_em_estoque):
+                qtd_componente = decimal.Decimal(qtd_componente)
+                valor_item = 0
+                if float(qtd_componente) > float(posicao_em_estoque) and not desconsidera_estoque:
                     # quantidade menor
                     faltou = float(posicao_em_estoque) - float(qtd_componente)
                     producao_liberada = False
                     pode = False
                     # item de producao, #quantidade_atual, #posicao_estoque, #faltante 
-                    qtd_componente = decimal.Decimal(qtd_componente)
+                    
                     faltou = decimal.Decimal(faltou)
                     # total da compra
                     valor_item = faltou * componente.preco_medio_unitario * -1
                     valor_total_compra += valor_item
                     link = reverse("producao:ver_componente", args=[componente.id])
                     relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, faltou, pode, valor_item, link))
+                if desconsidera_estoque:
+                    valor_item = qtd_componente * componente.preco_medio_unitario
+                    valor_total_compra += valor_item
+                    relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, 0, 0, valor_item, link))
 
              
-    return render_to_response('frontend/producao/producao-ordem-de-producao-preparacao-producao-semanal-calcular.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/producao/producao-ordem-de-producao-relatorio-de-compras-calcular.html', locals(), context_instance=RequestContext(request),)
 
 
 
