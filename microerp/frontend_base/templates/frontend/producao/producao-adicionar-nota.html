@@ -5,7 +5,16 @@
 
 {% block content %}
 
+
 <h1><i class="fa fa-th"></i> <i class="fa fa-paste"></i> Adicionar Nota</h1>
+
+<ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
+    <li class="active"><a href="#entrada-de-notas" class="ajaxtab" data-toggle="tab">Entrada de Nota Fiscal</a></li>
+</ul>
+
+<a href="{% url "producao:lancar_nota" %}"><i class="fa fa-arrow-left"></i> Retornar</a>
+
+
 
 <form method="POST">
     {% csrf_token %}

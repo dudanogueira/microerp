@@ -193,28 +193,42 @@ def importa_nota_sistema(f):
 class FormFiltrarNotaFiscal(forms.Form):
     def __init__(self, *args, **kwargs):
         super(FormFiltrarNotaFiscal, self).__init__(*args, **kwargs)
-        self.fields['fornecedor'].widget.attrs['class'] = 'select2'
+        self.fields['fornecedor'].widget.attrs['class'] = 'select2 input-small'
+        self.fields['inicio'].widget.attrs['class'] = 'datepicker input-small'
+        self.fields['fim'].widget.attrs['class'] = 'datepicker input-small'
+        self.fields['status'].widget.attrs['class'] = 'input-small'
     
-    status = forms.ChoiceField(choices=(('', '---',), ('a', 'Abertas'), ('l', u'Lançadas')), required=False, initial='a')    
-    fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False)
+    status = forms.ChoiceField(choices=(('', 'Todos',), ('a', 'Abertas'), ('l', u'Lançadas')), required=False, initial='a')    
+    fornecedor = forms.ModelChoiceField(queryset=FabricanteFornecedor.objects.all(), required=False, empty_label="Todos os Fornecedores")
+    inicio = forms.DateField(label=u"Início", required=True)
+    fim = forms.DateField(label=u"Fim", required=True)    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
-    if request.POST:
+    try:
+        inicio_lancamentos = NotaFiscal.objects.all().order_by('data_entrada')[0].data_entrada
+        fim_lancamentos = NotaFiscal.objects.all().order_by('-data_entrada')[0].data_entrada
+    except:
+        inicio_lancamentos = None
+        fim_lancamentos = None
+    if inicio_lancamentos:
+        form_initial = {'inicio': inicio_lancamentos, 'fim': fim_lancamentos}
+    else:
+        form_initial = None
+    filtro_notas_form = FormFiltrarNotaFiscal(form_initial)
+    if request.POST.get('filtrar-notas-fiscais-btn', None):
             filtro_notas_form = FormFiltrarNotaFiscal(request.POST)
             if filtro_notas_form.is_valid():
-                notas_exibir = NotaFiscal.objects.all()
                 status = filtro_notas_form.cleaned_data['status']
                 fornecedor = filtro_notas_form.cleaned_data['fornecedor']
+                notas_exibir = NotaFiscal.objects.all().order_by('-criado')
                 if status:
                     notas_exibir = notas_exibir.filter(status=status)
-                else:
-                    notas_exibir = NotaFiscal.objects.all()
                 if fornecedor:
                     notas_exibir = notas_exibir.filter(fabricante_fornecedor=fornecedor)
-    else:
-        notas_exibir = NotaFiscal.objects.filter(status='a')
-        filtro_notas_form = FormFiltrarNotaFiscal()
+            notas_filtro_total_sem_imposto = notas_exibir.aggregate(Sum('total_sem_imposto'))
+            notas_filtro_total_com_imposto = notas_exibir.aggregate(Sum('total_com_imposto'))
+
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
     if request.GET.get('tipo', None) == 'nfe':
         tipo = 'nfe'
@@ -765,8 +779,8 @@ def listar_fabricantes_fornecedores(request):
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     fabricante_fornecedor = get_object_or_404(FabricanteFornecedor, pk=fabricante_fornecedor_id)
-    fornecidos = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__id', 'componente__ativo', 'componente__descricao').annotate(total=Sum('quantidade')).order_by('-total')
-    fabricados = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor, nota__status='l').values('componente__part_number', 'componente__medida', 'componente__ativo', 'componente__id', 'componente__descricao').annotate(total=Sum('quantidade')).order_by('-total')
+    linhas_de_nota_do_fornecedor = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor)
+    linhas_de_nota_do_fabricante = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor)
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(fornecedor=fabricante_fornecedor)
     return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
     
@@ -920,7 +934,6 @@ class FiltroHistoricos(forms.Form):
     inicio_historicos = forms.DateField(label=u"Início", required=True)
     fim_historicos = forms.DateField(label=u"Fim", required=True)
     
-
 @user_passes_test(possui_perfil_acesso_producao)
 def listar_estoque(request):
     try:
@@ -930,7 +943,7 @@ def listar_estoque(request):
         data_ultimo_movimento = None
         data_primeiro_movimento = None
     # totalizadores
-    totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')[:10]
+    totalizadores = RegistroValorEstoque.objects.all()[:10]
     try:
         data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-criado')[0:1].data.strftime("%d/%m/%Y")
         data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('-criado').reverse()[0].data.strftime("%d/%m/%Y")

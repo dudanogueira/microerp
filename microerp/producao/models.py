@@ -228,7 +228,17 @@ class Componente(models.Model):
     
     def total_unico_participacoes(self):
         return self.opcaolinhasubproduto_set.count() + self.linhacomponenteavulsodoproduto_set.count()
-        
+    
+    def matriz_subproduto_participacao(self):
+        matriz = []
+        for subproduto in SubProduto.objects.filter(ativo=True):
+            try:
+                participacao_no_subproduto = subproduto.get_componentes()[self.pk]
+            except:
+                participacao_no_subproduto = None
+            if participacao_no_subproduto:
+                matriz.append((subproduto, participacao_no_subproduto))
+        return matriz
     
     class Meta:
         unique_together = (('identificador', 'tipo'))
@@ -482,10 +492,16 @@ class NotaFiscal(models.Model):
         ordering = ['-criado']
     
     def numero_de_serie(self):
-        return self.numero[0:3]
+        if len(self.numero) > 3:
+            return self.numero[0:3]
+        else:
+            return None
     
     def numero_identificador(self):
-        return self.numero[3:]
+        if len(self.numero) > 3:
+            return self.numero[3:]
+        else:
+            return self.numero
     
     def lancar_no_estoque(self, user_id=None):
         '''lanca a nota fiscal no estoque configurado como receptor'''
@@ -1414,7 +1430,6 @@ class RegistroSaidaDeTesteSubProduto(models.Model):
         verbose_name = u"Registro de Saída de Testes do Sub Produto"
         verbose_name_plural = u"Registros de Saída de Testes do Sub Produto"
         ordering = ['-criado']
-    
     
     quantidade = models.IntegerField(blank=False, null=False)
     subproduto = models.ForeignKey('SubProduto')

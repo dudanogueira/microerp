@@ -41,8 +41,6 @@
 <small>* Quantidade Estimada de Produção Semanal</small><br />
 <small>** Quantidade Máxima de Produto Estocável</small>
 
-
-
 <h2><i class="fa fa-list-ul"></i> Sub Produtos</h2>
 
 <table class="table table-condensed table-hover table-rounded">
@@ -99,7 +97,7 @@
 				{% endif %}
 			</td>
 			
-			<td {% if not subproduto.tipo_de_teste %}class="alert-success alert"{%endif%}>{{subproduto.maximo_produzivel_agrupado}}</td>
+			<td class="{% if subproduto.maximo_produzivel_agrupado > 0 %}alert alert-success{% else %} alert alert-danger {%endif%}">{{subproduto.maximo_produzivel_agrupado}}</td>
 			<td>{{subproduto.get_tipo_de_teste_display}}</td>
 			<td>R$ {{subproduto.custo|floatformat:2}}</td>
 		</tr>

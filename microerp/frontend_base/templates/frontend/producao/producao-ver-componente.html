@@ -260,35 +260,25 @@
 			</tbody>
 		</table>
             
-			<h2>Participação como PADRÃO em Linha de Sub Produto</h2>
+		<h2>Participação como PADRÃO por Sub Produto</h2>
+		{# A tabela deve mostrar por sub produto e quantas vezes o componente aparece nesse sub produto. #}
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
-						<th>Item</th>
 						<th>Sub Produto</th>
-						<th>Quantidade</th>
 						<th>Nome</th>
 						<th>Descrição</th>
-						<th># Linha</th>
-						<th>Padrão</th>
+						<th>Quantidade</th>
 					</tr>
 				</thead>
 				<tbody>
-					{% for participacao in participacoes_linha_componente_padrao %}
+					{% for participacao in componente.matriz_subproduto_participacao %}
 					<tr>
-						<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
-						</td>
-						<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
-						<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
-												
-						<td>{{participacao.linha.subproduto.nome}}</td>
-						<td>{{participacao.linha.subproduto.descricao}}</td>
-												
-						<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
-						<td>{% if participacao.padrao %}
-							<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
-							{% endif %}
-						</td>
+						<td><a href="{% url "producao:ver_subproduto" participacao.0.id %}#linhas-componente">{{participacao.0.part_number}}</a></td>
+						<td>{{participacao.0.nome}}</td>
+						<td>{{participacao.0.descricao}}</td>
+						
+						<td><span class="badge badge-warning">{{participacao.1|floatformat:2}}</span></td>
 					</tr>
 					{% endfor %}
 					<tr>
@@ -302,55 +292,94 @@
 					</tr>
 				</tbody>
 			</table>
+		
+		<h2>Participação como PADRÃO em Linha de Sub Produto</h2>
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>Item</th>
+					<th>Sub Produto</th>
+					<th>Quantidade</th>
+					<th>Nome</th>
+					<th>Descrição</th>
+					<th># Linha</th>
+					<th>Padrão</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for participacao in participacoes_linha_componente_padrao %}
+				<tr>
+					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
+					</td>
+					<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
+					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+												
+					<td>{{participacao.linha.subproduto.nome}}</td>
+					<td>{{participacao.linha.subproduto.descricao}}</td>
+												
+					<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
+					<td>{% if participacao.padrao %}
+						<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td></td>
+					<td></td>
+					<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_padrao_subproduto}}</span></strong>
+					</td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
             
 
-			<h2>Participação como ALTERNATIVO em Linha de Sub Produto</h2>
-			<table class="table table-condensed table-hover table-rounded">
-				<thead>
-					<tr>
-						<th>Item</th>
-						<th>Sub Produto</th>
-						<th>Quantidade</th>
-						<th>Nome</th>
-						<th>Descrição</th>
-						<th># Linha</th>
-						<th>Padrão</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for participacao in participacoes_linha_componente_alternativo %}
-					<tr>
-						<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
-						</td>
-						<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
-						<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+		<h2>Participação como ALTERNATIVO em Linha de Sub Produto</h2>
+		<table class="table table-condensed table-hover table-rounded">
+			<thead>
+				<tr>
+					<th>Item</th>
+					<th>Sub Produto</th>
+					<th>Quantidade</th>
+					<th>Nome</th>
+					<th>Descrição</th>
+					<th># Linha</th>
+					<th>Padrão</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for participacao in participacoes_linha_componente_alternativo %}
+				<tr>
+					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
+					</td>
+					<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
+					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 												
-						<td>{{participacao.linha.subproduto.nome}}</td>
-						<td>{{participacao.linha.subproduto.descricao}}</td>
+					<td>{{participacao.linha.subproduto.nome}}</td>
+					<td>{{participacao.linha.subproduto.descricao}}</td>
 												
-						<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
-						<td>{% if participacao.padrao %}
-							<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
-							{% endif %}
-						</td>
-					</tr>
-					{% endfor %}
-					<tr>
-						<td></td>
-						<td></td>
-						<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_alternativo_subproduto}}</span></strong>
-						</td>
-						<td></td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
-            
-
-            
-            
+					<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
+					<td>{% if participacao.padrao %}
+						<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
+						{% endif %}
+					</td>
+				</tr>
+				{% endfor %}
+				<tr>
+					<td></td>
+					<td></td>
+					<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_alternativo_subproduto}}</span></strong>
+					</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			</tbody>
+		</table>
 	</div>
         
 	<div class="tab-pane fade in" id="memoria">
