@@ -7,10 +7,11 @@
 				<th>Componente</th>
 				<th>Descrição</th>
 				<th>Quantidade</th>
-				<th>Preço Unitário</th>
+				<th>Preço Unit.</th>
 				<th>Preço Total</th>
 				<th>I/N</th>
-				<th>LT (S)</th>
+				<th>LT</th>
+				<th>IPP</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -24,6 +25,7 @@
 				<td>R$  {{linha.custo|floatformat:2}}</td>
 				<td>{{linha.opcao_padrao.componente.nacionalidade|upper}}</td>
 				<td>{{linha.opcao_padrao.componente.lead_time}}</td>
+				<td>{{linha.ipp|floatformat:2}} %</td>
 			</tr>
 			{% endfor %}
 		</tbody>
@@ -37,7 +39,7 @@
 		<div class="accordion-group">
 			<div class="accordion-heading">
 				<a class="accordion-toggle" data-target="#collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}-{{parent}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" subproduto_agregado.subproduto_agregado.id subproduto.id %}?parent=forloop-{{forloop.counter}}-{{subproduto_agregado.id}}" data-toggle="collapse"  href="#collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}">
-					<i class="fa fa-list-ul"></i> <span class="badge badge-warning"> {{subproduto_agregado.quantidade}} UND</span>  {{subproduto_agregado.subproduto_agregado}} - R$ {{subproduto_agregado.subproduto_agregado.custo|floatformat:2}}
+					<i class="fa fa-list-ul"></i> <span class="badge badge-warning"> {{subproduto_agregado.quantidade}} UND</span>  {{subproduto_agregado.subproduto_agregado}} - R$ {{subproduto_agregado.subproduto_agregado.custo|floatformat:2}} - IPP: {{subproduto_agregado.ipp|floatformat:2}} %
 				</a>
 			</div>
 			<div id="collapse-subproduto{{parente}}-subprodutoagregado-{{subproduto_agregado.id}}-{{parent}}" class="accordion-body collapse">

@@ -4,7 +4,7 @@
 <div class="container-fluid" id="relatorio-impressao-produto">
 	<h1>Composição de Produto</h1>
 	<div class="well well-small">
-		<h2>Produto: {{produto.part_number}} - {{produto.nome}} - {{produto.descricao}} - R$ R${{produto.custo|floatformat:2}} </h2>
+		<h2>Produto: {{produto.part_number}} - {{produto.nome}} - {{produto.descricao}} - R$ {{produto.custo|floatformat:2}} </h2>
 	
 		{% if produto.linhacomponenteavulsodoproduto_set.all %}
 		<table class="table table-condensed table-hover table-rounded">

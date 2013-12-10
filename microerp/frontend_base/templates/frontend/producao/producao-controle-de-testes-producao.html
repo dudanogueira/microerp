@@ -177,8 +177,7 @@
 					<div class="row-fluid">
 						<div class="span6">
 							<h5>Falhas</h5>
-							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
-							<strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda}}<br />
+							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %} <strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda}}<br />
 							
 							<strong>Total de Reparo</strong>: {% if subprodutodic.total_por_tipo_reparo.total %} {{subprodutodic.total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
 							<strong>Indicador de Reparo</strong>: {{subprodutodic.indicador_reparo}}<br />

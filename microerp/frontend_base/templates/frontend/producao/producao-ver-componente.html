@@ -153,8 +153,8 @@
 		<h4>Histórico de Valores Lançados</h4>
 		<div class="row-fluid">
 			<div class="span12">
-				<h6>Gráfico R$ X Lançamento
-					<canvas id="canvas" height="300px" width=""></canvas>
+				<h6>Gráfico R$ X Lançamento</h6>
+					<canvas id="canvas" height="300px" width="700px"></canvas>
 				</div>
     
 			</div>
@@ -232,9 +232,9 @@
 				<tr>
 					<th>Item</th>
 					<th>Produto</th>
-					<th>Quantidade</th>
 					<th>Nome</th>
 					<th>Descrição</th>
+					<th>Quantidade</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -243,19 +243,20 @@
 					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 					</td>
 					<td><a href="{% url "producao:ver_produto" participacao.produto.id %}#componentes-avulsos">{{participacao.produto.part_number}}</a></td>
-					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 					<td>{{participacao.produto.nome}}</td>
 					<td>{{participacao.produto.descricao}}</td>
+					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 
 				</tr>
 				{% endfor %}
 				<tr>
 					<td></td>
 					<td></td>
+					<td></td>
+					<td></td>
+					
 					<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_avulsa_produto}}</span></strong>
 					</td>
-					<td></td>
-					<td></td>
 				</tr>
 			</tbody>
 		</table>
@@ -284,6 +285,7 @@
 					<tr>
 						<td></td>
 						<td></td>
+						<td></td>
 						<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_padrao_subproduto}}</span></strong>
 						</td>
 						<td></td>
@@ -299,9 +301,9 @@
 				<tr>
 					<th>Item</th>
 					<th>Sub Produto</th>
-					<th>Quantidade</th>
 					<th>Nome</th>
 					<th>Descrição</th>
+					<th>Quantidade</th>
 					<th># Linha</th>
 					<th>Padrão</th>
 				</tr>
@@ -312,11 +314,9 @@
 					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 					</td>
 					<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
-					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
-												
 					<td>{{participacao.linha.subproduto.nome}}</td>
 					<td>{{participacao.linha.subproduto.descricao}}</td>
-												
+					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>												
 					<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
 					<td>{% if participacao.padrao %}
 						<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
@@ -327,9 +327,10 @@
 				<tr>
 					<td></td>
 					<td></td>
+					<td></td>
+					<td></td>
 					<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_padrao_subproduto}}</span></strong>
 					</td>
-					<td></td>
 					<td></td>
 					<td></td>
 				</tr>
@@ -343,9 +344,9 @@
 				<tr>
 					<th>Item</th>
 					<th>Sub Produto</th>
-					<th>Quantidade</th>
 					<th>Nome</th>
 					<th>Descrição</th>
+					<th>Quantidade</th>
 					<th># Linha</th>
 					<th>Padrão</th>
 				</tr>
@@ -371,10 +372,10 @@
 				<tr>
 					<td></td>
 					<td></td>
+					<td></td>
+					<td></td>
 					<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_alternativo_subproduto}}</span></strong>
 					</td>
-					<td></td>
-					<td></td>
 					<td></td>
 					<td></td>
 				</tr>

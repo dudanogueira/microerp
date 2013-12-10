@@ -39,10 +39,11 @@
 							<th>Componente</th>
 							<th>Descrição</th>
 							<th>Quantidade</th>
-							<th>Preço Unitário</th>
+							<th>Preço Unit.</th>
 							<th>Preço Total</th>
 							<th>I/N</th>
-							<th>LT (s)</th>
+							<th>LT</th>
+							<th>IPP</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -56,6 +57,7 @@
 							<td>R$ {{linha.custo|floatformat:2}}</td>
 							<td>{{linha.componente.nacionalidade|upper}}</td>
 							<td>{{linha.componente.lead_time}}</td>
+							<td>{{linha.ipp|floatformat:2}} %</td>
 						</tr>
 						{% endfor %}
 												
@@ -70,7 +72,7 @@
 					<div class="accordion-group">
 						<div class="accordion-heading">
 							<a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse"  href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}?parent=produto{{produto.id}}-linha{{linha.id}}-forloop-{{forloop.counter}}-{{linha.subproduto.id}}">
-								<i class="fa fa-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span> {{linha.subproduto}} - R${{linha.subproduto.custo|floatformat:2}}
+								<i class="fa fa-list-ul"></i> <span class="badge badge-warning">{{linha.quantidade}} UND</span> {{linha.subproduto}} - R${{linha.subproduto.custo|floatformat:2}} - IPP: {{linha.ipp|floatformat:2}} %
 							</a>
 						</div>
 

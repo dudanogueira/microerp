@@ -97,7 +97,7 @@
 				{% endif %}
 			</td>
 			
-			<td class="{% if subproduto.maximo_produzivel_agrupado > 0 %}alert alert-success{% else %} alert alert-danger {%endif%}">{{subproduto.maximo_produzivel_agrupado}}</td>
+			<td>{{subproduto.maximo_produzivel_agrupado}}</td>
 			<td>{{subproduto.get_tipo_de_teste_display}}</td>
 			<td>R$ {{subproduto.custo|floatformat:2}}</td>
 		</tr>

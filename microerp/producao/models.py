@@ -607,7 +607,7 @@ class SubProduto(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        return "%s-SUB%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+        return "%s %s - %s" % (self.part_number, self.nome, self.descricao)
     
     class Meta:
         verbose_name = "Sub Produto"
@@ -779,7 +779,7 @@ class SubProduto(models.Model):
             dic_componentes = linha.subproduto_agregado.dicionario_quantidades_utilizadas_padrao(dic_componentes, fator_multiplicador=linha.quantidade)
         return dic_componentes
 
-    def save(self):
+    def save(self, *args, **kwargs):
         """Auto-populate an empty slug field from the MyModel name and
         if it conflicts with an existing slug then append a number and try
         saving again.
@@ -1621,12 +1621,13 @@ class FalhaDeTeste(models.Model):
     
     class Meta:
         ordering = ['-criado']
+        unique_together = (('tipo', 'codigo'))
         
     def __unicode__(self):
         return "%s - %s: %s" % (self.tipo.upper(), self.codigo, self.descricao)
     
     tipo = models.CharField(blank=False, null=False, max_length=100, choices=TIPO_FALHA_DE_TESTE_CHOICES, default="perda")
-    codigo = models.CharField("Código", blank=False, max_length=100, unique=True)
+    codigo = models.CharField("Código", blank=False, max_length=100)
     descricao = models.TextField(u"Descrição", blank=False, null=False)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)

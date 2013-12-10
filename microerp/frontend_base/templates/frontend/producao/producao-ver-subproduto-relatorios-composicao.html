@@ -48,6 +48,7 @@
 				<thead>
 					<tr>
 						<th>Sub Produto</th>
+						<th>Nome</th>
 						<th>Descrição</th>
 						<th>Quantidade</th>
 						<th>Preço Unitário</th>
@@ -59,6 +60,7 @@
 					{% for linha in subproduto.linhasubprodutos_agregados.all %}
 					<tr>
 						<td>{{linha.subproduto_agregado.part_number}}</td>
+						<td>{{linha.subproduto_agregado.nome}}</td>
 						<td>{{linha.subproduto_agregado.descricao}}</td>
 						<td>{{linha.quantidade}}</td>
 						<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
@@ -74,7 +76,7 @@
 	<h1>Composição de Sub Produtos Agregados</h1>
 	{% for subproduto in subprodutos_abaixo %}
 	<div class="well well-small">
-		<h2>Sub Produto: {{subproduto}} - R${{subproduto.custo|floatformat:2}}</h2>
+		<h2>Sub Produto: {{subproduto}} - R${{subproduto.custo|floatformat:2}} </h2>
 
 			{% if subproduto.linhasubproduto_set.all %}
 			<table class="table table-condensed table-hover table-rounded">
@@ -132,7 +134,7 @@
 							<td>{{linha.subproduto_agregado.descricao}}</td>
 							<td>{{linha.quantidade}}</td>
 							<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
-							<td>R$ {{linha.custo|floatformat:2}} ({{linha.ipp|floatformat:2}} % de ipp)</td>
+							<td>R$ {{linha.custo|floatformat:2}}</td>
 							<td>{{linha.ipp|floatformat:2}} %</td>
 						</tr>
 						{% endfor %}
