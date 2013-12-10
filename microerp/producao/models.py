@@ -857,7 +857,10 @@ class SubProduto(models.Model):
                 print "Item Componente: %s" % item[0]
                 print "Posicao em estoque: %s" % posicao_em_estoque_produtor
                 print "Quantidade necessaria de producao: %s" % item[1]
-                diferenca = float(posicao_em_estoque_produtor) / float(item[1])
+                if item[1] != 0:
+                    diferenca = float(posicao_em_estoque_produtor) / float(item[1])
+                else:
+                    diferenca = 0
                 print "Diferença: %s" % diferenca
                 print "####"*10
                 modulos.append(diferenca)
@@ -897,7 +900,10 @@ class SubProduto(models.Model):
             for item in componentes.items():
                 if type(item[0]) == long:
                     posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
-                    diferenca = float(posicao_em_estoque_produtor) / float(item[1])
+                    if item[1]:
+                        diferenca = float(posicao_em_estoque_produtor) / float(item[1])
+                    else:
+                        diferenca = 0
                     modulos.append(diferenca)
                 elif type(item[0]) == str:
                     # subproduto
