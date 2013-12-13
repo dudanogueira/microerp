@@ -70,7 +70,7 @@ class SelecionaProdutosField(AutoModelSelect2MultipleField):
     search_fields = ['codigo', 'nome__icontains', 'descricao__icontains']
 
 class SelecionaProdutos(forms.Form):
-    produtos_adicionar = SelecionaProdutosField(label="Produtos para Adicionar:")
+    produtos_adicionar = forms.CharField()
 
 #
 # VIEWS
@@ -159,7 +159,7 @@ def etiquetas_gerar(request):
     '''
     view que gera as etiquetas
     '''
-    lista_produtos = request.GET.getlist('produtos_adicionar')
+    lista_produtos = request.GET.get('produtos_adicionar')
     show_border_q = request.GET.get('show_border', 0)
     formato_id = request.GET.get('formato', 17)
     if show_border_q == 0:
@@ -183,7 +183,8 @@ def etiquetas_gerar(request):
     c = canvas.Canvas(response)
     
     if lista_produtos:
-        produtos = Produto.objects.filter(id__in=lista_produtos, ativo=True)
+        produtos_lista = lista_produtos.split(',')
+        produtos = Produto.objects.filter(codigo__in=produtos_lista, ativo=True)
     else:
         produtos = Produto.objects.filter(ativo=True)
     total = formato['Colunas'] * formato['Linhas']
