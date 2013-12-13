@@ -409,20 +409,19 @@ class LancamentoComponente(models.Model):
                 self.componente = conversoes[0].componente
                 self.save()
         
-    
-
     def clean(self):
         # mecanismo para atualizar a memoria de opcao do lancamento
         if self.aprender and self.part_number_fornecedor and self.componente:
             # aprender a combinacao de PN Fornecedor com PN Mestria, 
             # PN Fabricante e Fabricante para uso posterior
             conversao,created = LinhaFornecedorFabricanteComponente.objects.get_or_create(part_number_fornecedor=self.part_number_fornecedor, fornecedor=self.nota.fabricante_fornecedor, componente=self.componente)
-            conversao.componente = self.componente
-            conversao.part_number_fornecedor = self.part_number_fornecedor
-            conversao.part_number_fabricante = self.part_number_fabricante
-            conversao.fabricante = self.fabricante
-            conversao.save()
-            # reinicia o valor do campo
+            if created:
+                conversao.componente = self.componente
+                conversao.part_number_fornecedor = self.part_number_fornecedor
+                conversao.part_number_fabricante = self.part_number_fabricante
+                conversao.fabricante = self.fabricante
+                conversao.save()
+                # reinicia o valor do campo
             self.aprender = False
         
 
@@ -561,7 +560,10 @@ class NotaFiscal(models.Model):
             # distribui as taxas extra proporcionalmente
             for item in self.lancamentocomponente_set.all():
                 # descobre qual a porcentagem do total do lancamento em relacao ao total da nota
-                porcentagem = 100 * float(item.valor_total_com_imposto) / float(self.total_com_imposto)
+                if self.total_com_imposto:
+                    porcentagem = 100 * float(item.valor_total_com_imposto) / float(self.total_com_imposto)
+                else:
+                    porcentagem = 0
                 # aplica o percentual encontrado às taxas extra
                 # 100 - self.nota.taxas_diversas
                 # percentual - x
@@ -765,14 +767,15 @@ class SubProduto(models.Model):
         #primeiro, considerar os componentes
         for linha in self.linhasubproduto_set.all():
             opcao_padrao = linha.opcao_padrao()
-            componente = opcao_padrao.componente
-            quantidade_necessaria = float(opcao_padrao.quantidade)
-            # soma ao montante
-            try:
-                quantidade_atual = dic_componentes[str(opcao_padrao.componente.id)]
-            except:
-                quantidade_atual = 0
-            dic_componentes[str(opcao_padrao.componente.id)] = float(quantidade_atual) + (float(quantidade_necessaria) * float(fator_multiplicador))
+            if opcao_padrao:
+                componente = opcao_padrao.componente
+                quantidade_necessaria = float(opcao_padrao.quantidade)
+                # soma ao montante
+                try:
+                    quantidade_atual = dic_componentes[str(opcao_padrao.componente.id)]
+                except:
+                    quantidade_atual = 0
+                dic_componentes[str(opcao_padrao.componente.id)] = float(quantidade_atual) + (float(quantidade_necessaria) * float(fator_multiplicador))
 
         #segundo, considerar subprodutos
         for linha in self.linhasubprodutos_agregados.all():
@@ -1047,7 +1050,6 @@ class OpcaoLinhaSubProduto(models.Model):
         valor = self.quantidade * self.componente.preco_medio_unitario
         return valor
         
-    
     linha = models.ForeignKey('LinhaSubProduto')
     componente = models.ForeignKey('Componente')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)

@@ -311,9 +311,6 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         model = LancamentoComponente
         fields = 'part_number_fornecedor', 'quantidade', 'valor_unitario', 'impostos', 'componente', 'fabricante', 'part_number_fabricante', 'aprender'
 
-
-
-
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_nota(request):
     '''nota fiscal manual / Internacional'''
@@ -393,6 +390,7 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
         if lancamento_form.is_valid():
             lancamento_form.save()
             messages.success(request, u'Lançamento %d Editado com Sucesso!' % lancamento.id)
+            lancamento.busca_part_number_na_memoria()
             # calcular todas os lancamentos
             for lancamento in lancamento.nota.lancamentocomponente_set.all():
                 lancamento.calcula_totais_lancamento()
@@ -417,6 +415,7 @@ def adicionar_lancamento(request, notafiscal_id):
             lancamento = lancamento_form.save(commit=False)
             lancamento.nota = notafiscal
             lancamento.calcula_totais_lancamento()
+            lancamento.busca_part_number_na_memoria()
             lancamento.save()
             notafiscal.calcula_totais_nota()
             messages.success(request, u'Lançamento %d Adicionado com Sucesso à nota %s!' % (lancamento.id, notafiscal))
@@ -1987,7 +1986,7 @@ class SelecionarSubProdutoForm(forms.Form):
         return quantidade
         
     quantidade = forms.IntegerField(required=True)
-    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.exclude(tipo_de_teste=0), empty_label=None, label="Sub Produto")
+    subproduto = forms.ModelChoiceField(queryset=SubProduto.objects.exclude(tipo_de_teste=0), empty_label="Escolha um Sub Produto", label="Sub Produto")
     subproduto.widget.attrs['class'] = 'select2'
     quantidade.widget.attrs['class'] = 'input-mini'
 
@@ -1999,9 +1998,8 @@ class SelecionarProdutoForm(forms.Form):
             raise ValidationError(u"Erro. Quantidade deve ser maior e diferente de 0")
         return quantidade
     
-    
     quantidade = forms.IntegerField(required=True)
-    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.filter(ativo=True), empty_label=None)
+    produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.filter(ativo=True), empty_label="Escolha um Produto")
     produto.widget.attrs['class'] = 'select2'
     quantidade.widget.attrs['class'] = 'input-mini'
  
