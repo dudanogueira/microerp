@@ -412,14 +412,19 @@ def adicionar_lancamento(request, notafiscal_id):
     if request.POST:
         lancamento_form = LancamentoNotaFiscalForm(request.POST, nota=notafiscal)
         if lancamento_form.is_valid():
-            lancamento = lancamento_form.save(commit=False)
-            lancamento.nota = notafiscal
-            lancamento.calcula_totais_lancamento()
-            lancamento.busca_part_number_na_memoria()
-            lancamento.save()
-            notafiscal.calcula_totais_nota()
-            messages.success(request, u'Lançamento %d Adicionado com Sucesso à nota %s!' % (lancamento.id, notafiscal))
-            return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
+            # checa se já existe lancamento com este part_number
+            part_number_fornecedor = lancamento_form.cleaned_data['part_number_fornecedor']
+            if notafiscal.lancamentocomponente_set.filter(part_number_fornecedor=part_number_fornecedor):
+                messages.error(request, u"Erro! Já existe um part number de Fornecedor %s nesta nota" % part_number_fornecedor)
+            else:
+                lancamento = lancamento_form.save(commit=False)
+                lancamento.nota = notafiscal
+                lancamento.calcula_totais_lancamento()
+                lancamento.busca_part_number_na_memoria()
+                lancamento.save()
+                notafiscal.calcula_totais_nota()
+                messages.success(request, u'Lançamento %d Adicionado com Sucesso à nota %s!' % (lancamento.id, notafiscal))
+                return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
     else:
         lancamento_form = LancamentoNotaFiscalForm(nota=notafiscal)
     return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)

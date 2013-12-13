@@ -394,9 +394,9 @@ class LancamentoComponente(models.Model):
                 self.valor_total_com_imposto = (float(self.valor_unitario * self.nota.cotacao_dolar) + float(percentual)) * float(self.quantidade)
 
             
-    def save(self, *args, **kwargs):
-            self.calcula_totais_lancamento()            
-            super(LancamentoComponente, self).save(*args, **kwargs)
+    #def save(self, *args, **kwargs):
+            #self.calcula_totais_lancamento()            
+            #super(LancamentoComponente, self).save(*args, **kwargs)
     
     def busca_part_number_na_memoria(self):
         # se tiver o part_number_fornecedor, buscar informações
@@ -410,6 +410,7 @@ class LancamentoComponente(models.Model):
                 self.save()
         
     def clean(self):
+        #self.calcula_totais_lancamento()
         # mecanismo para atualizar a memoria de opcao do lancamento
         if self.aprender and self.part_number_fornecedor and self.componente:
             # aprender a combinacao de PN Fornecedor com PN Mestria, 
