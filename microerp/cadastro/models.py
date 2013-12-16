@@ -65,6 +65,7 @@ class PreCliente(models.Model):
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
     dados = models.TextField(blank=True)
+    designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
     # metadata
     adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="precliente_lancado_set")
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -161,8 +162,12 @@ class Cliente(models.Model):
     def propostas_fechadas(self):
         return self.propostacomercial_set.filter(status="fechadas")
     
-        
-        
+    def requisicao_proposta_abertas(self):
+        return self.requisicaodeproposta_set.filter(atendido=False)
+    
+    def requisicao_proposta_atendidas(self):
+        return self.requisicaodeproposta_set.filter(atendido=True)
+    
     
     uuid = UUIDField()
     id_referencia = models.IntegerField(blank=True, null=True)
@@ -183,9 +188,10 @@ class Cliente(models.Model):
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)
     fax = models.CharField(blank=True, max_length=100)
-    funcionario_responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
     # financeiro
     solicitar_consulta_credito = models.BooleanField("Solicitar Consulta de Crédito", default=False, help_text="Marque esta opção para solicitar uma consulta de crédito")
+    # comercial - designacao
+    designado = models.ForeignKey('rh.Funcionario', verbose_name="Funcionário Designado", related_name="cliente_designado_set", blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -200,7 +206,6 @@ class EnderecoCliente(models.Model):
         verbose_name_plural = "Endereços de Clientes"
         unique_together = ('principal', 'cliente')
         ordering = ('-principal',)
-    
 
     def save(self, *args, **kwargs):
             if self.principal is False:

@@ -23,7 +23,16 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
 <script>
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+
 $(document).ready(function() {
 $("#menu-comercial-home, #top-menu-comercial").addClass("active");
 });

@@ -18,21 +18,30 @@
 
 </div>
 
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#informacoes-gerais" data-toggle="tab"><i class="fa fa-info"></i> Informações</a></li>
+
+    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{cliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{cliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{cliente.propostas_fechadas.count}}</span></a></li>
+	
+	<li class=""><a href="#requisicao-de-proposta" data-toggle="tab">Requisições <span class="badge badge-important">{{cliente.requisicao_proposta_abertas.count}}</span> <span class="badge badge-success">{{cliente.requisicao_proposta_atendidas.count}}</span></a></li>
+
+</ul>
+
 
 <div class="row-fluid" id="sub-menu-ficha-cliente">
 	
-	<div class="span8">
-		<ul class="nav nav-tabs">
-		    <li class="active"><a href="#informacoes-gerais" data-toggle="tab"><i class="fa fa-info"></i> Informações</a></li>
-		    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{cliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{cliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{cliente.propostas_fechadas.count}}</span></a></li>
-		</ul>
-		
+	<div class="span4">
+		 		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar </a>
+	</div>
+	
+	<div class="span4">
+				 <span class="label label-success">Responsável: {{cliente.designado}}</span><br />
 	</div>
 	
 	<div class="span4">
 		
-		 <span class="label label-success">Responsável: {{cliente.funcionario_responsavel}}</span><br />
- 		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar à lista de Clientes</a>
+		<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
+
 		 
 	</div>
 
@@ -99,17 +108,6 @@
 
 	<div class="tab-pane fade in" id="propostas">
 
-		<div class="row-fluid">
-			
-			<div class="span8">
-				
-			</div>
-			
-			<div class="span4">
-				<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
-			</div>
-			
-		</div>
 		<h4 class="alert">Propostas Abertas: {{cliente.propostas_abertas.count}}</h4>
 		<table class="table table-condensed table.stripped">
 			<thread>
@@ -123,15 +121,18 @@
 						<th>Ações</th>
 					</tr>
 			</thead>
-	  {% for proposta in cliente.propostas_abertas %}
+			{% for proposta in cliente.propostas_abertas %}
 			<tr>
 				<td class="alert"><h6>#{{proposta.id}}</h6></td>
 				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
-				<td>        <div class="progress progress-striped active" style="width:100%px;">
-          <div class="bar" style="width: {{proposta.probabilidade}}%;">				<strong>{{proposta.probabilidade}}%</strong></div>
-        </div>
+				<td>
+					<div class="progress progress-striped active" style="width:100%px;">
+						<div class="bar" style="width: {{proposta.probabilidade}}%;">
+							<strong>{{proposta.probabilidade}}%</strong>
+						</div>
+					</div>
 				</td>
 				<td>
 					{% if proposta.ultimo_followup %}
@@ -160,23 +161,57 @@
 					
 				</td>
 				<td>{{proposta.observacoes}}</td>
-				<td>        <div class="btn-group">
-        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
-        <a href="" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-        <a href="{% url "comercial:cliente_editar_proposta" cliente.id proposta.id%}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
-        <a href="" class="btn "><i class="fa fa-print"></i></a>
-        </div>
-</td>
+						<td>        <div class="btn-group">
+	        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+	        <a href="" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+	        <a href="{% url "comercial:cliente_editar_proposta" cliente.id proposta.id%}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
+	        <a href="" class="btn "><i class="fa fa-print"></i></a>
+
+				</td>
 			</tr>
-    {% empty %}
-    {% endfor %}
-	</table>
+   		 	{% empty %}
+			{% endfor %}
+		</table>
 		
 		<h2 class="alert alert-success">Propostas Convertidas</h2>
 		
 		<h2 class="alert alert-danger">Propostas Perdidas</h2>
 		
-		
+	</div>
+
+	<div class="tab-pane fade in" id="requisicao-de-proposta">
+		<h3>Requisições de Propostas Em Aberto</h3>
+		{% for requisicao in cliente.requisicao_proposta_abertas %}
+		<div class="well well-small row-fluid alert alert-danger">
+			<div class="span6">
+				Criado Por: {{requisicao.criado_por.funcionario}}
+			</div>
+			<div class="span3">
+				<h4>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</h4>
+			</div>
+			<div class="span3">
+				<a href="{% url "comercial:requisicao_proposta_cliente_atender" requisicao.id %}" class="btn btn-large btn-success">Atender</a>
+			</div>
+			
+		</div>
+		{% endfor %}
+		<h3>Requisições de Propostas  Atendidas</h3>
+		{% for requisicao in cliente.requisicao_proposta_atendidas %}
+		<div class="alert row-fluid alert-success">
+			<div class="span5">
+				Por: {{requisicao.criado_por.funcionario}}
+			</div>
+			<div class="span3">
+				<h4>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</h4>
+			</div>
+			
+			<div class="span4">
+				<strong>Atendido em</strong>: {{requisicao.atendido_data|date:"SHORT_DATETIME_FORMAT"}}
+			</div>
+			
+		</div>
+		{% endfor %}
+	
 	</div>
 
 </div>

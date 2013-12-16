@@ -64,7 +64,7 @@ class ClienteAdmin(admin.ModelAdmin):
             }),
             (u'Sistema', {
                 'classes': ('wide', 'extrapretty'),
-                'fields': ('funcionario_responsavel',)
+                'fields': ('designado',)
             }),            
             (u'Marketing', {
                 'classes': ('wide', 'extrapretty'),

@@ -267,3 +267,21 @@ class QuantidadeDeMarca(models.Model):
     quantidade = models.IntegerField(blank=False, null=False)
     marca = models.ForeignKey('Marca', blank=True, null=True)
     modelo = models.ForeignKey('Modelo', blank=False, null=False)
+
+class RequisicaoDeProposta(models.Model):
+    
+    def __unicode__(self):
+        if self.atendido:
+            return u"Requisição de Proposta ATENDIDO para %s" % self.cliente
+        else:
+            return u"Requisição de Proposta ABERTA para %s" % self.cliente
+    
+    cliente = models.ForeignKey('cadastro.Cliente')
+    atendido = models.BooleanField(default=False)
+    atendido_data = models.DateTimeField(blank=True, null=True)
+    # metadata
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_requisitada_set",  blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    
+    

@@ -22,9 +22,8 @@
         {% if cliente_q %}
         <a href="."><i class="fa fa-trash-o"></i> Limpar</a>
         {% else %}
-        <a href="{% url "cadastro:preclientes_adicionar" %}" class="btn btn-large btn-success"><i class="fa fa-plus"></i> Adicionar</a>
+        <a href="{% url "comercial:precliente_adicionar" %}" class="btn btn-large btn-success"><i class="fa fa-plus"></i> Adicionar</a>
         {% endif %}
-        
     </form>
 </div>
 

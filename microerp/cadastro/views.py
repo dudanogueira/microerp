@@ -16,8 +16,10 @@ from rh.models import Funcionario, Departamento
 # Cadastro
 from cadastro.models import Cliente, PreCliente
 from cadastro.models import Recado
-
+# solicitacao
 from solicitacao.models import Solicitacao
+# comercial
+from comercial.models import RequisicaoDeProposta
 
 from django import forms
 #
@@ -84,11 +86,15 @@ class PreClienteAdicionarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         sugestao = kwargs.pop('sugestao')
         super(PreClienteAdicionarForm, self).__init__(*args, **kwargs)
+        self.fields['designado'].empty_label = "Nenhum"
+        
+        
         if sugestao:
             self.fields['nome'].initial = sugestao
+    
     class Meta:
         model = PreCliente
-        fields = 'nome', 'contato', 'dados'
+        fields = 'nome', 'contato', 'dados', 'designado'
 
 
 
@@ -215,7 +221,7 @@ def recados_gerenciar(request):
 def preclientes_adicionar(request):
     if request.POST:
         try:
-            form = form_add_precleinte = PreClienteAdicionarForm(data=request.POST, sugestao=None)
+            form = form_add_precliente = PreClienteAdicionarForm(data=request.POST, sugestao=None)
             if form.is_valid():
                 precliente = form.save(commit=False)
                 precliente.adicionado_por = request.user
@@ -227,7 +233,7 @@ def preclientes_adicionar(request):
         
     else:
         sugestao = request.GET.get('sugestao', None)
-        form_add_precleinte = PreClienteAdicionarForm(sugestao=sugestao)
+        form_add_precliente = PreClienteAdicionarForm(sugestao=sugestao)
     return render_to_response('frontend/cadastro/cadastro-preclientes-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -250,9 +256,15 @@ def solicitacao_adicionar(request):
     return render_to_response('frontend/cadastro/cadastro-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 
-
-
 @user_passes_test(possui_perfil_acesso_recepcao)
 def preclientes_listar(request):
     return render_to_response('frontend/cadastro/cadastro-preclientes-listar.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_recepcao)
+def requisicao_proposta_cliente(request, cliente_id):
+    cliente = Cliente.objects.get(pk=cliente_id)
+    # adiciona requisicao
+    requisicao = cliente.requisicaodeproposta_set.create(criado_por=request.user)
+    messages.success(request, u"Requisição de Proposta para %s realizada para Funcionário %s" % (cliente, cliente.designado))
+    return redirect(reverse("cadastro:home"))

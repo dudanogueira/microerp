@@ -1,7 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 
-<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> Adicionar Pré Cliente</h1>
@@ -16,9 +16,9 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-    $("#menu-cadastro-cliente-pre-cliente, #top-menu-cadastro").addClass("active");
+    $("#menu-comercial-cliente-pre-cliente, #top-menu-cadastro").addClass("active");
 });
 </script>
 {% endaddtoblock %}
-{% include "frontend/cadastro/cadastro-menu.html" %}
+{% include "frontend/comercial/comercial-menu.html" %}
 {% endblock%}

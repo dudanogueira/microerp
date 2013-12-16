@@ -14,4 +14,6 @@ urlpatterns = patterns('',
     url(r'^preclientes/adicionar/$', 'cadastro.views.preclientes_adicionar', name='preclientes_adicionar'),
     # solicitaçõs
     url(r'^solicitacoes/adicionar/$', 'cadastro.views.solicitacao_adicionar', name='solicitacao_adicionar'),
+    # requisicao de proposta
+    url(r'^requisicao/proposta/(?P<cliente_id>[0-9]+)/$', 'cadastro.views.requisicao_proposta_cliente', name='requisicao_proposta_cliente'),
 )

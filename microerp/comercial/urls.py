@@ -4,6 +4,8 @@ from django.conf.urls import patterns, include, url
 # urls do Cadastro
 urlpatterns = patterns('',
     url(r'^$', 'comercial.views.home', name='home'),
+    # pre cliente
+    url(r'^precliente/adicionar/$', 'comercial.views.precliente_adicionar', name='precliente_adicionar'),
     url(r'^precliente/(?P<pre_cliente_id>[0-9]+)/converter/$', 'comercial.views.precliente_converter', name='precliente_converter'),
     # cliente
     url(r'^clientes/$', 'comercial.views.clientes', name='clientes'),
@@ -21,5 +23,10 @@ urlpatterns = patterns('',
     url(r'^propostas/minhas/$', 'comercial.views.propostas_comerciais_minhas', name='propostas_comerciais_minhas'),    
     # tabela de precos
     url(r'^tabela-de-precos/$', 'comercial.views.tabela_de_precos', name='tabela_de_precos'),
-    
+    # atender requisicao
+    url(r'^requisicao/proposta/(?P<requisicao_id>[0-9]+)/atender$', 'comercial.views.requisicao_proposta_cliente_atender', name='requisicao_proposta_cliente_atender'),
+    # designacoes
+    url(r'^requisicao/designacoes/$', 'comercial.views.designacoes', name='designacoes'),
+    url(r'^requisicao/designacoes/confirmar/$', 'comercial.views.designacoes_confirmar', name='designacoes_confirmar'),
 )
+
