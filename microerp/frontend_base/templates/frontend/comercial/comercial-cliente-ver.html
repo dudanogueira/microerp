@@ -261,13 +261,13 @@ $(document).ready(function() {
 			trigger: "hover",
 			placement: 'top'
 		});
-		$('.btn-modal-add-follow-up').click(function(e){
+	$('.btn-modal-add-follow-up').click(function(e){
 			
 			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
 			$("#id_proposta").val($(this).data('proposta-id'))
 		});
 		
-		$('.carregar_follow_ups_modal').click(function(e){
+	$('.carregar_follow_ups_modal').click(function(e){
 			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
 			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
 		});

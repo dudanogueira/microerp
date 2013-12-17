@@ -339,11 +339,24 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
     return render_to_response('frontend/comercial/comercial-propostas-precliente-adicionar.html', locals(), context_instance=RequestContext(request),)
     
 
-
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
-    minhas_propostas = PropostaComercial.objects.filter(criado_por=request.user, status="aberta")
-    propostas_em_meus_clientes = PropostaComercial.objects.filter(cliente__designado=request.user.funcionario, status="aberta").exclude(criado_por=request.user)
+    propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gt=datetime.date.today())
+    propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())    
+    if request.POST:
+        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
+        if form_adicionar_follow_up.is_valid():
+            follow_up = form_adicionar_follow_up.save(commit=False)
+            follow_up.criado_por = request.user
+            follow_up.save()
+            messages.success(request, u"Sucesso! Novo Follow Up Adicionado")
+    else:
+        form_adicionar_follow_up = FormAdicionarFollowUp()
+    if not request.user.perfilacessocomercial.gerente:
+        propostas_abertas_validas = propostas_abertas_validas.filter(cliente__designado=request.user.funcionario)
+        propostas_abertas_expiradas = propostas_abertas_expiradas.filter(cliente__designado=request.user.funcionario)
+        preclientes = preclientes.filter(designado=request.user.funcionario)
+    
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
 #
@@ -367,17 +380,13 @@ def solicitacao_adicionar(request):
         form = AdicionarSolicitacaoForm(cliente=cliente_id, precliente=precliente_id)
     return render_to_response('frontend/comercial/comercial-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
 
-
-
 class FiltraTabelaDePrecos(forms.Form):
     
     def __init__(self, *args, **kwargs):
         super(FiltraTabelaDePrecos, self).__init__(*args, **kwargs)
         self.fields['buscar'].widget.attrs['class'] = 'input-xxlarge'
     
-    
     buscar = forms.CharField(required=True, label='')
-    
     
 @user_passes_test(possui_perfil_acesso_comercial)
 def tabela_de_precos(request):
@@ -428,9 +437,10 @@ class ConfirmarDesignacao(forms.Form):
             
         
     designado = forms.ModelChoiceField(required=True, queryset=None, label="Novo Designado", empty_label=None)
-    clientes = forms.ModelMultipleChoiceField(required=True, queryset=Cliente.objects.all())
-    preclientes = forms.ModelMultipleChoiceField(required=True, queryset=PreCliente.objects.filter(cliente_convertido=None))
+    clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.all())
+    preclientes = forms.ModelMultipleChoiceField(required=False, queryset=PreCliente.objects.filter(cliente_convertido=None))
 
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
 def designacoes_confirmar(request):
     if request.POST:
         if request.POST.get('analisar-desginacoes-btn'):
@@ -452,8 +462,93 @@ def designacoes_confirmar(request):
                 # clientes
                 form.cleaned_data['clientes'].update(designado=designado)
                 messages.success(request, u"Nova Designação para Clientes Selecionados -> %s" % designado)
-                
+                return redirect(reverse('comercial:home'))
         return render_to_response('frontend/comercial/comercial-designacoes-confirmar.html', locals(), context_instance=RequestContext(request),)
     else:
         messages.warning(request, u"Não pode ser acessado diretamente")
         return redirect(reverse("comercial:designacoes"))
+
+class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        modelos = kwargs.pop('modelos')
+        super(ConfigurarPropostaComercialParaImpressao, self).__init__(*args, **kwargs)
+        self.fields['modelo'] = forms.ChoiceField(choices=modelos, label="Tipo de Proposta")
+    
+
+    class Meta:
+        model = PropostaComercial
+        fields = 'nome_do_proposto', 'documento_do_proposto', 'rua_do_proposto', 'bairro_do_proposto', \
+        'cep_do_proposto', 'cidade_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
+        'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'forma_pagamento_proposto'
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def proposta_comercial_imprimir(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    # tenta ao máximo auto completar os dados
+    # nome
+    if not proposta.nome_do_proposto:
+        if proposta.cliente:
+            proposta.nome_do_proposto = proposta.cliente.nome
+        if proposta.precliente:
+            proposta.nome_do_proposto = proposta.precliente.nome
+    # documento referencia
+    if not proposta.documento_do_proposto:
+        if proposta.cliente and proposta.cliente.tipo == 'pj':
+            proposta.documento_do_proposto = "CNPJ: %s" % proposta.cliente.cnpj
+        if proposta.cliente and proposta.cliente.tipo == 'pf':
+            proposta.documento_do_proposto = "CPF: %s" % proposta.cliente.cpf
+    # rua
+    if not proposta.rua_do_proposto:
+        if proposta.cliente.enderecocliente_set.filter(principal=True):
+            proposta.rua_do_proposto = "%s - %s" % (proposta.cliente.enderecocliente_set.filter(principal=True)[0].rua, proposta.cliente.enderecocliente_set.filter(principal=True)[0].numero)
+    # bairro
+    if not proposta.bairro_do_proposto:
+        if proposta.cliente.enderecocliente_set.filter(principal=True):
+            proposta.bairro_do_proposto = proposta.cliente.enderecocliente_set.filter(principal=True)[0].bairro.nome
+    # bairro
+    if not proposta.cep_do_proposto:
+        if proposta.cliente.enderecocliente_set.filter(principal=True):
+            proposta.cep_do_proposto = proposta.cliente.enderecocliente_set.filter(principal=True)[0].cep
+    # cidade
+    if not proposta.cidade_do_proposto:
+        if proposta.cliente.enderecocliente_set.filter(principal=True):
+            end = proposta.cliente.enderecocliente_set.filter(principal=True)[0]
+            proposta.cidade_do_proposto = "%s - %s" % (end.bairro.cidade.nome, end.bairro.cidade.estado) 
+    # endereco da obra proposta
+    if not proposta.endereco_obra_proposto:
+        if proposta.cliente.enderecocliente_set.filter(principal=True):
+            end = proposta.cliente.enderecocliente_set.filter(principal=True)[0]
+            proposta.endereco_obra_proposto = "Rua %s - %s, Bairro %s, CEP %s, Cidade: %s" % \
+            (end.rua, end.numero, end.bairro.nome, end.cep, end.bairro.cidade)
+    # representante legal
+    if not proposta.representante_legal_proposto:
+        if proposta.cliente:
+            proposta.representante_legal_proposto = proposta.cliente.nome
+        if proposta.precliente:
+            proposta.representante_legal_proposto = proposta.precliente.nome
+    # telefone
+    if not proposta.telefone_contato_proposto:
+        if proposta.cliente:
+            if proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
+                proposta.telefone_contato_proposto = "Fixo: %s, Celular: %s" % (proposta.cliente.telefone_fixo, proposta.cliente.telefone_celular) 
+            elif proposta.cliente.telefone_fixo and not proposta.cliente.telefone_celular:
+                proposta.telefone_contato_proposto = "Fixo: %s" % proposta.cliente.telefone_fixo
+            elif not proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
+                proposta.telefone_contato_proposto = "Celular: %s" % proposta.cliente.telefone_celular
+    # email
+    if not proposta.email_proposto and proposta.cliente:
+        proposta.email_proposto = proposta.cliente.email
+    
+    proposta.save()
+    modelos_proposta = getattr(settings, 'MODELOS_DE_PROPOSTAS')
+    dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA')
+    form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, modelos=modelos_proposta)
+    if request.POST:
+        form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, modelos=modelos_proposta)
+        if form_configura.is_valid():
+            proposta = form_configura.save()
+            # descobre o template
+            template_escolhido = dicionario_template_propostas[form_configura.cleaned_data['modelo']]
+            return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)

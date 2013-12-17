@@ -6,27 +6,133 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-briefcase"></i> <i class="icon-file-alt"></i> Minhas Propostas Comerciais</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Propostas Comerciais</h1>
 
 {% if request.user.perfilacessocomercial.gerente %}
 <h4>Como Gerente</h4>
 {% endif %}
 
-<h3>Criadas por Mim</h3>
-{% for proposta in minhas_propostas %}
-<div class="well">
-    {% include "frontend/comercial/comercial-proposta-item.html" %}
+<ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
+    <li class="active"><a href="#propostas-abertas-validas" class="ajaxtab" data-toggle="tab"><span class="badge badge-success">{{propostas_abertas_validas.count}}</span> Válidas</a></li>
+	<li> <a href="#propostas-abertas-expiradas" data-toggle="tab">Expiradas <span class="badge badge-important">{{propostas_abertas_expiradas.count}}</span></a></li>
+</ul>
+
+<div id="tab-content-comercial-clientes" class="tab-content">
+
+	<div class="tab-pane fade in active" id="propostas-abertas-validas">
+		
+		{% regroup propostas_abertas_validas by dono as propostas_abertas_validas_por_cliente %}
+		
+		{% for proposta_list in propostas_abertas_validas_por_cliente %}
+		<h2>{{proposta_list.grouper}}</h2>
+		
+		<table class="table table-condensed table.stripped">
+			<thread>
+					<tr>
+						<th class="alert">ID</th>
+						<th>Expiração</th>
+						<th>Valor</th>
+						<th>Probabilidade</th>
+						<th>Follow Up</th>
+						<th>Descrição</th>
+						<th>Ações</th>
+					</tr>
+			</thead>
+			{% for proposta in proposta_list.list %}
+			<tr>
+				<td class="alert"><h6>#{{proposta.id}}</h6></td>
+				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+        <small>{{proposta.data_expiracao|timeuntil}}</small></td>
+				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
+				<td>
+					<div class="progress progress-striped active" style="width:100%px;">
+						<div class="bar" style="width: {{proposta.probabilidade}}%;">
+							<strong>{{proposta.probabilidade}}%</strong>
+						</div>
+					</div>
+				</td>
+				<td>
+					{% if proposta.ultimo_followup %}
+					<a href="#modal-follow-up-exibir"
+						role="button" 
+						data-toggle="modal"
+						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
+						data-follow-ups="
+						
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<hr />
+						{% endfor %}
+						"
+						class="btn popover_item carregar_follow_ups_modal"
+						data-toggle="popover"
+						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
+						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
+						">
+						{{proposta.followupdepropostacomercial_set.count}}
+					</a> <i class="fa fa-exchange"></i>
+					{%endif %}
+					<!-- Button to trigger modal de follow up -->
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					
+				</td>
+				<td>{{proposta.observacoes}}</td>
+						<td>        <div class="btn-group">
+	        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+	        <a href="" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+			{% if proposta.cliente.id %}
+	        <a href="{% url "comercial:cliente_editar_proposta" proposta.cliente.id proposta.id%}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
+			{% endif %}
+			
+	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
+
+				</td>
+			</tr>
+   		 	{% empty %}
+			{% endfor %}
+		</table>
+		{% endfor %}
+	</div>
+	
+	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
+		expiradas
+	</div>
 </div>
-{% endfor %}
 
-<h3>Em meus Clientes e não criados por mim</h3>
 
-{% for proposta in propostas_em_meus_clientes %}
-    <div class="well">
-        {% include "frontend/comercial/comercial-proposta-item.html" %}       
-    </div>
-{% endfor %}
+<!-- Modal Adiciona FollowUp -->
+<div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Adicionar Follow Up</h3>
+  </div>
+  <div class="modal-body">
+		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+		<form method="POST" id="form-adicionar-follow-up">
+			{% csrf_token %}
+			{{form_adicionar_follow_up.as_p}}
+		</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button class="btn btn-primary" form="form-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+  </div>
+</div>
 
+
+<!-- Modal Exibe FollowUps -->
+<div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="ModalExibirFollowUpsLabel"></h3>
+  </div>
+  <div class="modal-body" id="ModalExibirFollowUpsBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
 
 {% endblock %}
 
@@ -34,7 +140,21 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$('.popover_item').popover({
+			trigger: "hover",
+			placement: 'top'
+		});
+	$('.btn-modal-add-follow-up').click(function(e){
+			
+			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
+			$("#id_proposta").val($(this).data('proposta-id'))
+		});
+		
+	$('.carregar_follow_ups_modal').click(function(e){
+			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
+		});
 });
 </script>
 {% endaddtoblock %}

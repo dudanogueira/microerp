@@ -369,8 +369,6 @@ class Funcionario(models.Model):
         return self.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.filter(treinamento_realizado=False, tipo_de_treinamento="atualizar")
     
     
-    # 
-    
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="Usuário do Sistema", blank=True, null=True)

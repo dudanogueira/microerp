@@ -71,8 +71,6 @@ class PropostaComercial(models.Model):
             else:
                 proposto = 'precliente'
                 obj = self.precliente
-            
-            
             return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, self.valor_proposto, self.probabilidade, self.criado_por)
     
     def expirado(self):
@@ -88,6 +86,9 @@ class PropostaComercial(models.Model):
         else:
             return False
     
+    def dono(self):
+        return self.cliente or "Pré Cliente: %s" % self.precliente
+    
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -97,6 +98,20 @@ class PropostaComercial(models.Model):
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
     orcamento_vinculado = models.ForeignKey('Orcamento', blank=True, null=True)
     observacoes = models.TextField("Observações", blank=False, null=False)
+    # dados para impressao
+    nome_do_proposto = models.CharField(blank=True, max_length=100)
+    documento_do_proposto = models.CharField(blank=True, max_length=100)
+    rua_do_proposto = models.CharField(blank=True, max_length=100)
+    bairro_do_proposto = models.CharField(blank=True, max_length=100)
+    cep_do_proposto = models.CharField(blank=True, max_length=100)
+    cidade_do_proposto = models.CharField(blank=True, max_length=100)
+    endereco_obra_proposto = models.TextField(blank=True)
+    representante_legal_proposto = models.CharField(blank=True, max_length=100)
+    telefone_contato_proposto = models.CharField(blank=True, max_length=100)
+    email_proposto = models.CharField(blank=True, max_length=100)
+    objeto_proposto = models.TextField(blank=True)
+    descricao_items_proposto = models.TextField(blank=True)
+    forma_pagamento_proposto = models.TextField(blank=True)
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")

@@ -1,0 +1,51 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Configurar Impressão de Proposta{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Propostas Comerciais</h1>
+<h2><i class="fa fa-print"></i> Configurar Impressão de Proposta</h2>
+
+<h4>Cliente: {{proposta.dono}}</h4>
+<h5>{{proposta}}</h5>
+
+<form method="POST">
+{%csrf_token %}
+{{form_configura.as_p}}
+<button type="submit">Gerar Impressão</button>
+</form>
+
+
+
+
+t:{{template_escolhido}}
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$('.popover_item').popover({
+			trigger: "hover",
+			placement: 'top'
+		});
+	$('.btn-modal-add-follow-up').click(function(e){
+			
+			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
+			$("#id_proposta").val($(this).data('proposta-id'))
+		});
+		
+	$('.carregar_follow_ups_modal').click(function(e){
+			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
+		});
+	
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}
