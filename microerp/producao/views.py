@@ -3757,7 +3757,7 @@ def controle_de_testes_producao(request):
                         # indicadores
                         if total_testado['total']:
 
-                            if total_geral_funcional
+                            if total_geral_funcional:
                                 indicador_funcional_geral = total_geral_funcional / float(total_testado['total'])
                             else:
                                 indicador_funcional_geral = 0
