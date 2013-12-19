@@ -811,17 +811,18 @@ class SubProduto(models.Model):
             else:
                 break
     
+    def custo_total_linhas2(self):
+        '''calcula o custo total deste subproduto, incluindo as quantidades de linha'''
+        memoria_calculo_linha = OpcaoLinhaSubProduto.objects.filter(padrao=True, linha__subproduto=self).values('componente__preco_medio_unitario', 'quantidade')
+        retorno = 0
+        for item in memoria_calculo_linha:
+            retorno += item['quantidade'] * item['componente__preco_medio_unitario']
+        return retorno
+        
     def custo_total_linhas(self):
         '''calcula o custo total deste subproduto, incluindo as quantidades de linha'''
         # total de linhas
-        total_parcial = 0
-        # para cada linha
-        for linha in self.linhasubproduto_set.all():
-            # somente as linhas que possuem opcao padrao
-            if linha.opcao_padrao():
-                valor = linha.opcao_padrao().quantidade * linha.opcao_padrao().componente.preco_medio_unitario
-                total_parcial += valor
-        return total_parcial
+        return self.custo_total_linhas2()
     
     def custo_total_dos_sub_produtos_agregados(self):
         total_parcial = 0
@@ -832,8 +833,16 @@ class SubProduto(models.Model):
     def custo(self):
         return self.custo_total_linhas() + self.custo_total_dos_sub_produtos_agregados()
     
+    def custo_dolar_componentes_internacionais2(self):
+        memoria_calculo_linha = OpcaoLinhaSubProduto.objects.filter(padrao=True, linha__subproduto=self, componente__nacionalidade='i').values('componente__preco_medio_unitario', 'componente__part_number', 'quantidade')
+        retorno = 0
+        for item in memoria_calculo_linha:
+            retorno += item['quantidade'] * item['componente__preco_medio_unitario']
+        return retorno
+    
     def custo_dolar_componentes_internacionais(self):
         '''calcula o custo total deste subproduto, somente dos componentes internacionais'''
+        return self.custo_dolar_componentes_internacionais2()
         # total de linhas
         total_parcial = 0
         # para cada linha
@@ -922,8 +931,6 @@ class SubProduto(models.Model):
             else:
                 return 0
                     
-            
-        
         # subproduto com teste, deve ser produzido, testado,
         # e depois armazenado em total_funcional
         else:
@@ -941,6 +948,12 @@ class SubProduto(models.Model):
     total_montado = models.IntegerField(blank=False, null=False, default=0)
     total_testando = models.IntegerField(blank=False, null=False, default=0)
     total_funcional = models.IntegerField(blank=False, null=False, default=0)
+    # valor total
+    valor_total_de_custo = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_custo_total_linhas =  models.DecimalField(max_digits=10, decimal_places=2)
+    valor_custo_total_dos_sub_produtos_agregados =  models.DecimalField(max_digits=10, decimal_places=2)
+    # notacao de producao
+    notacao_de_producao = models.TextField(blank=True, default="{}")
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1018,7 +1031,6 @@ class LinhaSubProduto(models.Model):
         else:
             return 0
 
-
     def ipp(self):
         '''Índice de Peso de Participacao'''
         total = self.subproduto.custo()
@@ -1028,6 +1040,7 @@ class LinhaSubProduto(models.Model):
     peso = models.IntegerField("Item", blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
     tag = models.CharField("TAG", blank=True, max_length=100)
+    valor_custo_da_linha = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
@@ -1683,3 +1696,13 @@ class LinhaLancamentoFalhaDeTeste(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
     
+def subproduto_pre_save(signal, instance, sender, **kwargs):
+      ''' Atualiza os campos do subproduto
+      '''
+      # realiza calculo de custos
+      instance.valor_custo_total_linhas = instance.custo_total_linhas()
+      instance.valor_custo_total_dos_sub_produtos_agregados = instance.custo_total_dos_sub_produtos_agregados()
+      instance.valor_total_de_custo =  instance.valor_custo_total_linhas + instance.valor_custo_total_dos_sub_produtos_agregados
+
+# SIGNALS CONNECTION
+signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)

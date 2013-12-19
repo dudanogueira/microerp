@@ -69,7 +69,7 @@ ORDEM_DE_COMPRA_CRITICIDADE_CHOICES_VAZIO = (
 
 def possui_perfil_acesso_producao(user, login_url="/"):
     try:
-        if user.perfilacessoproducao and user.funcionario.ativo():
+        if user.perfilacessoproducao:
             return True
     except:
         return False
@@ -1173,12 +1173,11 @@ def listar_subprodutos(request):
                 subprodutos_inativos = SubProduto.objects.filter(ativo=False).order_by('part_number')
             else:
                 subprodutos_encontrados = subprodutos_encontrados.filter(
-                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
+                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto) | Q(part_number__icontains=q_subproduto)
                 )
                 subprodutos_inativos = subprodutos_inativos.filter(
-                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto)
+                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto) | Q(part_number__icontains=q_subproduto)
                 )
-    
     return render_to_response('frontend/producao/producao-listar-subprodutos.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1192,8 +1191,6 @@ def adicionar_subproduto(request):
     else:
         form = SubProdutoForm()
     return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)
-
-
 
 @user_passes_test(possui_perfil_acesso_producao)
 def editar_subproduto(request, subproduto_id):
@@ -1297,6 +1294,7 @@ def ver_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     participacao_subprodutos = LinhaSubProdutoAgregado.objects.filter(subproduto_agregado=subproduto)
     agregado_em_produto = LinhaSubProdutodoProduto.objects.filter(subproduto=subproduto)
+    linha_componentes_padrao = OpcaoLinhaSubProduto.objects.filter(linha__subproduto=subproduto, padrao=True)
     # instancia formularios
     form_anexos = ArquivoAnexoSubProdutoForm(subproduto=subproduto)
     form_imagem = ImagemSubprodutoForm(instance=subproduto)
@@ -1339,6 +1337,8 @@ def ver_subproduto(request, subproduto_id):
             form_agregar_subproduto = AgregarSubProdutoForm(request.POST, subproduto_principal=subproduto)
             if form_agregar_subproduto.is_valid():
                 linha_sub_agregado = form_agregar_subproduto.save()
+                # salva subproduto para atualizar gatilhos
+                linha_sub_agregado.subproduto_principal.save()
                 messages.success(request, u"Sucesso! Sub Produto %s agregado %s vezes no SubProduto Principal %s" % (linha_sub_agregado.subproduto_agregado, linha_sub_agregado.quantidade, linha_sub_agregado.subproduto_principal))
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
         
@@ -1373,8 +1373,6 @@ def ver_subproduto(request, subproduto_id):
                 messages.success(request, u"Sucesso! Criado o Registro de Teste de SubProduto #%s " % registro.id)
                 return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
         
-        
-                
         
         if request.POST.get('enviar-subproduto-funcional-btn', None):
             form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_funcional")
@@ -1558,10 +1556,11 @@ def apagar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
     try:
         linha.delete()
         messages.success(request, "Sucesso! Linha Apagada.")
+        # dispalha gatilhos do subproduto
+        subproduto.save()
     except:
         messages.error(request, "Erro! Linha não Apagada.")
     return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
-
 
 @user_passes_test(possui_perfil_acesso_producao)
 def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
@@ -1622,12 +1621,18 @@ def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subpro
         if form.is_valid():
             
             if linha.opcaolinhasubproduto_set.count() == 0:
+                # nao existe nenhuma opcao, esta e a padrao
                 opcao = form.save()
                 opcao.padrao = True
+                # atualiza calculo da linha
+                opcao.linha.valor_custo_da_linha = linha.custo() or 0
+                opcao.linha.save()
             else:
                 opcao = form.save()
                 opcao.padrao = None
-            opcao.save()            
+            opcao.save()
+            # dispara gatilhos de atualizacao do subproduto
+            opcao.linha.subproduto.save()
             messages.success(request, u"Sucesso! Opção adiconada com sucesso em %s" % linha)
             return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
     else:
@@ -1653,6 +1658,11 @@ def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subprodut
     # define a opcao escolhida como padrao
     opcao.padrao = True
     opcao.save()
+    # dispara gatilhos de atualizacao do subproduto
+    opcao.linha.subproduto.save()
+    # atualiza o custo da linha
+    opcao.linha.valor_custo_da_linha = linha.custo() or 0
+    opcao.linha.save()
     # retorna a exibição da linha
     messages.success(request, u"Sucesso! Nova opção padrão definida!")
     
@@ -1663,6 +1673,8 @@ def apagar_opcao_linha_subproduto(request, subproduto_id, linha_subproduto_id, o
     if not opcao.padrao:
         try:
             opcao.delete()
+            # dispara gatilhos de atualizacao do subproduto
+            opcao.linha.subproduto.save()
             messages.success(request, u"Sucesso! Opção Removida!")
         except:
             messages.error(request, u"Erro ao remover Opção.")
@@ -1672,6 +1684,8 @@ def subproduto_apagar_linha_subproduto_agregado(request, subproduto_id, linha_su
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     linha_agregada = get_object_or_404(LinhaSubProdutoAgregado, subproduto_principal=subproduto, pk=linha_subproduto_agregado_id)
     linha_agregada.delete()
+    # dispara gatilhos de atualizacao do subproduto
+    linha_agregada.subproduto_principal.save()
     messages.success(request, u"Sucesso! Linha de SubProduto Agregado ao Produto Principal %s Apagado!" % subproduto)
     return(redirect(reverse('producao:ver_subproduto', args=[subproduto.id,]) + "#sub-produtos-agregados"))
 

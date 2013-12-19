@@ -159,7 +159,7 @@ class Funcionario(models.Model):
         ordering = ['nome']
     
     def ativo(self):
-        if self.periodo_trabalhado_corrente and self.periodo_trabalhado_corrente.ativo():
+        if self.periodo_trabalhado_corrente:
             return True
         else:
             return False
@@ -330,12 +330,11 @@ class Funcionario(models.Model):
     # SOLICITACAO
     def solicitacoes_total(self):
         q = Solicitacao.objects.filter(
-            models.Q(status="analise", correcao_iniciada=None, responsavel_correcao=self) |
-            models.Q(status="contato", contato_realizado=None, responsavel_contato=self) |
-            models.Q(status="visto", responsavel_visto=self)
+            models.Q(status="analise", correcao_iniciada=None, responsavel_correcao_id=self.id) |
+            models.Q(status="contato", contato_realizado=None, responsavel_contato_id=self.id) |
+            models.Q(status="visto", responsavel_visto_id=self.id)
         ).count()
         return q
-    
     
     def solicitacoes_correcao_aberto(self):
         return self.solicitacao_correcao_set.filter(status="analise", correcao_iniciada=None)
