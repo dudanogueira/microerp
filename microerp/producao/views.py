@@ -1289,6 +1289,19 @@ class FormMovimentoSubProduto(forms.ModelForm):
         model = MovimentoEstoqueSubProduto
         fields = 'quantidade_movimentada', 'justificativa', 'operacao', 'subproduto', 'situacao'
 
+
+class FormFiltraLinhaDeComponentes(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        componentes_possiveis = kwargs.pop('componentes_possiveis', None)
+        super(FormFiltraLinhaDeComponentes, self).__init__(*args, **kwargs)
+        self.fields['componente'].widget.attrs['class'] = 'select2 input-small'
+        self.fields['componente'].choices = componentes_possiveis
+        self.fields['componente'].choices.insert(0, ('','Todos os Componentes' ) )
+    
+    componente = forms.ChoiceField(choices=(), label="Componente", required=False)
+    tag = forms.CharField(required=False)
+
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
@@ -1311,8 +1324,18 @@ def ver_subproduto(request, subproduto_id):
     # em funcional
     form_adiciona_funcional = FormMovimentoSubProduto(subproduto=subproduto, operacao='adiciona', situacao=2)
     form_remove_funcional = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=2)
-    
+    # form de filtro de componente
+    c = linha_componentes_padrao.values_list('componente_id', 'componente__part_number', 'componente__descricao')
+    componentes_possiveis_choices = [(i[0], "%s - %s" % (i[1], i[2])) for i in c]
+    form_filtrar_linhas = FormFiltraLinhaDeComponentes(componentes_possiveis=componentes_possiveis_choices)
     if request.POST:
+        if request.POST.get('filtrar-linhas-componentes', None):            
+            form_filtrar_linhas = FormFiltraLinhaDeComponentes(request.POST, componentes_possiveis=componentes_possiveis_choices)
+            if form_filtrar_linhas.is_valid():
+                if form_filtrar_linhas.cleaned_data['componente']:
+                    linha_componentes_padrao = linha_componentes_padrao.filter(componente=form_filtrar_linhas.cleaned_data['componente'])
+                if form_filtrar_linhas.cleaned_data['tag']:
+                    linha_componentes_padrao = linha_componentes_padrao.filter(linha__tag__icontains=form_filtrar_linhas.cleaned_data['tag'])
         if request.POST.get('anexar-documento', None):
             form_anexos = ArquivoAnexoSubProdutoForm(request.POST, request.FILES, subproduto=subproduto)
             if form_anexos.is_valid():
