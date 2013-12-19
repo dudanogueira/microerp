@@ -142,7 +142,34 @@
 	</div>
 	
 	<div class="tab-pane fade in" id="visualizador-de-notas">
-		visualizador
+		<h6>Por Dia</h6>
+		<table class="table table-bordered">
+			<tr>
+				{% for item in total_notas_por_dia %}
+				<td>{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}</td>
+				{% endfor %}
+			</tr>
+			<tr>
+				{% for item in total_notas_por_dia %}
+				<td>{{item.soma}}</td>
+				{% endfor %}
+			</tr>
+			
+		</table>
+		<h6>Por Mês</h6>
+		<table class="table table-bordered">
+			<tr>
+				{% for item in total_notas_por_mes %}
+				<td>{{item.month|date:"M/y"}}</td>
+				{% endfor %}
+			</tr>
+			<tr>
+				{% for item in total_notas_por_mes %}
+				<td>{{item.soma}}</td>
+				{% endfor %}
+			</tr>
+			
+		</table>
 	</div>
 
 </div>

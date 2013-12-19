@@ -205,6 +205,7 @@ class FormFiltrarNotaFiscal(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
+    notas_exibir = NotaFiscal.objects.all().order_by('-criado')
     try:
         inicio_lancamentos = NotaFiscal.objects.all().order_by('data_entrada')[0].data_entrada
         fim_lancamentos = NotaFiscal.objects.all().order_by('-data_entrada')[0].data_entrada
@@ -221,7 +222,6 @@ def lancar_nota(request):
             if filtro_notas_form.is_valid():
                 status = filtro_notas_form.cleaned_data['status']
                 fornecedor = filtro_notas_form.cleaned_data['fornecedor']
-                notas_exibir = NotaFiscal.objects.all().order_by('-criado')
                 if status:
                     notas_exibir = notas_exibir.filter(status=status)
                 if fornecedor:
@@ -252,7 +252,14 @@ def lancar_nota(request):
                     messages.error(request, 'Erro ao Importar nota!')
             except:
                 raise
-                
+    total_notas_por_dia = notas_exibir.extra({'data_entrada':"date(data_entrada)"}).\
+        values('data_entrada').\
+        annotate(soma=Sum('total_sem_imposto'))
+    
+    
+    from django.db import connections
+    total_notas_por_mes = notas_exibir.extra(select={'month': connections[NotaFiscal.objects.db].ops.date_trunc_sql('month', 'data_entrada')}).values('month').annotate(soma=Sum('total_sem_imposto'))
+    
     return render_to_response('frontend/producao/producao-lancar-nota.html', locals(), context_instance=RequestContext(request),)
 
 
