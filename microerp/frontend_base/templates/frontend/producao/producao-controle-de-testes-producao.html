@@ -139,6 +139,8 @@
 			<h4>Indicadores</h4>
 				<form method="POST" id="filtrar-por-subproduto">
 						{% csrf_token %}
+						
+						
 					<div class="row-fluid">
 				
 						<div class="span2">
@@ -174,29 +176,42 @@
 				{% for subprodutodic in lista_dicionario_retorno %}
 				<div class="well well-small">
 					<h4>{{subprodutodic.subproduto}}</h4>
+					
+					
 					<div class="row-fluid">
-						<div class="span6">
-							<h5>Falhas</h5>
-							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %} <strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda}}<br />
-							
+			
+						<div class="span4">
+							<h6>Quantitativo</h6>
+							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
+							<strong>Total Funcional</strong>: {{total_geral_funcional}}<br />
 							<strong>Total de Reparo</strong>: {% if subprodutodic.total_por_tipo_reparo.total %} {{subprodutodic.total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
-							<strong>Indicador de Reparo</strong>: {{subprodutodic.indicador_reparo}}<br />
-						</div>
-						<div class="span6">
-							<h5>Testes</h5>
-							<strong>Total Testado</strong>: {% if subprodutodic.total_testado.total %}{{subprodutodic.total_testado.total}}{% else %}0{% endif %}<br />
-							<strong>Total Funcional Geral</strong>: {{total_geral_funcional}}<br />
-							<strong>Indicador Funcional Geral:</strong> {{subprodutodic.indicador_funcional_geral}}<br />
-
 							<strong>Total Funcional Sem Reparar:</strong> {% if subprodutodic.total_funcional_direto.total %}{{subprodutodic.total_funcional_direto.total}}{% else %}0{% endif %}<br />
-						<strong>Indicador Funcional Sem Reparar:</strong> {{subprodutodic.indicador_funcional_direto}}<br />
+							<strong>Total Testado</strong>: {% if subprodutodic.total_testado.total %}{{subprodutodic.total_testado.total}}{% else %}0{% endif %}<br />
 							
 							
 							
+						</div>
+						
+						<div class="span3">
+							<h6>Indicadores</h6>
+							 <strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda}}<br />
+							 <strong>Indicador Funcional:</strong> {{subprodutodic.indicador_funcional_geral}}<br />
+							 <strong>Indicador de Reparo</strong>: {{subprodutodic.indicador_reparo}}<br />
+							 <strong>Indicador Funcionando Sem Reparar</strong>: {{subprodutodic.indicador_funcional_direto}}<br />
+							 
 							
-							
+						</div>
+						
+						
+						<div class="span5">
+							<h6>Legenda</h6>
+							<strong>Indicador de Perda</strong> = Total de Perda / Total Testado<br />
+							<strong>Indicador Funcional</strong> = Total Funcional / Total Testado<br />
+							<strong>Indicador de Reparo</strong> = Total Reparado / Total Testado<br />
+							<strong>Indicador Funcionando sem Reparar</strong> = Total Funcionando Sem Reparar / Total Testado<br />
 						</div>
 					</div>
+					
 					<hr />
 					<h5>Resultado de Falhas de Reparo:</h5>
 					<table class="table table-condensed table-hover table-rounded">

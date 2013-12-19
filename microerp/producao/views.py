@@ -3755,24 +3755,25 @@ def controle_de_testes_producao(request):
                         # total funcional (funcional direto + reparados)
                         total_geral_funcional = total_funcional_direto['total'] + total_funcional_reparado['total']
                         # indicadores
-                        indicador_funcional_geral = total_geral_funcional or 0 / float(total_testado['total'])
-                        indicador_funcional_direto = total_funcional_direto['total'] or 0 / float(total_testado['total'])
-                        indicador_perda = total_por_tipo_perda['total'] or 0 / float(total_testado['total'])
-                        indicador_reparo = total_por_tipo_reparo['total'] or 0 / float(total_testado['total'])
-                        dicionario = {
-                                'subproduto': subproduto,
-                                'total_testado': total_testado,
-                                'total_funcional_direto': total_funcional_direto,
-                                'total_geral_funcional': total_geral_funcional,
-                                'indicador_funcional_geral': indicador_funcional_geral,
-                                'indicador_funcional_direto': indicador_funcional_direto,
-                                'total_por_falha_perda': total_por_falha_perda,
-                                'total_por_falha_reparo': total_por_falha_reparo,
-                                'total_por_tipo_perda': total_por_tipo_perda,
-                                'indicador_perda': indicador_perda,
-                                'total_por_tipo_reparo': total_por_tipo_reparo,
-                                'indicador_reparo': indicador_reparo,
-                            }
+                        if total_testado['total']:
+                            indicador_funcional_geral = total_geral_funcional / float(total_testado['total'])
+                            indicador_funcional_direto = total_funcional_direto['total'] / float(total_testado['total'])
+                            indicador_perda = total_por_tipo_perda['total']  / float(total_testado['total'])
+                            indicador_reparo = total_por_tipo_reparo['total'] / float(total_testado['total'])
+                            dicionario = {
+                                    'subproduto': subproduto,
+                                    'total_testado': total_testado,
+                                    'total_funcional_direto': total_funcional_direto,
+                                    'total_geral_funcional': total_geral_funcional,
+                                    'indicador_funcional_geral': indicador_funcional_geral,
+                                    'indicador_funcional_direto': indicador_funcional_direto,
+                                    'total_por_falha_perda': total_por_falha_perda,
+                                    'total_por_falha_reparo': total_por_falha_reparo,
+                                    'total_por_tipo_perda': total_por_tipo_perda,
+                                    'indicador_perda': indicador_perda,
+                                    'total_por_tipo_reparo': total_por_tipo_reparo,
+                                    'indicador_reparo': indicador_reparo,
+                                }
                         lista_dicionario_retorno.append(dicionario)
     return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
 
