@@ -465,7 +465,7 @@
             </thead>
             <tbody>
                 {% for opcao_padrao in linha_componentes_padrao %}
-                <tr>
+				<tr>
                     <td class="alert-info" id="linha-id-{{linha.id}}">{{forloop.counter}}</td>
 										{% if opcao_padrao.linha.subproduto.possui_tags %}
                     <td>
@@ -509,8 +509,7 @@
                             </a>                   
                             {% endif %}
 					</td>
-				  </tr>
-           
+				</tr>           
                   {% empty %}
                   <tr>
                       <td>
@@ -518,6 +517,17 @@
                       </td>
                   </tr>
                   {% endfor %}
+				  <tr>
+					  <td></td>
+					  <td></td>
+					  <td></td>
+					  <td></td>
+					  <td></td>
+					  <td></td>
+ 					  <td></td>
+					  <td>R$ {{total_linha_componentes|floatformat:2}}</td>
+					  <td></td>
+				  </tr>
 
             </tbody>
 		</table>
@@ -587,6 +597,17 @@
                          </td>
                     </tr>
                     {% endfor %}
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td>R$ {{subproduto.valor_custo_total_dos_sub_produtos_agregados|floatformat:2}}</td>
+						<td></td>
+						<td></td>
+					</tr>
                 
                 </tbody>
         </table>

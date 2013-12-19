@@ -994,7 +994,7 @@ class LinhaSubProdutoAgregado(models.Model):
     
     quantidade = models.IntegerField(help_text=u"Número Inteiro", blank=True, null=True, default=1)
     subproduto_principal = models.ForeignKey('SubProduto', related_name="linhasubprodutos_agregados")
-    subproduto_agregado = models.ForeignKey('SubProduto', related_name="linhasubproutos_escolhidos")
+    subproduto_agregado = models.ForeignKey('SubProduto', related_name="linhasubprodutos_escolhidos")
 
 class LinhaSubProduto(models.Model):
     '''
@@ -1703,6 +1703,9 @@ def subproduto_pre_save(signal, instance, sender, **kwargs):
       instance.valor_custo_total_linhas = instance.custo_total_linhas()
       instance.valor_custo_total_dos_sub_produtos_agregados = instance.custo_total_dos_sub_produtos_agregados()
       instance.valor_total_de_custo =  instance.valor_custo_total_linhas + instance.valor_custo_total_dos_sub_produtos_agregados
+      # recalcula todos os subprodutos que possuem este subproduto como agregado
+      for linha in instance.linhasubprodutos_escolhidos.all():
+          linha.subproduto_principal.save()
 
 # SIGNALS CONNECTION
 signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)

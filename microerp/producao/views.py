@@ -1294,10 +1294,13 @@ class FormFiltraLinhaDeComponentes(forms.Form):
     
     def __init__(self, *args, **kwargs):
         componentes_possiveis = kwargs.pop('componentes_possiveis', None)
+        taggeavel = kwargs.pop('taggeavel', None)
         super(FormFiltraLinhaDeComponentes, self).__init__(*args, **kwargs)
         self.fields['componente'].widget.attrs['class'] = 'select2 input-small'
         self.fields['componente'].choices = componentes_possiveis
         self.fields['componente'].choices.insert(0, ('','Todos os Componentes' ) )
+        if not taggeavel:
+            del self.fields['tag']
     
     componente = forms.ChoiceField(choices=(), label="Componente", required=False)
     tag = forms.CharField(required=False)
@@ -1327,15 +1330,17 @@ def ver_subproduto(request, subproduto_id):
     # form de filtro de componente
     c = linha_componentes_padrao.values_list('componente_id', 'componente__part_number', 'componente__descricao')
     componentes_possiveis_choices = [(i[0], "%s - %s" % (i[1], i[2])) for i in c]
-    form_filtrar_linhas = FormFiltraLinhaDeComponentes(componentes_possiveis=componentes_possiveis_choices)
+    c = set(c)
+    form_filtrar_linhas = FormFiltraLinhaDeComponentes(componentes_possiveis=componentes_possiveis_choices, taggeavel=subproduto.possui_tags)
     if request.POST:
         if request.POST.get('filtrar-linhas-componentes', None):            
-            form_filtrar_linhas = FormFiltraLinhaDeComponentes(request.POST, componentes_possiveis=componentes_possiveis_choices)
+            form_filtrar_linhas = FormFiltraLinhaDeComponentes(request.POST, componentes_possiveis=componentes_possiveis_choices, taggeavel=subproduto.possui_tags)
             if form_filtrar_linhas.is_valid():
                 if form_filtrar_linhas.cleaned_data['componente']:
                     linha_componentes_padrao = linha_componentes_padrao.filter(componente=form_filtrar_linhas.cleaned_data['componente'])
-                if form_filtrar_linhas.cleaned_data['tag']:
-                    linha_componentes_padrao = linha_componentes_padrao.filter(linha__tag__icontains=form_filtrar_linhas.cleaned_data['tag'])
+                if subproduto.possui_tags:
+                    if form_filtrar_linhas.cleaned_data['tag']:
+                        linha_componentes_padrao = linha_componentes_padrao.filter(linha__tag__icontains=form_filtrar_linhas.cleaned_data['tag'])
         if request.POST.get('anexar-documento', None):
             form_anexos = ArquivoAnexoSubProdutoForm(request.POST, request.FILES, subproduto=subproduto)
             if form_anexos.is_valid():
@@ -1540,6 +1545,8 @@ def ver_subproduto(request, subproduto_id):
                     messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais" % subproduto.total_funcional)
                     
 
+    # definir o total do somatório de componentes
+    total_linha_componentes = linha_componentes_padrao.aggregate(Sum('linha__valor_custo_da_linha'))['linha__valor_custo_da_linha__sum']
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1647,15 +1654,18 @@ def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subpro
                 # nao existe nenhuma opcao, esta e a padrao
                 opcao = form.save()
                 opcao.padrao = True
-                # atualiza calculo da linha
-                opcao.linha.valor_custo_da_linha = linha.custo() or 0
-                opcao.linha.save()
             else:
                 opcao = form.save()
                 opcao.padrao = None
+
             opcao.save()
+            # atualiza calculo da linha
+            opcao.linha.valor_custo_da_linha = linha.custo()
+            opcao.linha.save()
+            
             # dispara gatilhos de atualizacao do subproduto
             opcao.linha.subproduto.save()
+            
             messages.success(request, u"Sucesso! Opção adiconada com sucesso em %s" % linha)
             return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
     else:
@@ -1671,10 +1681,11 @@ def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subprodut
     inedito = True
     linhas = linha.subproduto.linhasubproduto_set.all()
     for l in linhas:
-        if opcao.componente.id == l.opcao_padrao().componente.id:
-            inedito = False
-            messages.error(request, u"Impossível tornar esta opção como Padrão: Componente %s já identificado como padrão na Linha #%s" % (opcao.componente.part_number, linha.id))
-            return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
+        if l.opcao_padrao():
+            if opcao.componente.id == l.opcao_padrao().componente.id:
+                inedito = False
+                messages.error(request, u"Impossível tornar esta opção como Padrão: Componente %s já identificado como padrão na Linha #%s" % (opcao.componente.part_number, linha.id))
+                return redirect(reverse("producao:editar_linha_subproduto", args=[linha.subproduto.id, linha.id]))
     
     # transforma todas as opcoes da linha em nao padrao
     linha.opcaolinhasubproduto_set.all().update(padrao=None)
@@ -1902,9 +1913,20 @@ def ver_produto(request, produto_id):
     form_anexos = ArquivoAnexoProdutoForm(produto=produto)
     form_adiciona_produzido = FormMovimentoProduto(produto=produto, operacao='adiciona')
     form_remove_produzido = FormMovimentoProduto(produto=produto, operacao='remove')
+    linhas_componente_produto = produto.linhacomponenteavulsodoproduto_set.all()
     # quantidade de lancamentos disponíveis:
     lancamentos_disponiveis = produto.ordemproducaoproduto_set.filter(lancamentoprodproduto__vendido=False, lancamentoprodproduto__apagado=False)
+    # filtros de componentes do produto
+    c = produto.linhacomponenteavulsodoproduto_set.values_list('componente_id', 'componente__part_number', 'componente__descricao')
+    c = set(c)
+    componentes_possiveis_choices = [(i[0], "%s - %s" % (i[1], i[2])) for i in c]
+    form_filtrar_linhas = FormFiltraLinhaDeComponentes(componentes_possiveis=componentes_possiveis_choices, taggeavel=False)
     if request.POST:
+        if request.POST.get('filtrar-componentes-do-produto', None):
+            form_filtrar_linhas = FormFiltraLinhaDeComponentes(request.POST, componentes_possiveis=componentes_possiveis_choices, taggeavel=False)
+            if form_filtrar_linhas.is_valid():
+                if form_filtrar_linhas.cleaned_data['componente']:
+                    linhas_componente_produto = linhas_componente_produto.filter(componente=form_filtrar_linhas.cleaned_data['componente'])
         if request.POST.get('btn-adicionar-linha-subproduto', None):
             form_adicionar_linha_subproduto = AdicionarLinhaSubProdutoAoProdutoFinalForm(request.POST, produto=produto)
             form_adicionar_linha_componentes_avulsos = AdicionarLinhaComponenteAvulsoAoProdutoFinalForm(produto=produto)
@@ -1978,7 +2000,15 @@ def ver_produto(request, produto_id):
 
                 else:
                     messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Produzidas" % produto.total_produzido)
-                    
+    
+    # calcula total de linhas de compoenntes exibido
+    total_componentes_valores = linhas_componente_produto.values_list('quantidade', 'componente__preco_medio_unitario')
+    total_linha_produtos_avulsos = 0
+    for t in total_componentes_valores:
+        total_linha_produtos_avulsos += t[0] * t[1]
+    
+        
+
     return render_to_response('frontend/producao/producao-ver-produto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)    

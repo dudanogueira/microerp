@@ -134,6 +134,7 @@
         <!-- Button to trigger modal -->
         <a href="#modal-adicionar-linha-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Sub Produto</a>
         {% endif %}
+		
 
 
         <table class="table table-condensed table-hover table-rounded">
@@ -179,11 +180,32 @@
         <h2>Linhas de Componentes</h2>
         
         {% if request.user.perfilacessoproducao.gerente %}
+		
+		<div class="row-fluid">
+			<div class="span4">
+				<a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Componente</a>
+			</div>
+			<div class="span4">
+				<form method="POST">
+					{% csrf_token %}
+				{{form_filtrar_linhas.as_p}}
+			</div>
+			<div class="span4">
+				<br />
+				<button type="submit" class="btn btn-success" name="filtrar-componentes-do-produto" value="filtrar">Filtrar</button>
+				</form>
+			</div>
+			
+			
+		</div>
         
-        <!-- Button to trigger modal -->
-        <a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Componente</a>
+
         {% endif %}
-        
+		
+		
+		
+		
+		
         <table class="table table-condensed table-hover table-rounded">
             <thead>
                 <tr>
@@ -197,7 +219,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for linha in produto.linhacomponenteavulsodoproduto_set.all %}                
+                {% for linha in linhas_componente_produto %}                
                 <tr>
                     <td class="alert alert-info"><strong>{{forloop.counter}}</strong></td>
                     <td><a href="{% url "producao:ver_componente" linha.componente.id %}">{{linha.componente.part_number}}</a></td>
@@ -212,6 +234,16 @@
                     </td>
                 </tr>
                 {% endfor %}
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td>R$ {{total_linha_produtos_avulsos|floatformat:2}}</td>
+					<td></td>
+					<td></td>
+				</tr>
                 
             </tbody>
         </table>
