@@ -99,7 +99,7 @@
 {% if request.user.perfilacessoproducao.gerente %}
 	{% ifequal notafiscal.status "a" %}
 <p>
-<a href="{% url "producao:apagar_nota" notafiscal.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> Apagar Nota</a>
+<a onclick="return confirm('Tem certeza que Quer Apagar?')" href="{% url "producao:apagar_nota" notafiscal.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> Apagar Nota</a>
 </p>
 	{% endifequal %}
 {% endif %}

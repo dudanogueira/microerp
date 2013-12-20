@@ -129,7 +129,7 @@ class PosicaoEstoque(models.Model):
     componente = models.ForeignKey('Componente')
     estoque = models.ForeignKey('EstoqueFisico')
     quantidade = models.DecimalField(max_digits=15, decimal_places=2)
-    quantidade_alterada = models.CharField(blank=True, max_length=100)
+    quantidade_alterada = models.TextField(blank=True)
     # meta
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
     justificativa = models.TextField(blank=True)
@@ -209,6 +209,7 @@ class Componente(models.Model):
             if linha.quantidade:
                 valor += linha.quantidade
         return valor
+
 
     def total_participacao_padrao_subproduto(self):
         valor = 0

@@ -130,8 +130,15 @@
 						<td>R$ {{posicao.1|floatformat:2}}
 							<td>{{posicao.0.criado|date:"SHORT_DATE_FORMAT"}}</td>
 
-						</tr>
-						{% endfor %}
+					</tr>
+					{% empty %}
+					<tr>
+						<td>Nenhum Lançamento em Estoque.</td>
+					</tr>
+					{% endfor %}
+					
+					
+					
 
 					</tbody>
 				</table>
@@ -261,8 +268,9 @@
 			</tbody>
 		</table>
             
+		{% comment %}
 		<h2>Participação como PADRÃO por Sub Produto</h2>
-		{# A tabela deve mostrar por sub produto e quantas vezes o componente aparece nesse sub produto. #}
+		{# A tabela deve mostrar por sub produto e quantas vezes o componente aparece nesse sub produto. 
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
@@ -294,6 +302,8 @@
 					</tr>
 				</tbody>
 			</table>
+			{% endcomment %}
+		
 		
 		<h2>Participação como PADRÃO em Linha de Sub Produto</h2>
 		<table class="table table-condensed table-hover table-rounded">
