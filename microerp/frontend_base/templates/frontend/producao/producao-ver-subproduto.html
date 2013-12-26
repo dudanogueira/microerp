@@ -607,11 +607,9 @@
 						<td></td>
 						<td></td>
 					</tr>
-                
                 </tbody>
         </table>
     </div>
-    
     <div class="tab-pane fade in" id="arquivos">
         
         <h2>Imagem</h2>
@@ -661,25 +659,20 @@
             {% endfor %}
         
     </div>
-		
 	<div class="tab-pane fade in" id="relatorios">
  		 <p class="btn-group">
  			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='fa fa-print'></i> Impressão da Composição deste Sub Produto</a>
  		 </p>
 			
-		</div>
-			
+		</div>	
 </div>
-
 {% endblock %}
-
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-
 
 <script>
 $(document).ready(function() {
@@ -731,7 +724,6 @@ $(document).ready(function() {
 		
 
 });
-
 
 // Javascript to enable link to tab
 var hash = document.location.hash;

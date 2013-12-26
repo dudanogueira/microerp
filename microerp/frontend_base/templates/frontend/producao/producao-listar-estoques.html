@@ -58,6 +58,11 @@
                             <td>R$ {{posicao.1|floatformat:2}}</td>
                             <td>{{posicao.criado|date:"SHORT_DATE_FORMAT"}}</td>
                         </tr>
+						{% empty %}
+						<tr>
+							<td>Nenhum Lançamento em Estoque</td>
+						</tr>
+				
                         {% endfor %}
                         </tbody>
                     </table>
@@ -92,6 +97,12 @@
                             <td>R$ {{posicao.1|floatformat:2}}</td>
                             <td>{{posicao.0.criado|date:"SHORT_DATE_FORMAT"}}</td>
                         </tr>
+						{% empty %}
+						<tr>
+							<td>Nenhum Lançamento em Estoque</td>
+						</tr>
+				
+						
                         {% endfor %}
                         <tr>
                             <td></td>
@@ -210,6 +221,12 @@
                         {% endif %}
                     </td>
                 </tr>
+				{% empty %}
+				<tr>
+					<td>Nenhum Histórico a Exibir</td>
+				</tr>
+		
+			
             {% endfor %}
             </tbody>
         </table>

@@ -23,7 +23,9 @@ from django.db.models import Count
 from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
-from comercial.models import PropostaComercial, PerfilAcessoComercial, FollowUpDePropostaComercial, RequisicaoDeProposta
+from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta
+from comercial.models import PerfilAcessoComercial
+from comercial.models import LinhaRecursoMaterial, Orcamento
 from estoque.models import Produto
 
 from django.conf import settings
@@ -144,17 +146,26 @@ class AdicionarCliente(forms.ModelForm):
         'contato', 'email', 'telefone_fixo', 'telefone_celular', 'fax',\
         'designado'
         
-
 class FormAdicionarFollowUp(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormAdicionarFollowUp, self).__init__(*args, **kwargs)
         self.fields['proposta'].widget = forms.HiddenInput()
+        self.fields['texto'].required = True
+        self.fields['probabilidade'].required = True
+        self.fields['data_expiracao'].required = False
+        self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
 
     class Meta:
         model = FollowUpDePropostaComercial
-        fields = 'proposta', 'texto',
-
+        fields = 'proposta', 'texto', 'probabilidade', 'reagenda_data_expiracao', 'data_expiracao'
+    
+    def clean_data_expiracao(self):
+            data = self.cleaned_data['data_expiracao']
+            reagenda_data_expiracao = self.cleaned_data['reagenda_data_expiracao']
+            if reagenda_data_expiracao and not data:
+                    raise forms.ValidationError("É preciso informar uma data!")    
+            return data
 
 #
 # DECORADORES
@@ -185,10 +196,21 @@ def home(request):
     # widget cliente
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
+class FiltrarPreClientesERequisicoesForm(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(FiltrarPreClientesERequisicoesForm, self).__init__(*args, **kwargs)
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
+        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        self.fields['funcionario'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        
+
+    funcionario = forms.ModelChoiceField(queryset=None, label="Funcionário", required=False, empty_label="Todos do Comercial")
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def clientes(request):
+    form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()        
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
         clientes = Cliente.objects.filter(
@@ -203,15 +225,23 @@ def clientes(request):
         preclientes = PreCliente.objects.filter(cliente_convertido=None)
 
     preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None)
-    clientes_sem_proposta = Cliente.objects.filter(propostacomercial=None)
     requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False)
     # se nao for gerente, limita a listagem para os que lhe sao designados
     if not request.user.perfilacessocomercial.gerente:
         clientes = clientes.filter(designado=request.user.funcionario)
         preclientes = preclientes.filter(designado=request.user.funcionario)
         preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=request.user.funcionario)
-        clientes_sem_proposta = clientes_sem_proposta.filter(designado=request.user.funcionario)
         requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=request.user.funcionario)
+        
+    if request.POST.get('btn-aplicar-filtro', None):
+            form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(request.POST)
+            if form_filtrar_precliente.is_valid():
+                funcionario_escolhido = form_filtrar_precliente.cleaned_data['funcionario']
+                if funcionario_escolhido:
+                    clientes = clientes.filter(designado=funcionario_escolhido)
+                    preclientes = preclientes.filter(designado=funcionario_escolhido)
+                    preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
+                    requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=funcionario_escolhido)
     
     return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
@@ -235,27 +265,109 @@ class FormEditarProposta(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
-        self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
     
     
     class Meta:
         model = PropostaComercial
-        fields = 'probabilidade', 'valor_proposto', 'data_expiracao', 'observacoes'
+        fields = 'valor_proposto', 'observacoes'
+
+class FormSelecionaOrcamentoModelo(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormSelecionaOrcamentoModelo, self).__init__(*args, **kwargs)
+        self.fields['modelo'].widget.attrs['class'] = 'select2'
+    
+    modelo = forms.ModelMultipleChoiceField(queryset=Orcamento.objects.filter(modelo=True, ativo=True), required=True)
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
-def cliente_editar_proposta(request, cliente_id, proposta_id):
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
+    orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
+    OrcamentoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=0, can_delete=True, form=LinhaOrcamentoForm)
     if request.POST:
-        form_editar_proposta = FormEditarProposta(request.POST, instance=proposta)
-        if form_editar_proposta.is_valid():
-            proposta_alterada = form_editar_proposta.save()
-            messages.success(request, u"Sucesso! Proposta #%s alterada!" % proposta.id)
-            return redirect(reverse("comercial:cliente_ver", args=[proposta.cliente.id])+"#tab_propostas")
+        if 'adicionar_linha_material' in request.POST:
+            messages.info(request, u"Nova Linha de Materiais adicionados")
+            cp = request.POST.copy()
+            cp['orcamento-TOTAL_FORMS'] = int(cp['orcamento-TOTAL_FORMS'])+ 1
+            form_editar_linhas = OrcamentoFormSet(cp, instance=orcamento, prefix='orcamento')
+            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+        else:
+            form_editar_linhas = OrcamentoFormSet(request.POST, instance=orcamento, prefix="orcamento")
+            form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+            if form_editar_linhas.is_valid() and form_orcamento.is_valid():
+                modelo_linhas = form_editar_linhas.save()
+                orcamento_novo = form_orcamento.save()
+                messages.success(request, u"Sucesso! Modelo Alterado")
+                # volta pra lista de modelos
+                return redirect(reverse('comercial:editar_proposta', args=[orcamento.proposta.id]))
+            else:
+                form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+                
     else:
-        form_editar_proposta = FormEditarProposta(instance=proposta)
+        form_editar_linhas = OrcamentoFormSet(instance=orcamento, prefix="orcamento")
+        form_orcamento = OrcamentoForm(instance=orcamento)
+    return render_to_response('frontend/comercial/comercial-editar-proposta-editar-orcamento.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def editar_proposta_inativar_orcamento(request, proposta_id, orcamento_id):
+    orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
+    orcamento.ativo = False
+    orcamento.save()
+    messages.success(request, u"Sucesso! Orçamento Inativado.")
+    return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def editar_proposta_ativar_orcamento(request, proposta_id, orcamento_id):
+    orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
+    orcamento.ativo = True
+    orcamento.save()
+    messages.success(request, u"Sucesso! Orçamento Ativado.")
+    return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
+
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def editar_proposta(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    seleciona_modelos_proposta = FormSelecionaOrcamentoModelo()
+    form_editar_proposta = FormEditarProposta(instance=proposta)
+    adicionar_orcamento_form = OrcamentoForm(initial={'proposta': proposta.id })
+    if request.POST:
+        if 'adicionar-modelos' in request.POST:
+            seleciona_modelos_proposta = FormSelecionaOrcamentoModelo(request.POST)
+            if seleciona_modelos_proposta.is_valid():
+                modelos = seleciona_modelos_proposta.cleaned_data['modelo']
+                # clona o modelo de orcamento pra dentro da proposta
+                for modelo in modelos:
+                    linhas_materiais = modelo.linharecursomaterial_set.all()
+                    # cria novo orcamento à partir de modelo
+                    modelo.pk = None
+                    novo_orcamento = modelo
+                    novo_orcamento.proposta = proposta
+                    novo_orcamento.save()
+                    # copia todos as linhas de materiais pro modelo
+                    for linha in linhas_materiais:
+                        linha.pk = None
+                        linha.orcamento = novo_orcamento
+                        linha.save()
+        if request.POST.get('adicionar-orcamento-btn'):
+            adicionar_orcamento_form = OrcamentoForm(request.POST)
+            if adicionar_orcamento_form.is_valid():
+                novo_orcamento = adicionar_orcamento_form.save(commit=False)
+                novo_orcamento.criado_por = request.user
+                novo_orcamento.save()
+                messages.success(request, u"Sucesso! Novo Orçamento Adicionado.")
+        if request.POST.get('alterar-proposta'):
+            form_editar_proposta = FormEditarProposta(request.POST, instance=proposta)
+            if form_editar_proposta.is_valid():
+                proposta_alterada = form_editar_proposta.save()
+                messages.success(request, u"Sucesso! Proposta #%s alterada!" % proposta.id)
+                return redirect(reverse("comercial:cliente_ver", args=[proposta.cliente.id])+"#tab_propostas")
+        if request.POST.get('adicionar-modelos'):
+            seleciona_modelos_proposta = FormSelecionaOrcamentoModelo(request.POST)
+            if seleciona_modelos_proposta.is_valid():
+                pass
         
-    return render_to_response('frontend/comercial/comercial-cliente-editar-proposta.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/comercial/comercial-editar-proposta.html', locals(), context_instance=RequestContext(request),)
 
 
 # Pre Cliente
@@ -304,16 +416,25 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
     cliente = Cliente.objects.get(pk=cliente_id)
     if request.POST:
         form = AdicionarPropostaForm(request.POST)
-        if form.is_valid:
+        if form.is_valid():
             proposta = form.save(commit=False)
             proposta.cliente = cliente
             proposta.criador_por = request.user
             proposta.save()
+            # vincula proposta com a requisicao de origem
+            if request.GET.get('requisicao_origem', None):
+                requisicao_proposta = RequisicaoDeProposta.objects.get(pk=request.GET.get('requisicao_origem', None))
+                requisicao_proposta.atendido = True
+                requisicao_proposta.atendido_data = datetime.datetime.now()
+                requisicao_proposta.atendido_por = request.user.funcionario
+                
+                requisicao_proposta.proposta_vinculada = proposta
+                requisicao_proposta.save()
+                
             return redirect(reverse('comercial:cliente_ver', args=[cliente.id]) + "#tab_propostas")
     else:
         form = AdicionarPropostaForm()
     return render_to_response('frontend/comercial/comercial-propostas-cliente-adicionar.html', locals(), context_instance=RequestContext(request),)
-
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -321,7 +442,6 @@ def propostas_comerciais_precliente(request, precliente_id):
     precliente = PreCliente.objects.get(pk=precliente_id)
     propostas_abertas = PropostaComercial.objects.filter(precliente=precliente, status='aberta')
     return render_to_response('frontend/comercial/comercial-propostas-precliente.html', locals(), context_instance=RequestContext(request),)
-
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_precliente_adicionar(request, precliente_id):
@@ -333,6 +453,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
             proposta.precliente = precliente
             proposta.criado_por = request.user
             proposta.save()
+            messages.successs(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
             return redirect(reverse('comercial:home'))
     else:
         form = AdicionarPropostaForm()
@@ -400,17 +521,21 @@ def tabela_de_precos(request):
         form_filtra_tabela = FiltraTabelaDePrecos()
     return render_to_response('frontend/comercial/comercial-consultar-tabela-precos.html', locals(), context_instance=RequestContext(request),)
 
-@user_passes_test(possui_perfil_acesso_comercial)
-def requisicao_proposta_cliente_atender(request, requisicao_id):
-    requisicao = get_object_or_404(RequisicaoDeProposta, pk=requisicao_id)
-    requisicao.atendido = True
-    requisicao.atendido_data = datetime.datetime.now()
-    requisicao.save()
-    # marca como atendida e envia pra tela de adicionar proposta
-    return redirect(reverse("comercial:propostas_comerciais_cliente_adicionar", args=[requisicao.cliente.id]))
+class FormEscolherClientesEPreClientes(forms.Form):
+    
+    
+    def __init__(self, *args, **kwargs):
+        super(FormEscolherClientesEPreClientes, self).__init__(*args, **kwargs)
+        self.fields['clientes'].widget.attrs['class'] = 'select2'
+        self.fields['preclientes'].widget.attrs['class'] = 'select2'
+    
+    
+    clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.all())
+    preclientes = forms.ModelMultipleChoiceField(required=False, queryset=PreCliente.objects.filter(cliente_convertido=None))
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def designacoes(request):
+    escolher_clientes_form = FormEscolherClientesEPreClientes()
     cliente_sem_designacao = Cliente.objects.filter(designado=None)
     precliente_sem_designacao = PreCliente.objects.filter(designado=None, cliente_convertido=None)
     cliente_designacao_invalida = Cliente.objects.exclude(designado=None).filter(designado__periodo_trabalhado_corrente=None)
@@ -499,34 +624,28 @@ def proposta_comercial_imprimir(request, proposta_id):
         if proposta.cliente and proposta.cliente.tipo == 'pf':
             proposta.documento_do_proposto = "CPF: %s" % proposta.cliente.cpf
     # rua
-    if not proposta.rua_do_proposto:
+    if not proposta.rua_do_proposto and proposta.cliente:
         if proposta.cliente.enderecocliente_set.filter(principal=True):
             proposta.rua_do_proposto = "%s - %s" % (proposta.cliente.enderecocliente_set.filter(principal=True)[0].rua, proposta.cliente.enderecocliente_set.filter(principal=True)[0].numero)
     # bairro
-    if not proposta.bairro_do_proposto:
+    if not proposta.bairro_do_proposto and proposta.cliente:
         if proposta.cliente.enderecocliente_set.filter(principal=True):
             proposta.bairro_do_proposto = proposta.cliente.enderecocliente_set.filter(principal=True)[0].bairro.nome
     # bairro
-    if not proposta.cep_do_proposto:
+    if not proposta.cep_do_proposto  and proposta.cliente:
         if proposta.cliente.enderecocliente_set.filter(principal=True):
             proposta.cep_do_proposto = proposta.cliente.enderecocliente_set.filter(principal=True)[0].cep
     # cidade
-    if not proposta.cidade_do_proposto:
+    if not proposta.cidade_do_proposto  and proposta.cliente:
         if proposta.cliente.enderecocliente_set.filter(principal=True):
             end = proposta.cliente.enderecocliente_set.filter(principal=True)[0]
             proposta.cidade_do_proposto = "%s - %s" % (end.bairro.cidade.nome, end.bairro.cidade.estado) 
     # endereco da obra proposta
-    if not proposta.endereco_obra_proposto:
+    if not proposta.endereco_obra_proposto and proposta.cliente:
         if proposta.cliente.enderecocliente_set.filter(principal=True):
             end = proposta.cliente.enderecocliente_set.filter(principal=True)[0]
             proposta.endereco_obra_proposto = "Rua %s - %s, Bairro %s, CEP %s, Cidade: %s" % \
             (end.rua, end.numero, end.bairro.nome, end.cep, end.bairro.cidade)
-    # representante legal
-    if not proposta.representante_legal_proposto:
-        if proposta.cliente:
-            proposta.representante_legal_proposto = proposta.cliente.nome
-        if proposta.precliente:
-            proposta.representante_legal_proposto = proposta.precliente.nome
     # telefone
     if not proposta.telefone_contato_proposto:
         if proposta.cliente:
@@ -552,3 +671,59 @@ def proposta_comercial_imprimir(request, proposta_id):
             template_escolhido = dicionario_template_propostas[form_configura.cleaned_data['modelo']]
             return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
     return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def orcamentos_modelo(request):
+    modelos = Orcamento.objects.filter(ativo=True, modelo=True)
+    return render_to_response('frontend/comercial/comercial-orcamentos-modelo.html', locals(), context_instance=RequestContext(request),)
+
+class OrcamentoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(OrcamentoForm, self).__init__(*args, **kwargs)
+        self.fields['proposta'].widget = forms.HiddenInput()
+        self.fields['descricao'].widget.attrs['class'] = "input-xxlarge"
+        self.fields['descricao'].required = True
+
+    class Meta:
+        model = Orcamento
+        fields = 'descricao', 'proposta'
+
+class LinhaOrcamentoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaOrcamentoForm, self).__init__(*args, **kwargs)
+        self.fields['produto'].widget = forms.HiddenInput()
+        self.fields['produto'].widget.attrs['class'] = 'select2-ajax'
+        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
+
+    class Meta:
+        model = LinhaRecursoMaterial
+        fields = 'quantidade', 'produto'
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def orcamentos_modelo_editar(request, modelo_id):
+    modelo = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
+    OrcamentoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=0, can_delete=True, form=LinhaOrcamentoForm)
+    if request.POST:
+        if 'adicionar_linha_material' in request.POST:
+            messages.info(request, u"Nova Linha de Materiais adicionados")
+            cp = request.POST.copy()
+            cp['modelo-TOTAL_FORMS'] = int(cp['modelo-TOTAL_FORMS'])+ 1
+            form_editar_linhas = OrcamentoFormSet(cp, instance=modelo, prefix='modelo')
+            form_modelo = OrcamentoForm(cp, instance=modelo)
+        else:
+            form_editar_linhas = OrcamentoFormSet(request.POST, instance=modelo, prefix="modelo")
+            form_modelo = OrcamentoForm(request.POST, instance=modelo)
+            if form_editar_linhas.is_valid() and form_modelo.is_valid():
+                modelo_linhas = form_editar_linhas.save()
+                modelo = form_modelo.save()
+                messages.success(request, u"Sucesso! Modelo Alterado")
+                # volta pra lista de modelos
+                return redirect(reverse('comercial:orcamentos_modelo'))
+    else:
+        form_editar_linhas = OrcamentoFormSet(instance=modelo, prefix="modelo")
+        form_modelo = OrcamentoForm(instance=modelo)
+    return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
+
+    

@@ -60,8 +60,8 @@
 						data-follow-ups="
 						
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.data|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -74,19 +74,14 @@
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
-					
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade={{proposta.probabilidade}} data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				</td>
 				<td>{{proposta.observacoes}}</td>
 						<td>        <div class="btn-group">
 	        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
 	        <a href="" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-			{% if proposta.cliente.id %}
-	        <a href="{% url "comercial:cliente_editar_proposta" proposta.cliente.id proposta.id%}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
-			{% endif %}
-			
+	        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
-
 				</td>
 			</tr>
    		 	{% empty %}
@@ -111,15 +106,40 @@
 		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
 		<form method="POST" id="form-adicionar-follow-up">
 			{% csrf_token %}
-			{{form_adicionar_follow_up.as_p}}
+			
+
+			{{form_adicionar_follow_up.proposta}}
+			<table>
+				<tr>
+					<td>
+						{{form_adicionar_follow_up.texto.label}}
+						{{form_adicionar_follow_up.texto}}
+						{{form_adicionar_follow_up.texto.errors}}
+					</td>
+					<td>
+						{{form_adicionar_follow_up.probabilidade.label}}
+						{{form_adicionar_follow_up.probabilidade}}
+						{{form_adicionar_follow_up.probabilidade.errors}}
+						<br />
+						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
+						<br />
+						<div id="data-expiracao-modal-container">
+						{{form_adicionar_follow_up.data_expiracao.label}}
+						{{form_adicionar_follow_up.data_expiracao}}
+						{{form_adicionar_follow_up.data_expiracao.errors}}						
+						</div>
+					</td>
+				</tr>
+			</table>
 		</form>
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-    <button class="btn btn-primary" form="form-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
   </div>
 </div>
-
 
 <!-- Modal Exibe FollowUps -->
 <div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
@@ -138,24 +158,64 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+
 <script>
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+
+$('#id_texto').on("keyup change", function(){
+    if( $.trim($(this).val()) ){
+		
+    	$("#btn-adicionar-follow-up").show()
+    }else{
+    	$("#btn-adicionar-follow-up").hide()
+    }
+});
+
 $(document).ready(function() {
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
 	$('.popover_item').popover({
 			trigger: "hover",
 			placement: 'top'
 		});
+		
 	$('.btn-modal-add-follow-up').click(function(e){
 			
-			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
-			$("#id_proposta").val($(this).data('proposta-id'))
+			$("#descricao-modal-add-follow-up").html( $(this).data('title') );
+			$("#id_proposta").val($(this).data('proposta-id'));
+			$("#id_texto").val('');
+			$("#id_probabilidade").val($(this).data('probabilidade'));
+			$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
+			$("#btn-adicionar-follow-up").hide();			
+		    $("#data-expiracao-modal-container").hide();
+			$("#modal-follow-up-add .errorlist").hide();
+			$("#id_reagenda_data_expiracao").attr('checked', false);	
 		});
 		
 	$('.carregar_follow_ups_modal').click(function(e){
 			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
 			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
 		});
+	    {% if form_adicionar_follow_up.errors %}
+			$('#modal-follow-up-add').modal('show');
+	    {% endif %}	
 });
+
+$("#id_reagenda_data_expiracao").on("change", function(e){
+	if($(this).is(':checked'))
+	    $("#data-expiracao-modal-container").show();  // checked
+	else
+	    $("#data-expiracao-modal-container").hide();
+})
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/comercial/comercial-menu.html" %}

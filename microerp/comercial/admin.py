@@ -47,7 +47,9 @@ class PerfilAcessoComercialAdmin(admin.ModelAdmin):
     pass
 
 class PropostaComercialAdmin(admin.ModelAdmin):
-    pass
+    list_display  = 'cliente', 'precliente', 'valor_proposto','data_expiracao'
+    list_filter = 'probabilidade', 'data_expiracao'
+    list_display_links = list_display
 
 class LinhaRecursoMaterialInLine(admin.TabularInline):
     raw_id_fields = ("produto",)
@@ -76,7 +78,7 @@ class TipodeContratoFechadoAdmin(admin.ModelAdmin):
     pass
 
 class FollowUpDePropostaComercialAdmin(admin.ModelAdmin):
-    date_hierarchy = 'data'
+    date_hierarchy = 'criado'
 
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)

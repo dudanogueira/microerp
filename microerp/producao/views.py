@@ -826,11 +826,11 @@ def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     return render_to_response('frontend/producao/producao-editar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
 
 # ESTOQUES
-
 class ConsultaEstoque(forms.Form):
+
+    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=False, empty_label="Todos os Componentes")
+    estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=False, empty_label="Todos os Estoques")
     
-    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=False)
-    estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=False)
     def __init__(self, *args, **kwargs):
         super(ConsultaEstoque, self).__init__(*args, **kwargs)
         self.fields['componente'].widget.attrs.update({'class' : 'select2'})
@@ -905,7 +905,7 @@ class AlterarEstoque(forms.Form):
     
     alteracao_tipo = forms.ChoiceField(label="Tipo de Alteração", choices=(('adicionar', 'Adicionar'), ('remover', 'Remover')))
     quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
-    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True,)
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
 
@@ -3893,11 +3893,10 @@ class LinhaLancamentoFalhaDeTesteFormPerda(forms.ModelForm):
         self.fields['falha'].widget.attrs['class'] = 'select2'
         self.fields['falha'].queryset = FalhaDeTeste.objects.filter(tipo="perda")
         self.fields['falha'].required = True
-    
+
     class Meta:
         model = LinhaLancamentoFalhaDeTeste
 
- 
 @user_passes_test(possui_perfil_acesso_producao)
 def controle_de_testes_producao_lancar_falha(request):
     '''Lança falhas e seus quantitativos, totais funcionais, etc'''

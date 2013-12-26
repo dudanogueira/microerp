@@ -56,14 +56,6 @@ class Produto(models.Model):
     def __unicode__(self):
         return "%s - %s" % (self.codigo, self.descricao)
     
-    def save(self, *args, **kwargs):
-        if self.tabela:
-            percentual = self.tabela.percentual
-        else:
-            percentual = 0
-        self.preco_venda = float(self.calcular_preco_venda(percentual))
-        super(Produto, self).save()
-        
     def calcular_preco_venda(self, percentual=0):
         if percentual == 0 or None:
             return self.preco_custo
@@ -123,5 +115,4 @@ def atualiza_preco_produto_pela_tabela(signal, instance, sender, **kwargs):
         produto.save()
 
 # SIGNALS CONNECTION
-signals.post_save.connect(atualiza_preco_produto_pela_tabela, sender=TabelaDePreco)
-
+#signals.post_save.connect(atualiza_preco_produto_pela_tabela, sender=TabelaDePreco)

@@ -19,7 +19,7 @@ from cadastro.models import Recado
 # solicitacao
 from solicitacao.models import Solicitacao
 # comercial
-from comercial.models import RequisicaoDeProposta
+from comercial.models import RequisicaoDeProposta, PerfilAcessoComercial
 
 from django import forms
 #
@@ -87,6 +87,8 @@ class PreClienteAdicionarForm(forms.ModelForm):
         sugestao = kwargs.pop('sugestao')
         super(PreClienteAdicionarForm, self).__init__(*args, **kwargs)
         self.fields['designado'].empty_label = "Nenhum"
+        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        self.fields['designado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
         
         
         if sugestao:
@@ -260,11 +262,19 @@ def solicitacao_adicionar(request):
 def preclientes_listar(request):
     return render_to_response('frontend/cadastro/cadastro-preclientes-listar.html', locals(), context_instance=RequestContext(request),)
 
-
 @user_passes_test(possui_perfil_acesso_recepcao)
-def requisicao_proposta_cliente(request, cliente_id):
-    cliente = Cliente.objects.get(pk=cliente_id)
-    # adiciona requisicao
-    requisicao = cliente.requisicaodeproposta_set.create(criado_por=request.user)
-    messages.success(request, u"Requisição de Proposta para %s realizada para Funcionário %s" % (cliente, cliente.designado))
+def requisicao_proposta_cliente(request):
+    if request.POST:
+        if request.POST.get('descricao-requisicao-proposta', None):
+            try:
+                cliente = get_object_or_404(Cliente, pk=request.POST.get('cliente-requisicao-proposta'))
+                # adiciona requisicao
+                requisicao = cliente.requisicaodeproposta_set.create(criado_por=request.user, descricao=request.POST.get('descricao-requisicao-proposta', None))
+                messages.success(request, u"Requisição de Proposta para %s realizada para Funcionário %s" % (cliente, cliente.designado))
+            except:
+                raise
+        else:
+            messages.info(request, 'É obrigatório uma Descrição.')
+    else:
+        messages.info(request, u'Não pode ser acessado diretamente');
     return redirect(reverse("cadastro:home"))

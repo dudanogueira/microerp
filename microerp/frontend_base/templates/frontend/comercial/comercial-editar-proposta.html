@@ -1,0 +1,142 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid">
+	<div class="span6">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-o"></i> Editar Proposta</h1>
+	</div>
+	<div class="span6">
+		{% if request.user.perfilacessocomercial.gerente %}
+		<h4>Como Gerente</h4>
+		{% endif %}
+	</div>
+</div>
+
+<div class="row-fluid">
+	
+	<div class="span6">
+		
+		<h3>#{{proposta.id}}</h3>
+		<h4>Orçamentos à partir de Modelos</h4>
+		<form method="POST" class="form form-inline">
+		{% csrf_token %}
+		{{seleciona_modelos_proposta}}
+		<p class="btn-group">
+			<button type="submit" class="btn btn-info" name="adicionar-modelos" value="adicionar">Adicionar Modelos Selecionados</button>
+			<a href="" class="btn btn-primary" data-toggle="modal" data-target="#ModalAdicionaNovoOrcamento"><i class="fa fa-plus"></i> Novo Orçamento</a>
+		</p>
+		</form>
+		
+	</div>
+	
+	<div class="span6">
+		
+		<form method="POST" class="form form-inline well well-small">
+		{% csrf_token %}
+		<h2>Valor Consolidado: R$ {{proposta.consolidado|floatformat:2}}</h2>
+		{{form_editar_proposta.as_p}}
+		<button type="submit" class="btn btn-danger" name="alterar-proposta" value="alterar"><i class="fa fa-pencil"></i> Alterar Proposta</button>
+		</form>
+		
+	</div>
+</div>
+
+{% if proposta.orcamentos_ativos %}
+
+<h3>Orçamentos Ativos</h3>
+{% for orcamento_ativo in proposta.orcamentos_ativos %}
+<div class="row-fluid">
+	<div class="span8">
+		<div class="alert alert-success">
+			{{orcamento_ativo}}
+		</div>
+	</div>
+	<div class="span4">
+		<p class="btn-group">
+			<a href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
+			<a href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+		</p>
+	</div>
+</div>
+{% endfor %}
+
+{% endif %}
+
+{% if proposta.orcamentos_inativos %}
+<h3>Orçamentos Inativos</h3>
+{% for orcamento_inativo in proposta.orcamentos_inativos %}
+<div class="row-fluid">
+	<div class="span8">
+		<div class="alert alert-danger">
+			{{orcamento_inativo}}
+		</div>
+	</div>
+	<div class="span4">
+		<p class="btn-group">
+			<a href="{% url "comercial:editar_proposta_ativar_orcamento" orcamento_inativo.proposta.id orcamento_inativo.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+		</p>
+	</div>
+</div>
+
+
+{% endfor %}
+{% endif %}
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="ModalAdicionaNovoOrcamento" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Descrição do Novo Orçamento</h4>
+      </div>
+      <div class="modal-body">
+		  <form method="POST" id="form_adicionar_orcamento" name="form_adicionar_orcamento" class="form form-inline">
+			  {% csrf_token %}
+			  {{adicionar_orcamento_form.as_p}}
+		  </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        <button type="submit" class="btn btn-primary" form="form_adicionar_orcamento" name="adicionar-orcamento-btn" value="adicionar">Adicionar Orçamento</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+{% if adicionar_orcamento_form.errors %}
+	$('#ModalAdicionaNovoOrcamento').modal('show');
+{% endif %}	
+
+
+
+
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

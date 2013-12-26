@@ -32,6 +32,8 @@ from rh.models import Funcionario
 
 import urllib2
 
+from django.db.models import signals
+
 from django.contrib import messages
 
 from icalendar import Calendar, Event
@@ -63,7 +65,7 @@ CONTRATO_STATUS_CHOICES = (
 )
 
 class PropostaComercial(models.Model):
-    
+
     def __unicode__(self):
             if self.cliente:
                 proposto = 'cliente'
@@ -79,24 +81,38 @@ class PropostaComercial(models.Model):
             return True
         else:
             return False
-    
+
     def ultimo_followup(self):
         if self.followupdepropostacomercial_set.all():
-            return self.followupdepropostacomercial_set.all().order_by('-data')[0]
+            return self.followupdepropostacomercial_set.all().order_by('-criado')[0]
         else:
             return False
-    
+
     def dono(self):
         return self.cliente or "Pré Cliente: %s" % self.precliente
+    
+    def sugere_data_reagendamento_expiracao(self):
+        return self.data_expiracao + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
+    
+    def orcamentos_ativos(self):
+        return self.orcamento_set.filter(ativo=True)
+    
+    def orcamentos_inativos(self):
+        return self.orcamento_set.filter(ativo=False)
+    
+    def consolidado(self):
+        '''soma todos os valores de orcamentos ativos presentes'''
+        return self.orcamento_set.filter(ativo=True).aggregate(Sum("custo_total"))['custo_total__sum']
+    
     
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True, default=50)
+    probabilidade_inicial = models.IntegerField("Probabilidade Inicial (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
-    orcamento_vinculado = models.ForeignKey('Orcamento', blank=True, null=True)
     observacoes = models.TextField("Observações", blank=False, null=False)
     # dados para impressao
     nome_do_proposto = models.CharField(blank=True, max_length=100)
@@ -122,13 +138,15 @@ class FollowUpDePropostaComercial(models.Model):
     def __unicode__(self):
         return u"Follow Up da Proposta #%s por %s em %s: %s" % (self.proposta.id, self.proposta.cliente or self.proposta.precliente, self.data.date(), self.texto)
     
-    class Meta:
-        ordering = ('-data',)
+    def data(self):
+        return self.criado
     
     proposta = models.ForeignKey('PropostaComercial')
     texto = models.TextField(blank=False)
-    data = models.DateTimeField(blank=False, default=datetime.datetime.now)
-    data_expiracao = models.DateField(blank=False, default=datetime.datetime.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
+    reagenda_data_expiracao = models.BooleanField("Reagenda Nova Data de Expiração", default=False)
+    data_expiracao = models.DateField("Data de Expiração", blank=False, default=datetime.datetime.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
+    probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True)
+    # registro histórico
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followup_adicionado_set",  blank=False, null=False)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -150,37 +168,68 @@ class PerfilAcessoComercial(models.Model):
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):
     '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
-    descricao = models.CharField(blank=True, max_length=100)
-    cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
-    precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
+    
+    def __unicode__(self):
+        return "%s - R$ %s" % (self.descricao, self.custo_total)
+    
+    def reajusta_custo(self):
+        '''Atualiza o custo de todas as linhas e geral'''
+        custo_total = 0
+        for linha in self.linharecursomaterial_set.all():
+            linha.custo_unitario = linha.produto.preco_venda
+            linha.custo_total = linha.produto.preco_venda * linha.quantidade
+            linha.save()
+            custo_total += linha.custo_total
+        #
+        self.custo_total = custo_total
+        self.save()
+        return self.custo_total
+
+    def recalcula_custo_total(self, save=True):
+        self.custo_material = self.linharecursomaterial_set.aggregate(total=Sum('custo_total'))['total'] or 0
+        self.custo_humano = self.linharecursohumano_set.aggregate(total=Sum('custo_total'))['total'] or 0
+        self.custo_total = self.custo_material + self.custo_humano
+        if save:
+            self.save()
+    
+    descricao = models.CharField(u"Descrição", blank=True, max_length=100)
+    proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
+    selecionado = models.BooleanField(default=True)
     modelo = models.BooleanField(default=False)
+    ativo = models.BooleanField(default=True)
+    # custos
+    custo_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    custo_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    custo_mao_de_obra = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # metadata
+    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="orcamento_criado_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class LinhaRecursoMaterial(models.Model):
     orcamento = models.ForeignKey('Orcamento')
     produto = models.ForeignKey('estoque.Produto')
-    quantidade = models.IntegerField("Quantidade de Produtos", blank=True, null=True)
+    custo_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True,  default=0)
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
 class LinhaRecursoHumano(models.Model):
     orcamento = models.ForeignKey('Orcamento')
     cargo = models.ForeignKey('rh.Cargo')
+    custo_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     quantidade = models.IntegerField(blank=True, null=True, verbose_name="Quantidade de Horas")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
-    
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
 class CategoriaContratoFechado(models.Model):
     
     def __unicode__(self):
         return self.nome
-    
     nome = models.CharField(blank=True, max_length=200)
 
 class ContratoFechado(models.Model):
@@ -276,7 +325,6 @@ class Modelo(models.Model):
     
     nome = models.CharField(blank=True, max_length=100)
 
-
 class QuantidadeDeMarca(models.Model):
     contratofechado = models.ForeignKey('ContratoFechado')
     quantidade = models.IntegerField(blank=False, null=False)
@@ -292,11 +340,66 @@ class RequisicaoDeProposta(models.Model):
             return u"Requisição de Proposta ABERTA para %s" % self.cliente
     
     cliente = models.ForeignKey('cadastro.Cliente')
+    descricao = models.TextField(blank=False)
     atendido = models.BooleanField(default=False)
     atendido_data = models.DateTimeField(blank=True, null=True)
+    atendido_por = models.ForeignKey("rh.Funcionario", blank=True, null=True, related_name="requisicao_proposta_atendida")
+    proposta_vinculada = models.ForeignKey('PropostaComercial', blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_requisitada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+
+# signals
+def proposta_comercial_post_save(signal, instance, sender, **kwargs):
+      ''' Atualiza os campos da Proposta Comercial após criacao'''
+      # somente criados
+      if not kwargs.get('created'):
+              return False
+      
+      instance.probabilidade_inicial = instance.probabilidade
+      instance.save()
+
+def follow_up_post_save(signal, instance, sender, **kwargs):
+    '''Após criar o o FollowUp, atualizar a data de exibicao da proposta se marcado como tal
+        e a probabilidade'''
+
+    # somente criados
+    if not kwargs.get('created'):
+            return False
+
+    if instance.reagenda_data_expiracao:
+        instance.proposta.data_expiracao = instance.data_expiracao
+    instance.proposta.probabilidade = instance.probabilidade
+    instance.proposta.save()
+
+def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
+    '''atualiza o preco das linhas de orcamento'''
+    try:
+        obj = LinhaRecursoMaterial.objects.get(pk=instance.pk)
+    except LinhaRecursoMaterial.DoesNotExist:
+        instance.custo_unitario = instance.produto.preco_venda
+    else:
+        if not obj.produto == instance.produto: # Field has changed
+            instance.custo_unitario = instance.produto.preco_venda
     
-    
+    if instance.quantidade and instance.custo_unitario:
+        resultado = instance.custo_unitario * instance.quantidade
+    else:
+        resultado = 0
+    instance.custo_total = resultado
+
+def atualiza_custo_total_orcamento(signal, instance, sender, **kwargs):
+    instance.recalcula_custo_total(save=False)
+
+def atualiza_preco_orcamento_pela_linha(signal, instance, sender, **kwargs):
+    instance.orcamento.recalcula_custo_total(save=True)
+
+# SIGNALS CONNECTION
+signals.post_save.connect(proposta_comercial_post_save, sender=PropostaComercial)
+signals.post_save.connect(follow_up_post_save, sender=FollowUpDePropostaComercial)
+signals.pre_save.connect(atualiza_preco_linhas_material, sender=LinhaRecursoMaterial)
+signals.post_save.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoMaterial)
+signals.post_delete.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoMaterial)
+signals.pre_save.connect(atualiza_custo_total_orcamento, sender=Orcamento)

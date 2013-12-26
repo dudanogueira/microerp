@@ -15,5 +15,5 @@ urlpatterns = patterns('',
     # solicitaçõs
     url(r'^solicitacoes/adicionar/$', 'cadastro.views.solicitacao_adicionar', name='solicitacao_adicionar'),
     # requisicao de proposta
-    url(r'^requisicao/proposta/(?P<cliente_id>[0-9]+)/$', 'cadastro.views.requisicao_proposta_cliente', name='requisicao_proposta_cliente'),
+    url(r'^requisicao/proposta/adicionar/$', 'cadastro.views.requisicao_proposta_cliente', name='requisicao_proposta_cliente'),
 )

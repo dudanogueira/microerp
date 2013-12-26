@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load phonenumber_br %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -164,7 +165,7 @@
 						<td>        <div class="btn-group">
 	        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
 	        <a href="" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-	        <a href="{% url "comercial:cliente_editar_proposta" cliente.id proposta.id%}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
+	        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
 	        <a href="" class="btn "><i class="fa fa-print"></i></a>
 
 				</td>
@@ -180,37 +181,87 @@
 	</div>
 
 	<div class="tab-pane fade in" id="requisicao-de-proposta">
-		<h3>Requisições de Propostas Em Aberto</h3>
-		{% for requisicao in cliente.requisicao_proposta_abertas %}
-		<div class="well well-small row-fluid alert alert-danger">
-			<div class="span6">
-				Criado Por: {{requisicao.criado_por.funcionario}}
-			</div>
-			<div class="span3">
-				<h4>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</h4>
-			</div>
-			<div class="span3">
-				<a href="{% url "comercial:requisicao_proposta_cliente_atender" requisicao.id %}" class="btn btn-large btn-success">Atender</a>
-			</div>
-			
-		</div>
-		{% endfor %}
-		<h3>Requisições de Propostas  Atendidas</h3>
-		{% for requisicao in cliente.requisicao_proposta_atendidas %}
-		<div class="alert row-fluid alert-success">
-			<div class="span5">
-				Por: {{requisicao.criado_por.funcionario}}
-			</div>
-			<div class="span3">
-				<h4>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</h4>
-			</div>
-			
-			<div class="span4">
-				<strong>Atendido em</strong>: {{requisicao.atendido_data|date:"SHORT_DATETIME_FORMAT"}}
-			</div>
-			
-		</div>
-		{% endfor %}
+		
+	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
+	        <table class="table table-hover table-condensed">
+	            <thead>
+	                <caption><h4 class="alert alert-danger">Requisições de Propostas Em Aberto</h4></caption>
+	                <tr>
+						<th>Data</th>
+						<th>Descrição</th>
+	                    <th>Ações</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                {% for requisicao in cliente.requisicao_proposta_abertas %}
+	                <tr>
+						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+						<td class="alert alert-info"><i>{{requisicao.descricao}}, <small>{{requisicao.criado_por}}</small></i></td>
+						<td>
+						<p class="btn-group">
+
+						<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" requisicao.cliente.id %}?requisicao_origem={{requisicao.id}}" class="btn btn-success"><i class="fa fa-check"></i> Atender</a>						
+						
+						
+						</p>
+						</td>
+						
+
+	                </tr>
+	                {% empty %}
+
+	                <tr>
+	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+	                    <td>{% if cliente_q %}
+	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+	                        {% endif %}
+	                    </td>
+	                </tr>
+
+	                {% endfor %}
+
+
+	            </tbody>
+	        </table>
+	    </div>
+		
+		
+		
+	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
+	        <table class="table table-hover table-condensed">
+	            <thead>
+	                <caption><h4 class="alert alert-sucess">Requisições de Propostas Atendidas</h4></caption>
+	                <tr>
+						<th>Criação</th>
+						<th>Atendimento</th>
+	                    <th>Proposta Vinculada</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                {% for requisicao in cliente.requisicao_proposta_atendidas %}
+	                <tr>
+						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}} por {{requisicao.criado_por}}</td>
+						<td>{{requisicao.atendido_data|date:"SHORT_DATETIME_FORMAT"}} por {{requisicao.atendido_por}}</td>
+						<td>Proposta: #{{requisicao.proposta_vinculada.id}}, <strong>{{requisicao.proposta_vinculada.get_status_display}}</strong>, <strong>{{requisicao.proposta_vinculada.probabilidade}}%</strong> de <strong>R${{requisicao.proposta_vinculada.valor_proposto}}</strong></td>
+
+	                </tr>
+	                {% empty %}
+
+	                <tr>
+	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+	                    <td>{% if cliente_q %}
+	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+	                        {% endif %}
+	                    </td>
+	                </tr>
+
+	                {% endfor %}
+
+
+	            </tbody>
+	        </table>
+	    </div>
+		
 	
 	</div>
 

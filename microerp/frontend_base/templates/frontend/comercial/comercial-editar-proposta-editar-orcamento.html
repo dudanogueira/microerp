@@ -1,0 +1,129 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Editar Orçamento de Proposta{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Editar Modelos de Orçamento</h1>
+<h2>Orçamento: {{orcamento.descricao}} - Valor Atual R$ {{orcamento.custo_total}}</h2>
+<form method="POST" class="form-inline" name="form-altera-modelo">
+	{% csrf_token %}
+	{{form_editar_linhas.management_form}}
+	{{form_orcamento.as_p}}
+	{{form.errors}}
+	 <button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+	<hr/>
+	{% for form in form_editar_linhas %}
+	<div class="row-fluid">
+		{{form.errors}}
+		<div class="span3">
+			{{form.quantidade.label}}
+			{{form.quantidade}}
+			{{form.quantidade.errors}}
+			{{form.id}}
+		</div>
+		
+		<div class="span6">
+			{{form.produto.label}}
+			{{form.produto}}
+			{{form.produto.errors}}
+		</div>
+		<div class="span3">
+			{{form.DELETE}} Apagar
+			<Br />
+			<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
+		</div>
+		
+	</div>
+	<hr />
+	{% endfor %}
+	
+	<p class="alert alert-info">
+		Total Geral: <span class="total-geral">R$ {{orcamento.custo_total}}</span><br />
+	</p>
+	
+	<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-pencil"></i> Alterar Orçamento</button>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+
+$(".select2-ajax").select2({
+	placeholder: "",
+	minimumInputLength: 3,
+	ajax: { 
+		url: "{% url "ajax_consulta_produto" %}?mostra_preco=sim",
+		type: 'GET',
+		dataType: 'json',
+		data: function(term, page) {
+			return {
+				q: term,
+				page_limit: 10,
+			};
+		},
+		results: function (data) {
+			return {results: data};
+		},
+	},
+	initSelection: function(element, callback) {
+	    var id=$(element).val();
+	    if (id!=="") {
+	       $.ajax("{% url "ajax_consulta_produto" %}?mostra_preco=sim&id="+id, {
+	       dataType: "json"
+	       }).done(function(data) { 
+					 callback(data);
+					 $(".recalcula_quantidade_quando_muda").trigger("change");
+				 });
+	    }
+	},
+});
+
+function calcula_linha(id){
+	id2 = parseInt(id) + 1;
+	var container = "#total-da-linha-"+id2;
+	quantidade_id = "#id_orcamento-"+id+"-quantidade"
+	quantidade = $(quantidade_id).val()
+	produto_id = "#id_orcamento-"+id+"-produto"
+	if ($(produto_id).select2('data')){
+		
+		valor_produto = $(produto_id).select2('data')['preco']
+		preco_final = parseFloat(valor_produto) * parseFloat(quantidade)
+		if (!preco_final){
+			preco_final = 0
+		}
+		preco_final_formatado = parseFloat(preco_final).toFixed(2)
+		$(container).html(preco_final_formatado);
+		var valor_total = 0;
+		$(".valor_linhas").each(function(){
+			valor = Number($(this).html())
+			if(valor){
+				valor_total += Number($(this).html());
+			}
+		})
+		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));	
+	}
+
+}
+
+$(".select2-ajax, .recalcula_quantidade_quando_muda").on('change', function(e) {
+    // Access to full data
+	id = $(this).attr('id').split("-")[1];
+	calcula_linha(id);
+});
+
+$(document).ready(function() {
+    $("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$("#id_descricao").focus();
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}
