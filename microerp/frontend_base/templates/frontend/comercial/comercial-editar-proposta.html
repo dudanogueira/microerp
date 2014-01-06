@@ -21,7 +21,13 @@
 	
 	<div class="span6">
 		
-		<h3>#{{proposta.id}}</h3>
+		<h3>#{{proposta.id}} 			{% if proposta.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
+			{% endif %}
+</h3>
 		<h4>Orçamentos à partir de Modelos</h4>
 		<form method="POST" class="form form-inline">
 		{% csrf_token %}
@@ -122,18 +128,17 @@
 
 <script>
 $(document).ready(function() {
-$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
-$( ".datepicker" ).datepicker({
-	inline: true,
-      dateFormat: "dd/mm/yy"
-});
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$( ".datepicker" ).datepicker({
+		inline: true,
+		 dateFormat: "dd/mm/yy"
+	 });
 
-{% if adicionar_orcamento_form.errors %}
-	$('#ModalAdicionaNovoOrcamento').modal('show');
-{% endif %}	
-
-
-
+	{% if adicionar_orcamento_form.errors %}
+		$('#ModalAdicionaNovoOrcamento').modal('show');
+	{% endif %}	
+	
+	$('.popover-items').popover();
 
 });
 </script>

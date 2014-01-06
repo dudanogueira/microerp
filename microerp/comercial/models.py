@@ -75,6 +75,12 @@ class PropostaComercial(models.Model):
                 obj = self.precliente
             return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, self.valor_proposto, self.probabilidade, self.criado_por)
     
+    def texto_descricao_items(self):
+        texto = ''
+        for orcamento in self.orcamentos_ativos():
+            texto += "%s\n" % orcamento.descricao 
+        return texto
+    
     def expirado(self):
         
         if datetime.datetime.now() > self.data_expiracao:
@@ -104,7 +110,6 @@ class PropostaComercial(models.Model):
         '''soma todos os valores de orcamentos ativos presentes'''
         return self.orcamento_set.filter(ativo=True).aggregate(Sum("custo_total"))['custo_total__sum']
     
-    
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -128,6 +133,10 @@ class PropostaComercial(models.Model):
     objeto_proposto = models.TextField(blank=True)
     descricao_items_proposto = models.TextField(blank=True)
     forma_pagamento_proposto = models.TextField(blank=True)
+    # definido perdido
+    definido_perdido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Perdido por", related_name="proposta_definida_perdido_set", blank=True, null=True)
+    definido_perdido_em = models.DateTimeField(blank=True, null=True)
+    definido_perdido_motivo = models.TextField(u"Motivo de Perda da Proposta", blank=True)
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -140,6 +149,9 @@ class FollowUpDePropostaComercial(models.Model):
     
     def data(self):
         return self.criado
+        
+    class Meta:
+        ordering = ['-criado']
     
     proposta = models.ForeignKey('PropostaComercial')
     texto = models.TextField(blank=False)
@@ -394,7 +406,10 @@ def atualiza_custo_total_orcamento(signal, instance, sender, **kwargs):
     instance.recalcula_custo_total(save=False)
 
 def atualiza_preco_orcamento_pela_linha(signal, instance, sender, **kwargs):
-    instance.orcamento.recalcula_custo_total(save=True)
+    try:
+        instance.orcamento.recalcula_custo_total(save=True)
+    except:
+        pass
 
 # SIGNALS CONNECTION
 signals.post_save.connect(proposta_comercial_post_save, sender=PropostaComercial)

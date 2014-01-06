@@ -42,9 +42,8 @@ def lancar_contrato(modeladmin, request, queryset):
         contrato.lancar()
 lancar_contrato.short_description = u"Lançar Contrato para o Financeiro"
 
-
 class PerfilAcessoComercialAdmin(admin.ModelAdmin):
-    pass
+    list_display = 'user', 'gerente', 'analista'
 
 class PropostaComercialAdmin(admin.ModelAdmin):
     list_display  = 'cliente', 'precliente', 'valor_proposto','data_expiracao'
@@ -62,6 +61,7 @@ class LinhaRecursoHumanoInLine(admin.TabularInline):
 
 class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
+    list_filter = 'modelo', 'ativo'
 
 class QuantidadeDeMarcaInline(admin.StackedInline):
     model = QuantidadeDeMarca

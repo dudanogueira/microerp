@@ -2,19 +2,16 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 
-<title>{%block title %}{{block.super}} - Comercial - Gerencia: Modelos de Orçamento{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Comercial - Gerencia: Novo Modelo de Orçamento{% endblock %}</title>
 
 {% block content %}
-<h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Modelos de Orçamento</h1>
-<p>
-<a href="{% url "comercial:orcamentos_modelo_novo" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Novo Modelo</a>
-</p>
 
-<ul>
-	{% for modelo in modelos %}
-		<li>{{modelo.descricao}} - R${{modelo.custo_total}} <a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-info"><i class="fa fa-pencil"></i> editar</a></li>
-	{% endfor %}
-</ul>
+<form method="POST">
+	{% csrf_token %}
+	{{form_adicionar_modelo.as_p}}
+	<button type="submit" class="btn btn-primary"><i class=" fa fa-plus"></i> Adicionar Modelo</button>
+</form>
+
 {% endblock %}
 
 {% block auxiliar-menu %}

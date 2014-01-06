@@ -1,7 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
-{% load phonenumber_br %}
 
 <title>{%block title %}{{block.super}} - Comercial > Clientes{% endblock %}</title>
 
@@ -262,31 +261,7 @@
 	            <tbody>
 	                {% for requisicao in requisicoes_propostas %}
 	                <tr>
-	                    <td><a class="btn popover-items" href="{% url "comercial:cliente_ver" requisicao.cliente.id %}" data-trigger="hover" data-title="{{requisicao.cliente.nome}}" data-html="true" data-content='
-                
-
-                {% if requisicao.cliente.tipo == "pf" %}
-                                                <span class="label">{{requisicao.cliente.get_tipo_display}}</span>
-                                            {% else %}
-                                                <span class="label label-success">{{requisicao.cliente.get_tipo_display}}</span> 
-                                            {% endif %}<br />
-                {% if requisicao.cliente.telefone_fixo %}
-                    <small class="label label-info"><i class="fa fa-phone"></i> {{requisicao.cliente.telefone_fixo|phonenumber}}</small>
-                {% endif %}
-                {% if requisicao.cliente.telefone_celular|phonenumber %}
-<small class="label label-info"><i class="fa fa-mobile-phone"></i> {{requisicao.cliente.telefone_celular|phonenumber}}</small>
-{% endif %}
-{% if requisicao.cliente.contato %}
-<br />
-    <i class="fa fa-user"></i> {{requisicao.cliente.contato}}
-{% endif %}
-
-                
-                '>{% if requisicao.cliente.tipo == "pf" %}
-                                <span class="label">{{requisicao.cliente.tipo|upper}}</span>
-                            {% else %}
-                                <span class="label label-success">{{requisicao.cliente.tipo|upper}}</span> 
-                            {% endif %} {{requisicao.cliente.nome}}</a></td>
+	                    <td>{% include "frontend/comercial/botao-cliente.html" with cliente=requisicao.cliente %}</td>
 						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 						{% if request.user.perfilacessocomercial.gerente %}
 							<td>{{requisicao.cliente.designado}}</td>

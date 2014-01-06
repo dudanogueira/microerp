@@ -21,6 +21,8 @@ urlpatterns = patterns('',
     url(r'^proposta/(?P<proposta_id>[0-9]+)/editar/orcamento/(?P<orcamento_id>[0-9]+)/inativar/$', 'comercial.views.editar_proposta_inativar_orcamento', name='editar_proposta_inativar_orcamento'),
     url(r'^proposta/(?P<proposta_id>[0-9]+)/editar/orcamento/(?P<orcamento_id>[0-9]+)/ativar/$', 'comercial.views.editar_proposta_ativar_orcamento', name='editar_proposta_ativar_orcamento'),
     url(r'^proposta/(?P<proposta_id>[0-9]+)/editar/orcamento/(?P<orcamento_id>[0-9]+)/editar/$', 'comercial.views.editar_proposta_editar_orcamento', name='editar_proposta_editar_orcamento'),
+    url(r'^proposta/(?P<proposta_id>[0-9]+)/fechar/$', 'comercial.views.editar_proposta_fechar', name='editar_proposta_fechar'),
+    url(r'^proposta/(?P<proposta_id>[0-9]+)/converter/$', 'comercial.views.editar_proposta_converter', name='editar_proposta_converter'),
     # propostas pre cliente
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/$', 'comercial.views.propostas_comerciais_precliente', name='propostas_comerciais_precliente'),
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/adicionar/$', 'comercial.views.propostas_comerciais_precliente_adicionar', name='propostas_comerciais_precliente_adicionar'),    
@@ -33,6 +35,7 @@ urlpatterns = patterns('',
     url(r'^requisicao/designacoes/confirmar/$', 'comercial.views.designacoes_confirmar', name='designacoes_confirmar'),
     # modelos de Orçamento de proposta
     url(r'^orcamento/modelos/$', 'comercial.views.orcamentos_modelo', name='orcamentos_modelo'),
+    url(r'^orcamento/modelos/novo/$', 'comercial.views.orcamentos_modelo_novo', name='orcamentos_modelo_novo'),
     url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/editar/$', 'comercial.views.orcamentos_modelo_editar', name='orcamentos_modelo_editar'),
 )
 

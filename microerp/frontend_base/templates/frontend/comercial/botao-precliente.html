@@ -1,0 +1,19 @@
+{% load phonenumber_br %}
+<a class="btn popover-items" href="" cliente.id %}" data-trigger="hover" data-title="{{precliente.nome}}" data-html="true" data-content='
+			<span class="label label-warning">Pré Cliente</span>
+			{% if precliente.contato %}
+                <small class="label label-info"><i class="fa fa-phone"></i> {{precliente.contato}}</small>
+            {% endif %}
+			{% if precliente.dados %}
+                <small class="label"><i class="fa fa-comment"></i> {{precliente.dados}}</small>
+            {% endif %}
+			{% if precliente.designado %}
+			<span class="label label-important"><i class="fa fa-thumbs-right"></i> {{precliente.designado}}</span>
+			{% endif %}
+			
+			
+			'>
+
+		<span class="label label-warning">PC</span>
+		{{precliente.nome}}
+</a>

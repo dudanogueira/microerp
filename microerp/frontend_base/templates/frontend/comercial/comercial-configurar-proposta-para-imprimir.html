@@ -12,6 +12,8 @@
 <h4>Cliente: {{proposta.dono}}</h4>
 <h5>{{proposta}}</h5>
 
+{{proposta.texto_descricao_items}}
+
 <form method="POST">
 {%csrf_token %}
 {{form_configura.as_p}}

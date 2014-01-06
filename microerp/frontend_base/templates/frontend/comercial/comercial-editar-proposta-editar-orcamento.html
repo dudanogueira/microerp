@@ -12,7 +12,7 @@
 	{{form_editar_linhas.management_form}}
 	{{form_orcamento.as_p}}
 	{{form.errors}}
-	 <button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+	 <a href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> <button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
 	<hr/>
 	{% for form in form_editar_linhas %}
 	<div class="row-fluid">

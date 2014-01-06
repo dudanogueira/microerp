@@ -1,0 +1,38 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Fechar Proposta Comercial</h1>
+<form method="POST">
+{% csrf_token %}
+{{form_fechar}}
+<button class="btn btn-danger" id="fechar-proposta-btn" type="submit">Fechar Proposta</button>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+
+$('#id_definido_perdido_motivo').on("keyup change", function(){
+    if( $.trim($(this).val()) ){
+    	$("#fechar-proposta-btn").show();
+    }else{
+    	$("#fechar-proposta-btn").hide();
+    }
+});
+
+$(document).ready(function() {
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$("#fechar-proposta-btn").hide();
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

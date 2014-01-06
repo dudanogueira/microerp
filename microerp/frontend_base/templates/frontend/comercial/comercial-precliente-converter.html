@@ -13,6 +13,7 @@
     <form id="converter-precliente" method="post">
         {% csrf_token %}
     {{form.as_p}}
+	<h6>Responsável: {{precliente.designado}}<h6>
     <button type="submit" value="Converter" class="btn btn-primary"><i class="fa fa-magic"></i> Converter</button>
     </form>
 </div>
@@ -22,9 +23,52 @@
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 <script>
+
+var grupo_pj = ['id_fantasia', 'id_cnpj', 'id_inscricao_estadual',]
+var grupo_pf = ['id_cpf', 'id_rg']
+
+function esconde_lista(lista){
+	lista.forEach(function(entry){
+		$('label[for='+entry+'], #'+entry+'').hide();
+	});
+}
+function mostra_lista(lista){
+	lista.forEach(function(entry){
+		$('label[for='+entry+'], #'+entry+'').show();
+	})
+}
+
 $(document).ready(function() {
 	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+	esconde_lista(grupo_pj);
+	esconde_lista(grupo_pf);
+
+	{% if form.errors %}
+		checa_exibicao_por_tipo($("#id_tipo").val());
+	{% endif %}
+	
 });
+function checa_exibicao_por_tipo(valor){
+	if (valor == "pf"){
+		esconde_lista(grupo_pj);
+		mostra_lista(grupo_pf);
+	
+	}else if(valor == "pj"){
+		esconde_lista(grupo_pf);
+		mostra_lista(grupo_pj);
+	
+	}else{
+		esconde_lista(grupo_pj);
+		esconde_lista(grupo_pf);
+	}
+	
+}
+
+$("#id_tipo").on("change", function(){
+	checa_exibicao_por_tipo($(this).val());
+});
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/comercial/comercial-menu.html" %}

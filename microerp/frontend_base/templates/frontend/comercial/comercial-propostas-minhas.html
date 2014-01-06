@@ -24,12 +24,20 @@
 		{% regroup propostas_abertas_validas by dono as propostas_abertas_validas_por_cliente %}
 		
 		{% for proposta_list in propostas_abertas_validas_por_cliente %}
-		<h2>{{proposta_list.grouper}}</h2>
+			<p>
+			{% if proposta_list.list.0.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta_list.grouper %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
+			{% endif %}
+			</p>
+
 		
 		<table class="table table-condensed table.stripped">
 			<thread>
 					<tr>
-						<th class="alert">ID</th>
+						<th class="alert alert-success">ID</th>
 						<th>Expiração</th>
 						<th>Valor</th>
 						<th>Probabilidade</th>
@@ -40,7 +48,7 @@
 			</thead>
 			{% for proposta in proposta_list.list %}
 			<tr>
-				<td class="alert"><h6>#{{proposta.id}}</h6></td>
+				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
 				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
@@ -78,8 +86,8 @@
 				</td>
 				<td>{{proposta.observacoes}}</td>
 						<td>        <div class="btn-group">
-	        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
-	        <a href="" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+	        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 	        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
 				</td>
@@ -207,6 +215,7 @@ $(document).ready(function() {
 	    {% if form_adicionar_follow_up.errors %}
 			$('#modal-follow-up-add').modal('show');
 	    {% endif %}	
+		$('.popover-items').popover()
 });
 
 $("#id_reagenda_data_expiracao").on("change", function(e){
