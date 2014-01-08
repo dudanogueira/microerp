@@ -185,9 +185,12 @@ class Funcionario(models.Model):
     
     def calcular_valor_hora(self):
         salario = self.salario_atual or self.salario_inicial
-        self.valor_hora = salario  / 30 / 8
-        self.save()
-        return self.valor_hora
+        if salario:
+            self.valor_hora = salario  / 30 / 8
+            self.save()
+            return self.valor_hora
+        else:
+            return 0
 
     def cargo(self, update=False):
         if self.periodo_trabalhado_corrente.promocaocargo_set.filter(aprovado=True).count():
@@ -784,7 +787,7 @@ class DependenteDeFuncionario(models.Model):
     
 
     def __unicode__(self):
-        return "%s (%s de %s)" % (self.nome, self.get_relacao_display(), self.funcionario)
+        return u"%s (%s de %s)" % (self.nome, self.get_relacao_display(), self.funcionario)
 
     nome = models.CharField(blank=True, max_length=100)
     relacao = models.CharField(blank=True, max_length=100, choices=DEPENDENTE_FUNCIONARIO_CHOICES)
@@ -797,7 +800,7 @@ class DependenteDeFuncionario(models.Model):
 class TipoDeExameMedico(models.Model):
     
     def __unicode__(self):
-        return "%s - %s" % (self.nome, self.valor)
+        return u"%s - %s" % (self.nome, self.valor)
         
     class Meta:
         verbose_name = "Tipo de Exame Médico"
@@ -827,7 +830,7 @@ class RotinaExameMedico(models.Model):
             realizado = u"Realizado"
         else:
             realizado = u"Não Realizado"
-        return "Exame do tipo %s para %s em %s %s" % (self.get_tipo_display(), self.periodo_trabalhado.funcionario.nome, data, realizado)
+        return u"Exame do tipo %s para %s em %s %s" % (self.get_tipo_display(), self.periodo_trabalhado.funcionario.nome, data, realizado)
     
     def valor_total(self):
         valor_total = 0
