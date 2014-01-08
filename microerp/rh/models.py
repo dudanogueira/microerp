@@ -505,6 +505,9 @@ class Cargo(models.Model):
     def __unicode__(self):
         return self.nome
     
+    class Meta:
+        ordering = ['nome']
+    
     nome = models.CharField(blank=False, null=False, max_length=100, verbose_name=u"Nome do Cargo")
     descricao = models.TextField(u"Descrição", blank=True)
     salario_referencia = models.DecimalField(u"Salário Referência", max_digits=10, decimal_places=2)

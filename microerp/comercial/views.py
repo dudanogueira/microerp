@@ -525,7 +525,6 @@ def propostas_comerciais_minhas(request):
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_validas = propostas_abertas_validas.filter(cliente__designado=request.user.funcionario)
         propostas_abertas_expiradas = propostas_abertas_expiradas.filter(cliente__designado=request.user.funcionario)
-        preclientes = preclientes.filter(designado=request.user.funcionario)
     
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 

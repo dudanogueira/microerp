@@ -256,6 +256,9 @@ class Bairro(models.Model):
     
     def __unicode__(self):
         return u"%s - %s" % (self.nome, self.cidade)
+        
+    class Meta:
+        ordering = ['nome']
     
     nome = models.CharField("Nome do Bairro", blank=False, null=False, max_length=100)
     cidade = models.ForeignKey("Cidade")
