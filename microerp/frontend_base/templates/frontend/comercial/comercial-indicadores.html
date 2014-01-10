@@ -1,0 +1,67 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Indicadores{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid">
+	<div class="span8">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-bar-chart-o"></i> Indicadores do Comercial</h1>
+		
+	</div>
+	<div class="span4" id="filtro-indicador">
+		<form method="" class="form form-inline">
+				<p class="btn-group">
+			{{form_seleciona_ano.ano}}
+				<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i></button>
+				<a id="imprimir" class="btn btn-success"><i class="fa fa-print"></i></a>
+				</p>	
+		</form>
+		
+	</div>
+</div>
+
+{% if resultados %}
+
+<h2>Pré Clientes Criados em {{ano}}</h2>
+{{total_preclientes_criados}}
+
+<h2>Clientes Convertidos em {{ano}}</h2>
+{{total_preclientes_convertidos}}
+
+<h2>Propostas Criadas em {{ano}}</h2>
+
+<h2>Propostas Convertidas em {{ano}}</h2>
+
+<h2>Propostas Perdidas em {{ano}}</h2>
+
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+    $("#cliente_busca").focus()
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#selecionar-produto-form").hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#filtro-indicador").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

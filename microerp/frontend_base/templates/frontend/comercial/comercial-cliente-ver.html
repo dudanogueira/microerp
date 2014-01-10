@@ -40,7 +40,6 @@
 	</div>
 	
 	<div class="span4">
-		
 		<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
 
 		 
@@ -162,11 +161,29 @@
 					
 				</td>
 				<td>{{proposta.observacoes}}</td>
-						<td>        <div class="btn-group">
-	        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
-	        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-	        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
-	        <a href="" class="btn "><i class="fa fa-print"></i></a>
+						<td>
+							<div class="btn-group">
+								
+								{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
+								{# MENU DO GERENTE#}
+								
+						        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+
+							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+
+									
+							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
+									
+									<a href="" class="btn "><i class="fa fa-print"></i></a>
+								{% else %}
+								
+								{% endif %}
+								
+
+								
+							</div>
+			
+								
 
 				</td>
 			</tr>
@@ -327,15 +344,40 @@
 		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
 		<form method="POST" id="form-adicionar-follow-up">
 			{% csrf_token %}
-			{{form_adicionar_follow_up.as_p}}
+			
+
+			{{form_adicionar_follow_up.proposta}}
+			<table>
+				<tr>
+					<td>
+						{{form_adicionar_follow_up.texto.label}}
+						{{form_adicionar_follow_up.texto}}
+						{{form_adicionar_follow_up.texto.errors}}
+					</td>
+					<td>
+						{{form_adicionar_follow_up.probabilidade.label}}
+						{{form_adicionar_follow_up.probabilidade}}
+						{{form_adicionar_follow_up.probabilidade.errors}}
+						<br />
+						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
+						<br />
+						<div id="data-expiracao-modal-container">
+						{{form_adicionar_follow_up.data_expiracao.label}}
+						{{form_adicionar_follow_up.data_expiracao}}
+						{{form_adicionar_follow_up.data_expiracao.errors}}						
+						</div>
+					</td>
+				</tr>
+			</table>
 		</form>
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-    <button class="btn btn-primary" form="form-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
   </div>
 </div>
-
 
 <!-- Modal Exibe FollowUps -->
 <div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
@@ -344,6 +386,7 @@
     <h3 id="ModalExibirFollowUpsLabel"></h3>
   </div>
   <div class="modal-body" id="ModalExibirFollowUpsBody">
+	  
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
@@ -355,9 +398,27 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
 <script>
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+
 $(document).ready(function() {
 	$("#menu-comercial-clientes, #top-menu-comercial").addClass("active");
+	$("#btn-adicionar-follow-up").hide();
+	$("#data-expiracao-modal-container").hide();
+	
+    {% if form_adicionar_follow_up.errors %}
+		$('#modal-follow-up-add').modal('show');
+    {% endif %}	
+	
+	
 	$('.popover_item').popover({
 			trigger: "hover",
 			placement: 'top'
@@ -393,6 +454,23 @@ $('#sub-menu-banco-de-horas').on("click", 'ul.nav.nav-tabs li a', function(e){
 	var pane = $(this);
 	pane.tab('show');		
 })
+
+$('#id_texto').on("keyup change", function(){
+    if( $.trim($(this).val()) ){
+		
+    	$("#btn-adicionar-follow-up").show()
+    }else{
+    	$("#btn-adicionar-follow-up").hide()
+    }
+});
+
+$("#id_reagenda_data_expiracao").on("change", function(e){
+	if($(this).is(':checked'))
+	    $("#data-expiracao-modal-container").show();  // checked
+	else
+	    $("#data-expiracao-modal-container").hide();
+})
+
 
 
 </script>

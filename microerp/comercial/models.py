@@ -172,6 +172,8 @@ class PerfilAcessoComercial(models.Model):
     
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
+    telefone_celular = models.CharField(blank=True, max_length=100)
+    telefone_fixo = models.CharField(blank=True, max_length=100)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")

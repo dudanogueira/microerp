@@ -129,6 +129,7 @@ class AdicionarCliente(forms.ModelForm):
         gerente = kwargs.pop('gerente', False)
         super(AdicionarCliente, self).__init__(*args, **kwargs)
         self.fields['tipo'].required = True
+        self.fields['nascimento'].widget.attrs['class'] = 'datepicker'
         if precliente:
             self.fields['nome'].initial = precliente.nome
             self.fields['observacao'].initial = precliente.dados
@@ -203,7 +204,7 @@ class FiltrarPreClientesERequisicoesForm(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def clientes(request):
-    form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()        
+    form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()  
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
         clientes = Cliente.objects.filter(
@@ -221,7 +222,6 @@ def clientes(request):
     requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False)
     # se nao for gerente, limita a listagem para os que lhe sao designados
     if not request.user.perfilacessocomercial.gerente:
-        clientes = clientes.filter(designado=request.user.funcionario)
         preclientes = preclientes.filter(designado=request.user.funcionario)
         preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=request.user.funcionario)
         requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=request.user.funcionario)
@@ -439,6 +439,8 @@ def precliente_converter(request, pre_cliente_id):
             cliente_novo = form.save()
             # vincula pre cliente com cliente novo
             precliente.cliente_convertido = cliente_novo
+            precliente.data_convertido = datetime.date.today()
+            precleitne_convertido_por = request.user
             precliente.save()
             # altera todas as propostas do precliente para o cliente_novo
             propostas_precliente = PropostaComercial.objects.filter(precliente=precliente)
@@ -525,10 +527,10 @@ def propostas_comerciais_minhas(request):
 
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_validas = propostas_abertas_validas.filter(
-            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario)
+            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(precliente__designado=None) | Q(cliente__designado=None)
             )
         propostas_abertas_expiradas = propostas_abertas_expiradas.filter(
-            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario)
+            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(precliente__designado=None) |  Q(cliente__designado=None)
         )
     
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
@@ -653,6 +655,13 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         super(ConfigurarPropostaComercialParaImpressao, self).__init__(*args, **kwargs)
         self.fields['modelo'] = forms.ChoiceField(choices=modelos, label="Tipo de Proposta")
     
+    def clean(self):
+        cleaned_data = super(ConfigurarPropostaComercialParaImpressao, self).clean()
+        representante_legal = cleaned_data.get("representante_legal_proposto")
+        if self.instance and self.instance.cliente:
+            if self.instance.cliente.tipo == "pj" and not representante_legal:
+                raise ValidationError(u"Erro! Para clientes do tipo Pessoa Jurídica é obrigatório um Representante Legal!")
+        return cleaned_data
 
     class Meta:
         model = PropostaComercial
@@ -804,4 +813,45 @@ def orcamentos_modelo_editar(request, modelo_id):
         form_modelo = OrcamentoForm(instance=modelo)
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
 
+
+class SelecionaAnoIndicadorComercial(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(SelecionaAnoIndicadorComercial, self).__init__(*args, **kwargs)
+        anos = PropostaComercial.objects.dates('criado', 'year', order='DESC')
+        anos_choice = [(str(a.year), str(a.year)) for a in anos]
+        if datetime.date.today().year not in anos_choice:
+            anos_choice.append((datetime.date.today().year, datetime.date.today().year))
+        self.fields['ano'].choices = anos_choice
+        self.fields['ano'].widget.attrs['class'] = 'input-small'
+
+    ano = forms.ChoiceField()
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def indicadores_do_comercial(request):
+    try:
+        ano = request.GET.get('ano', datetime.date.today().year)
+        ano = int(ano)
+    except:
+        raise
+        ano = datetime.date.today().year
+    
+    # pre clientes criados
+    total_preclientes_criados = []
+    total_preclientes_criados.append("Total")
+    # pre clientes convertidos
+    total_preclientes_convertidos = []
+    total_preclientes_convertidos.append("Total")
+    
+    for month in range(1,13):
+        # preclientes criados
+        preclientes_no_mes = PreCliente.objects.filter(criado__year=ano, criado__month=month).count()
+        total_preclientes_criados.append(preclientes_no_mes)
+        # preclientes convertidos
+        preclientes_covnertidos_no_mes = PreCliente.objects.filter(data_convertido__year=ano, data_convertido__month=month).count()
+        total_preclientes_convertidos.append(preclientes_covnertidos_no_mes)
+    
+    form_seleciona_ano = SelecionaAnoIndicadorComercial(initial={'ano': ano})
+    resultados = True
+    return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
     
