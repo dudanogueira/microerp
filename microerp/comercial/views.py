@@ -817,7 +817,7 @@ class SelecionaAnoIndicadorComercial(forms.Form):
         super(SelecionaAnoIndicadorComercial, self).__init__(*args, **kwargs)
         anos = PropostaComercial.objects.dates('criado', 'year', order='DESC')
         anos_choice = [(str(a.year), str(a.year)) for a in anos]
-        if datetime.date.today().year not in anos_choice:
+        if (str(datetime.date.today().year), str(datetime.date.today().year)) not in anos_choice:
             anos_choice.append((datetime.date.today().year, datetime.date.today().year))
         self.fields['ano'].choices = anos_choice
         self.fields['ano'].widget.attrs['class'] = 'input-small'
@@ -872,6 +872,7 @@ def indicadores_do_comercial(request):
         grupo_month_set = []
         for month in range(1,13):
             quantidades = LinhaRecursoMaterial.objects.filter(
+                orcamento__ativo=True,
                 orcamento__proposta__status="convertida",
                 orcamento__proposta__definido_convertido_em__year=ano,
                 orcamento__proposta__definido_convertido_em__month=month,
@@ -890,6 +891,7 @@ def indicadores_do_comercial(request):
         grupo_month_set = []
         for month in range(1,13):
             quantidades = LinhaRecursoMaterial.objects.filter(
+                orcamento__ativo=True,
                 orcamento__proposta__status="perdida",
                 orcamento__proposta__definido_perdido_em__year=ano,
                 orcamento__proposta__definido_perdido_em__month=month,
