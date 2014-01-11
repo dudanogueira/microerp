@@ -34,7 +34,7 @@ from comercial.models import Modelo
 from comercial.models import QuantidadeDeMarca
 from comercial.models import FollowUpDePropostaComercial
 from comercial.models import RequisicaoDeProposta
-
+from comercial.models import GrupoIndicadorDeProdutoVendido
 
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
@@ -90,3 +90,4 @@ admin.site.register(Marca)
 admin.site.register(Modelo)
 admin.site.register(FollowUpDePropostaComercial, FollowUpDePropostaComercialAdmin)
 admin.site.register(RequisicaoDeProposta)
+admin.site.register(GrupoIndicadorDeProdutoVendido)

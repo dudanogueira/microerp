@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
-from django.db.models import Q
+from django.db.models import Q, Sum
 
 from django.core.exceptions import ValidationError
 from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
@@ -25,7 +25,7 @@ from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta
 from comercial.models import PerfilAcessoComercial
-from comercial.models import LinhaRecursoMaterial, Orcamento
+from comercial.models import LinhaRecursoMaterial, Orcamento, GrupoIndicadorDeProdutoVendido
 from estoque.models import Produto
 
 from django.conf import settings
@@ -487,7 +487,6 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
         form = AdicionarPropostaForm()
     return render_to_response('frontend/comercial/comercial-propostas-cliente-adicionar.html', locals(), context_instance=RequestContext(request),)
 
-
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_precliente(request, precliente_id):
     precliente = PreCliente.objects.get(pk=precliente_id)
@@ -510,7 +509,6 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
         form = AdicionarPropostaForm()
     return render_to_response('frontend/comercial/comercial-propostas-precliente-adicionar.html', locals(), context_instance=RequestContext(request),)
     
-
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
     propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gt=datetime.date.today()).order_by('cliente', 'precliente')
@@ -813,7 +811,6 @@ def orcamentos_modelo_editar(request, modelo_id):
         form_modelo = OrcamentoForm(instance=modelo)
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
 
-
 class SelecionaAnoIndicadorComercial(forms.Form):
     
     def __init__(self, *args, **kwargs):
@@ -842,6 +839,15 @@ def indicadores_do_comercial(request):
     # pre clientes convertidos
     total_preclientes_convertidos = []
     total_preclientes_convertidos.append("Total")
+    # propostas criadas
+    total_propostas_criadas = []
+    total_propostas_criadas.append("Total")
+    # propostas convertidas
+    total_propostas_convertidas = []
+    total_propostas_convertidas.append("Total")    
+    # propostas fechadas
+    total_propostas_perdidas = []
+    total_propostas_perdidas.append("Total")
     
     for month in range(1,13):
         # preclientes criados
@@ -850,8 +856,57 @@ def indicadores_do_comercial(request):
         # preclientes convertidos
         preclientes_covnertidos_no_mes = PreCliente.objects.filter(data_convertido__year=ano, data_convertido__month=month).count()
         total_preclientes_convertidos.append(preclientes_covnertidos_no_mes)
+        # propostas criadas
+        propostas_criadas_mes = PropostaComercial.objects.filter(criado__year=ano, criado__month=month).count()
+        total_propostas_criadas.append(propostas_criadas_mes)
+        # propostas perdidas
+        propostas_perdidas_mes = PropostaComercial.objects.filter(definido_perdido_em__year=ano, definido_perdido_em__month=month).count()
+        total_propostas_perdidas.append(propostas_perdidas_mes)
+        # propostas convertidas
+        propostas_convertidas_mes = PropostaComercial.objects.filter(definido_convertido_em__year=ano, definido_convertido_em__month=month).count()
+        total_propostas_convertidas.append(propostas_convertidas_mes)
+    
+    # Grupo Indicador de Produtos em Propostas Convertidas
+    total_grupo_indicadores_propostas_convertidas = {}
+    for grupo in GrupoIndicadorDeProdutoVendido.objects.all():
+        grupo_month_set = []
+        for month in range(1,13):
+            quantidades = LinhaRecursoMaterial.objects.filter(
+                orcamento__proposta__status="convertida",
+                orcamento__proposta__definido_convertido_em__year=ano,
+                orcamento__proposta__definido_convertido_em__month=month,
+                produto__grupo_indicador=grupo
+            ).aggregate(Sum('quantidade'))
+            grupo_month_set.append(quantidades['quantidade__sum'] or 0)
+        total_grupo_indicadores_propostas_convertidas[grupo.nome] = grupo_month_set
+    
+    from collections import OrderedDict
+    total_grupo_indicadores_propostas_convertidas = OrderedDict(sorted(total_grupo_indicadores_propostas_convertidas.items(), key=lambda t: t[0]))
+
+
+    # Grupo Indicador de Produtos em Propostas Perdidas
+    total_grupo_indicadores_propostas_perdidas = {}
+    for grupo in GrupoIndicadorDeProdutoVendido.objects.all():
+        grupo_month_set = []
+        for month in range(1,13):
+            quantidades = LinhaRecursoMaterial.objects.filter(
+                orcamento__proposta__status="perdida",
+                orcamento__proposta__definido_perdido_em__year=ano,
+                orcamento__proposta__definido_perdido_em__month=month,
+                produto__grupo_indicador=grupo
+            ).aggregate(Sum('quantidade'))
+            grupo_month_set.append(quantidades['quantidade__sum'] or 0)
+        total_grupo_indicadores_propostas_perdidas[grupo.nome] = grupo_month_set
+
+    
     
     form_seleciona_ano = SelecionaAnoIndicadorComercial(initial={'ano': ano})
     resultados = True
+    ano = str(ano)
+    
+    # Grupo de Indicador com Propostas Abertas
+    grupos_indicadores_produtos_orcamento_aberto = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta").exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
+    
+    
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
     

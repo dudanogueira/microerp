@@ -83,6 +83,8 @@ class Produto(models.Model):
     tributacao = models.CharField(blank=True, max_length=100, choices=PRODUTO_TRIBUTACAO_CHOICES)
     substituicao_tributaria_valor = models.IntegerField(blank=False, null=False, default=0)
     icms = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
+    # indicadores de comercial
+    grupo_indicador = models.ForeignKey('comercial.GrupoIndicadorDeProdutoVendido', blank=True, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

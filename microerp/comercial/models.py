@@ -137,6 +137,10 @@ class PropostaComercial(models.Model):
     definido_perdido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Perdido por", related_name="proposta_definida_perdido_set", blank=True, null=True)
     definido_perdido_em = models.DateTimeField(blank=True, null=True)
     definido_perdido_motivo = models.TextField(u"Motivo de Perda da Proposta", blank=True)
+    # definido convertido
+    definido_convertido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Convertido por", related_name="proposta_definida_convertida_set", blank=True, null=True)
+    definido_convertido_em = models.DateTimeField(blank=True, null=True)
+    
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -221,6 +225,7 @@ class Orcamento(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class LinhaRecursoMaterial(models.Model):
+    
     orcamento = models.ForeignKey('Orcamento')
     produto = models.ForeignKey('estoque.Produto')
     custo_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
@@ -363,6 +368,14 @@ class RequisicaoDeProposta(models.Model):
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_requisitada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class GrupoIndicadorDeProdutoVendido(models.Model):
+    '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''
+    
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
 
 
 # signals
