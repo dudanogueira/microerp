@@ -86,11 +86,70 @@
 	</tbody>
 </table>
 
-<h2>Propostas Criadas em {{ano}}</h2>
+<h2>Propostas Abertas Não Expiradas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
+
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
 			<th style="text-align: center" class="alert"></th>
+			<th>Propostas</th>
+			<th>Total</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for linha in propostas_abertas_nao_expiradas_por_criador %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{linha.criado_por__funcionario__nome}}</strong></td>
+			<td>{{linha.id__count}}</td>
+			<td>R$ {{linha.valor_proposto__sum}}</td>
+		</tr>
+			
+		{% endfor %}
+		
+		<tr class="alert alert-info">
+			<td></td>
+			<td><strong>{{propostas_abertas_nao_expiradas_contagem}}</strong></td>
+			<td><strong>R$ {{propostas_abertas_nao_expiradas_total}}</strong></td>
+		</tr>
+			
+	</tbody>
+</table>
+
+
+<h2>Propostas Abertas Expiradas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Propostas</th>
+			<th>Total</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for linha in propostas_abertas_expiradas_por_criador %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{linha.criado_por__funcionario__nome}}</strong></td>
+			<td>{{linha.id__count}}</td>
+			<td>R$ {{linha.valor_proposto__sum}}</td>
+		</tr>
+			
+		{% endfor %}
+		
+		<tr class="alert alert-info">
+			<td></td>
+			<td><strong>{{propostas_abertas_expiradas_contagem}}</strong></td>
+			<td><strong>R$ {{propostas_abertas_expiradas_total}}</strong></td>
+		</tr>
+			
+	</tbody>
+</table>
+
+<h2>Propostas Criadas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
 			<th>Janeiro</th>
 			<th>Fevereiro</th>
 			<th>Março</th>
@@ -108,19 +167,17 @@
 	<tbody>
 
 			<tr class="alert alert-info">
-				<td><strong>Total</strong></td>
 				{% for campo in  total_propostas_criadas %}
-				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				<td><strong>{{campo.0}}</strong> / R$ {{campo.1|floatformat:0}}</td>
 				{% endfor %}
 			</tr>
 	</tbody>
 </table>
 
-<h2>Propostas Perdidas em {{ano}}</h2>
+<h2>Propostas Convertidas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
-			<th style="text-align: center" class="alert"></th>
 			<th>Janeiro</th>
 			<th>Fevereiro</th>
 			<th>Março</th>
@@ -138,19 +195,17 @@
 	<tbody>
 
 			<tr class="alert alert-info">
-				<td><strong>Total</strong></td>
-				{% for campo in  total_propostas_perdidas %}
-				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% for campo in  total_propostas_convertidas %}
+				<td>{{campo.0}} / R$ {{campo.1|floatformat}}</td>
 				{% endfor %}
 			</tr>
 	</tbody>
 </table>
 
-<h2>Propostas Convertidas em {{ano}}</h2>
+<h2>Propostas Perdidas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
-			<th style="text-align: center" class="alert"></th>
 			<th>Janeiro</th>
 			<th>Fevereiro</th>
 			<th>Março</th>
@@ -168,9 +223,8 @@
 	<tbody>
 
 			<tr class="alert alert-info">
-				<td><strong>Total</strong></td>
 				{% for campo in  total_propostas_perdidas %}
-				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				<td>{{campo.0}} / R$ {{campo.1|floatformat}}</td>
 				{% endfor %}
 			</tr>
 	</tbody>
@@ -263,7 +317,7 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+	$("#menu-comercial-indicadores, #top-menu-comercial").addClass("active");
     $("#cliente_busca").focus()
 });
 

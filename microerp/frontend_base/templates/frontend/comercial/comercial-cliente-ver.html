@@ -157,7 +157,7 @@
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
 				</td>
 				<td>{{proposta.observacoes}}</td>
@@ -190,6 +190,91 @@
    		 	{% empty %}
 			{% endfor %}
 		</table>
+
+		<h4 class="well well-small">Propostas Expiradas: {{cliente.propostas_expiradas.count}}</h4>
+		<table class="table table-condensed table.stripped">
+			<thread>
+					<tr>
+						<th class="well well-small">ID</th>
+						<th>Expiração</th>
+						<th>Valor</th>
+						<th>Probabilidade</th>
+						<th>Follow Up</th>
+						<th>Descrição</th>
+						<th>Ações</th>
+					</tr>
+			</thead>
+			{% for proposta in cliente.propostas_expiradas %}
+			<tr>
+				<td class="well well-small"><h6>#{{proposta.id}}</h6></td>
+				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+        <small>{{proposta.data_expiracao|timeuntil}}</small></td>
+				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
+				<td>
+					<div class="progress progress-striped active" style="width:100%px;">
+						<div class="bar" style="width: {{proposta.probabilidade}}%;">
+							<strong>{{proposta.probabilidade}}%</strong>
+						</div>
+					</div>
+				</td>
+				<td>
+					{% if proposta.ultimo_followup %}
+					<a href="#modal-follow-up-exibir"
+						role="button" 
+						data-toggle="modal"
+						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
+						data-follow-ups="
+						
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<hr />
+						{% endfor %}
+						"
+						class="btn popover_item carregar_follow_ups_modal"
+						data-toggle="popover"
+						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
+						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
+						">
+						{{proposta.followupdepropostacomercial_set.count}}
+					</a> <i class="fa fa-exchange"></i>
+					{%endif %}
+					<!-- Button to trigger modal de follow up -->
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					
+				</td>
+				<td>{{proposta.observacoes}}</td>
+						<td>
+							
+								
+								{% if request.user.perfilacessocomercial.gerente %}
+								{# MENU DO GERENTE#}
+									<div class="btn-group">
+						        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+
+							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+
+									
+							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
+									
+									<a href="" class="btn "><i class="fa fa-print"></i></a>
+								</div>
+								{% else %}
+								<small><i>solicite ao gerente</i></small>
+								{% endif %}
+								
+
+								
+
+			
+								
+
+				</td>
+			</tr>
+   		 	{% empty %}
+			{% endfor %}
+		</table>
+
 		
 		<h4 class="alert alert-success">Propostas Convertidas</h4>
 		
@@ -427,6 +512,7 @@ $(document).ready(function() {
 			
 			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
 			$("#id_proposta").val($(this).data('proposta-id'))
+			$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
 		});
 		
 	$('.carregar_follow_ups_modal').click(function(e){

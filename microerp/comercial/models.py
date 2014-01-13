@@ -81,9 +81,8 @@ class PropostaComercial(models.Model):
             texto += "%s\n" % orcamento.descricao 
         return texto
     
-    def expirado(self):
-        
-        if datetime.datetime.now() > self.data_expiracao:
+    def expirada(self):
+        if datetime.date.today() >= self.data_expiracao:
             return True
         else:
             return False
@@ -140,7 +139,6 @@ class PropostaComercial(models.Model):
     # definido convertido
     definido_convertido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Convertido por", related_name="proposta_definida_convertida_set", blank=True, null=True)
     definido_convertido_em = models.DateTimeField(blank=True, null=True)
-    
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")

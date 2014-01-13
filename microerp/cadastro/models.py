@@ -156,8 +156,12 @@ class Cliente(models.Model):
                 pass
 
     def propostas_abertas(self):
-        return self.propostacomercial_set.filter(status="aberta")
-        
+        return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())
+    
+    def propostas_expiradas(self):
+        return self.propostacomercial_set.filter(status="aberta", data_expiracao__lt=datetime.date.today())
+    
+    
     def propostas_convertidas(self):
         return self.propostacomercial_set.filter(status="convertida")
     

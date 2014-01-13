@@ -12,7 +12,7 @@
 <h4>Como Gerente</h4>
 {% endif %}
 
-<ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
+<ul class="nav nav-tabs normargin" id="navtab-propostas-minhas">
     <li class="active"><a href="#propostas-abertas-validas" class="ajaxtab" data-toggle="tab"><span class="badge badge-success">{{propostas_abertas_validas.count}}</span> Válidas</a></li>
 	<li> <a href="#propostas-abertas-expiradas" data-toggle="tab">Expiradas <span class="badge badge-important">{{propostas_abertas_expiradas.count}}</span></a></li>
 </ul>
@@ -82,14 +82,16 @@
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade={{proposta.probabilidade}} data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade={{proposta.probabilidade}} data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				</td>
 				<td>{{proposta.observacoes}}</td>
-						<td>        <div class="btn-group">
+						<td>
+							<div class="btn-group">
 	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
 	        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 	        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
+						</div>
 				</td>
 			</tr>
    		 	{% empty %}
@@ -99,7 +101,94 @@
 	</div>
 	
 	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
-		expiradas
+
+		{% regroup propostas_abertas_expiradas by dono as propostas_expiradas_por_cliente %}
+		
+		{% for proposta_list in propostas_expiradas_por_cliente %}
+			<p>
+			{% if proposta_list.list.0.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta_list.grouper %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
+			{% endif %}
+			</p>
+
+		
+		<table class="table table-condensed table.stripped">
+			<thread>
+					<tr>
+						<th class="alert alert-success">ID</th>
+						<th>Expiração</th>
+						<th>Valor</th>
+						<th>Probabilidade</th>
+						<th>Follow Up</th>
+						<th>Descrição</th>
+						<th>Ações</th>
+					</tr>
+			</thead>
+			{% for proposta in proposta_list.list %}
+			<tr>
+				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
+				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+        <small>{{proposta.data_expiracao|timesince}}</small></td>
+				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
+				<td>
+					<div class="progress progress-striped active" style="width:100%px;">
+						<div class="bar" style="width: {{proposta.probabilidade}}%;">
+							<strong>{{proposta.probabilidade}}%</strong>
+						</div>
+					</div>
+				</td>
+				<td>
+					{% if proposta.ultimo_followup %}
+					<a href="#modal-follow-up-exibir"
+						role="button" 
+						data-toggle="modal"
+						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
+						data-follow-ups="
+						
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.data|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+							<hr />
+						{% endfor %}
+						"
+						class="btn popover_item carregar_follow_ups_modal"
+						data-toggle="popover"
+						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
+						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
+						">
+						{{proposta.followupdepropostacomercial_set.count}}
+					</a> <i class="fa fa-exchange"></i>
+					{%endif %}
+					{% if request.user.perfilacessocomercial.gerente %}
+					<!-- Button to trigger modal de follow up -->
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade={{proposta.probabilidade}} data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					{% else %}
+					<small><i>solicite ao gerente</i></small>
+					{% endif %}
+				</td>
+				<td>{{proposta.observacoes}}</td>
+				<td>
+					{% if request.user.perfilacessocomercial.gerente %}
+						<div class="btn-group">
+    <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+    <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+    <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
+    <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
+				</div>
+					{% else %}
+							<small><i>solicite ao gerente</i></small>
+					{% endif %}
+				
+				</td>
+			</tr>
+   		 	{% empty %}
+			{% endfor %}
+		</table>
+		{% endfor %}
+		
 	</div>
 </div>
 
@@ -112,10 +201,9 @@
   </div>
   <div class="modal-body">
 		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
-		<form method="POST" id="form-adicionar-follow-up">
+		<form method="POST" id="form-adicionar-follow-up" action="">
 			{% csrf_token %}
 			
-
 			{{form_adicionar_follow_up.proposta}}
 			<table>
 				<tr>
@@ -206,6 +294,7 @@ $(document).ready(function() {
 		    $("#data-expiracao-modal-container").hide();
 			$("#modal-follow-up-add .errorlist").hide();
 			$("#id_reagenda_data_expiracao").attr('checked', false);	
+			$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
 		});
 		
 	$('.carregar_follow_ups_modal').click(function(e){
@@ -223,6 +312,27 @@ $("#id_reagenda_data_expiracao").on("change", function(e){
 	    $("#data-expiracao-modal-container").show();  // checked
 	else
 	    $("#data-expiracao-modal-container").hide();
+})
+
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-propostas-minhas').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
 })
 
 </script>

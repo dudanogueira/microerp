@@ -14,13 +14,9 @@
 				{% endif %}
 				{% if cliente.contato %}
 				<br />
-				<i class="fa fa-user"></i> {{cliente}}
+				<i class="fa fa-user"></i> {{cliente.contato}}
 				{% endif %}
-				{% if cliente.designado %}
-				<span class="label label-danger"><i class="fa fa-thumbs-right"></i> {{cliente.designado}}</span>
-				{% else %}
-				<small>Nenhum Funcionário Responsável</small>
-				{% endif %}
+				<span class="label label-important"><i class="fa fa-hand-o-right"></i> 				{% if cliente.designado %}{{cliente.designado}}{% else %}Nenhum Funcionário{%endif%} </span>
 			'>
 
 	{% if requisicao.cliente.tipo == "pf" %}

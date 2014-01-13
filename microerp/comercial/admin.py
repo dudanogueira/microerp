@@ -46,7 +46,7 @@ class PerfilAcessoComercialAdmin(admin.ModelAdmin):
     list_display = 'user', 'gerente', 'analista'
 
 class PropostaComercialAdmin(admin.ModelAdmin):
-    list_display  = 'cliente', 'precliente', 'valor_proposto','data_expiracao'
+    list_display  = 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada'
     list_filter = 'probabilidade', 'data_expiracao'
     list_display_links = list_display
 

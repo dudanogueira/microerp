@@ -122,7 +122,6 @@ class AdicionarCliente(forms.ModelForm):
             except:
                 raise ValidationError(u"Número do CNPJ Inválido!")
         return cnpj
-
     
     def __init__(self, *args, **kwargs):
         precliente = kwargs.pop('precliente')
@@ -158,13 +157,12 @@ class FormAdicionarFollowUp(forms.ModelForm):
             data = self.cleaned_data['data_expiracao']
             reagenda_data_expiracao = self.cleaned_data['reagenda_data_expiracao']
             if reagenda_data_expiracao and not data:
-                    raise forms.ValidationError("É preciso informar uma data!")    
+                    raise forms.ValidationError("É preciso informar uma data!")
             return data
 
 #
 # DECORADORES
 #
-
 def possui_perfil_acesso_comercial(user, login_url="/"):
     try:
         if user.perfilacessocomercial and user.funcionario.periodo_trabalhado_corrente:
@@ -172,14 +170,12 @@ def possui_perfil_acesso_comercial(user, login_url="/"):
     except:
         return False
 
-
 def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
     try:
         if user.perfilacessocomercial and user.funcionario.periodo_trabalhado_corrente and user.perfilacessocomercial.gerente and user.funcionario:
             return True
     except:
         return False
-
 
 #
 # VIEWS
@@ -191,7 +187,7 @@ def home(request):
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 class FiltrarPreClientesERequisicoesForm(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         super(FiltrarPreClientesERequisicoesForm, self).__init__(*args, **kwargs)
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
@@ -200,7 +196,6 @@ class FiltrarPreClientesERequisicoesForm(forms.Form):
         
 
     funcionario = forms.ModelChoiceField(queryset=None, label="Funcionário", required=False, empty_label="Todos do Comercial")
-
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def clientes(request):
@@ -242,23 +237,13 @@ def clientes(request):
 def cliente_ver(request, cliente_id):
     cliente = get_object_or_404(Cliente, pk=cliente_id)
     cliente_q = request.GET.get('cliente', None)
-    if request.POST:
-        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
-        if form_adicionar_follow_up.is_valid():
-            follow_up = form_adicionar_follow_up.save(commit=False)
-            follow_up.criado_por = request.user
-            follow_up.save()
-            messages.success(request, u"Sucesso! Novo Follow Up Adicionado")
-    else:
-        form_adicionar_follow_up = FormAdicionarFollowUp()
-
+    form_adicionar_follow_up = FormAdicionarFollowUp()
     return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 class FormEditarProposta(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
-    
     
     class Meta:
         model = PropostaComercial
@@ -271,7 +256,6 @@ class FormSelecionaOrcamentoModelo(forms.Form):
         self.fields['modelo'].widget.attrs['class'] = 'select2'
     
     modelo = forms.ModelMultipleChoiceField(queryset=Orcamento.objects.filter(modelo=True, ativo=True), required=True)
-
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
@@ -513,15 +497,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
 def propostas_comerciais_minhas(request):
     propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gt=datetime.date.today()).order_by('cliente', 'precliente')
     propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())    
-    if request.POST:
-        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
-        if form_adicionar_follow_up.is_valid():
-            follow_up = form_adicionar_follow_up.save(commit=False)
-            follow_up.criado_por = request.user
-            follow_up.save()
-            messages.success(request, u"Sucesso! Novo Follow Up Adicionado")
-    else:
-        form_adicionar_follow_up = FormAdicionarFollowUp()
+    form_adicionar_follow_up = FormAdicionarFollowUp()
 
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_validas = propostas_abertas_validas.filter(
@@ -530,7 +506,6 @@ def propostas_comerciais_minhas(request):
         propostas_abertas_expiradas = propostas_abertas_expiradas.filter(
             Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(precliente__designado=None) |  Q(cliente__designado=None)
         )
-    
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
 #
@@ -736,6 +711,31 @@ def proposta_comercial_imprimir(request, proposta_id):
             return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
     return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def adicionar_follow_up(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, status="aberta", pk=proposta_id)
+    if request.POST:
+        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
+        if form_adicionar_follow_up.is_valid():
+            follow_up = form_adicionar_follow_up.save(commit=False)
+            follow_up.criado_por = request.user
+            if not request.user.perfilacessocomercial.gerente and proposta.expirada():
+                messages.error(request, u"Erro! Proposta Expirada e Usuário Não gerente.")
+            else:
+                follow_up.save()
+                messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
+
+    # retorna para referrer ou view do cliente
+    try:
+        url = request.META['HTTP_REFERER']
+    except:
+        if proposta.cliente:
+            url = reverse("comercial:cliente_ver", args=[proposta.cliente.id])
+        else:
+            url = reverse("comercial:propostas_comerciais_minhas")
+    
+    return(redirect(url))
 class FormAdicionaModelo(forms.ModelForm):
     
     class Meta:
@@ -835,19 +835,14 @@ def indicadores_do_comercial(request):
     
     # pre clientes criados
     total_preclientes_criados = []
-    total_preclientes_criados.append("Total")
     # pre clientes convertidos
     total_preclientes_convertidos = []
-    total_preclientes_convertidos.append("Total")
     # propostas criadas
     total_propostas_criadas = []
-    total_propostas_criadas.append("Total")
     # propostas convertidas
     total_propostas_convertidas = []
-    total_propostas_convertidas.append("Total")    
     # propostas fechadas
     total_propostas_perdidas = []
-    total_propostas_perdidas.append("Total")
     
     for month in range(1,13):
         # preclientes criados
@@ -857,14 +852,32 @@ def indicadores_do_comercial(request):
         preclientes_covnertidos_no_mes = PreCliente.objects.filter(data_convertido__year=ano, data_convertido__month=month).count()
         total_preclientes_convertidos.append(preclientes_covnertidos_no_mes)
         # propostas criadas
-        propostas_criadas_mes = PropostaComercial.objects.filter(criado__year=ano, criado__month=month).count()
-        total_propostas_criadas.append(propostas_criadas_mes)
-        # propostas perdidas
-        propostas_perdidas_mes = PropostaComercial.objects.filter(definido_perdido_em__year=ano, definido_perdido_em__month=month).count()
-        total_propostas_perdidas.append(propostas_perdidas_mes)
+        propostas_criadas_mes = PropostaComercial.objects.filter(criado__year=ano, criado__month=month)
+        contagem_propostas_criadas_mes = propostas_criadas_mes.count()
+        valores_propostas_criadas_mes = propostas_criadas_mes.aggregate(Sum('valor_proposto'))['valor_proposto__sum'] or 0
+        total_propostas_criadas.append((contagem_propostas_criadas_mes, valores_propostas_criadas_mes))
         # propostas convertidas
-        propostas_convertidas_mes = PropostaComercial.objects.filter(definido_convertido_em__year=ano, definido_convertido_em__month=month).count()
-        total_propostas_convertidas.append(propostas_convertidas_mes)
+        propostas_convertidas_mes = PropostaComercial.objects.filter(definido_convertido_em__year=ano, definido_convertido_em__month=month)
+        contagem_propostas_convertidas_mes = propostas_convertidas_mes.count()
+        valores_propostas_convertidas_mes = propostas_convertidas_mes.aggregate(Sum('valor_proposto'))['valor_proposto__sum'] or 0
+        total_propostas_convertidas.append((contagem_propostas_convertidas_mes, valores_propostas_convertidas_mes))
+        # propostas perdidas
+        propostas_perdidas_mes = PropostaComercial.objects.filter(definido_perdido_em__year=ano, definido_perdido_em__month=month)
+        contagem_propostas_criadas_mes = propostas_perdidas_mes.count()
+        valores_propostas_criadas_mes = propostas_perdidas_mes.aggregate(Sum('valor_proposto'))['valor_proposto__sum'] or 0
+        total_propostas_perdidas.append((contagem_propostas_criadas_mes, valores_propostas_criadas_mes))
+        
+    # propostas abertas não expiradas
+    propostas_abertas_nao_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__gte=datetime.date.today())
+    propostas_abertas_nao_expiradas_contagem = propostas_abertas_nao_expiradas.count()
+    propostas_abertas_nao_expiradas_por_criador = propostas_abertas_nao_expiradas.values('criado_por__funcionario__nome').annotate(Count('id'), Sum('valor_proposto'))
+    propostas_abertas_nao_expiradas_total = propostas_abertas_nao_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']    
+
+    # propostas abertas expiradas
+    propostas_abertas_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__lt=datetime.date.today())
+    propostas_abertas_expiradas_contagem = propostas_abertas_expiradas.count()
+    propostas_abertas_expiradas_por_criador = propostas_abertas_expiradas.values('criado_por__funcionario__nome').annotate(Count('id'), Sum('valor_proposto'))
+    propostas_abertas_expiradas_total = propostas_abertas_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']
     
     # Grupo Indicador de Produtos em Propostas Convertidas
     total_grupo_indicadores_propostas_convertidas = {}
@@ -883,7 +896,6 @@ def indicadores_do_comercial(request):
     
     from collections import OrderedDict
     total_grupo_indicadores_propostas_convertidas = OrderedDict(sorted(total_grupo_indicadores_propostas_convertidas.items(), key=lambda t: t[0]))
-
 
     # Grupo Indicador de Produtos em Propostas Perdidas
     total_grupo_indicadores_propostas_perdidas = {}
@@ -911,4 +923,4 @@ def indicadores_do_comercial(request):
     
     
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
-    
+
