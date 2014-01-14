@@ -593,9 +593,8 @@ def adicionar_componentes(request):
             messages.warning(request, u"Nenhuma ação tomada. É preciso escolher o Tipo de Componente para adicionar")
             return redirect(reverse('producao:listar_componentes'))
         
-        
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        part_number = u"%s-%s%s" % (pn_prepend, tipo.slug.upper(), "%05d" % identificador)
+        part_number = u"%s-%s%s" % (pn_prepend, tipo.slug.upper(), "%04d" % identificador)
         return render_to_response('frontend/producao/producao-adicionar-componentes.html', locals(), context_instance=RequestContext(request),)    
     else:
         # retorna à listagem

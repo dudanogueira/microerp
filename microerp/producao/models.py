@@ -185,13 +185,13 @@ class Componente(models.Model):
             return u"%s - %s" % (self.part_number, self.descricao)
         else:
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-            return u"%s-%s%s %s" % (pn_prepend, self.tipo.slug.upper(), "%03d" % self.identificador, self.descricao)
+            return u"%s-%s%s %s" % (pn_prepend, self.tipo.slug.upper(), "%04d" % self.identificador, self.descricao)
     
     def save(self, *args, **kwargs):
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
             # se não existir part_number, forcar o padrao
             if not self.part_number:
-                self.part_number = u"%s-%s%s" % (pn_prepend, self.tipo.slug.upper(), "%03d" % self.identificador)
+                self.part_number = u"%s-%s%s" % (pn_prepend, self.tipo.slug.upper(), "%04d" % self.identificador)
             super(Componente, self).save(*args, **kwargs)    
     
     def total_participacao_avulsa_produto(self):
