@@ -1,0 +1,34 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato {{contrato.id}}{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato #{{contrato.id}}</h1>
+<h4>{{contrato}}</h4>
+
+<form method="post">
+{% csrf_token %}
+
+{{form_analisar_contrato.as_p}}
+<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim">Alterar</button>
+<button type="submit" class="btn btn-success" name="contrato-analisado" value="sim">Contrato Analisado</button>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-comercial-gerencia-modelo-orcamento, #top-menu-comercial").addClass("active");
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

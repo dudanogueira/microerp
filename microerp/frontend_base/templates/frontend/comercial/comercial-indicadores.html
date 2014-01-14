@@ -232,13 +232,20 @@
 
 
 <h2>Indicadores de Produtos em Propostas Abertas Atualmente</h2>
-{% for grupo in grupos_indicadores_produtos_orcamento_aberto %}
+{% for grupo in grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
 	{{grupo.produto__grupo_indicador__nome}}: {{grupo.quantidade__sum}}<br />
 {% endfor %}
 
+
+<h2>Indicadores de Produtos em Propostas Expiradas Atualmente</h2>
+{% for grupo in grupos_indicadores_produtos_orcamento_aberto_expirado %}
+	{{grupo.produto__grupo_indicador__nome}}: {{grupo.quantidade__sum}}<br />
+{% endfor %}
+
+
+
+
 <h2>Indicadores de Produtos Em Propostas Convertidas em {{ano}}</h2>
-
-
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -274,7 +281,6 @@
 
 
 <h2>Indicadores de Produtos Em Propostas Perdidas em {{ano}}</h2>
-
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>

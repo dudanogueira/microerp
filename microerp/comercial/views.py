@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import operator
+from collections import OrderedDict
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
@@ -23,7 +24,7 @@ from django.db.models import Count
 from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
-from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta
+from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
 from comercial.models import PerfilAcessoComercial
 from comercial.models import LinhaRecursoMaterial, Orcamento, GrupoIndicadorDeProdutoVendido
 from estoque.models import Produto
@@ -383,9 +384,34 @@ def editar_proposta_fechar(request, proposta_id):
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
-
     if proposta.cliente:
         # tratar a proposta do cliente e converter
+        if request.GET.get('confirmar'):
+            # converte proposta e marca data e quem converteu
+            proposta.status = "convertida"
+            proposta.definido_convertido_em = datetime.datetime.now()
+            proposta.definido_convertido_por = request.user.funcionario
+            # cria o Contrato Convertido
+            novo_contrato = ContratoFechado.objects.create(
+                cliente=proposta.cliente,
+                objeto=proposta.objeto_proposto,
+                valor=proposta.valor_proposto,
+                status="emanalise",
+                responsavel=request.user.funcionario,
+                responsavel_comissionado=proposta.cliente.designado,
+            )
+            # relaciona novo contrato com essa proposta
+            proposta.contrato_vinculado = novo_contrato
+            #salva a proposta
+            proposta.save()
+            # retorna para a view contratos em analise
+            if request.user.perfilacessocomercial.gerente:
+                # se gerente, retorna para contratos em analise
+                return redirect(reverse("comercial:analise_de_contratos"))
+            else:
+                # caso contrario, retorna para a ficha do cliente
+                return redirect(reverse("comercial:cliente_ver", args=[cliente.id]))
+
         return render_to_response('frontend/comercial/comercial-proposta-converter.html', locals(), context_instance=RequestContext(request),)
     else:
         # converter pre cliente em cliente
@@ -894,7 +920,6 @@ def indicadores_do_comercial(request):
             grupo_month_set.append(quantidades['quantidade__sum'] or 0)
         total_grupo_indicadores_propostas_convertidas[grupo.nome] = grupo_month_set
     
-    from collections import OrderedDict
     total_grupo_indicadores_propostas_convertidas = OrderedDict(sorted(total_grupo_indicadores_propostas_convertidas.items(), key=lambda t: t[0]))
 
     # Grupo Indicador de Produtos em Propostas Perdidas
@@ -911,16 +936,47 @@ def indicadores_do_comercial(request):
             ).aggregate(Sum('quantidade'))
             grupo_month_set.append(quantidades['quantidade__sum'] or 0)
         total_grupo_indicadores_propostas_perdidas[grupo.nome] = grupo_month_set
+    total_grupo_indicadores_propostas_perdidas = OrderedDict(sorted(total_grupo_indicadores_propostas_perdidas.items(), key=lambda t: t[0]))
 
-    
-    
+
     form_seleciona_ano = SelecionaAnoIndicadorComercial(initial={'ano': ano})
     resultados = True
     ano = str(ano)
-    
-    # Grupo de Indicador com Propostas Abertas
-    grupos_indicadores_produtos_orcamento_aberto = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta").exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
-    
-    
+        
+    # Grupo de Indicador com Propostas Abertas Não Expiradas
+    grupos_indicadores_produtos_orcamento_aberto_nao_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__gte=datetime.date.today()).exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
+
+    # Grupo de Indicador com Propostas Abertas Expiradas
+    grupos_indicadores_produtos_orcamento_aberto_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__lt=datetime.date.today()).exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def analise_de_contratos(request):
+    contratos_em_analise = ContratoFechado.objects.filter(status="emanalise")
+    return render_to_response('frontend/comercial/comercial-analise-de-contratos.html', locals(), context_instance=RequestContext(request),)
+
+class FormAnalisarContrato(forms.ModelForm):
+    
+    class Meta:
+        model = ContratoFechado
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def analise_de_contratos_analisar(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="emanalise")
+    if request.POST:
+        form_analisar_contrato = FormAnalisarContrato(request.POST, instance=contrato)
+        if form_analisar_contrato.is_valid():
+            contrato = form_analisar_contrato.save()
+            if request.POST.get('aterar-contrato'):
+                messages.success(request, u"Sucesso! Contrato em Análise Alterado.")
+            elif request.POST.get('contrato-analisado'):
+                contrato.status ="emaberto"
+                contrato.save()
+                messages.success(request, u"Sucesso! Contrato Analisado. Definido como Aberto")
+            return redirect(reverse("comercial:analise_de_contratos"))
+    else:
+        form_analisar_contrato = FormAnalisarContrato(instance=contrato)
+    return render_to_response('frontend/comercial/comercial-analise-de-contratos-analisar.html', locals(), context_instance=RequestContext(request),)
+
+
+analise_de_contratos_analisar

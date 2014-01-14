@@ -268,43 +268,12 @@
 			</tbody>
 		</table>
             
-		{% comment %}
 		<h2>Participação como PADRÃO por Sub Produto</h2>
-		{# A tabela deve mostrar por sub produto e quantas vezes o componente aparece nesse sub produto. 
-			<table class="table table-condensed table-hover table-rounded">
-				<thead>
-					<tr>
-						<th>Sub Produto</th>
-						<th>Nome</th>
-						<th>Descrição</th>
-						<th>Quantidade</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for participacao in componente.matriz_subproduto_participacao %}
-					<tr>
-						<td><a href="{% url "producao:ver_subproduto" participacao.0.id %}#linhas-componente">{{participacao.0.part_number}}</a></td>
-						<td>{{participacao.0.nome}}</td>
-						<td>{{participacao.0.descricao}}</td>
-						
-						<td><span class="badge badge-warning">{{participacao.1|floatformat:2}}</span></td>
-					</tr>
-					{% endfor %}
-					<tr>
-						<td></td>
-						<td></td>
-						<td></td>
-						<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_padrao_subproduto}}</span></strong>
-						</td>
-						<td></td>
-						<td></td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
-			{% endcomment %}
-		
-		
+		<button id="carregar-matriz-componente-padrao-por-subproduto" class="btn btn-info">carregar/atualizar matriz</button>
+		<div id="participacao_como_padrao_por_subproduto">
+			
+		</div>
+
 		<h2>Participação como PADRÃO em Linha de Sub Produto</h2>
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
@@ -346,7 +315,6 @@
 				</tr>
 			</tbody>
 		</table>
-            
 
 		<h2>Participação como ALTERNATIVO em Linha de Sub Produto</h2>
 		<table class="table table-condensed table-hover table-rounded">
@@ -510,7 +478,6 @@
 	{% block auxiliar-menu %}
 	{% addtoblock "js" %}
 	<script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
-
 	<script>
 	$(document).ready(function() {
 		$("#menu-producao-componentes, #top-menu-producao").addClass("active");
@@ -519,6 +486,15 @@
 		activeTab && activeTab.tab('show');
     
 	});
+	
+	$("#carregar-matriz-componente-padrao-por-subproduto").on("click", function(e){
+		e.preventDefault();
+		$('#participacao_como_padrao_por_subproduto').html("<i class='fa fa-spinner fa-spin fa-large fa-3x'></i>");
+		$('#participacao_como_padrao_por_subproduto').load('{% url "producao:matriz_componente_padrao_por_subproduto" componente.id %}');
+		
+	})
+	
+	
 	</script>
 
 

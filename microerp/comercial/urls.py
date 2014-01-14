@@ -40,6 +40,8 @@ urlpatterns = patterns('',
     url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/editar/$', 'comercial.views.orcamentos_modelo_editar', name='orcamentos_modelo_editar'),
     # indicadores
     url(r'^indicadores/$', 'comercial.views.indicadores_do_comercial', name='indicadores_do_comercial'),
-    
+    # analise de contrato
+    url(r'^contrato/analises/$', 'comercial.views.analise_de_contratos', name='analise_de_contratos'),
+    url(r'^contrato/(?P<contrato_id>[0-9]+)/analisar/$', 'comercial.views.analise_de_contratos_analisar', name='analise_de_contratos_analisar'),
 )
 

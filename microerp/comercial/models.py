@@ -60,6 +60,7 @@ CONTRATO_TIPO_CHOICES = (
 )
 
 CONTRATO_STATUS_CHOICES = (
+    ('emanalise', 'Em Análise'),
     ('emaberto', 'Em Aberto'),
     ('lancado', u'Contrato Lançado'),
 )
@@ -108,6 +109,10 @@ class PropostaComercial(models.Model):
     def consolidado(self):
         '''soma todos os valores de orcamentos ativos presentes'''
         return self.orcamento_set.filter(ativo=True).aggregate(Sum("custo_total"))['custo_total__sum']
+
+    def clean(self):
+        if self.status == 'convertida' and self.definido_convertido_em is None:
+              raise ValidationError('Para ser convertida, uma proposta deve possuir a data de conversão.')
     
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
@@ -139,6 +144,8 @@ class PropostaComercial(models.Model):
     # definido convertido
     definido_convertido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Convertido por", related_name="proposta_definida_convertida_set", blank=True, null=True)
     definido_convertido_em = models.DateTimeField(blank=True, null=True)
+    # contrato fechado vinculado
+    contrato_vinculado = models.OneToOneField('ContratoFechado', primary_key=False, blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -275,6 +282,7 @@ class ContratoFechado(models.Model):
                 self.save()
             except:
                 raise
+
     def proximo_peso_lancamento(self):
         try:
             ultimo_peso = self.lancamento_set.order_by('-peso')[0].peso
@@ -302,8 +310,8 @@ class ContratoFechado(models.Model):
         return ultimo_lancamento
     
     cliente = models.ForeignKey('cadastro.Cliente')
-    tipo = models.ForeignKey('TipodeContratoFechado')
-    categoria = models.ForeignKey('CategoriaContratoFechado')
+    tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)
+    categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
     objeto = models.TextField(blank=False)
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
@@ -315,11 +323,10 @@ class ContratoFechado(models.Model):
     status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)
     concluido = models.BooleanField(default=False)
     responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")
+    responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável pelo Contrato", related_name="contrato_comissionado_set")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
-
-    
 
 class TipodeContratoFechado(models.Model):
     nome = models.CharField(blank=True, max_length=100)
