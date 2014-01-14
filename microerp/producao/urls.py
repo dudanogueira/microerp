@@ -24,6 +24,8 @@ urlpatterns = patterns('',
     url(r'^componentes/(?P<componente_id>[0-9]+)/anexo/(?P<anexo_id>[0-9]+)/apagar/$', 'producao.views.ver_componente_apagar_anexo', name='ver_componente_apagar_anexo'),
     url(r'^componentes/(?P<componente_id>[0-9]+)/memoria/(?P<memoria_id>[0-9]+)/apagar/$', 'producao.views.apagar_memoria_componente', name='apagar_memoria_componente'),
     url(r'^componentes/(?P<componente_id>[0-9]+)/memoria/adicionar/$', 'producao.views.adicionar_memoria_componente', name='adicionar_memoria_componente'),
+    # ajax aux dos componentes
+    url(r'^componentes/(?P<componente_id>[0-9]+)/matriz_componente_padrao_por_subproduto/$', 'producao.views.matriz_componente_padrao_por_subproduto', name='matriz_componente_padrao_por_subproduto'),
     # Fabricantes e Fornecedores
     url(r'^fabricantes_fornecedores/(?P<fabricante_fornecedor_id>[0-9]+)/editar/$', 'producao.views.editar_fabricantes_fornecedores', name='editar_fabricantes_fornecedores'),
     url(r'^fabricantes_fornecedores/(?P<fabricante_fornecedor_id>[0-9]+)/ver/$', 'producao.views.ver_fabricantes_fornecedores', name='ver_fabricantes_fornecedores'),    

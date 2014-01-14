@@ -649,6 +649,10 @@ def ativar_componente(request, componente_id):
     # verifica se possui no estoque
     return render_to_response('frontend/producao/producao-ativar-componente.html', locals(), context_instance=RequestContext(request),)    
 
+@user_passes_test(possui_perfil_acesso_producao)
+def matriz_componente_padrao_por_subproduto(request, componente_id):
+    componente = get_object_or_404(Componente, pk=componente_id)
+    return render_to_response('frontend/producao/producao-ver-componente-matriz-componente-padrao-por-subproduto.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_componente(request, componente_id):
@@ -1555,6 +1559,8 @@ def ver_subproduto(request, subproduto_id):
     # definir o total do somatório de componentes
     total_linha_componentes = linha_componentes_padrao.aggregate(Sum('linha__valor_custo_da_linha'))['linha__valor_custo_da_linha__sum']
     return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
+
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_subproduto_apagar_anexo(request, subproduto_id, anexo_id):
