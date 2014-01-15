@@ -152,6 +152,7 @@ class DocumentoTecnicoSubProdutoInline(admin.StackedInline):
     
 class SubProdutoAdmin(admin.ModelAdmin):
     inlines = [LinhaSubProdutoAgregadoInLine, LinhaSubProdutoInline, DocumentoTecnicoSubProdutoInline]
+    search_fields = 'part_number',
 
 class LinhaComponenteAvulsodoProdutoInline(admin.StackedInline):
     model = LinhaComponenteAvulsodoProduto

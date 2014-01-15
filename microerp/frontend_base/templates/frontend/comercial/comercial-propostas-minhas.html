@@ -8,9 +8,6 @@
 
 <h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Propostas Comerciais</h1>
 
-{% if request.user.perfilacessocomercial.gerente %}
-<h4>Como Gerente</h4>
-{% endif %}
 
 <ul class="nav nav-tabs normargin" id="navtab-propostas-minhas">
     <li class="active"><a href="#propostas-abertas-validas" class="ajaxtab" data-toggle="tab"><span class="badge badge-success">{{propostas_abertas_validas.count}}</span> Válidas</a></li>
@@ -20,6 +17,32 @@
 <div id="tab-content-comercial-clientes" class="tab-content">
 
 	<div class="tab-pane fade in active" id="propostas-abertas-validas">
+	
+	
+		{% if request.user.perfilacessocomercial.gerente %}
+		<div class="well well-small">
+			<div class="row-fluid">
+			<div class="span4">
+				<h4>Como Gerente</h4>
+			</div>
+			
+			<div class="span8">
+				<strong>Consultores com Propostas Válidas:</strong>
+				<select id="filtro-designado-validas">
+					<option value="todos">Todos</option>
+				{% for designado in designados_propostas_validas %}
+					<option value="{{designado.0}}">{{designado.1}}</option>
+				{% endfor %}
+				</select>
+				
+			</div>
+		</div>
+		</div>
+		{% endif %}
+	
+	
+
+		
 		
 		{% regroup propostas_abertas_validas by dono as propostas_abertas_validas_por_cliente %}
 		
@@ -32,7 +55,6 @@
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
 			{% endif %}
 			</p>
-
 		
 		<table class="table table-condensed table.stripped">
 			<thread>
@@ -47,7 +69,7 @@
 					</tr>
 			</thead>
 			{% for proposta in proposta_list.list %}
-			<tr>
+			<tr class="propostas-validas {% if proposta.designado %}designado-validas-{{proposta.designado.id}}{% else %}propostas-validas-None{% endif %}">
 				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
 				<td><span class="label label-success"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
@@ -102,6 +124,27 @@
 	
 	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
 
+		{% if request.user.perfilacessocomercial.gerente %}
+		<div class="well well-small">
+			<div class="row-fluid">
+			<div class="span4">
+				<h4>Como Gerente</h4>
+			</div>
+			
+			<div class="span8">
+				<strong>Consultores com Propostas Expiradas:</strong>
+				<select id="filtro-designado-expiradas">
+					<option value="todos">Todos</option>
+				{% for designado in designados_propostas_expiradas %}
+					<option value="{{designado.0}}">{{designado.1}}</option>
+				{% endfor %}
+				</select>
+				
+			</div>
+		</div>
+		</div>
+		{% endif %}
+
 		{% regroup propostas_abertas_expiradas by dono as propostas_expiradas_por_cliente %}
 		
 		{% for proposta_list in propostas_expiradas_por_cliente %}
@@ -115,7 +158,7 @@
 			</p>
 
 		
-		<table class="table table-condensed table.stripped">
+		<table class="table table-condensed table.stripped table-expirada">
 			<thread>
 					<tr>
 						<th class="alert alert-danger">ID</th>
@@ -128,7 +171,7 @@
 					</tr>
 			</thead>
 			{% for proposta in proposta_list.list %}
-			<tr>
+			<tr class="propostas-expiradas {% if proposta.designado %}propostas-expiradas-{{proposta.designado.id}}{% else %}propostas-expiradas-None{% endif %}">
 				<td class="alert alert-danger"><h6>#{{proposta.id}}</h6></td>
 				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timesince}}</small></td>
@@ -203,7 +246,6 @@
 		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
 		<form method="POST" id="form-adicionar-follow-up" action="">
 			{% csrf_token %}
-			
 			{{form_adicionar_follow_up.proposta}}
 			<table>
 				<tr>
@@ -313,6 +355,30 @@ $("#id_reagenda_data_expiracao").on("change", function(e){
 	else
 	    $("#data-expiracao-modal-container").hide();
 })
+
+$("#filtro-designado-validas").on("change", function(e){
+	if ($(this).val() == "todos"){
+		$(".propostas-validas").show();
+	}else{
+		$(".propostas-validas").hide();
+		$(".designado-validas-" + $(this).val()).show();
+	}
+});
+
+$("#filtro-designado-expiradas").on("change", function(e){
+	if ($(this).val() == "todos"){
+		$(".propostas-expiradas").show();
+	}else{
+
+		$(".propostas-expiradas").hide();
+		$(".propostas-expiradas-" + $(this).val()).show();
+	}
+			
+});
+
+
+
+
 
 
 // Javascript to enable link to tab

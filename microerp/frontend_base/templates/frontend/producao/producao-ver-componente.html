@@ -21,7 +21,7 @@
 </p>
 
 
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs" id="navtab-componente">
 	<li class="active"><a href="#valores" data-toggle="tab">Informações</a></li>
 	<li><a href="#participacao" data-toggle="tab">Participações
 
@@ -334,12 +334,14 @@
 				<tr>
 					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 					</td>
+					
 					<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
-					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+<td>{{participacao.linha.subproduto.nome}}</td>
 												
-					<td>{{participacao.linha.subproduto.nome}}</td>
+					
 					<td>{{participacao.linha.subproduto.descricao}}</td>
-												
+					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
+					
 					<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
 					<td>{% if participacao.padrao %}
 						<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
@@ -492,6 +494,27 @@
 		$('#participacao_como_padrao_por_subproduto').html("<i class='fa fa-spinner fa-spin fa-large fa-3x'></i>");
 		$('#participacao_como_padrao_por_subproduto').load('{% url "producao:matriz_componente_padrao_por_subproduto" componente.id %}');
 		
+	})
+	
+	
+	// Javascript to enable link to tab
+	var hash = document.location.hash;
+	var prefix = "tab_";
+	if (hash) {
+	    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+	} 
+
+	// Change hash for page-reload
+	$('.nav-tabs a').on('shown', function (e) {
+	    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+	});
+
+	$('#navtab-componente').on("click", 'ul.nav.nav-tabs li a', function(e){
+		e.preventDefault();	
+		var href = this.hash;
+		window.location.hash = href.replace("#", "#" + "tab_");
+		var pane = $(this);
+		pane.tab('show');		
 	})
 	
 	

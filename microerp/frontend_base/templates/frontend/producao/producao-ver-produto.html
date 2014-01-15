@@ -20,7 +20,7 @@
 {% endif %}
 
 
-<ul class="nav nav-tabs">
+<ul class="nav nav-tabs" id="navtab-produtos">
     <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
     <li><a href="#componentes-avulsos" data-toggle="tab">
             Linhas de Componentes
@@ -167,6 +167,16 @@
                     </td>
                 </tr>
                 {% endfor %}
+				<tr>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td><span class="label label-success">R$ {{produto.custo_total_linha_subprodutos|floatformat:2}}</span></td>
+					<td></td>
+				</tr>
                 
             </tbody>
         </table>
@@ -183,6 +193,7 @@
 		
 		<div class="row-fluid">
 			<div class="span4">
+				<br />
 				<a href="#modal-adicionar-linha-componentes-avulsos" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Componente</a>
 			</div>
 			<div class="span4">
@@ -201,8 +212,6 @@
         
 
         {% endif %}
-		
-		
 		
 		
 		
@@ -240,7 +249,7 @@
 					<td></td>
 					<td></td>
 					<td></td>
-					<td>R$ {{total_linha_produtos_avulsos|floatformat:2}}</td>
+					<td><span class="label label-success">R$ {{total_linha_produtos_avulsos|floatformat:2}}</span></td>
 					<td></td>
 					<td></td>
 				</tr>
@@ -390,8 +399,29 @@ $(document).ready(function() {
     $('#remover-produzido').modal('show');
     {% endif %}
 		
-    
 });
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-produtos').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

@@ -123,6 +123,7 @@ class PropostaComercial(models.Model):
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
     observacoes = models.TextField("Observações", blank=False, null=False)
+    designado = models.ForeignKey("rh.Funcionario", blank=True, null=True)
     # dados para impressao
     nome_do_proposto = models.CharField(blank=True, max_length=100)
     documento_do_proposto = models.CharField(blank=True, max_length=100)

@@ -3800,22 +3800,22 @@ def controle_de_testes_producao(request):
                         if total_testado['total']:
 
                             if total_geral_funcional:
-                                indicador_funcional_geral = total_geral_funcional / float(total_testado['total'])
+                                indicador_funcional_geral = total_geral_funcional / float(total_testado['total']) * 100
                             else:
                                 indicador_funcional_geral = 0
 
                             if total_funcional_direto['total']:
-                                indicador_funcional_direto = total_funcional_direto['total'] / float(total_testado['total'])
+                                indicador_funcional_direto = total_funcional_direto['total'] / float(total_geral_funcional)  * 100
                             else:
                                 indicador_funcional_direto = 0
 
                             if total_por_tipo_perda['total']:
-                                indicador_perda = total_por_tipo_perda['total']  / float(total_testado['total'])
+                                indicador_perda = total_por_tipo_perda['total']  / float(total_testado['total']) * 100
                             else:
                                 indicador_perda = 0
 
                             if total_por_tipo_reparo['total']:
-                                indicador_reparo = total_por_tipo_reparo['total'] / float(total_testado['total'])
+                                indicador_reparo = total_por_tipo_reparo['total'] / float(total_geral_funcional) * 100
                             else:
                                 indicador_reparo = 0
                             

@@ -481,6 +481,7 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
             proposta = form.save(commit=False)
             proposta.cliente = cliente
             proposta.criador_por = request.user
+            proposta.designado = cliente.designado
             proposta.save()
             # vincula proposta com a requisicao de origem
             if request.GET.get('requisicao_origem', None):
@@ -488,10 +489,8 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
                 requisicao_proposta.atendido = True
                 requisicao_proposta.atendido_data = datetime.datetime.now()
                 requisicao_proposta.atendido_por = request.user.funcionario
-                
                 requisicao_proposta.proposta_vinculada = proposta
                 requisicao_proposta.save()
-
             return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
     else:
         form = AdicionarPropostaForm()
@@ -512,13 +511,14 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
             proposta = form.save(commit=False)
             proposta.precliente = precliente
             proposta.criado_por = request.user
+            proposta.designado = precliente.designado
             proposta.save()
             messages.success(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
             return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
     else:
         form = AdicionarPropostaForm()
     return render_to_response('frontend/comercial/comercial-propostas-precliente-adicionar.html', locals(), context_instance=RequestContext(request),)
-    
+
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
     propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gt=datetime.date.today()).order_by('cliente', 'precliente')
@@ -527,11 +527,17 @@ def propostas_comerciais_minhas(request):
 
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_validas = propostas_abertas_validas.filter(
-            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(precliente__designado=None) | Q(cliente__designado=None)
+            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
+            (Q(precliente__designado=None) & Q(cliente__designado=None))
             )
         propostas_abertas_expiradas = propostas_abertas_expiradas.filter(
-            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(precliente__designado=None) |  Q(cliente__designado=None)
-        )
+            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
+            (Q(precliente__designado=None) & Q(cliente__designado=None))
+            )
+    
+    designados_propostas_validas = set(propostas_abertas_validas.values_list('designado__id', 'designado__nome'))
+    designados_propostas_expiradas = set(propostas_abertas_expiradas.values_list('designado__id', 'designado__nome'))
+    
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
 #
