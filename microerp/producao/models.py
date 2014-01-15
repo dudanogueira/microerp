@@ -793,7 +793,7 @@ class SubProduto(models.Model):
         if not self.part_number:
             super(SubProduto, self).save()
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-            self.part_number = "%s-SUB%s" % (pn_prepend, "%05d" % self.id,)
+            self.part_number = "%s-SUB%s" % (pn_prepend, "%04d" % self.id,)
 
         if not self.slug:
             self.slug = slugify(self.nome)
@@ -1096,7 +1096,7 @@ class ProdutoFinal(models.Model):
     
     def __unicode__(self):
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-        return u"%s-PRO%s %s - %s" % (pn_prepend, "%05d" % self.id, self.nome, self.descricao)
+        return u"%s-PRO%s %s - %s" % (pn_prepend, "%04d" % self.id, self.nome, self.descricao)
 
     class Meta:
         ordering = ('part_number',)
@@ -1181,14 +1181,13 @@ class ProdutoFinal(models.Model):
         if it conflicts with an existing slug then append a number and try
         saving again.
         """
-
         if not self.slug:
             self.slug = slugify(self.nome)
         
         if not self.part_number:
             super(ProdutoFinal, self).save()
             pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
-            self.part_number = "%s-PRO%s" % (pn_prepend, "%05d" % self.id,)
+            self.part_number = "%s-PRO%s" % (pn_prepend, "%04d" % self.id,)
 
         while True:
             try:

@@ -84,6 +84,7 @@ class LancamentoDeFalhaDeTesteAdmin(admin.ModelAdmin):
 
 
 class ComponenteAdmin(admin.ModelAdmin):
+    search_fields = 'part_number', 'descricao'
     list_filter = 'tipo', 'nacionalidade'
     list_display = '__unicode__',
     inlines = [ArquivoAnexoComponenteInline, LinhaFornecedorFabricanteComponenteInline,]
