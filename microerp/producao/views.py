@@ -86,7 +86,6 @@ def home(request):
     estoques = EstoqueFisico.objects.all()
     return render_to_response('frontend/producao/producao-home.html', locals(), context_instance=RequestContext(request),)
     
-    
 # lancamento de nota
 # FORMULARIO DA NOTA
 class UploadFileForm(forms.Form):
@@ -1609,11 +1608,23 @@ def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     linha = get_object_or_404(LinhaSubProduto, subproduto=subproduto, pk=linha_subproduto_id)
     if request.POST:
-        form = LinhaSubProdutoForm(request.POST, instance=linha)
-        if form.is_valid():
-            linha = form.save()
-            messages.success(request, u"Sucesso! Linha alterada.")
-            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
+        if request.POST.get('alterar-linha'):
+            form = LinhaSubProdutoForm(request.POST, instance=linha)
+            if form.is_valid():
+                linha = form.save()
+                messages.success(request, u"Sucesso! Linha alterada.")
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
+        elif request.POST.get('alterar-quantidade'):
+            try:
+                quantidade = request.POST.get('quantidade')
+            except:
+                quantidade = 0
+
+            opcao_alterada = OpcaoLinhaSubProduto.objects.get(pk=request.POST.get('linha_id'))
+            opcao_alterada.quantidade = request.POST.get('quantidade')
+            opcao_alterada.save()
+            messages.success(request, "Sucesso! Quantidade da Opção alterada.")
+            
     else:
         form = LinhaSubProdutoForm(instance=linha)
     return render_to_response('frontend/producao/producao-editar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    

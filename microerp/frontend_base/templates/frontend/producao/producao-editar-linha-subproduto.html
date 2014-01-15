@@ -12,7 +12,7 @@
 <form method="POST">
     {% csrf_token %}
     {{form.as_p}}
-    <button class="btn btn-primary"><i class="fa fa-pencil"></i> Salvar Linha</button>
+    <button class="btn btn-primary" name="alterar-linha" value="alterar"><i class="fa fa-pencil"></i> Salvar Linha</button>
 </form>
 {% endif %}
 <h2>Opções dessa Linha (#{{linha.id}})</h2>
@@ -41,6 +41,7 @@
                    <td>{{opcao.componente.descricao}}</td>
                    <td>R$ {{opcao.custo|floatformat:2}}</td>
                    <td>
+					   <button class="btn btn-primary altera_quantidade" data-linha-id="{{opcao.id|safe}}" data-quantidade="{{opcao.quantidade|safe}}"><i class="fa fa-plus"></i> <i class="fa fa-minus"></i></button>
                        {% if request.user.perfilacessoproducao.gerente %}
                            
                            {% if not opcao.padrao %}
@@ -64,6 +65,26 @@
 
            </tbody>
        </table>
+	   
+	   <!-- Modal -->
+	   <div id="modal-altera-quantidade" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	     <div class="modal-header">
+	       <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	       <h3 id="myModalLabel">Alterar Quantidade</h3>
+	     </div>
+	     <div class="modal-body">
+			 <form method="post" id="altera_quanridade_form" name="altera_quanridade_form">
+				 {% csrf_token %}
+				 Quantidade:
+				 <input type="text" id="quantidade" name="quantidade">
+				 <input type="hidden" id="linha_id" name="linha_id" value="">
+			 </form>
+	     </div>
+	     <div class="modal-footer">
+	       <button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+	       <button type="submit" class="btn btn-primary" form="altera_quanridade_form" name="alterar-quantidade" value="alterar">Alterar Quantidade</button>
+	     </div>
+	   </div>
 
     {% endblock %}
 
@@ -73,6 +94,12 @@
 $(document).ready(function() {
 	$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
 });
+$(".altera_quantidade").on("click", function(){
+	$("#quantidade").val($(this).data('quantidade'))
+	$("#linha_id").val($(this).data('linha-id'))
+	$("#modal-altera-quantidade").modal("show");
+})
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}
