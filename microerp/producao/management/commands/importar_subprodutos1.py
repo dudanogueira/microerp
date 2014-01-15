@@ -40,7 +40,8 @@ class Command(BaseCommand):
                     else:
                         taggeavel = False
                     print "TAGGEAVEL", taggeavel
-                    subproduto,created = SubProduto.objects.get_or_create(part_number=part_number)
+                    id_inicial = int(part_number[7:])
+                    subproduto,created = SubProduto.objects.get_or_create(part_number=part_number, id=id_inicial)
                     subproduto.nome = nome
                     subproduto.possui_tags = taggeavel
                     subproduto.save()

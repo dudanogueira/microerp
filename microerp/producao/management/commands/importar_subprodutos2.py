@@ -34,7 +34,8 @@ class Command(BaseCommand):
                     nome = worksheet.row(0)[13].value
                     print "SUBPRODUTO:", part_number
                     print "NOME", nome
-                    subproduto,created = SubProduto.objects.get_or_create(part_number=part_number)
+                    id_inicial = int(part_number[7:])
+                    subproduto,created = SubProduto.objects.get_or_create(part_number=part_number, id=id_inicial)
                     subproduto.nome = nome
                     subproduto.save()
                     i = 0
