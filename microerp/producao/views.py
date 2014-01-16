@@ -218,7 +218,7 @@ class FormFiltrarNotaFiscal(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def nota_fiscal_dados(request):
-    notas_exibir = NotaFiscal.objects.all().order_by('-criado')
+    notas_exibir = NotaFiscal.objects.all().order_by('data_entrada')
     if request.POST:
         filtro_notas_form = FormFiltrarNotaFiscal(request.POST)
         if filtro_notas_form.is_valid():
