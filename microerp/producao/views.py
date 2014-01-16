@@ -272,7 +272,7 @@ def lancar_nota(request):
                 if fornecedor:
                     notas_exibir = notas_exibir.filter(fabricante_fornecedor=fornecedor)
                 if inicio and fim:
-                    notas_exibir = notas_exibir.filter(data_entrada__gte=inicio, data_entrada__lte=fim)
+                    notas_exibir = notas_exibir.filter(data_entrada__range=(datetime.datetime.combine(inicio, datetime.time.min), datetime.datetime.combine(inicio, datetime.time.max)))
 
             notas_filtro_total_sem_imposto = notas_exibir.aggregate(Sum('total_sem_imposto'))
             notas_filtro_total_com_imposto = notas_exibir.aggregate(Sum('total_com_imposto'))
