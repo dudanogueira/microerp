@@ -757,7 +757,8 @@ def adicionar_follow_up(request, proposta_id):
             else:
                 follow_up.save()
                 messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
-
+        else:
+            messages.error(request, u"Erro! Formulário inválido! Follow Up Não Adicionado.")
     # retorna para referrer ou view do cliente
     try:
         url = request.META['HTTP_REFERER']
