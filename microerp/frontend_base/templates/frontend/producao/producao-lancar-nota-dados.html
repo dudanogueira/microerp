@@ -19,7 +19,7 @@ Periodo: {{periodo}}
 	</tr>
 	<tr>
 		{% for item in total_notas_por_dia %}
-		<td>{{item.soma}}</td>
+		<td>R$ {{item.soma|floatformat:2}}</td>
 		{% endfor %}
 	</tr>
 	
@@ -68,7 +68,7 @@ var myLine = new Chart(document.getElementById("canvas-dia").getContext("2d")).L
 	</tr>
 	<tr>
 		{% for item in total_notas_por_mes %}
-		<td>{{item.soma}}</td>
+		<td>R$ {{item.soma|floatformat:2}}</td>
 		{% endfor %}
 	</tr>
 	
