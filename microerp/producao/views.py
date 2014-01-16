@@ -132,7 +132,8 @@ def importa_nota_sistema(f):
         total = xmldoc.getElementsByTagName('total')[0]
         frete = total.getElementsByTagName('vFrete')[0].firstChild.nodeValue
         # criando NFE no sistema
-        nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=numero, serie=serie, tipo='n')
+        nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=numero, tipo='n')
+        nfe_sistema.serie = serie
         nfe_sistema.taxas_diversas = frete
         nfe_sistema.save()
         # pega itens da nota
@@ -179,10 +180,12 @@ def importa_nota_sistema(f):
         
                 # busca o lancamento, para evitar dois lancamentos iguais do mesmo partnumber
                 item_lancado,created = nfe_sistema.lancamentocomponente_set.get_or_create(part_number_fornecedor=codigo_produto, quantidade=quantidade, valor_unitario= valor_unitario, impostos= total_impostos, peso=peso)
-                # salva
-                item_lancado.save()
+                # calcula valores de lancamentos
+                item_lancado.calcula_totais_lancamento()
                 # busca na memoria automaticamente
                 item_lancado.busca_part_number_na_memoria()
+                # calcula totais do lancamento
+
 
             # calcula total da nota
             nfe_sistema.calcula_totais_nota()
@@ -369,7 +372,6 @@ def adicionar_nota(request):
     else:
         form_adicionar_notafiscal = NotaFiscalForm()
     return render_to_response('frontend/producao/producao-adicionar-nota.html', locals(), context_instance=RequestContext(request),)
-
 
 
 @user_passes_test(possui_perfil_acesso_producao)

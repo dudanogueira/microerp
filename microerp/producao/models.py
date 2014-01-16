@@ -393,7 +393,7 @@ class LancamentoComponente(models.Model):
                 # nota internacional, calculo direto, com conversao de dolar, com imposto
                 percentual = float(self.valor_unitario * self.nota.cotacao_dolar) * float(self.impostos) / float(100)
                 self.valor_total_com_imposto = (float(self.valor_unitario * self.nota.cotacao_dolar) + float(percentual)) * float(self.quantidade)
-
+        self.save()
             
     #def save(self, *args, **kwargs):
             #self.calcula_totais_lancamento()            
