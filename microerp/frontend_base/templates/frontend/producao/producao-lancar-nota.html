@@ -53,8 +53,8 @@
 		{% endif %}
 
 		{% if not tipo %}
-			<div id="form-filtra-notas">
-				<form method="POST" class="form form-inline">
+			<div id="div-filtra-notas">
+				<form method="POST" class="form form-inline" id="form-filtra-notas-form">
 					{% csrf_token %}
 					<div class="row-fluid">
 						<div class="span2">
@@ -142,34 +142,24 @@
 	</div>
 	
 	<div class="tab-pane fade in" id="visualizador-de-notas">
-		<h6>Por Dia</h6>
-		<table class="table table-bordered">
-			<tr>
-				{% for item in total_notas_por_dia %}
-				<td>{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}</td>
-				{% endfor %}
-			</tr>
-			<tr>
-				{% for item in total_notas_por_dia %}
-				<td>{{item.soma}}</td>
-				{% endfor %}
-			</tr>
+		<h4>Por Dia 
+			<a data-target="dados-por-dia" href="" class="btn btn-primary carregar-dados" data-periodo="dia" data-tipo="tabela" id="tabela-por-dia"><i class="fa fa-table"></i> Carregar Tabela</a>
+			<a data-target="dados-por-dia" href="" data-periodo="dia" data-tipo="grafico" class="btn btn-primary carregar-dados"><i class="fa fa-bar-chart-o"></i> Carregar Gráfico</a>
+		</h4>
+		<div id="dados-por-dia">
 			
-		</table>
-		<h6>Por Mês</h6>
-		<table class="table table-bordered">
-			<tr>
-				{% for item in total_notas_por_mes %}
-				<td>{{item.month|date:"M/y"}}</td>
-				{% endfor %}
-			</tr>
-			<tr>
-				{% for item in total_notas_por_mes %}
-				<td>{{item.soma}}</td>
-				{% endfor %}
-			</tr>
-			
-		</table>
+		</div>
+
+
+		<h4>Por Mês 			<a data-target="dados-por-mes" href="" class="btn btn-primary carregar-dados" data-periodo="mes" data-tipo="tabela" id="tabela-por-dia"><i class="fa fa-table"></i> Carregar Tabela</a>
+			<a data-target="dados-por-mes" href="" data-periodo="mes" data-tipo="grafico" class="btn btn-primary carregar-dados"><i class="fa fa-bar-chart-o"></i> Carregar Gráfico</a>
+</h4>
+
+	<div id="dados-por-mes">
+	
+	</div>
+
+		
 	</div>
 
 </div>
@@ -184,6 +174,7 @@
 
 {% addtoblock "js" %}
 <script>
+
 $(document).ready(function() {
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
 	$('.datepicker').each(function() {
@@ -194,6 +185,42 @@ $(document).ready(function() {
 	});
 	
 });
+
+$(".carregar-dados").on("click", function(e){
+	e.preventDefault();
+	var target = $(this).data('target')
+	$.post(
+			"{% url "producao:nota_fiscal_dados" %}" + '?tipo=' + $(this).data('tipo') + '&amp;periodo=' + $(this).data('periodo'),
+			$( "#form-filtra-notas-form" ).serialize()
+	).done(
+		function( data ) {
+			$("#"+target).html(data);
+	});
+	
+
+})
+
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/producao/producao-menu.html" %}

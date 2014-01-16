@@ -119,16 +119,24 @@
 <script>
 $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
-    var activeTab = $('[href=' + location.hash + ']');
-    activeTab && activeTab.click();
+	// Javascript to enable link to tab
+	var hash = document.location.hash;
+	var prefix = "tab_";
+	if (hash) {
+	    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').click();
+	} 
+
 		
 });
+
+
+
 
 $('.nav-tabs').on("click", '.ajaxtab', function(e){
 	e.preventDefault();
 	
 	var href = this.hash;
-	window.location.hash = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
 	// ajax load from data-url
 	var url = $(this).attr("data-url");

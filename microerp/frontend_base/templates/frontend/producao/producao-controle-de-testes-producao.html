@@ -136,7 +136,8 @@
 		</div>
 		
 		<div class="tab-pane fade in" id="indicadores">
-			<h4>Indicadores</h4>
+			<div id="filtro-container">
+				<h4>Indicadores</h4>
 				<form method="POST" id="filtrar-por-subproduto">
 						{% csrf_token %}
 						
@@ -169,14 +170,16 @@
 						
 
 					</div>
-					<button id="filtrar-indicadores-btn" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-primary">Filtrar</button>
+					<button id="filtrar-indicadores-btn" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-primary"><i class="fa fa-filter"></i> Filtrar</button>
+					{% if filtro and lista_dicionario_retorno %}
+					<button id="imprimir" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-success"><i class="fa fa-print"></i> Imprimir</button>
+					{% endif %}
 				</form>
-				
+			</div>
 				{% if filtro %}
 				{% for subprodutodic in lista_dicionario_retorno %}
 				<div class="well well-small">
 					<h4>{{subprodutodic.subproduto}}</h4>
-					
 					
 					<div class="row-fluid">
 			
@@ -293,21 +296,31 @@
 
 <script>
 $(document).ready(function() {
-		var activeTab = $('[href=' + location.hash + ']');
-		activeTab && activeTab.click();
     $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");
 				
 });
 
-$('.nav-tabs').on("click", '.nav-tabs li a', function(e){
-	e.preventDefault();
 
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
 	var href = this.hash;
-	window.location.hash = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	// ajax load from data-url
 	pane.tab('show');		
 })
+
 $('.datepicker').each(function() {
    $(this).datepicker({
 	inline: true,
@@ -326,6 +339,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#main-content").css("padding-top", 0);
 	$("#nav-tab-principal").hide();
 	$("#content").removeClass('span9').addClass('span11');
+	$("#filtro-container").hide();
 });
 
 

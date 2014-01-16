@@ -4,6 +4,7 @@ from django.conf.urls import patterns, include, url
 # urls da Producao
 urlpatterns = patterns('',
     url(r'^$', 'producao.views.home', name='home'),
+    # nota fiscal
     url(r'^notafiscal/lancar_nota/$', 'producao.views.lancar_nota', name='lancar_nota'),
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/calcular/$', 'producao.views.calcular_nota', name='calcular_nota'),
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/apagar/$', 'producao.views.apagar_nota', name='apagar_nota'),
@@ -11,6 +12,8 @@ urlpatterns = patterns('',
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/ver/$', 'producao.views.ver_nota', name='ver_nota'),    
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancar/$', 'producao.views.lancar_nota_fechar', name='lancar_nota_fechar'),
     url(r'^notafiscal/adicionar/$', 'producao.views.adicionar_nota', name='adicionar_nota'),
+    # nota fiscal ajax helper
+    url(r'^notafiscal/dados/$', 'producao.views.nota_fiscal_dados', name='nota_fiscal_dados'),
     # editar lancamentos
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/(?P<lancamento_id>[0-9]+)/editar/$', 'producao.views.editar_lancamento', name='editar_lancamento'),
     url(r'^notafiscal/(?P<notafiscal_id>[0-9]+)/lancamento/adicionar/$', 'producao.views.adicionar_lancamento', name='adicionar_lancamento'),
