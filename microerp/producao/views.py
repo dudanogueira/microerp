@@ -76,13 +76,22 @@ def possui_perfil_acesso_producao(user, login_url="/"):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def home(request):
+    # componentes
     componentes_total = Componente.objects.all().count()
+    componentes_ativos = Componente.objects.filter(ativo=True).count()
+    componentes_inativos = Componente.objects.filter(ativo=False).count()
+    # subprodutos
     subprodutos_total = SubProduto.objects.all().count()
+    subprodutos_ativos = SubProduto.objects.filter(ativo=True).count()
+    subprodutos_inativos = SubProduto.objects.filter(ativo=False).count()
+    # produtos
     produtos_total = ProdutoFinal.objects.all().count()
     produtos_ativos = ProdutoFinal.objects.filter(ativo=True).count()
     produtos_inativos = ProdutoFinal.objects.filter(ativo=False).count()
     fornecedores_total = NotaFiscal.objects.all().values('fabricante_fornecedor').distinct().count()
     notas_total = NotaFiscal.objects.all().count()
+    notas_abertas = NotaFiscal.objects.filter(status="a").count()
+    notas_lancadas = NotaFiscal.objects.filter(status="l").count()
     estoques = EstoqueFisico.objects.all()
     return render_to_response('frontend/producao/producao-home.html', locals(), context_instance=RequestContext(request),)
     
@@ -102,6 +111,8 @@ def importa_nota_sistema(f):
         xmldoc = minidom.parse(f)
         infNFE = xmldoc.getElementsByTagName('chNFe')[0]
         idnfe = infNFE.firstChild.nodeValue[22:34]
+        numero = idnfe[3:]
+        serie = idnfe[0:3] 
         nome_emissor = xmldoc.getElementsByTagName('xNome')[0]
         nome = nome_emissor.firstChild.nodeValue
         print "NOME DO EMISSOR: %s" % nome
@@ -121,7 +132,7 @@ def importa_nota_sistema(f):
         total = xmldoc.getElementsByTagName('total')[0]
         frete = total.getElementsByTagName('vFrete')[0].firstChild.nodeValue
         # criando NFE no sistema
-        nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=idnfe, tipo='n')
+        nfe_sistema,created = NotaFiscal.objects.get_or_create(fabricante_fornecedor=fornecedor, numero=numero, serie=serie, tipo='n')
         nfe_sistema.taxas_diversas = frete
         nfe_sistema.save()
         # pega itens da nota
@@ -309,7 +320,7 @@ class NotaFiscalForm(forms.ModelForm):
     
     class Meta:
         model = NotaFiscal
-        fields = ['fabricante_fornecedor', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar',]
+        fields = ['fabricante_fornecedor', 'serie', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar',]
 
 # MODEL FORM LANCAMENTO NOTA FISCAL
 

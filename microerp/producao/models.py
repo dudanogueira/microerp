@@ -493,16 +493,10 @@ class NotaFiscal(models.Model):
         ordering = ['-criado']
     
     def numero_de_serie(self):
-        if len(self.numero) > 3:
-            return self.numero[0:3]
-        else:
-            return None
+        return self.serie
     
     def numero_identificador(self):
-        if len(self.numero) > 3:
-            return self.numero[3:]
-        else:
-            return self.numero
+        return self.numero
     
     def lancar_no_estoque(self, user_id=None):
         '''lanca a nota fiscal no estoque configurado como receptor'''
@@ -583,6 +577,7 @@ class NotaFiscal(models.Model):
     
     #arquivo = models.FileField(upload_to=arquivo)
     numero = models.CharField("Número", max_length=100, blank=False, null=False)
+    serie = models.CharField("Série", max_length=100, blank=False, null=False)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Valores Diversos (R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (R$)", help_text="utilizado somente em notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
