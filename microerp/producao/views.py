@@ -274,8 +274,8 @@ def lancar_nota(request):
                 if inicio and fim:
                     notas_exibir = notas_exibir.filter(data_entrada__range=(datetime.datetime.combine(inicio, datetime.time.min), datetime.datetime.combine(fim, datetime.time.max)))
 
-            notas_filtro_total_sem_imposto = notas_exibir.aggregate(Sum('total_sem_imposto'))
-            notas_filtro_total_com_imposto = notas_exibir.aggregate(Sum('total_com_imposto'))
+    notas_filtro_total_sem_imposto = notas_exibir.aggregate(Sum('total_sem_imposto'))
+    notas_filtro_total_com_imposto = notas_exibir.aggregate(Sum('total_com_imposto'))
 
     # nota nacional, com XML, upload do arquivo, importa e direcina pra edição da nota
     if request.GET.get('tipo', None) == 'nfe':
@@ -1040,7 +1040,7 @@ def listar_estoque(request):
                             posicao = None
                         if posicao and posicao.quantidade:
                             valor = posicao.quantidade * posicao.componente.preco_medio_unitario
-                            posicoes_estoque.append((posicao, valor))
+                            posicoes_estoque.append((posicao, valor, posicao.criado))
                     form_mover_estoque = MoverEstoque(componente_consultado=componente_consultado)
                     form_alterar_estoque = AlterarEstoque(componente=componente_consultado)
                     

@@ -40,7 +40,6 @@
                 <div id="consulta_componente">
                     <h3>Consultando Componente {{componente_consultado.part_number}} - {{componente_consultado.descricao}}</h3>
 
-
                     <table class="table table-condensed table-striped table-rounded table-bordered">
                         <thead>
                             <tr>
@@ -56,13 +55,12 @@
                             <td>{% if posicao.0.estoque.nome %}{{posicao.0.estoque.nome}}{% else %}{{posicao.0.estoque}}{% endif %}</td>
                             <td>{{posicao.0.quantidade}} ({{posicao.0.componente.get_medida_display}})</td>
                             <td>R$ {{posicao.1|floatformat:2}}</td>
-                            <td>{{posicao.criado|date:"SHORT_DATE_FORMAT"}}</td>
+                            <td>{{posicao.2|date:"SHORT_DATE_FORMAT"}}</td>
                         </tr>
 						{% empty %}
 						<tr>
 							<td>Nenhum Lançamento em Estoque</td>
 						</tr>
-				
                         {% endfor %}
                         </tbody>
                     </table>
