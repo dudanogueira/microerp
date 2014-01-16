@@ -2,15 +2,21 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 
-<title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato{% endblock %}</title>
+<title>{%block title %}{{block.super}} - Comercial - Meus Contratos{% endblock %}</title>
 
 {% block content %}
-<h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
+
+{% regroup meus_contratos by get_status_display as meus_contratos_por_status %}
+{% for lista in meus_contratos_por_status %}
+<h4>{{lista.grouper}}</h4>
 <ul>
-{% for contrato in contratos_em_analise %}
-	<li><a href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">{{contrato}}</a></li>
+{% for contrato in lista.list %}
+	<li>{{contrato}}</li>
 {% endfor %}
 </ul>
+
+{% endfor %}
 
 {% endblock %}
 
@@ -21,7 +27,7 @@
 
 <script>
 $(document).ready(function() {
-    $("#menu-comercial-analise-de-contratos, #top-menu-comercial").addClass("active");
+    $("#menu-comercial-meus-contratos, #top-menu-comercial").addClass("active");
 });
 
 </script>

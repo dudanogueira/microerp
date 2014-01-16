@@ -6,13 +6,18 @@
     <li id="menu-comercial-clientes"><a href="{% url "comercial:clientes" %}"><i class="fa fa-group"></i> Pré / Clientes</a></li>
 
     <li id="menu-comercial-propostas-minhas"><a href="{% url "comercial:propostas_comerciais_minhas" %}"><i class="fa fa-file-o"></i> Propostas Comerciais</a></li>
+	
+    <li id="menu-comercial-meus-contratos"><a href="{% url "comercial:contratos_meus" %}"><i class="fa fa-book"></i> Meus Contratos</a></li>
+	
 		
     <li id="menu-comercial-tabela-de-precos"><a href="{% url "comercial:tabela_de_precos" %}"><i class="fa fa-usd"></i> Tabela de Preços</a></li>
-		
+	
     <li id="menu-comercial-adicionar-solicitacao"><a href="{% url "comercial:solicitacao_adicionar" %}"><i class="fa fa-bell"></i> Adicionar Solicitação</a></li>
 	{% if user.perfilacessocomercial.gerente %}	
 	<h5>Gerência:</h5>
     <li id="menu-comercial-analise-de-contratos"><a href="{% url "comercial:analise_de_contratos" %}"><i class="fa fa-search-plus"></i> Análise de Contratos</a></li>
+	    <li id="menu-comercial-gerencia-comissoes"><a href="{% url "comercial:gerencia_comissoes" %}"><i class="fa fa-ticket"></i> Comissões</a></li>
+	
 	
     <li id="menu-comercial-gerenciar-designacoes"><a href="{% url "comercial:designacoes" %}"><i class="fa fa-hand-o-right"></i> Designações</a></li>
     <li id="menu-comercial-gerencia-modelo-orcamento"><a href="{% url "comercial:orcamentos_modelo" %}"><i class="fa fa-quote-right"></i> Modelos de Orçamento</a></li>

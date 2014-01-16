@@ -84,7 +84,8 @@ class Produto(models.Model):
     substituicao_tributaria_valor = models.IntegerField(blank=False, null=False, default=0)
     icms = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
     # indicadores de comercial
-    grupo_indicador = models.ForeignKey('comercial.GrupoIndicadorDeProdutoVendido', blank=True, null=True)
+    grupo_indicador = models.ForeignKey('comercial.GrupoIndicadorDeProdutoProposto', blank=True, null=True)
+    sub_grupo_indicador = models.ManyToManyField('comercial.SubGrupoIndicadorDeProdutoProposto', blank=True, null=True)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")

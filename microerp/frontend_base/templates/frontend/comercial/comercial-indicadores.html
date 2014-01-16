@@ -116,7 +116,7 @@
 	</tbody>
 </table>
 
-
+{% if propostas_abertas_expiradas %}
 <h2>Propostas Abertas Expiradas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
@@ -145,6 +145,7 @@
 			
 	</tbody>
 </table>
+{% endif %}
 
 <h2>Propostas Criadas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
@@ -230,22 +231,23 @@
 	</tbody>
 </table>
 
-
-<h2>Indicadores de Produtos em Propostas Abertas Atualmente</h2>
+<h1>Grupo de Indicadores</h1>
+{% if grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
+<h2>Indicadores de Grupos Produtos em Propostas Abertas Atualmente</h2>
 {% for grupo in grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
 	{{grupo.produto__grupo_indicador__nome}}: {{grupo.quantidade__sum}}<br />
 {% endfor %}
+{% endif %}
 
-
-<h2>Indicadores de Produtos em Propostas Expiradas Atualmente</h2>
+{% if grupos_indicadores_produtos_orcamento_aberto_expirado %}
+<h2>Indicadores de Grupos Produtos em Propostas Expiradas Atualmente</h2>
 {% for grupo in grupos_indicadores_produtos_orcamento_aberto_expirado %}
 	{{grupo.produto__grupo_indicador__nome}}: {{grupo.quantidade__sum}}<br />
 {% endfor %}
+{% endif %}
 
 
-
-
-<h2>Indicadores de Produtos Em Propostas Convertidas em {{ano}}</h2>
+<h2>Indicadores de Grupo de Produtos Em Propostas Convertidas em {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -280,7 +282,7 @@
 </table>
 
 
-<h2>Indicadores de Produtos Em Propostas Perdidas em {{ano}}</h2>
+<h2>Indicadores de Grupo de Produtos Em Propostas Perdidas em {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -313,6 +315,34 @@
 			
 	</tbody>
 </table>
+
+<h1>Sub Grupo de Indicadores</h1>
+{% if sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
+<h2>Indicadores de Sub Grupos de Produtos em Propostas Não Expiradas Atualmente</h2>
+{% regroup sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado by produto__sub_grupo_indicador__grupo__nome as lista_por_grupo %}
+{% for grupo in lista_por_grupo %}
+<h2>{{grupo.grouper}}</h2>
+<ul>
+	{% for indicador in grupo.list %}
+	<li>{{indicador.produto__sub_grupo_indicador__nome}}: {{indicador.quantidade__sum}}</li>
+	{% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+
+
+{% if sub_grupos_indicadores_produtos_orcamento_aberto_expirado %}
+<h2>Indicadores de Sub Grupos de Produtos em Propostas Expiradas Atualmente</h2>
+{% regroup sub_grupos_indicadores_produtos_orcamento_aberto_expirado by produto__sub_grupo_indicador__grupo__nome as lista_por_grupo %}
+{% for grupo in lista_por_grupo %}
+<h2>{{grupo.grouper}}</h2>
+<ul>
+	{% for indicador in grupo.list %}
+	<li>{{indicador.produto__sub_grupo_indicador__nome}}: {{indicador.quantidade__sum}}</li>
+	{% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
 
 
 {% endif %}

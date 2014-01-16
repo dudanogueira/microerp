@@ -25,8 +25,8 @@ from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
-from comercial.models import PerfilAcessoComercial
-from comercial.models import LinhaRecursoMaterial, Orcamento, GrupoIndicadorDeProdutoVendido
+from comercial.models import PerfilAcessoComercial, FechamentoDeComissao
+from comercial.models import LinhaRecursoMaterial, Orcamento, GrupoIndicadorDeProdutoProposto
 from estoque.models import Produto
 
 from django.conf import settings
@@ -768,6 +768,13 @@ def adicionar_follow_up(request, proposta_id):
             url = reverse("comercial:propostas_comerciais_minhas")
     
     return(redirect(url))
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def contratos_meus(request):
+    meus_contratos = ContratoFechado.objects.filter(responsavel_comissionado=request.user.funcionario)
+    return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
+
+
 class FormAdicionaModelo(forms.ModelForm):
     
     class Meta:
@@ -913,7 +920,7 @@ def indicadores_do_comercial(request):
     
     # Grupo Indicador de Produtos em Propostas Convertidas
     total_grupo_indicadores_propostas_convertidas = {}
-    for grupo in GrupoIndicadorDeProdutoVendido.objects.all():
+    for grupo in GrupoIndicadorDeProdutoProposto.objects.all():
         grupo_month_set = []
         for month in range(1,13):
             quantidades = LinhaRecursoMaterial.objects.filter(
@@ -930,7 +937,7 @@ def indicadores_do_comercial(request):
 
     # Grupo Indicador de Produtos em Propostas Perdidas
     total_grupo_indicadores_propostas_perdidas = {}
-    for grupo in GrupoIndicadorDeProdutoVendido.objects.all():
+    for grupo in GrupoIndicadorDeProdutoProposto.objects.all():
         grupo_month_set = []
         for month in range(1,13):
             quantidades = LinhaRecursoMaterial.objects.filter(
@@ -954,7 +961,16 @@ def indicadores_do_comercial(request):
 
     # Grupo de Indicador com Propostas Abertas Expiradas
     grupos_indicadores_produtos_orcamento_aberto_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__lt=datetime.date.today()).exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
+    
+    # SubGrupo de Indicador com Propostas ABertas Não expiradas
+    sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__gte=datetime.date.today()).exclude(produto__sub_grupo_indicador=None).values('produto__sub_grupo_indicador__nome', 'produto__sub_grupo_indicador__grupo__nome').annotate(Sum('quantidade'))
+    
+    # SubGrupo de Indicador com Propostas ABertas Expiradas
+    sub_grupos_indicadores_produtos_orcamento_aberto_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__lt=datetime.date.today()).exclude(produto__sub_grupo_indicador=None).values('produto__sub_grupo_indicador__nome', 'produto__sub_grupo_indicador__grupo__nome').annotate(Sum('quantidade'))
+    
+    
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
+
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos(request):
@@ -984,5 +1000,25 @@ def analise_de_contratos_analisar(request, contrato_id):
         form_analisar_contrato = FormAnalisarContrato(instance=contrato)
     return render_to_response('frontend/comercial/comercial-analise-de-contratos-analisar.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def gerencia_comissoes(request):
+    fechamentos_com_lancamentos_abertos = FechamentoDeComissao.objects.filter(lancamentodefechamentocomissao__pago=False)
+    fechamentos_sem_lancamentos = FechamentoDeComissao.objects.filter(lancamentodefechamentocomissao=None)
+    return render_to_response('frontend/comercial/comercial-gerencia-comissoes.html', locals(), context_instance=RequestContext(request),)
 
-analise_de_contratos_analisar
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def gerencia_comissoes_novo_fechamento(request):
+    if request.POST:
+        # cria fechamento com os contratos selecionados
+        ids_contratos = request.POST.getlist('contrato-id')
+        contratos_selecionados = ContratoFechado.objects.filter(id__in=ids_contratos)
+        id_comissionado = request.POST.get('funcionario-comissionado')
+        funcionario_comissionado = Funcionario.objects.get(pk=id_comissionado)
+        novo_fechamento = FechamentoDeComissao.objects.create(
+            comissionado = funcionario_comissionado,
+        )
+        novo_fechamento.contratos.add(*contratos_selecionados)
+        novo_fechamento.save()
+    contratos_abertos = ContratoFechado.objects.filter(fechamentodecomissao=None).exclude(responsavel_comissionado=None)
+    return render_to_response('frontend/comercial/comercial-gerencia-comissoes-novo-fechamento.html', locals(), context_instance=RequestContext(request),)
+    

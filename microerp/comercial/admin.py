@@ -34,7 +34,11 @@ from comercial.models import Modelo
 from comercial.models import QuantidadeDeMarca
 from comercial.models import FollowUpDePropostaComercial
 from comercial.models import RequisicaoDeProposta
-from comercial.models import GrupoIndicadorDeProdutoVendido
+from comercial.models import GrupoIndicadorDeProdutoProposto
+from comercial.models import SubGrupoIndicadorDeProdutoProposto
+from comercial.models import FechamentoDeComissao
+from comercial.models import LancamentoDeFechamentoComissao
+from comercial.models import TabelaDeComissao
 
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
@@ -80,6 +84,15 @@ class TipodeContratoFechadoAdmin(admin.ModelAdmin):
 class FollowUpDePropostaComercialAdmin(admin.ModelAdmin):
     date_hierarchy = 'criado'
 
+class FechamentoDeComissaoAdmin(admin.ModelAdmin):
+    pass
+
+class LancamentoDeFechamentoComissaoAdmin(admin.ModelAdmin):
+    pass
+
+class TabelaDeComissaoAdmin(admin.ModelAdmin):
+    list_display = 'valor_inicio', 'valor_fim', 'porcentagem'
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
@@ -90,4 +103,8 @@ admin.site.register(Marca)
 admin.site.register(Modelo)
 admin.site.register(FollowUpDePropostaComercial, FollowUpDePropostaComercialAdmin)
 admin.site.register(RequisicaoDeProposta)
-admin.site.register(GrupoIndicadorDeProdutoVendido)
+admin.site.register(GrupoIndicadorDeProdutoProposto)
+admin.site.register(SubGrupoIndicadorDeProdutoProposto)
+admin.site.register(FechamentoDeComissao, FechamentoDeComissaoAdmin)
+admin.site.register(LancamentoDeFechamentoComissao, LancamentoDeFechamentoComissaoAdmin)
+admin.site.register(TabelaDeComissao, TabelaDeComissaoAdmin)

@@ -60,6 +60,7 @@ CONTRATO_TIPO_CHOICES = (
 )
 
 CONTRATO_STATUS_CHOICES = (
+    ('cancelado', 'Cancelado'),
     ('emanalise', 'Em Análise'),
     ('emaberto', 'Em Aberto'),
     ('lancado', u'Contrato Lançado'),
@@ -155,7 +156,7 @@ class PropostaComercial(models.Model):
 class FollowUpDePropostaComercial(models.Model):
     
     def __unicode__(self):
-        return u"Follow Up da Proposta #%s por %s em %s: %s" % (self.proposta.id, self.proposta.cliente or self.proposta.precliente, self.data.date(), self.texto)
+        return u"Follow Up da Proposta #%s" % self.proposta.id
     
     def data(self):
         return self.criado
@@ -324,7 +325,7 @@ class ContratoFechado(models.Model):
     status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)
     concluido = models.BooleanField(default=False)
     responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")
-    responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável pelo Contrato", related_name="contrato_comissionado_set")
+    responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="contrato_comissionado_set")
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
@@ -335,6 +336,41 @@ class TipodeContratoFechado(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
+class FechamentoDeComissao(models.Model):
+    
+    def valor_total(self):
+        return self.contratos.exclude(status="cancelado").aggregate(Sum('valor'))['valor__sum'] or 0
+    
+    def comissao_tabelada(self, valor=None):
+        if valor == None:
+            valor = self.valor_total()
+        try:
+            comissao = TabelaDeComissao.objects.filter(valor_inicio__lte=valor, valor_fim__gte=valor)[0].porcentagem
+        except:
+            comissao = 0
+        return comissao
+    
+    def comissao_calculada(self):
+        valor = self.valor_total()
+        valor_calculado = (valor * self.comissao_tabelada(valor)) / 100
+        return valor_calculado
+    
+    comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="fechamento_comissao__set")
+    contratos = models.ManyToManyField('ContratoFechado', blank=False, null=False)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado_por = models.ForeignKey('rh.Funcionario',  blank=True, null=True, related_name="fechamento_comissao_criado_set")    
+
+class LancamentoDeFechamentoComissao(models.Model):
+    fechamento = models.ForeignKey('FechamentoDeComissao')
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    pago = models.BooleanField(default=False)
+
+class TabelaDeComissao(models.Model):
+    valor_inicio = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_fim = models.DecimalField(max_digits=10, decimal_places=2)
+    porcentagem = models.DecimalField(max_digits=10, decimal_places=2)
 
 class Marca(models.Model):
     
@@ -375,13 +411,22 @@ class RequisicaoDeProposta(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-class GrupoIndicadorDeProdutoVendido(models.Model):
+class GrupoIndicadorDeProdutoProposto(models.Model):
     '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''
     
     def __unicode__(self):
         return self.nome
     
     nome = models.CharField(blank=True, max_length=100)
+
+class SubGrupoIndicadorDeProdutoProposto(models.Model):
+    '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''
+    
+    def __unicode__(self):
+        return "%s - %s" % (self.grupo, self.nome)
+    
+    nome = models.CharField(blank=True, max_length=100)
+    grupo = models.ForeignKey('GrupoIndicadorDeProdutoProposto')
 
 
 # signals
