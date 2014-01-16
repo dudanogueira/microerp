@@ -47,6 +47,7 @@
 		{% regroup propostas_abertas_validas by dono as propostas_abertas_validas_por_cliente %}
 		
 		{% for proposta_list in propostas_abertas_validas_por_cliente %}
+		<div class="dono-proposta-valida-group">
 			<p>
 			{% if proposta_list.list.0.cliente %}
 
@@ -69,7 +70,7 @@
 					</tr>
 			</thead>
 			{% for proposta in proposta_list.list %}
-			<tr class="propostas-validas {% if proposta.designado %}designado-validas-{{proposta.designado.id}}{% else %}propostas-validas-None{% endif %}">
+			<tr class="propostas-validas {% if proposta.designado %}propostas-validas-{{proposta.designado.id}}{% else %}propostas-validas-None{% endif %}">
 				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
 				<td><span class="label label-success"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
@@ -119,7 +120,9 @@
    		 	{% empty %}
 			{% endfor %}
 		</table>
+		</div>
 		{% endfor %}
+
 	</div>
 	
 	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
@@ -170,8 +173,9 @@
 						<th>Ações</th>
 					</tr>
 			</thead>
-			{% for proposta in proposta_list.list %}
-			<tr class="propostas-expiradas {% if proposta.designado %}propostas-expiradas-{{proposta.designado.id}}{% else %}propostas-expiradas-None{% endif %}">
+			<tbody>
+				{% for proposta in proposta_list.list %}
+				<tr class="propostas-expiradas {% if proposta.designado %}propostas-expiradas-{{proposta.designado.id}}{% else %}propostas-expiradas-None{% endif %}">
 				<td class="alert alert-danger"><h6>#{{proposta.id}}</h6></td>
 				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timesince}}</small></td>
@@ -227,8 +231,9 @@
 				
 				</td>
 			</tr>
-   		 	{% empty %}
-			{% endfor %}
+				{% empty %}
+				{% endfor %}
+			</tbody>
 		</table>
 		{% endfor %}
 		
@@ -357,19 +362,28 @@ $("#id_reagenda_data_expiracao").on("change", function(e){
 })
 
 $("#filtro-designado-validas").on("change", function(e){
+	$(".dono-proposta-valida-group").show();
 	if ($(this).val() == "todos"){
+		
 		$(".propostas-validas").show();
 	}else{
 		$(".propostas-validas").hide();
-		$(".designado-validas-" + $(this).val()).show();
+		$(".propostas-validas-" + $(this).val()).show();
+		$(".dono-proposta-valida-group").each(function(){
+			if($(this).find("tr:visible.propostas-validas").length == 0){
+				$(this).hide();
+			}
+		})
+		
 	}
+	
 });
 
 $("#filtro-designado-expiradas").on("change", function(e){
+
 	if ($(this).val() == "todos"){
 		$(".propostas-expiradas").show();
 	}else{
-
 		$(".propostas-expiradas").hide();
 		$(".propostas-expiradas-" + $(this).val()).show();
 	}
