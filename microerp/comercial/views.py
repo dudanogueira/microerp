@@ -185,6 +185,11 @@ def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def home(request):
     # widget cliente
+    #ultimos followups
+    ultimos_followups = FollowUpDePropostaComercial.objects.filter(
+        Q(proposta__designado=request.user.funcionario) | Q(proposta__cliente__designado=request.user.funcionario) | Q(proposta__precliente__designado=request.user.funcionario) | \
+        Q(proposta__designado=None) | (Q(proposta__cliente__designado=None) & Q(proposta__precliente__designado=None))
+    )[0:10]
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 class FiltrarPreClientesERequisicoesForm(forms.Form):
@@ -758,7 +763,12 @@ def adicionar_follow_up(request, proposta_id):
                 follow_up.save()
                 messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
         else:
-            messages.error(request, u"Erro! Formulário inválido! Follow Up Não Adicionado.")
+            if request.POST.get('somente-texto'):
+                proposta.followupdepropostacomercial_set.create(texto=request.POST.get('texto'), criado_por=request.user)
+                messages.info(request, u"Follow UP SOMENTE TEXTO adicionado à proposta #%s" % proposta.id)
+                
+            else:
+                messages.error(request, u"Erro! Formulário inválido! Follow Up Não Adicionado.")
     # retorna para referrer ou view do cliente
     try:
         url = request.META['HTTP_REFERER']
@@ -911,12 +921,14 @@ def indicadores_do_comercial(request):
     propostas_abertas_nao_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__gte=datetime.date.today())
     propostas_abertas_nao_expiradas_contagem = propostas_abertas_nao_expiradas.count()
     propostas_abertas_nao_expiradas_por_criador = propostas_abertas_nao_expiradas.values('criado_por__funcionario__nome').annotate(Count('id'), Sum('valor_proposto'))
+    propostas_abertas_nao_expiradas_por_responsavel = propostas_abertas_nao_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_nao_expiradas_total = propostas_abertas_nao_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']    
 
     # propostas abertas expiradas
     propostas_abertas_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__lt=datetime.date.today())
     propostas_abertas_expiradas_contagem = propostas_abertas_expiradas.count()
     propostas_abertas_expiradas_por_criador = propostas_abertas_expiradas.values('criado_por__funcionario__nome').annotate(Count('id'), Sum('valor_proposto'))
+    propostas_abertas_expiradas_por_responsavel = propostas_abertas_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_expiradas_total = propostas_abertas_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']
     
     # Grupo Indicador de Produtos em Propostas Convertidas

@@ -329,29 +329,32 @@ $(document).ready(function() {
 			trigger: "hover",
 			placement: 'top'
 		});
+
+    {% if form_adicionar_follow_up.errors %}
+		$('#modal-follow-up-add').modal('show');
+    {% endif %}	
+
+	$('.popover-items').popover()
+});
+
+
+$('.btn-modal-add-follow-up').click(function(e){
 		
-	$('.btn-modal-add-follow-up').click(function(e){
-			
-			$("#descricao-modal-add-follow-up").html( $(this).data('title') );
-			$("#id_proposta").val($(this).data('proposta-id'));
-			$("#id_texto").val('');
-			$("#id_probabilidade").val($(this).data('probabilidade'));
-			$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
-			$("#btn-adicionar-follow-up").hide();			
-		    $("#data-expiracao-modal-container").hide();
-			$("#modal-follow-up-add .errorlist").hide();
-			$("#id_reagenda_data_expiracao").attr('checked', false);	
-			$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
-		});
-		
-	$('.carregar_follow_ups_modal').click(function(e){
-			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
-			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
-		});
-	    {% if form_adicionar_follow_up.errors %}
-			$('#modal-follow-up-add').modal('show');
-	    {% endif %}	
-		$('.popover-items').popover()
+		$("#descricao-modal-add-follow-up").html( $(this).data('title') );
+		$("#id_proposta").val($(this).data('proposta-id'));
+		$("#id_texto").val('');
+		$("#id_probabilidade").val($(this).data('probabilidade'));
+		$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
+		$("#btn-adicionar-follow-up").hide();			
+	    $("#data-expiracao-modal-container").hide();
+		$("#modal-follow-up-add .errorlist").hide();
+		$("#id_reagenda_data_expiracao").attr('checked', false);	
+		$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+});
+	
+$('.carregar_follow_ups_modal').click(function(e){
+		$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+		$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
 });
 
 $("#id_reagenda_data_expiracao").on("change", function(e){
