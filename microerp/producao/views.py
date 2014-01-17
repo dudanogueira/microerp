@@ -696,7 +696,7 @@ def matriz_componente_padrao_por_subproduto(request, componente_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_componente(request, componente_id):
     componente = get_object_or_404(Componente.objects.select_related(), pk=componente_id)
-    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('-nota__data_lancado_estoque')
+    lancamentos = LancamentoComponente.objects.filter(componente=componente, nota__status='l').order_by('criado')
     # memorias: LinhaFornecedorFabricanteComponente
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(componente=componente)
     fornecedores = LancamentoComponente.objects.filter(componente=componente, nota__status='l').values('nota__fabricante_fornecedor__nome').annotate(total=Sum('quantidade'))
