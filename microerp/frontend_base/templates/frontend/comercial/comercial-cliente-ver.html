@@ -280,6 +280,13 @@
 
 		
 		<h4 class="alert alert-success">Propostas Convertidas</h4>
+		<ul>
+		{% for proposta in cliente.propostas_convertidas %}
+			<li><strong>Proposta #{{proposta.id}}</strong> <i class="fa fa-arrow-right"></i> <strong>Contrato #{{proposta.contrato_vinculado.id}}</strong> - R${{proposta.contrato_vinculado.valor}} - Responsável: {{proposta.contrato_vinculado.responsavel}}, Comissionado: {{proposta.contrato_vinculado.responsavel_comissionado}}</li>
+		{% endfor %}
+		</ul>
+		
+		
 		
 		<h4 class="alert alert-danger">Propostas Perdidas: {{cliente.propostas_perdidas.count}}</h4>
 		<table class="table table-condensed table.stripped">

@@ -161,7 +161,6 @@ class Cliente(models.Model):
     def propostas_expiradas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__lt=datetime.date.today())
     
-    
     def propostas_convertidas(self):
         return self.propostacomercial_set.filter(status="convertida")
     

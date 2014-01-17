@@ -21,7 +21,7 @@
 {% if fechamentos_sem_lancamentos %}
 <ul>
 {% for fechamento in fechamentos_sem_lancamentos %}
-	<li>#{{fechamento.id}} - <strong>Comissionado</strong>: {{fechamento.comissionado}} - <strong>Total</strong>: R$ {{fechamento.valor_total|floatformat:2}}, <strong>Comissão</strong>: R$ {{fechamento.comissao_calculada|floatformat:2}} ({{fechamento.comissao_tabelada}}%)</li>
+	<li>Fechamento #{{fechamento.id}} - <strong>Comissionado</strong>: {{fechamento.comissionado}} - <strong>Total</strong>: R$ {{fechamento.valor_total|floatformat:2}}, <strong>Comissão</strong>: R$ {{fechamento.comissao_calculada|floatformat:2}} ({{fechamento.comissao_tabelada}}%)</li>
 {% endfor %}
 </ul>
 {% else %}
