@@ -998,7 +998,7 @@ def listar_estoque(request):
         data_primeiro_movimento = None
     # totalizadores
     totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')[:10]
-    totalizadores_graficos = RegistroValorEstoque.objects.all().order_by('criado')[:10]
+    totalizadores_graficos = totalizadores.reverse()
     try:
         data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-data')[0].data.strftime("%d/%m/%Y")
         data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('data')[0].data.strftime("%d/%m/%Y")
