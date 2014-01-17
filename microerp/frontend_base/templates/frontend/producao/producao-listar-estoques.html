@@ -180,8 +180,6 @@
 				{{form_filtra_historico_movimentos}}
 				<button type="submit" class="btn btn-primary" name="filtrar-historico-movimentos" value="filtrar">Filtrar</button>
 			</form>
-				
-				
         
         <table class="table table-condensed table-striped table-rounded">
             <thead>
@@ -197,6 +195,7 @@
             </thead>
             <tbody>
             {% for historico in historicos %}
+			
                 <tr>
  <td>{{historico.data_entrada|date:"SHORT_DATETIME_FORMAT"}}</td>
                     <td>{{historico.estoque.identificacao}}</td>

@@ -997,13 +997,18 @@ def listar_estoque(request):
         data_ultimo_movimento = None
         data_primeiro_movimento = None
     # totalizadores
-    totalizadores = RegistroValorEstoque.objects.all()[:10]
+    totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')[:10]
     try:
-        data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-criado')[0:1].data.strftime("%d/%m/%Y")
-        data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('-criado').reverse()[0].data.strftime("%d/%m/%Y")
+        data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-data')[0].data.strftime("%d/%m/%Y")
+        data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('data')[0].data.strftime("%d/%m/%Y")
     except:
         data_ultimo_totalizador = None
         data_primeiro_totalizador = None
+    
+    form_filtra_historico_totalizador = FiltroHistoricos(inicio=data_primeiro_totalizador, fim=data_ultimo_totalizador)
+    form_filtra_historico_movimentos = FiltroMovimentos(inicio=data_primeiro_movimento, fim=data_ultimo_movimento)
+    
+    
     if request.POST:
         if request.POST.get('consulta-estoque'):
             form_mover_estoque = MoverEstoque()
@@ -1126,8 +1131,7 @@ def listar_estoque(request):
             if form_filtra_historico_totalizador.is_valid():
                 inicio = form_filtra_historico_totalizador.cleaned_data['inicio_historicos']
                 fim = form_filtra_historico_totalizador.cleaned_data['fim_historicos']
-                fim = datetime.datetime.combine(fim, datetime.time(23, 59))
-                totalizadores = RegistroValorEstoque.objects.filter(data__gte=inicio, data__lte=fim)
+                totalizadores = RegistroValorEstoque.objects.filter(criado__range=(datetime.datetime.combine(inicio, datetime.time.min), datetime.datetime.combine(fim, datetime.time.max)))
                 filtro_totalizador = True
             
         if request.POST.get('filtrar-historico-movimentos'):
@@ -1139,7 +1143,7 @@ def listar_estoque(request):
                 inicio = form_filtra_historico_movimentos.cleaned_data['inicio_movimentos']
                 fim = form_filtra_historico_movimentos.cleaned_data['fim_movimentos']
                 fim = datetime.datetime.combine(fim, datetime.time(23, 59))
-                historicos = PosicaoEstoque.objects.filter(criado__gte=inicio, criado__lte=fim)
+                historicos = PosicaoEstoque.objects.filter(criado__range=(datetime.datetime.combine(inicio, datetime.time.min), datetime.datetime.combine(fim, datetime.time.max)))
                 filtro_historico = True
                 form_filtra_historico_totalizador = FiltroHistoricos(inicio=inicio, fim=fim)
             
@@ -1148,8 +1152,6 @@ def listar_estoque(request):
         form_consulta_estoque = ConsultaEstoque()
         form_mover_estoque = MoverEstoque()
         form_alterar_estoque = AlterarEstoque()
-        form_filtra_historico_totalizador = FiltroHistoricos(inicio=data_primeiro_totalizador, fim=data_ultimo_totalizador)
-        form_filtra_historico_movimentos = FiltroMovimentos(inicio=data_primeiro_movimento, fim=data_ultimo_movimento)
     return render_to_response('frontend/producao/producao-listar-estoques.html', locals(), context_instance=RequestContext(request),)    
 
 # SUB PRODUTOS
