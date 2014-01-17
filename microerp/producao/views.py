@@ -998,6 +998,7 @@ def listar_estoque(request):
         data_primeiro_movimento = None
     # totalizadores
     totalizadores = RegistroValorEstoque.objects.all().order_by('-criado')[:10]
+    totalizadores_graficos = RegistroValorEstoque.objects.all().order_by('criado')[:10]
     try:
         data_ultimo_totalizador = RegistroValorEstoque.objects.all().order_by('-data')[0].data.strftime("%d/%m/%Y")
         data_primeiro_totalizador = RegistroValorEstoque.objects.all().order_by('data')[0].data.strftime("%d/%m/%Y")
@@ -1132,6 +1133,9 @@ def listar_estoque(request):
                 inicio = form_filtra_historico_totalizador.cleaned_data['inicio_historicos']
                 fim = form_filtra_historico_totalizador.cleaned_data['fim_historicos']
                 totalizadores = RegistroValorEstoque.objects.filter(criado__range=(datetime.datetime.combine(inicio, datetime.time.min), datetime.datetime.combine(fim, datetime.time.max)))
+                # reverte ordem do totalizador para gráfico
+                totalizadores_graficos = totalizadores.order_by('data')
+
                 filtro_totalizador = True
             
         if request.POST.get('filtrar-historico-movimentos'):
