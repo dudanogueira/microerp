@@ -157,7 +157,7 @@ def funcionarios_recados_adicionar(request, funcionario_id):
         form = AdicionarRecadoForm(request.POST, destinatario=funcionario.id, remetente=remetente_id)
         if form.is_valid():
             recado = form.save(commit=False)
-            recado.adicionado_por = request.user
+            recado.adicionado_por = request.user.funcionario
             recado.save()
             messages.success(request, u'Recado Adicionado com sucesso para o Remetente!')
             recados = []
@@ -226,7 +226,7 @@ def preclientes_adicionar(request):
             form = form_add_precliente = PreClienteAdicionarForm(data=request.POST, sugestao=None)
             if form.is_valid():
                 precliente = form.save(commit=False)
-                precliente.adicionado_por = request.user
+                precliente.adicionado_por = request.user.funcionario
                 precliente.save()
                 messages.success(request, u'Pré Cliente %s adicionado com sucesso!' % precliente)
                 return redirect(reverse('cadastro:home'))

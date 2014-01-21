@@ -85,8 +85,8 @@ class Solicitacao(models.Model):
     responsavel_visto = models.ForeignKey('rh.Funcionario', related_name="solicitacao_visto_set", blank=True, null=True)
     visto_data = models.DateTimeField(blank=True, default=datetime.datetime.now)
     # metadata
-    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="solicitacao_adicionada_set",  blank=True, null=True)
-    despachado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="solicitacao_despachado_set",  blank=True, null=True)
+    adicionado_por = models.ForeignKey('rh.Funcionario', related_name="solicitacao_adicionada_set",  blank=True, null=True)
+    despachado_por = models.ForeignKey('rh.Funcionario', related_name="solicitacao_despachado_set",  blank=True, null=True)
     despachado_data = models.DateTimeField(blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        

@@ -68,7 +68,7 @@ class ControleDeEquipamento(models.Model):
     data_arquivo_impresso_assinado_recebido = models.DateField(default=datetime.datetime.today)    
     receptor_arquivo_impresso = models.ForeignKey('rh.Funcionario', related_name="autorizacao_controle_equipamento_set", verbose_name=u"Funcionário que Autorizou o Controle", help_text="Funcionário responsável pela entrega do equipamento.", blank=True, null=True)
     # metadata
-    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
+    criado_por = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="controledeequipamento_criado_set")
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 

@@ -1,0 +1,143 @@
+{% comment %}
+Status: {{status}}<br />
+Fornecedor: {{fornecedor}}<br />
+Inicio de Entrada: {{inicio}}<Br />
+Fim de Entrada: {{fim}}<br />
+Tipo: {{tipo}}<br />
+Periodo: {{periodo}}
+{% endcomment %}
+
+
+{% if periodo == "dia" %}
+
+{% if tipo == "tabela" %}
+
+<table class="table table-bordered">
+	<tr>
+		{% for item in total_notas_por_dia %}
+		<td>{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}</td>
+		{% endfor %}
+	</tr>
+	<tr>
+		{% for item in total_notas_por_dia %}
+		<td>R${{item.soma|floatformat:2}}</td>
+		{% endfor %}
+	</tr>
+	
+</table>
+{% else %}
+
+<div class="demo-container">
+	<div id="placeholder-dia" class="demo-placeholder"></div>
+</div>
+
+
+
+
+<script>
+
+		var data = [ 
+			{% for item in total_notas_por_dia %}
+			["{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}", {{item.soma|safe}}],
+			{% endfor %}
+		 ];
+		 
+ 		var ticks = [ 
+ 			{% for item in total_notas_por_dia %}
+ 			["{{item.soma|safe}}", "R${{item.soma}}"],
+ 			{% endfor %}
+ 		 ];
+		 
+		$.plot("#placeholder-dia", [ data ], {
+			series: {
+				bars: {
+					show: true,
+					barWidth: 0.6,
+					align: "center"
+				}
+			},
+			xaxis: {
+				mode: "categories",
+			},
+			yaxis: {
+				ticks: ticks,
+			}
+			
+			
+		});
+		
+
+</script>
+
+
+{% endif %}
+
+{% endif %}
+
+
+{% if periodo == "mes" %}
+
+{% if tipo == "tabela" %}
+
+<table class="table table-bordered">
+	<tr>
+		{% for item in total_notas_por_mes %}
+		<td>{{item.month|date:"M/y"}}</td>
+		{% endfor %}
+	</tr>
+	<tr>
+		{% for item in total_notas_por_mes %}
+		<td>R${{item.soma|safe}}</td>
+		{% endfor %}
+	</tr>
+	
+</table>
+
+
+{% else %}
+
+
+<div class="demo-container">
+	<div id="placeholder-mes" class="demo-placeholder"></div>
+</div>
+
+
+<script>
+
+		var data = [ 
+			{% for item in total_notas_por_mes %}
+			["{{item.month|date:"M/y"}}", {{item.soma|safe}}],
+			{% endfor %}
+		 ];
+		 
+ 		var ticks = [ 
+ 			{% for item in total_notas_por_mes %}
+ 			["{{item.soma|safe}}", "R${{item.soma}}"],
+ 			{% endfor %}
+ 		 ];
+		 
+		$.plot("#placeholder-mes", [ data ], {
+			series: {
+				bars: {
+					show: true,
+					barWidth: 0.6,
+					align: "center"
+				}
+			},
+			xaxis: {
+				mode: "categories",
+			},
+			yaxis: {
+				ticks: ticks,
+			}
+			
+			
+		});
+		
+
+</script>
+
+
+{% endif %}
+
+{% endif %}

@@ -149,7 +149,7 @@ class PropostaComercial(models.Model):
     # contrato fechado vinculado
     contrato_vinculado = models.OneToOneField('ContratoFechado', primary_key=False, blank=True, null=True)
     # metadata
-    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_adicionada_set",  blank=True, null=True)
+    criado_por = models.ForeignKey('rh.Funcionario', related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
@@ -171,7 +171,7 @@ class FollowUpDePropostaComercial(models.Model):
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True)
     # registro histórico
     # metadata
-    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="followup_adicionado_set",  blank=False, null=False)
+    criado_por = models.ForeignKey('rh.Funcionario', related_name="followup_adicionado_set",  blank=False, null=False)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
@@ -227,7 +227,7 @@ class Orcamento(models.Model):
     custo_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     custo_mao_de_obra = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # metadata
-    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="orcamento_criado_set",  blank=True, null=True)
+    criado_por = models.ForeignKey('rh.Funcionario', related_name="orcamento_criado_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
@@ -407,7 +407,7 @@ class RequisicaoDeProposta(models.Model):
     atendido_por = models.ForeignKey("rh.Funcionario", blank=True, null=True, related_name="requisicao_proposta_atendida")
     proposta_vinculada = models.ForeignKey('PropostaComercial', blank=True, null=True)
     # metadata
-    criado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="proposta_requisitada_set",  blank=True, null=True)
+    criado_por = models.ForeignKey('rh.Funcionario', related_name="proposta_requisitada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
@@ -449,7 +449,10 @@ def follow_up_post_save(signal, instance, sender, **kwargs):
 
     if instance.reagenda_data_expiracao:
         instance.proposta.data_expiracao = instance.data_expiracao
-    instance.proposta.probabilidade = instance.probabilidade
+    if instance.probabilidade:
+        instance.proposta.probabilidade = instance.probabilidade
+    else:
+        instance.probabilidade = instance.proposta.probabilidade
     instance.proposta.save()
 
 def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):

@@ -164,6 +164,8 @@
 
 </div>
 
+
+
 {% endblock %}
 
 {% block auxiliar-menu %}
@@ -171,6 +173,8 @@
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.js"></script>
+<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.categories.js"></script>
 
 {% addtoblock "js" %}
 <script>
@@ -183,7 +187,6 @@ $(document).ready(function() {
         dateFormat: "dd/mm/yy"
 			});
 	});
-	
 });
 
 $(".carregar-dados").on("click", function(e){
@@ -199,7 +202,6 @@ $(".carregar-dados").on("click", function(e){
 	
 
 })
-
 
 // Javascript to enable link to tab
 var hash = document.location.hash;

@@ -8,13 +8,31 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato #{{contrato.id}}</h1>
 <h4>{{contrato}}</h4>
 
-<form method="post">
-{% csrf_token %}
+<div class="row-fluid">
+	
+	<div class="span6">
+		
+		<form method="post">
+		{% csrf_token %}
 
-{{form_analisar_contrato.as_p}}
-<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim">Alterar</button>
-<button type="submit" class="btn btn-success" name="contrato-analisado" value="sim">Contrato Analisado</button>
-</form>
+		{{form_analisar_contrato.as_p}}
+		<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim">Alterar</button>
+		<button type="submit" class="btn btn-success" name="contrato-analisado" value="sim">Contrato Analisado</button>
+		</form>
+	
+	</div>
+	
+	<div class="span6">
+		<h2>Lançamentos Configurados</h2>
+		<ul>
+			{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
+				<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> - R${{lancamento.valor_cobrado}} <em><small>{{lancamento.modo_recebido}}</small></em></li>
+			{% endfor %}
+		</ul>
+	</div>
+	
+</div>
+
 
 {% endblock %}
 
@@ -25,7 +43,7 @@
 
 <script>
 $(document).ready(function() {
-    $("#menu-comercial-gerencia-modelo-orcamento, #top-menu-comercial").addClass("active");
+    $("#menu-comercial-analise-de-contratos, #top-menu-comercial").addClass("active");
 });
 
 </script>

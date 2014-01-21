@@ -60,7 +60,6 @@ class PreCliente(models.Model):
         verbose_name = "Pré Cliente"
         verbose_name_plural = "Pré Clientes"
     
-    
     cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
@@ -68,8 +67,8 @@ class PreCliente(models.Model):
     designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
     # metadata
     data_convertido = models.DateField(blank=True, null=True)
-    convertido_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="precliente_convertido_set", blank=True, null=True)
-    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="precliente_lancado_set")
+    convertido_por = models.ForeignKey('rh.Funcionario', related_name="precliente_convertido_set", blank=True, null=True)
+    adicionado_por = models.ForeignKey('rh.Funcionario', related_name="precliente_lancado_set")
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
@@ -333,7 +332,7 @@ class Recado(models.Model):
     encaminhado = models.BooleanField(default=False)
     encaminhado_data = models.DateTimeField(blank=False, default=datetime.datetime.now)
     # metadata
-    adicionado_por = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="recado_criado_set")
+    adicionado_por = models.ForeignKey('rh.Funcionario', related_name="recado_criado_set")
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 

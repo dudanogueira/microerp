@@ -478,7 +478,7 @@ def promover_funcionario(request, funcionario_id):
                             aprovado=True,
                             avaliado=True,
                             data_resolucao=datetime.date.today(),
-                            criado_por=request.user, 
+                            criado_por=request.user.funcionario, 
                         )
                         messages.success(request, u'Sucesso! Nova Promoção Salarial #%s Criada para %s' % (promocao_salarial.id, funcionario))
                         # recalcula o valor hora
@@ -495,7 +495,7 @@ def promover_funcionario(request, funcionario_id):
                         atribuicao_destino = funcionario.periodo_trabalhado_corrente.atribuicaodecargo_set.create(
                             cargo=novo_cargo,
                             inicio=data_promocao + datetime.timedelta(days=1),
-                            criado_por=request.user, 
+                            criado_por=request.user.funcionario, 
                             local_empresa=funcionario.endereco_empresa_designado
                         )
                         messages.info(request, u'Informação: Nova Atribuição de Cargo #%s: %s Aberta!' % (atribuicao_destino.id, atribuicao_destino.cargo))
@@ -509,7 +509,7 @@ def promover_funcionario(request, funcionario_id):
                             solicitante=request.user.funcionario,
                             autorizador=request.user.funcionario,
                             observacao=observacao_cargo,
-                            criado_por=request.user, 
+                            criado_por=request.user.funcionario, 
                             # opcoes para fazer com passo de autorizacao
                             aprovado=True,
                             avaliado=True,
@@ -563,7 +563,7 @@ def capacitacao_de_procedimentos_gerar_ar(request, funcionario_id):
         subprocedimentos = SubProcedimento.objects.filter(id__in=subprocedimentos_id_list)
         ar = AtribuicaoDeResponsabilidade.objects.create(
              periodo_trabalhado=funcionario.periodo_trabalhado_corrente,
-             criado_por=request.user,
+             criado_por=request.user.funcionario,
              tipo_de_treinamento=tipo_treino,
         )
         ar.subprocedimentos = subprocedimentos
@@ -636,7 +636,7 @@ def capacitacao_de_procedimentos_confirmar(request, funcionario_id, atribuicao_r
                 # salva a atribuicao
                 atribuicao = form_atribuicao.save(commit=False)
                 # define quem e quando se confirmou a atribuicao
-                atribuicao.confirmado_por = request.user
+                atribuicao.confirmado_por = request.user.funcionario
                 atribuicao.confirmado_data = datetime.datetime.now()
                 atribuicao.treinamento_realizado = True
                 # salva
@@ -678,7 +678,7 @@ def controle_banco_de_horas_do_funcionario(request, funcionario_id):
             folha_id = int(form_add_entrada_folha_ponto.data['folha'])
             folha = get_object_or_404(FolhaDePonto, id=folha_id)
             entrada.folha = folha
-            entrada.adicionado_por = request.user
+            entrada.adicionado_por = request.user.funcionario
             entrada.save()
             messages.success(request, u'Sucesso: Lançamento de %s horas realizado!' % entrada.total )
         else:
@@ -865,7 +865,7 @@ def controle_de_ferramenta_adicionar(request):
             form_adicionar = FormControleFerramentasAdicionar(request.POST, tipo="ferramenta")
             if form_adicionar.is_valid() and linha_equipamento_form.is_valid():
                 controle = form_adicionar.save(commit=False)
-                controle.criado_por = request.user
+                controle.criado_por = request.user.funcionario
                 controle.save()
                 for linha_form in linha_equipamento_form:
                         linha = linha_form.save(commit=False)
@@ -973,7 +973,7 @@ def controle_de_epi_adicionar(request):
             form_adicionar = FormControleFerramentasAdicionar(request.POST, tipo="epi")
             if form_adicionar.is_valid() and linha_equipamento_form.is_valid():
                 controle = form_adicionar.save(commit=False)
-                controle.criado_por = request.user
+                controle.criado_por = request.user.funcionario
                 controle.save()
                 for linha_form in linha_equipamento_form:
                         linha = linha_form.save(commit=False)

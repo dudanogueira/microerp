@@ -427,13 +427,13 @@
 			<form method="POST">
 				{% csrf_token %}
 			<div class="span4">
-				{{form_filtrar_linhas.componente.label}}
+				{{form_filtrar_linhas.componente.label}}<Br />
 				{{form_filtrar_linhas.componente.errors}}
 				{{form_filtrar_linhas.componente}}
 			</div>
 			{% if subproduto.possui_tags %}
 			<div class="span3">
-				{{form_filtrar_linhas.tag.label}}
+				{{form_filtrar_linhas.tag.label}}<br />
 				{{form_filtrar_linhas.tag.errors}}
 				{{form_filtrar_linhas.tag}}
 			</div>
@@ -497,6 +497,7 @@
 					</td>
 
 					<td>
+						<div class="btn-group">
                             {% if request.user.perfilacessoproducao.gerente %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id opcao_padrao.linha.id %}" class="btn">
                                 <i class="fa fa-pencil"></i>
@@ -509,6 +510,7 @@
                                 <i class="fa fa-eye-open"></i>
                             </a>                   
                             {% endif %}
+							</div>
 					</td>
 				</tr>           
                   {% empty %}
@@ -525,10 +527,8 @@
 					  <td></td>
 					  <td></td>
 					  <td></td>
-  					  <td></td>
   					  <td><span class="label label-success">R$ {{total_linha_componentes|floatformat:2}}</span></td>
- 					  <td></td>
-					  
+   					  <td></td>
 
 				  </tr>
 

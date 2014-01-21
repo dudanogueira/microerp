@@ -98,7 +98,7 @@
                     {% for cliente in preclientes %}
               
                     <tr>
-                        <td>{{cliente.nome}} - Responsável: {% if cliente.designado %}{{cliente.designado}}{% else %}Nenhum{% endif %}</td>
+                        <td>{% include "frontend/comercial/botao-precliente.html" with precliente=cliente %}</td>
                         <td>
                         {% if "solicitacao"|is_installed_app %}
                             <a class="btn" href="{% url "cadastro:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="fa-bell fa"></i></a>
@@ -135,21 +135,18 @@
                 <tbody>
                     {% for cliente in clientes %}
                     <tr>
-                        <td>{% if cliente.tipo == "pf" %}
-                                <span class="label">{{cliente.tipo|upper}}</span>
-                            {% else %}
-                                <span class="label label-success">{{cliente.tipo|upper}}</span> 
-                            {% endif %}
-                            {{cliente.nome}}
+                        <td>{% include "frontend/comercial/botao-cliente.html" with cliente=cliente %}
                         </td>
 						<td>{{cliente.designado}}</td>
                         <td>
-                        {% if "solicitacao"|is_installed_app %}
-                        <a class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Solicitação"   href="{% url "cadastro:solicitacao_adicionar" %}?cliente={{cliente.id}}"><i class="fa-bell fa"></i></a>
-                        {% endif %}
-                        {% if "comercial"|is_installed_app %}
-						<a  data-placement="top"  title="Requisição de Proposta" data-cliente="{{cliente.id}}" href="#descricao-requisicao" role="button" class="btn btn-warning tooltip-items nova-requisicao" data-toggle="modal"><i class="fa-file fa"></i></a>
-                        {% endif %}
+							<div class="btn-group">
+		                        {% if "solicitacao"|is_installed_app %}
+		                        <a class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Solicitação"   href="{% url "cadastro:solicitacao_adicionar" %}?cliente={{cliente.id}}"><i class="fa-bell fa"></i></a>
+		                        {% endif %}
+		                        {% if "comercial"|is_installed_app %}
+								<a  data-placement="top"  title="Requisição de Proposta" data-cliente="{{cliente.id}}" href="#descricao-requisicao" role="button" class="btn btn-warning tooltip-items nova-requisicao" data-toggle="modal"><i class="fa-file fa"></i></a>
+		                        {% endif %}
+							</div>
 						
                         </td>
                     </tr>
@@ -200,6 +197,7 @@
 $(document).ready(function() {
     $("#menu-cadastro-home, #top-menu-cadastro").addClass("active");
     $("#funcionario_busca").focus()
+	$('.popover-items').popover({placement: 'top'})
 });
 
 $('.nova-requisicao').click( function(e){

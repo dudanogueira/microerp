@@ -36,7 +36,7 @@ from django.conf import settings
 from rh.utils import get_weeks
 
 from comercial.models import ContratoFechado
-from financeiro.models import Lancamento
+from financeiro.models import LancamentoFinanceiroReceber
 from financeiro.models import ProcessoAntecipacao
 from cadastro.models import Cliente
 
@@ -66,13 +66,13 @@ def home(request):
     
     ## widget de lancamentos
     # pendentes
-    lancamentos_pendentes = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+    lancamentos_pendentes = LancamentoFinanceiroReceber.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
     lancamentos_pendentes_total_valor =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     # atecipados
-    lancamentos_abertos_atencipados = Lancamento.objects.filter(antecipado=True, data_recebido=None)
+    lancamentos_abertos_atencipados = LancamentoFinanceiroReceber.objects.filter(antecipado=True, data_recebido=None)
     lancamentos_abertos_atencipados_total_valor = lancamentos_abertos_atencipados.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     # a receber
-    lancamentos_a_receber = Lancamento.objects.filter(antecipado=False, data_recebido=None, data_cobranca__gte=datetime.date.today())
+    lancamentos_a_receber = LancamentoFinanceiroReceber.objects.filter(antecipado=False, data_recebido=None, data_cobranca__gte=datetime.date.today())
     lancamentos_a_receber_total_valor = lancamentos_a_receber.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     # total
     total_lancamentos_a_receber = lancamentos_pendentes.count() + lancamentos_abertos_atencipados.count() + lancamentos_a_receber.count()
@@ -109,7 +109,7 @@ class AdicionarLancamentoForm(forms.ModelForm):
             self.fields['peso'].initial = proximo_peso
         
     class Meta:
-        model = Lancamento
+        model = LancamentoFinanceiroReceber
         fields = 'contrato', 'peso', 'data_cobranca', 'modo_recebido', 'valor_mao_de_obra', 'valor_materiais', 'notas_fiscais'
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
@@ -157,13 +157,13 @@ def lancamentos(request):
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_receber(request, lancamento_id):
-    lancamento = get_object_or_404(Lancamento, pk=lancamento_id, data_recebido=None)
+    lancamento = get_object_or_404(LancamentoFinanceiroReceber, pk=lancamento_id, data_recebido=None)
     if request.POST:
         form = FormIdentificarRecebido(request.POST, instance=lancamento)
         if form.is_valid():
             lancamento = form.save(commit=False)
             lancamento.situacao = "r"
-            lancamento.recebido_por = request.user
+            lancamento.recebido_por = request.user.funcionario
             lancamento.save()
 
             return(redirect("financeiro:lancamentos"))
@@ -196,13 +196,13 @@ class FormIdentificarRecebido(forms.ModelForm):
         self.fields['conta'].required = True
     
     class Meta:
-        model = Lancamento
+        model = LancamentoFinanceiroReceber
         fields = ('valor_recebido', 'modo_recebido', 'data_recebido','conta')
 
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def ajax_lancamento_informacao_pagamento(request, lancamento_id):
-    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    lancamento = get_object_or_404(LancamentoFinanceiroReceber, pk=lancamento_id)
     if request.POST:
         infos = request.POST.get('informacoes-pagamento', None)
         lancamento.informacoes_pagamento = infos
@@ -215,7 +215,7 @@ def ajax_lancamento_informacao_pagamento(request, lancamento_id):
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def ajax_lancamento_comentarios(request, lancamento_id):
-    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    lancamento = get_object_or_404(LancamentoFinanceiroReceber, pk=lancamento_id)
     return render_to_response('frontend/financeiro/financeiro-include-comentarios-modal.html', locals(), context_instance=RequestContext(request),)
 
 class SelecionarClienteForm(forms.Form):
@@ -232,20 +232,20 @@ def ajax_lancamento_buscar(request):
         if request.POST.get('numero-contrato', None):
             try:
                 id_contrato = int(request.POST.get('numero-contrato'))
-                lancamentos_exibir = Lancamento.objects.filter(contrato__pk=id_contrato)
+                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(contrato__pk=id_contrato)
             except:
                 id_contrato = 0
         if request.POST.get('numero-lancamento', None):
             try:
                 id_lancamento = int(request.POST.get('numero-lancamento'))
-                lancamentos_exibir = Lancamento.objects.filter(pk=id_lancamento)
+                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(pk=id_lancamento)
             except:
                 id_lancamento = 0
         if request.POST.get('data-inicio', None) and request.POST.get('data-fim', None):
             try:
                 data_inicio = datetime.datetime.strptime(request.POST.get('data-inicio', None), "%d/%m/%Y")
                 data_fim = datetime.datetime.strptime(request.POST.get('data-fim', None), "%d/%m/%Y")
-                lancamentos_exibir = Lancamento.objects.filter(data_cobranca__range=(data_inicio, data_fim))
+                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_cobranca__range=(data_inicio, data_fim))
             except:
                 raise
                 
@@ -265,14 +265,14 @@ def ajax_lancamentos_receber(request, busca_tipo, offset):
         semana_exibir = semana[offset]
         inicio_semana = semana_exibir[0]
         fim_semana = semana_exibir[-1]
-        lancamentos_exibir = Lancamento.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
+        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
     elif busca_tipo == "dia":
         hoje = datetime.date.today()
         dia_buscado =  hoje + datetime.timedelta(days=offset)
-        lancamentos_exibir = Lancamento.objects.filter(data_recebido=None, data_cobranca=dia_buscado)
+        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca=dia_buscado)
     elif busca_tipo == "pendentes":
         pendentes = True
-        lancamentos_exibir = Lancamento.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
     soma_lancamentos_futuro = lancamentos_exibir.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     soma_lancamentos_antecipados = lancamentos_exibir.filter(antecipado=True).aggregate(Sum('valor_recebido'))['valor_recebido__sum'] or 0
     
@@ -296,7 +296,7 @@ def lancamentos_a_receber(request):
         semana_exibir = semana[0]
     inicio_semana = semana_exibir[0]
     fim_semana = semana_exibir[-1]
-    lancamentos_futuros = Lancamento.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
+    lancamentos_futuros = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
     soma_lancamentos_futuro = lancamentos_futuros.aggregate(Sum('valor_cobrado'))
     soma_lancamentos_antecipados = lancamentos_futuros.filter(antecipado=True).aggregate(Sum('valor_recebido'))
     return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)
@@ -309,13 +309,13 @@ class AnteciparLancamentoForm(forms.ModelForm):
         self.fields['data_antecipado'].widget.attrs['class'] = 'datepicker'
     
     class Meta:
-        model = Lancamento
+        model = LancamentoFinanceiroReceber
         fields = 'valor_recebido', 'modo_recebido', 'data_antecipado', 'conta', 
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_antecipar(request):
     antecipaveis = getattr(settings, 'TIPOS_LANCAMENTOS_ANTECIPAVEIS', ('boleto', 'cheque', 'credito'))
-    lancamentos_antecipaveis = Lancamento.objects.filter(modo_recebido__in=antecipaveis, data_cobranca__gte=datetime.date.today()).exclude(antecipado=True, situacao="t")
+    lancamentos_antecipaveis = LancamentoFinanceiroReceber.objects.filter(modo_recebido__in=antecipaveis, data_cobranca__gte=datetime.date.today()).exclude(antecipado=True, situacao="t")
     if request.POST.get('confirmar'):
         # confirmado, criar a antecipacao e vincular aos pagamentos
         confirmado = True
@@ -331,7 +331,7 @@ def lancamentos_a_receber_antecipar(request):
             valor_inicial=valor_total,
             percentual_abatido=percentual,
             valor_abatido=valor_final,
-            antecipado_por=request.user,
+            antecipado_por=request.user.funcionario,
         )
         processo.lancamentos.add(*lancamentos_a_antecipar.all())
         # altera o lancamento
@@ -340,7 +340,7 @@ def lancamentos_a_receber_antecipar(request):
             valor_percentual = float(lancamento.valor_cobrado) * float(percentual) / 100
             lancamento.valor_recebido = float(lancamento.valor_cobrado) - float(valor_percentual)
             lancamento.data_antecipado = datetime.date.today()
-            lancamento.antecipado_por = request.user
+            lancamento.antecipado_por = request.user.funcionario
             lancamento.situacao = "t"
             lancamento.antecipado = True
             lancamento.save()
@@ -384,11 +384,11 @@ def lancamentos_a_receber_antecipar(request):
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_comentar(request, lancamento_id):
-    lancamento = get_object_or_404(Lancamento, pk=lancamento_id)
+    lancamento = get_object_or_404(LancamentoFinanceiroReceber, pk=lancamento_id)
     if request.POST:
         comentario = request.POST.get('comentario', None)
         if comentario:
-            lancamento.observacaolancamento_set.create(texto=comentario, criado_por=request.user)
+            lancamento.observacaolancamento_set.create(texto=comentario, criado_por=request.user.funcionario)
             messages.success(request, u"Sucesso! Comentário Registrado com Sucesso!")
         else:
             messages.error(request, u"Erro! Campo comentário não pode ser vazio.")

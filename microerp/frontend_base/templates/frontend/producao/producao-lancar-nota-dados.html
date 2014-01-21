@@ -19,7 +19,7 @@ Periodo: {{periodo}}
 	</tr>
 	<tr>
 		{% for item in total_notas_por_dia %}
-		<td>R$ {{item.soma|floatformat:2}}</td>
+		<td>R${{item.soma|floatformat:2}}</td>
 		{% endfor %}
 	</tr>
 	
@@ -41,6 +41,7 @@ var lineChartData = {
 		strokeColor : "rgba(220,220,220,1)",
 		pointColor : "rgba(220,220,220,1)",
 		pointStrokeColor : "#fff",
+		scaleShowLabels: true,
 		data : [{% for item in total_notas_por_dia %}{{item.soma|safe}},{% endfor %}
 		]
 	},
@@ -88,6 +89,7 @@ var lineChartData = {
 	],
 	datasets : [
 	{
+		scaleShowLabels: true,
 		fillColor : "rgba(53,150,159,0.5)",
 		strokeColor : "rgba(220,220,220,1)",
 		pointColor : "rgba(220,220,220,1)",

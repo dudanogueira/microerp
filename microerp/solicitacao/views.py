@@ -111,7 +111,7 @@ def despachar_solicitacao(request, solicitacao_id):
                 if solicitacao_form.is_valid():
                     solicitacao = solicitacao_form.save()
                     solicitacao.status = "analise" 
-                    solicitacao.despachado_por = request.user
+                    solicitacao.despachado_por = request.user.funcionario
                     solicitacao.despachado_data = datetime.datetime.now()
                     solicitacao.save()               
                     messages.info(request, u"Despachando... Procedente: %s" % request.POST.get('providencia', None))
@@ -123,7 +123,7 @@ def despachar_solicitacao(request, solicitacao_id):
                 messages.error(request, u"Erro. Necessário Definir um Responsável Para Contato para a Solicitação #%d." % solicitacao.id)
             else:
                 messages.info(request, u"Despachando... IMProcedente: %s" % request.POST.get('motivo_improcedencia', None))
-                solicitacao.despachado_por = request.user
+                solicitacao.despachado_por = request.user.funcionario
                 solicitacao.procede = False
                 solicitacao.nao_procede_porque = request.POST.get('motivo_improcedencia', None)
                 solicitacao.status = 'contato'

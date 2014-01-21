@@ -39,6 +39,14 @@
 						{% include "frontend/comercial/botao-precliente.html" with precliente=followup.proposta.precliente %}
 					{% endif %}
 					
+					Responsável:
+					{% if followup.proposta.designado %}
+						<span class="label label-important"><i class="fa fa-hand-o-right"></i> {{followup.proposta.designado}}</span>
+					{% else %}
+					<span class="label label-important"><i class="fa fa-hand-o-right"></i> Nenhum</span>
+						
+					{% endif %}
+					
 					<br />
 					<i class="fa fa-comment"></i> {{followup.texto}} <br />
 				(<small><em>{{followup.criado_por}}, {{followup.probabilidade}}% em {{followup.criado|date:"SHORT_DATETIME_FORMAT"}}</small></em>)

@@ -28,15 +28,14 @@
 
 </ul>
 
-
 <div class="row-fluid" id="sub-menu-ficha-cliente">
 	
 	<div class="span4">
-		 		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar </a>
+		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar </a>
 	</div>
 	
 	<div class="span4">
-				 <span class="label label-success">Responsável: {{cliente.designado}}</span><br />
+		<span class="label label-success">Responsável: {{cliente.designado}}</span><br />
 	</div>
 	
 	<div class="span4">
@@ -264,13 +263,7 @@
 								</div>
 								{% else %}
 								<small><i>solicite ao gerente</i></small>
-								{% endif %}
-								
-
-								
-
-			
-								
+								{% endif %}								
 
 				</td>
 			</tr>
@@ -285,8 +278,6 @@
 			<li><strong>Proposta #{{proposta.id}}</strong> <i class="fa fa-arrow-right"></i> <strong>Contrato #{{proposta.contrato_vinculado.id}}</strong> - R${{proposta.contrato_vinculado.valor}} - Responsável: {{proposta.contrato_vinculado.responsavel}}, Comissionado: {{proposta.contrato_vinculado.responsavel_comissionado}}</li>
 		{% endfor %}
 		</ul>
-		
-		
 		
 		<h4 class="alert alert-danger">Propostas Perdidas: {{cliente.propostas_perdidas.count}}</h4>
 		<table class="table table-condensed table.stripped">

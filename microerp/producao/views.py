@@ -244,7 +244,7 @@ def nota_fiscal_dados(request):
         from django.db import connections
         total_notas_por_mes = notas_exibir.extra(select={'month': connections[NotaFiscal.objects.db].ops.date_trunc_sql('month', 'data_entrada')}).values('month').annotate(soma=Sum('total_sem_imposto'))
         
-    return render_to_response('frontend/producao/producao-lancar-nota-dados.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/producao/producao-lancar-nota-dados2.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
@@ -1008,7 +1008,6 @@ def listar_estoque(request):
     
     form_filtra_historico_totalizador = FiltroHistoricos(inicio=data_primeiro_totalizador, fim=data_ultimo_totalizador)
     form_filtra_historico_movimentos = FiltroMovimentos(inicio=data_primeiro_movimento, fim=data_ultimo_movimento)
-    
     
     if request.POST:
         if request.POST.get('consulta-estoque'):

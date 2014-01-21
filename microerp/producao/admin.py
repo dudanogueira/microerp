@@ -117,9 +117,9 @@ class PosicaoEstoqueInline(admin.StackedInline):
     model = PosicaoEstoque
 
 class NotaFiscalAdmin(admin.ModelAdmin):
-    list_filter = 'status',  'tipo', 'fabricante_fornecedor',
+    list_filter = 'status',  'tipo', 'fabricante_fornecedor', 
     date_hierarchy = 'data_entrada'
-    list_display = '__unicode__', 'status', 'fabricante_fornecedor'
+    list_display = '__unicode__', 'status', 'fabricante_fornecedor', 'data_entrada', 'total_sem_imposto', 'total_com_imposto'
     inlines = [LancamentoComponenteInline, PosicaoEstoqueInline]
     actions = [calcular_nota, lancar_no_estoque]
         

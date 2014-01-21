@@ -22,7 +22,7 @@ __version__ = '0.0.1'
 from django.contrib import admin
 
 from financeiro.models import PerfilAcessoFinanceiro
-from financeiro.models import Lancamento
+from financeiro.models import LancamentoFinanceiroReceber
 from financeiro.models import ContaBancaria
 from financeiro.models import ObservacaoLancamento
 from financeiro.models import ProcessoAntecipacao
@@ -30,7 +30,7 @@ from financeiro.models import ProcessoAntecipacao
 class PerfilAcessoFinanceiroAdmin(admin.ModelAdmin):
     pass
 
-class LancamentoAdmin(admin.ModelAdmin):
+class LancamentoFinanceiroReceberAdmin(admin.ModelAdmin):
     search_fields = 'contrato__cliente__nome', 'id', 'contrato__id'
     list_filter = 'conta', 'situacao', 'antecipado','data_cobranca', 'modo_recebido', 'peso', 'contrato__categoria'
     date_hierarchy = 'data_cobranca'
@@ -39,10 +39,10 @@ class ObservacaoLancamentoAdmin(admin.ModelAdmin):
     pass
 
 class ProcessoAntecipacaoAdmin(admin.ModelAdmin):
-    filter_horizontal = ('lancamentos',)
+    filter_horizontal = ('lancamentos_receber',)
 
 admin.site.register(PerfilAcessoFinanceiro, PerfilAcessoFinanceiroAdmin)
-admin.site.register(Lancamento, LancamentoAdmin)
+admin.site.register(LancamentoFinanceiroReceber, LancamentoFinanceiroReceberAdmin)
 admin.site.register(ContaBancaria)
 admin.site.register(ObservacaoLancamento, ObservacaoLancamentoAdmin)
 admin.site.register(ProcessoAntecipacao, ProcessoAntecipacaoAdmin)

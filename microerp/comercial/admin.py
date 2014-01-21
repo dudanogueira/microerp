@@ -39,6 +39,7 @@ from comercial.models import SubGrupoIndicadorDeProdutoProposto
 from comercial.models import FechamentoDeComissao
 from comercial.models import LancamentoDeFechamentoComissao
 from comercial.models import TabelaDeComissao
+from financeiro.models import LancamentoFinanceiroReceber
 
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
@@ -71,11 +72,14 @@ class QuantidadeDeMarcaInline(admin.StackedInline):
     model = QuantidadeDeMarca
     extra = 0
     
+class LancamentoFinanceiroReceberInline(admin.TabularInline):
+    model = LancamentoFinanceiroReceber
+    extra = 0
 
 class ContratoFechadoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'status',
     search_fields = 'cliente__nome', 
-    inlines = [QuantidadeDeMarcaInline]
+    inlines = [QuantidadeDeMarcaInline, LancamentoFinanceiroReceberInline]
     actions = [lancar_contrato,]
 
 class TipodeContratoFechadoAdmin(admin.ModelAdmin):

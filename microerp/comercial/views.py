@@ -27,6 +27,7 @@ from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao
 from comercial.models import LinhaRecursoMaterial, Orcamento, GrupoIndicadorDeProdutoProposto
+from financeiro.models import LancamentoFinanceiroReceber
 from estoque.models import Produto
 
 from django.conf import settings
@@ -266,7 +267,7 @@ class FormSelecionaOrcamentoModelo(forms.Form):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
-    OrcamentoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=0, can_delete=True, form=LinhaOrcamentoForm)
+    OrcamentoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoForm)
     if request.POST:
         if 'adicionar_linha_material' in request.POST:
             messages.info(request, u"Nova Linha de Materiais adicionados")
@@ -337,7 +338,7 @@ def editar_proposta(request, proposta_id):
             adicionar_orcamento_form = OrcamentoForm(request.POST)
             if adicionar_orcamento_form.is_valid():
                 novo_orcamento = adicionar_orcamento_form.save(commit=False)
-                novo_orcamento.criado_por = request.user
+                novo_orcamento.criado_por = request.user.funcionario
                 novo_orcamento.save()
                 messages.success(request, u"Sucesso! Novo Orçamento Adicionado.")
                 return redirect(reverse("comercial:editar_proposta_editar_orcamento", args=[proposta.id, novo_orcamento.id]))
@@ -385,37 +386,77 @@ def editar_proposta_fechar(request, proposta_id):
     else:
         form_fechar = FormFecharProposta()
     return render_to_response('frontend/comercial/comercial-proposta-fechar.html', locals(), context_instance=RequestContext(request),)
+
+class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        total_proposto = kwargs.pop('total_proposto', 0)
+        super(LancamentoFinanceiroReceberComercialForm, self).__init__(*args, **kwargs)
+        self.fields['data_cobranca'].widget.attrs['class'] = 'datepicker'
+        self.fields['valor_cobrado'].localize = True
+        self.fields['valor_cobrado'].widget.attrs['class'] = 'valor_parcela'
     
+    class Meta:
+        model = LancamentoFinanceiroReceber
+        fields = ("data_cobranca", 'valor_cobrado', 'modo_recebido')
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
+    ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=1, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
+    form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
     if proposta.cliente:
         # tratar a proposta do cliente e converter
-        if request.GET.get('confirmar'):
-            # converte proposta e marca data e quem converteu
-            proposta.status = "convertida"
-            proposta.definido_convertido_em = datetime.datetime.now()
-            proposta.definido_convertido_por = request.user.funcionario
-            # cria o Contrato Convertido
-            novo_contrato = ContratoFechado.objects.create(
-                cliente=proposta.cliente,
-                objeto=proposta.objeto_proposto,
-                valor=proposta.valor_proposto,
-                status="emanalise",
-                responsavel=request.user.funcionario,
-                responsavel_comissionado=proposta.cliente.designado,
-            )
-            # relaciona novo contrato com essa proposta
-            proposta.contrato_vinculado = novo_contrato
-            #salva a proposta
-            proposta.save()
-            # retorna para a view contratos em analise
-            if request.user.perfilacessocomercial.gerente:
-                # se gerente, retorna para contratos em analise
-                return redirect(reverse("comercial:analise_de_contratos"))
-            else:
-                # caso contrario, retorna para a ficha do cliente
-                return redirect(reverse("comercial:cliente_ver", args=[cliente.id]))
+        if request.POST:
+            if 'adicionar-parcela' in request.POST:
+                messages.info(request, u"Nova Parcela de Lançamento Financeiro a Receber Adicionada!")
+                cp = request.POST.copy()
+                cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ 1
+                form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
+            elif 'converter-contrato' in request.POST:
+                form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
+                if form_configurar_contrato.is_valid():
+                    # checa se total preenchido no formulario bate com valor proposto
+                    total_lancamentos = 0
+                    for form in form_configurar_contrato.forms:
+                        if form.cleaned_data:
+                            total_lancamentos += form.cleaned_data['valor_cobrado']
+                    if total_lancamentos == proposta.valor_proposto:
+                        # converte proposta e marca data e quem converteu
+                        proposta.status = "convertida"
+                        proposta.definido_convertido_em = datetime.datetime.now()
+                        proposta.definido_convertido_por = request.user.funcionario
+                        # cria o Contrato Convertido
+                        novo_contrato = ContratoFechado.objects.create(
+                            cliente=proposta.cliente,
+                            objeto=proposta.objeto_proposto,
+                            valor=proposta.valor_proposto,
+                            status="emanalise",
+                            responsavel=request.user.funcionario,
+                            responsavel_comissionado=proposta.cliente.designado,
+                        )
+                        # relaciona novo contrato com essa proposta
+                        proposta.contrato_vinculado = novo_contrato
+                        #salva a proposta
+                        proposta.save()
+                        # registra lancamentos vinculando ao novo contrato
+                        i = 0
+                        for form in form_configurar_contrato.forms:
+                            if form.is_valid():
+                                i += 1
+                                novo_lancamento = form.save(commit=False)
+                                novo_lancamento.contrato = novo_contrato
+                                novo_lancamento.peso = i
+                                novo_lancamento.save()
+                        # retorna para a view contratos em analise
+                        if request.user.perfilacessocomercial.gerente:
+                            # se gerente, retorna para contratos em analise
+                            return redirect(reverse("comercial:analise_de_contratos"))
+                        else:
+                            # caso contrario, retorna para a ficha do cliente
+                            return redirect(reverse("comercial:cliente_ver", args=[cliente.id]))
+                    else:
+                        messages.error(request, u"Erro! Valor das parcelas NÃO CONFERE com valor proposto.")
 
         return render_to_response('frontend/comercial/comercial-proposta-converter.html', locals(), context_instance=RequestContext(request),)
     else:
@@ -433,7 +474,7 @@ def precliente_adicionar(request):
             form = form_add_precliente = PreClienteAdicionarForm(data=request.POST, sugestao=None, perfil=request.user.perfilacessocomercial)
             if form.is_valid():
                 precliente = form.save(commit=False)
-                precliente.adicionado_por = request.user
+                precliente.adicionado_por = request.user.funcionario
                 precliente.save()
                 messages.success(request, u'Pré Cliente %s adicionado com sucesso!' % precliente)
                 return redirect(reverse('comercial:home'))
@@ -455,7 +496,7 @@ def precliente_converter(request, pre_cliente_id):
             # vincula pre cliente com cliente novo
             precliente.cliente_convertido = cliente_novo
             precliente.data_convertido = datetime.date.today()
-            precleitne_convertido_por = request.user
+            precleitne_convertido_por = request.user.funcionario
             precliente.save()
             # altera todas as propostas do precliente para o cliente_novo
             propostas_precliente = PropostaComercial.objects.filter(precliente=precliente)
@@ -485,7 +526,7 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
         if form.is_valid():
             proposta = form.save(commit=False)
             proposta.cliente = cliente
-            proposta.criador_por = request.user
+            proposta.criador_por = request.user.funcionario
             proposta.designado = cliente.designado
             proposta.save()
             # vincula proposta com a requisicao de origem
@@ -515,7 +556,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
         if form.is_valid():
             proposta = form.save(commit=False)
             proposta.precliente = precliente
-            proposta.criado_por = request.user
+            proposta.criado_por = request.user.funcionario
             proposta.designado = precliente.designado
             proposta.save()
             messages.success(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
@@ -756,7 +797,7 @@ def adicionar_follow_up(request, proposta_id):
         form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
         if form_adicionar_follow_up.is_valid():
             follow_up = form_adicionar_follow_up.save(commit=False)
-            follow_up.criado_por = request.user
+            follow_up.criado_por = request.user.funcionario
             if not request.user.perfilacessocomercial.gerente and proposta.expirada():
                 messages.error(request, u"Erro! Proposta Expirada e Usuário Não gerente.")
             else:
@@ -764,7 +805,7 @@ def adicionar_follow_up(request, proposta_id):
                 messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
         else:
             if request.POST.get('somente-texto'):
-                proposta.followupdepropostacomercial_set.create(texto=request.POST.get('texto'), criado_por=request.user)
+                proposta.followupdepropostacomercial_set.create(texto=request.POST.get('texto'), criado_por=request.user.funcionario)
                 messages.info(request, u"Follow UP SOMENTE TEXTO adicionado à proposta #%s" % proposta.id)
                 
             else:
@@ -799,7 +840,7 @@ def orcamentos_modelo_novo(request):
         if form_adicionar_modelo.is_valid():
             novo_modelo = form_adicionar_modelo.save(commit=False)
             novo_modelo.modelo = True
-            novo_modelo.criado_por = request.user
+            novo_modelo.criado_por = request.user.funcionario
             novo_modelo.save()
             return redirect(reverse("comercial:orcamentos_modelo_editar", args=[novo_modelo.id]))
     else:
@@ -920,14 +961,14 @@ def indicadores_do_comercial(request):
     # propostas abertas não expiradas
     propostas_abertas_nao_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__gte=datetime.date.today())
     propostas_abertas_nao_expiradas_contagem = propostas_abertas_nao_expiradas.count()
-    propostas_abertas_nao_expiradas_por_criador = propostas_abertas_nao_expiradas.values('criado_por__funcionario__nome').annotate(Count('id'), Sum('valor_proposto'))
+    propostas_abertas_nao_expiradas_por_criador = propostas_abertas_nao_expiradas.values('criado_por__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_nao_expiradas_por_responsavel = propostas_abertas_nao_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_nao_expiradas_total = propostas_abertas_nao_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']    
 
     # propostas abertas expiradas
     propostas_abertas_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__lt=datetime.date.today())
     propostas_abertas_expiradas_contagem = propostas_abertas_expiradas.count()
-    propostas_abertas_expiradas_por_criador = propostas_abertas_expiradas.values('criado_por__funcionario__nome').annotate(Count('id'), Sum('valor_proposto'))
+    propostas_abertas_expiradas_por_criador = propostas_abertas_expiradas.values('criado_por__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_expiradas_por_responsavel = propostas_abertas_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_expiradas_total = propostas_abertas_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']
     
@@ -994,6 +1035,7 @@ class FormAnalisarContrato(forms.ModelForm):
     
     class Meta:
         model = ContratoFechado
+        fields = ('categoria', 'objeto', 'responsavel_comissionado')
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos_analisar(request, contrato_id):

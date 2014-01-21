@@ -86,7 +86,7 @@
 	</tbody>
 </table>
 
-<h2>Propostas Abertas Não Expiradas Atuais <small><em>(estratificação por responsabilidade de proposta)</em></small></h2>
+<h2>Propostas Abertas Válidas Atuais <small><em>(estratificação por responsabilidade de proposta)</em></small></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -148,7 +148,7 @@
 
 
 
-<h2>Propostas Abertas Não Expiradas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
+<h2>Propostas Abertas Válidas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -380,7 +380,7 @@
 
 <h1>Sub Grupo de Indicadores</h1>
 {% if sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
-<h2>Indicadores de Sub Grupos de Produtos em Propostas Não Expiradas Atualmente</h2>
+<h2>Indicadores de Sub Grupos de Produtos em Propostas Válidas Atualmente</h2>
 {% regroup sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado by produto__sub_grupo_indicador__grupo__nome as lista_por_grupo %}
 {% for grupo in lista_por_grupo %}
 <h2>{{grupo.grouper}}</h2>
