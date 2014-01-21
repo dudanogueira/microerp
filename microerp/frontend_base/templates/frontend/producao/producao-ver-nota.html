@@ -25,7 +25,7 @@
 		    {# <a class="btn btn-warning" href="{% url "producao:calcular_nota" notafiscal.id %}"><i class="fa fa-refresh"></i> Calcular</a> #}
 
 
-		    <a class="btn btn-danger" href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="fa fa-paste"></i> Lançar em Estoque</a>
+		    <a class="btn btn-danger" onclick="return confirm('Tem certeza que quer Lançar essa Nota Fiscal?')"  href="{% url "producao:lancar_nota_fechar" notafiscal.id %}"><i class="fa fa-paste"></i> Lançar em Estoque</a>
 		    {% endifequal %}
 		    </p>
 		    {% endif %}
