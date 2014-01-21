@@ -102,7 +102,8 @@ $(document).ready(function() {
         $('#adicionar-tipo-componente').modal('show')
     {% endif %}
 	$('#id_slug').bind('keyup blur',function(){ 
-	    $(this).val( $(this).val().replace(/[^a-z][^A-Z]/g,'') );
+	    $(this).val( $(this).val().replace(/[^a-zA-Z]/g,'') );
+		this.value = this.value.toUpperCase();
 	}
 );
     
