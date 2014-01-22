@@ -822,7 +822,7 @@ class SubProduto(models.Model):
     def custo_total_dos_sub_produtos_agregados(self):
         total_parcial = 0
         for linha in self.linhasubprodutos_agregados.all():
-            total_parcial += linha.quantidade * linha.subproduto_agregado.custo_total_linhas()
+            total_parcial += linha.quantidade * linha.subproduto_agregado.valor_total_de_custo
         return total_parcial
     
     def custo(self):
