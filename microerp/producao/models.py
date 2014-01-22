@@ -336,7 +336,6 @@ class FabricanteFornecedor(models.Model):
             else:
                 return "Nome Não Preenchido"
     
-    
     def nome_curto(self):
         return " ".join(self.nome.split()[0:2])
     
@@ -973,7 +972,7 @@ class LinhaSubProdutoAgregado(models.Model):
             raise ValidationError(u"Erro! Quantidade deve ser maior que 0")
     
     def custo(self):
-        return self.quantidade * self.subproduto_agregado.custo_total_linhas()
+        return self.quantidade * self.subproduto_agregado.valor_total_de_custo
         
     
     def disponivel_estoque(self):
