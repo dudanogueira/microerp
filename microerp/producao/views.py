@@ -109,8 +109,16 @@ class UploadFileForm(forms.Form):
 def importa_nota_sistema(f):
     try:
         xmldoc = minidom.parse(f)
-        infNFE = xmldoc.getElementsByTagName('chNFe')[0]
-        idnfe = infNFE.firstChild.nodeValue[22:34]
+        try:
+            infNFE = xmldoc.getElementsByTagName('chNFe')[0]
+        except:
+            infNFE = xmldoc.getElementsByTagName('NFe')[0]
+        
+        try:
+            # specs da nota fiscal eletronica.
+            idnfe = infNFE.firstChild.nodeValue[22:34]
+        except:
+            pass
         numero = idnfe[3:]
         serie = idnfe[0:3] 
         nome_emissor = xmldoc.getElementsByTagName('xNome')[0]
@@ -1510,8 +1518,8 @@ def ver_subproduto(request, subproduto_id):
             if form_remove_montado.is_valid():
                 # registra a alteradacao de produco e altera o valor
                 movimento = form_remove_montado.save(commit=False)
-                if subproduto.total_montado > movimento.quantidade_movimentada:
-                    # possui mais do que quer remover
+                if subproduto.total_montado >= movimento.quantidade_movimentada:
+                    # possui mais ou igual ao quer remover
                     movimento.quantidade_anterior = subproduto.total_montado
                     movimento.quantidade_nova = int(subproduto.total_montado) - int(movimento.quantidade_movimentada)
                     subproduto.total_montado = movimento.quantidade_nova
@@ -1521,7 +1529,7 @@ def ver_subproduto(request, subproduto_id):
                     messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Montados" % (movimento.quantidade_movimentada, movimento.subproduto))
 
                 else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s Montados" % subproduto.total_montado)
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s Montados. Impossível Remover %s" % (subproduto.total_montado, movimento.quantidade_movimentada))
                     
         
         # movimento de produtos - em testes
@@ -1547,7 +1555,7 @@ def ver_subproduto(request, subproduto_id):
             if form_remove_testes.is_valid():
                 # registra a alteradacao de produco e altera o valor
                 movimento = form_remove_testes.save(commit=False)
-                if subproduto.total_testando > movimento.quantidade_movimentada:
+                if subproduto.total_testando >= movimento.quantidade_movimentada:
                     # possui mais do que quer remover
                     movimento.quantidade_anterior = subproduto.total_testando
                     movimento.quantidade_nova = int(subproduto.total_testando) - int(movimento.quantidade_movimentada)
@@ -1556,9 +1564,8 @@ def ver_subproduto(request, subproduto_id):
                     subproduto.save()
                     movimento.save()
                     messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Testando" % (movimento.quantidade_movimentada, movimento.subproduto))
-
                 else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Testando" % subproduto.total_montado)
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Testando. Impossível remover %s" % (subproduto.total_testando, movimento.quantidade_movimentada))
                     
         
         
@@ -1586,7 +1593,7 @@ def ver_subproduto(request, subproduto_id):
             if form_remove_funcional.is_valid():
                 # registra a alteradacao de produco e altera o valor
                 movimento = form_remove_funcional.save(commit=False)
-                if subproduto.total_funcional > movimento.quantidade_movimentada:
+                if subproduto.total_funcional >= movimento.quantidade_movimentada:
                     # possui mais do que quer remover
                     movimento.quantidade_anterior = subproduto.total_funcional
                     movimento.quantidade_nova = int(subproduto.total_funcional) - int(movimento.quantidade_movimentada)
@@ -1597,7 +1604,7 @@ def ver_subproduto(request, subproduto_id):
                     messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
 
                 else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais" % subproduto.total_funcional)
+                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais. Impossível Remover %s" % (subproduto.total_funcional, movimento.quantidade_movimentada))
                     
 
     # definir o total do somatório de componentes
