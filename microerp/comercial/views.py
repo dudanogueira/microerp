@@ -1099,6 +1099,12 @@ def analise_de_contratos(request):
 
 class FormAnalisarContrato(forms.ModelForm):
     
+    def __init__(self, *args, **kwargs):
+        super(FormAnalisarContrato, self).__init__(*args, **kwargs)
+        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        self.fields['responsavel_comissionado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+    
+    
     class Meta:
         model = ContratoFechado
         fields = ('categoria', 'objeto', 'responsavel_comissionado')
