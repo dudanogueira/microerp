@@ -52,12 +52,42 @@
 			Nenhum Lançamento				
 			{% endfor %}
 		</ul>
-		
+		{% if contrato.propostacomercial.orcamento_set.all %}
 		<h2>Orçamentos Inclusos</h2>
 		<ul>
 		{% for orcamento in contrato.propostacomercial.orcamento_set.all %}
 			<li>{{orcamento}}</li>
 		{% endfor %}
+		</ul>
+		{% endif %}
+		
+		<h2>Check List</h2>
+		<ul>
+			<li>
+				Lançamentos Vinculados: {% if contrato.lancamentofinanceiroreceber_set.count %}
+					<span class="label label-success">{{contrato.lancamentofinanceiroreceber_set.count}}</span>
+				{% else %}
+					<span class="label label-important">{{contrato.lancamentofinanceiroreceber_set.count}}</span>
+				{% endif %}
+			</li>
+			<li>
+				Orçamentos Vinculados: {% if contrato.propostacomercial.orcamento_set.count %}
+					<span class="label label-success">{{contrato.propostacomercial.orcamento_set.count}}</span>
+				{% else %}
+					<span class="label label-important">{{contrato.propostacomercial.orcamento_set.count}}</span>
+				{% endif %}
+			</li>
+			
+			<li>
+				Garantia: {% if contrato.propostacomercial.garantia_proposto %}
+				{{contrato.propostacomercial.garantia_proposto}}
+				{% else %}
+				<span class="label label-important">Não especificado</span>
+				{% endif %}
+			</li>
+			<li>
+				????
+			</li>
 		</ul>
 		
 	</div>

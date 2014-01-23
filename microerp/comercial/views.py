@@ -729,7 +729,7 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         model = PropostaComercial
         fields = 'nome_do_proposto', 'documento_do_proposto', 'rua_do_proposto', 'bairro_do_proposto', \
         'cep_do_proposto', 'cidade_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
-        'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'forma_pagamento_proposto'
+        'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'forma_pagamento_proposto', 'garantia_proposto',
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
@@ -833,15 +833,19 @@ def adicionar_follow_up(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus(request):
-    meus_contratos = ContratoFechado.objects.filter(responsavel_comissionado=request.user.funcionario)
+    meus_contratos = ContratoFechado.objects.filter(responsavel_comissionado=request.user.funcionario).order_by('status')
     return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
-
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_gerar_impressao(request, contrato_id):
+    texto_contratada = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Texto descrevendo a empresa")
+    texto_juros_valor_contrato = getattr(settings, "TEXTO_CONTRATO_JUROS_VALORES", "Texto descrevendo a forma de juros e multas regidos por este contrato")    
+    texto_contrato_dos_prazos = getattr(settings, "TEXTO_HTML_PRAZOS", "Texto descrevendo as informações sobre Prazos")
+    texto_contrato_rescisao = getattr(settings, "TEXTO_HTML_RESCISAO", "Texto descrevendo as informações sobre Rescisão")
+    texto_contrato_foro = getattr(settings, "TEXTO_HTML_FORO", "Texto descrevendo as informações sobre o Foro")
+    nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
     return render_to_response('frontend/comercial/comercial-contratos-gerar-impressao.html', locals(), context_instance=RequestContext(request),)
-
 
 class FormRevalidarContrato(forms.ModelForm):
     
@@ -855,6 +859,14 @@ class FormRevalidarContrato(forms.ModelForm):
         model = ContratoFechado
         fields = 'categoria', 'objeto', 'valor', 'tipo',
 
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def contratos_meus_definir_assinado(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
+    contrato.status = "emaberto"
+    contrato.save()
+    return redirect(reverse("comercial:contratos_meus"))
+    
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus_revalidar(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="invalido")
@@ -876,7 +888,6 @@ def contratos_meus_revalidar(request, contrato_id):
                 return redirect(reverse("comercial:contratos_meus"))
             else:
                 messages.error(request, u"Erro. Valor de Lançamentos não confere com o valor do contrato.")
-                
             
     else:
         form_contrato = FormRevalidarContrato(instance=contrato)
@@ -1091,7 +1102,6 @@ def indicadores_do_comercial(request):
     
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
 
-
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos(request):
     contratos_em_analise = ContratoFechado.objects.filter(status="emanalise")
@@ -1103,7 +1113,6 @@ class FormAnalisarContrato(forms.ModelForm):
         super(FormAnalisarContrato, self).__init__(*args, **kwargs)
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['responsavel_comissionado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
-    
     
     class Meta:
         model = ContratoFechado

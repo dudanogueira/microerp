@@ -19,7 +19,7 @@
 	{% else %}
 		{% if contrato.status == "assinatura" %}
 		<li> 
-			{{contrato}} - <a href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" class="btn btn-info">Gerar Contrato para impressão</a>
+			{{contrato}} - <a href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" class="btn btn-info">Gerar Contrato para impressão</a> <a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
 		</li>
 		{% else %}
 		<li> 

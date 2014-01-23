@@ -142,6 +142,7 @@ class PropostaComercial(models.Model):
     objeto_proposto = models.TextField(blank=True)
     descricao_items_proposto = models.TextField(blank=True)
     forma_pagamento_proposto = models.TextField(blank=True)
+    garantia_proposto = models.TextField(blank=True)
     # definido perdido
     definido_perdido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Perdido por", related_name="proposta_definida_perdido_set", blank=True, null=True)
     definido_perdido_em = models.DateTimeField(blank=True, null=True)

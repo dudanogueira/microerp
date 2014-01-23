@@ -71,8 +71,9 @@ class LancamentoFinanceiroReceberInline(admin.TabularInline):
     extra = 0
 
 class ContratoFechadoAdmin(admin.ModelAdmin):
+    list_display = 'id', 'cliente', 'valor', 'status', 'responsavel'
     list_filter = 'tipo', 'status',
-    search_fields = 'cliente__nome', 
+    search_fields = 'cliente__nome', 'id'
     inlines = [LancamentoFinanceiroReceberInline]
     actions = [lancar_contrato,]
 
