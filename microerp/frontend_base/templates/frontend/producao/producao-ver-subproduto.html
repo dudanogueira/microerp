@@ -416,7 +416,7 @@
         
         <h2>Linhas de Componente do Sub Produto</h2>
         <div class="row-fluid">
-			
+
 			<div class="span2">
 		        {% if request.user.perfilacessoproducao.gerente %}
         		<Br />
@@ -521,6 +521,10 @@
                   {% endfor %}
 				  <tr>
 					  <td></td>
+					{% if subproduto.possui_tags %}
+						<td></td>
+					{% endif %}
+					  
 					  <td></td>
 					  <td></td>
 					  <td></td>
@@ -539,7 +543,6 @@
     
     <div class="tab-pane fade in" id="sub-produtos-agregados">
         
-
         <h2>Sub Produtos Agregados</h2>            
                 
         <!-- Button to trigger modal -->
@@ -567,7 +570,6 @@
                 
             </div>
         </div>
-
 
         <table class="table table-condensed table-hover table-rounded">
                 <thead>
@@ -606,7 +608,7 @@
 						<td></td>
 						<td></td>
 						<td></td>
-						<td><span class="label label-success">R$ {{subproduto.valor_custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
+						<td><span class="label label-success">R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
 						<td></td>
 						<td></td>
 					</tr>

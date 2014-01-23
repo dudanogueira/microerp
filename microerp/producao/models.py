@@ -822,7 +822,7 @@ class SubProduto(models.Model):
     def custo_total_dos_sub_produtos_agregados(self):
         total_parcial = 0
         for linha in self.linhasubprodutos_agregados.all():
-            total_parcial += linha.quantidade * linha.subproduto_agregado.valor_total_de_custo
+            total_parcial += linha.quantidade * linha.subproduto_agregado.custo()
         return total_parcial
     
     def custo(self):
@@ -1699,7 +1699,11 @@ def subproduto_pre_save(signal, instance, sender, **kwargs):
       instance.valor_total_de_custo =  instance.valor_custo_total_linhas + instance.valor_custo_total_dos_sub_produtos_agregados
       # recalcula todos os subprodutos que possuem este subproduto como agregado
       for linha in instance.linhasubprodutos_escolhidos.all():
+          linha.subproduto_principal.valor_custo_total_linhas = instance.custo_total_linhas()
+          linha.subproduto_principal.valor_custo_total_dos_sub_produtos_agregados = instance.custo_total_dos_sub_produtos_agregados()
+          linha.subproduto_principal.valor_total_de_custo =  instance.valor_custo_total_linhas + instance.valor_custo_total_dos_sub_produtos_agregados
           linha.subproduto_principal.save()
+          
 
 # SIGNALS CONNECTION
 signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)
