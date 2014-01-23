@@ -16,8 +16,29 @@
 		{% csrf_token %}
 
 		{{form_analisar_contrato.as_p}}
-		<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim">Alterar</button>
-		<button type="submit" class="btn btn-success" name="contrato-analisado" value="sim">Contrato Analisado</button>
+		<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim"><i class="fa fa-pencil"></i> 	Alterar</button>
+		<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar Contrato</button>
+		<button data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</button>
+		
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title" id="myModalLabel">Motivo de Invalidez</h4>
+		      </div>
+		      <div class="modal-body">
+				  <textarea name="motivo-invalido"></textarea>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        		<button type="submit" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		
 		</form>
 	
 	</div>
@@ -27,8 +48,18 @@
 		<ul>
 			{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
 				<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> - R${{lancamento.valor_cobrado}} <em><small>{{lancamento.modo_recebido}}</small></em></li>
+			{% empty %}
+			Nenhum Lançamento				
 			{% endfor %}
 		</ul>
+		
+		<h2>Orçamentos Inclusos</h2>
+		<ul>
+		{% for orcamento in contrato.propostacomercial.orcamento_set.all %}
+			<li>{{orcamento}}</li>
+		{% endfor %}
+		</ul>
+		
 	</div>
 	
 </div>

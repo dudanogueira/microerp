@@ -12,7 +12,10 @@
 
 <ul>
 	{% for modelo in modelos %}
-		<li>{{modelo.descricao}} - R${{modelo.custo_total}} <a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-info"><i class="fa fa-pencil"></i> editar</a></li>
+		<li>{{modelo.descricao}} - R${{modelo.custo_total}}
+			<a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-info"><i class="fa fa-pencil"></i> editar</a>
+			<a href="{% url "comercial:orcamentos_modelo_reajustar" modelo.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> reajustar</a>
+		</li>
 	{% endfor %}
 </ul>
 {% endblock %}

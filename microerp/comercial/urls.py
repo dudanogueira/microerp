@@ -38,12 +38,15 @@ urlpatterns = patterns('',
     url(r'^orcamento/modelos/$', 'comercial.views.orcamentos_modelo', name='orcamentos_modelo'),
     url(r'^orcamento/modelos/novo/$', 'comercial.views.orcamentos_modelo_novo', name='orcamentos_modelo_novo'),
     url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/editar/$', 'comercial.views.orcamentos_modelo_editar', name='orcamentos_modelo_editar'),
+    url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/ajustar/$', 'comercial.views.orcamentos_modelo_reajustar', name='orcamentos_modelo_reajustar'),
     # indicadores
     url(r'^indicadores/$', 'comercial.views.indicadores_do_comercial', name='indicadores_do_comercial'),
     # contratos
     url(r'^contrato/analises/$', 'comercial.views.analise_de_contratos', name='analise_de_contratos'),
     url(r'^contrato/(?P<contrato_id>[0-9]+)/analisar/$', 'comercial.views.analise_de_contratos_analisar', name='analise_de_contratos_analisar'),
     url(r'^contrato/meus/$', 'comercial.views.contratos_meus', name='contratos_meus'),
+    url(r'^contrato/meus/revalidar/(?P<contrato_id>[0-9]+)/$', 'comercial.views.contratos_meus_revalidar', name='contratos_meus_revalidar'),
+    url(r'^contrato/meus/gerar-impressao/(?P<contrato_id>[0-9]+)/$', 'comercial.views.contratos_gerar_impressao', name='contratos_gerar_impressao'),
     # comissoes - gerencia
     url(r'^gerencia/comissoes/$', 'comercial.views.gerencia_comissoes', name='gerencia_comissoes'),
     url(r'^gerencia/comissoes/novo/fechamento/$', 'comercial.views.gerencia_comissoes_novo_fechamento', name='gerencia_comissoes_novo_fechamento'),

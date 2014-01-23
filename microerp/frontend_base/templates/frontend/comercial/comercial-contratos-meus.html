@@ -12,7 +12,22 @@
 <h4>{{lista.grouper}}</h4>
 <ul>
 {% for contrato in lista.list %}
-	<li>{{contrato}}</li>
+	{% if contrato.status == "invalido" %}
+	<li> 
+		<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}">{{contrato}}</a>
+	</li>
+	{% else %}
+		{% if contrato.status == "assinatura" %}
+		<li> 
+			{{contrato}} - <a href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" class="btn btn-info">Gerar Contrato para impressão</a>
+		</li>
+		{% else %}
+		<li> 
+			{{contrato}}
+		</li>
+		
+		{% endif %}
+	{% endif %}
 {% endfor %}
 </ul>
 

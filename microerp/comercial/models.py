@@ -62,8 +62,11 @@ CONTRATO_TIPO_CHOICES = (
 CONTRATO_STATUS_CHOICES = (
     ('cancelado', 'Cancelado'),
     ('emanalise', 'Em Análise'),
+    ('invalido', u'Inválido'),
+    ('assinatura', u'Aguardando Assinatura'),
     ('emaberto', 'Em Aberto'),
     ('lancado', u'Contrato Lançado'),
+    
 )
 
 class PropostaComercial(models.Model):
@@ -260,6 +263,7 @@ class CategoriaContratoFechado(models.Model):
 
 class ContratoFechado(models.Model):
     
+    
     def lancar(self, request=None):
         '''lancar o contrato'''
         if self.status  == 'emaberto':
@@ -326,6 +330,7 @@ class ContratoFechado(models.Model):
     concluido = models.BooleanField(default=False)
     responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")
     responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="contrato_comissionado_set")
+    motivo_invalido = models.TextField(blank=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
@@ -372,25 +377,6 @@ class TabelaDeComissao(models.Model):
     valor_fim = models.DecimalField(max_digits=10, decimal_places=2)
     porcentagem = models.DecimalField(max_digits=10, decimal_places=2)
 
-class Marca(models.Model):
-    
-    def __unicode__(self):
-        return self.nome
-    
-    nome = models.CharField(blank=True, max_length=100)
-
-class Modelo(models.Model):
-    
-    def __unicode__(self):
-        return self.nome
-    
-    nome = models.CharField(blank=True, max_length=100)
-
-class QuantidadeDeMarca(models.Model):
-    contratofechado = models.ForeignKey('ContratoFechado')
-    quantidade = models.IntegerField(blank=False, null=False)
-    marca = models.ForeignKey('Marca', blank=True, null=True)
-    modelo = models.ForeignKey('Modelo', blank=False, null=False)
 
 class RequisicaoDeProposta(models.Model):
     

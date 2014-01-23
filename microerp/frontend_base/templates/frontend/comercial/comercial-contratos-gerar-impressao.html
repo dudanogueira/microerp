@@ -1,0 +1,57 @@
+{% extends "frontend/base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Comercial - Contrato{% endblock %}</title>
+
+{% block content %}
+<div class="container">
+	<div class="row-fluid">
+		<div class="span9">
+		    {% if logo_empresa %}
+			<img src="{{logo_empresa}}">
+		    {% endif %}
+			
+		</div>
+		
+		<div class="span3">
+			<h3>Contrato #{{contrato.id}}</h3>
+		</div>
+		
+	</div>
+	
+	<h1 class="text-center">Contrato de Prestação de Serviços <small>(originado da proposta #{{contrato.propostacomercial.id}})</small></h1>
+	
+	<p>
+		<strong>Contratante</strong>: {{contrato.cliente}}<br />
+		{% if contrato.propostacomercial.representante_legal_proposto %}
+		<strong>Representante Legal</strong>: {{contrato.propostacomercial.representante_legal_proposto}}<Br />
+		{% endif %}
+
+		{% if contrato.cliente.cnpj %}
+		<strong>CNPJ</strong>: {{contrato.cliente.cnpj}}<Br />
+		{% endif %}
+
+
+		{% if contrato.cliente.inscricao_estadual %}
+		<strong>Inscrição Estadual</strong>: {{contrato.cliente.inscricao_estadual}}<Br />
+		{% endif %}
+		
+		
+		
+		
+		{% if contrato.cliente.cpf %}
+		<strong>CPF</strong>: {{contrato.cliente.cpf}}<Br />
+		{% endif %}
+		
+		
+		{% if contrato.cliente.cpf %}
+		<strong>CPF</strong>: {{contrato.cliente.cpf}}<Br />
+		{% endif %}
+		
+	</p>
+	
+
+</div>
+
+{% endblock %}
+

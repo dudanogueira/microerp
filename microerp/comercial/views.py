@@ -59,6 +59,12 @@ class PreClienteAdicionarForm(forms.ModelForm):
 
 class AdicionarPropostaForm(forms.ModelForm):
     
+    def __init__(self, *args, **kwargs):
+        super(AdicionarPropostaForm, self).__init__(*args, **kwargs)
+        self.fields['valor_proposto'].localize = True
+        self.fields['valor_proposto'].widget.is_localized = True
+    
+    
     class Meta:
         model = PropostaComercial
         fields = 'probabilidade', 'valor_proposto', 'observacoes'
@@ -251,6 +257,9 @@ class FormEditarProposta(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
+        self.fields['valor_proposto'].localize = True
+        self.fields['valor_proposto'].widget.is_localized = True
+        
     
     class Meta:
         model = PropostaComercial
@@ -394,6 +403,8 @@ class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
         super(LancamentoFinanceiroReceberComercialForm, self).__init__(*args, **kwargs)
         self.fields['data_cobranca'].widget.attrs['class'] = 'datepicker'
         self.fields['valor_cobrado'].localize = True
+        self.fields['valor_cobrado'].widget.is_localized = True
+        
         self.fields['valor_cobrado'].widget.attrs['class'] = 'valor_parcela'
     
     class Meta:
@@ -420,8 +431,8 @@ def editar_proposta_converter(request, proposta_id):
                     total_lancamentos = 0
                     for form in form_configurar_contrato.forms:
                         if form.cleaned_data:
-                            total_lancamentos += form.cleaned_data['valor_cobrado']
-                    if total_lancamentos == proposta.valor_proposto:
+                            total_lancamentos += float(form.cleaned_data['valor_cobrado'])
+                    if float(total_lancamentos) == float(proposta.valor_proposto):
                         # converte proposta e marca data e quem converteu
                         proposta.status = "convertida"
                         proposta.definido_convertido_em = datetime.datetime.now()
@@ -433,7 +444,7 @@ def editar_proposta_converter(request, proposta_id):
                             valor=proposta.valor_proposto,
                             status="emanalise",
                             responsavel=request.user.funcionario,
-                            responsavel_comissionado=proposta.cliente.designado,
+                            responsavel_comissionado=proposta.designado,
                         )
                         # relaciona novo contrato com essa proposta
                         proposta.contrato_vinculado = novo_contrato
@@ -456,7 +467,7 @@ def editar_proposta_converter(request, proposta_id):
                             # caso contrario, retorna para a ficha do cliente
                             return redirect(reverse("comercial:cliente_ver", args=[cliente.id]))
                     else:
-                        messages.error(request, u"Erro! Valor das parcelas NÃO CONFERE com valor proposto.")
+                        messages.error(request, u"Erro! Valor das parcelas NÃO CONFERE com valor proposto.: %s %s" % (total_lancamentos, proposta.valor_proposto))
 
         return render_to_response('frontend/comercial/comercial-proposta-converter.html', locals(), context_instance=RequestContext(request),)
     else:
@@ -789,7 +800,6 @@ def proposta_comercial_imprimir(request, proposta_id):
             return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
     return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
 
-
 @user_passes_test(possui_perfil_acesso_comercial)
 def adicionar_follow_up(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, status="aberta", pk=proposta_id)
@@ -821,10 +831,58 @@ def adicionar_follow_up(request, proposta_id):
     
     return(redirect(url))
 
-@user_passes_test(possui_perfil_acesso_comercial_gerente)
+@user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus(request):
     meus_contratos = ContratoFechado.objects.filter(responsavel_comissionado=request.user.funcionario)
     return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def contratos_gerar_impressao(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
+    return render_to_response('frontend/comercial/comercial-contratos-gerar-impressao.html', locals(), context_instance=RequestContext(request),)
+
+
+class FormRevalidarContrato(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormRevalidarContrato, self).__init__(*args, **kwargs)
+        self.fields['valor'].localize = True
+        self.fields['valor'].widget.is_localized = True
+    
+    
+    class Meta:
+        model = ContratoFechado
+        fields = 'categoria', 'objeto', 'valor', 'tipo',
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def contratos_meus_revalidar(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="invalido")
+    ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
+    if request.POST:
+        form_contrato = FormRevalidarContrato(request.POST, instance=contrato)
+        form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="revalidar_contrato", instance=contrato)
+        if form_contrato.is_valid() and form_configurar_contrato.is_valid():
+            total_lancamentos = 0
+            for form in form_configurar_contrato.forms:
+                if form.cleaned_data:
+                    total_lancamentos += float(form.cleaned_data['valor_cobrado'])
+            if float(total_lancamentos) == float(contrato.valor):
+                contrato = form_contrato.save(commit=False)
+                contrato.status = "emanalise"
+                contrato.save()
+                form_configurar_contrato.save()
+                messages.success(request, u"Sucesso! Contrato Revalidado")
+                return redirect(reverse("comercial:contratos_meus"))
+            else:
+                messages.error(request, u"Erro. Valor de Lançamentos não confere com o valor do contrato.")
+                
+            
+    else:
+        form_contrato = FormRevalidarContrato(instance=contrato)
+        form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="revalidar_contrato", instance=contrato)
+
+    return render_to_response('frontend/comercial/comercial-contratos-meus-revalidar.html', locals(), context_instance=RequestContext(request),)
 
 
 class FormAdicionaModelo(forms.ModelForm):
@@ -901,6 +959,14 @@ def orcamentos_modelo_editar(request, modelo_id):
         form_editar_linhas = OrcamentoFormSet(instance=modelo, prefix="modelo")
         form_modelo = OrcamentoForm(instance=modelo)
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def orcamentos_modelo_reajustar(request, modelo_id):
+    modelo = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
+    modelo.reajusta_custo()
+    messages.success(request, u"Sucesso! Preço de Modelo %s Reajustado." % modelo)
+    return redirect(reverse("comercial:orcamentos_modelo"))
 
 class SelecionaAnoIndicadorComercial(forms.Form):
     
@@ -1046,10 +1112,16 @@ def analise_de_contratos_analisar(request, contrato_id):
             contrato = form_analisar_contrato.save()
             if request.POST.get('aterar-contrato'):
                 messages.success(request, u"Sucesso! Contrato em Análise Alterado.")
-            elif request.POST.get('contrato-analisado'):
-                contrato.status ="emaberto"
+            elif request.POST.get('contrato-invalido'):
+                contrato.status ="invalido"
+                contrato.motivo_invalido = request.POST.get('motivo-invalido')
                 contrato.save()
-                messages.success(request, u"Sucesso! Contrato Analisado. Definido como Aberto")
+                messages.success(request, u"Sucesso! Contrato Analisado. Definido como Inválido")
+                
+            elif request.POST.get('contrato-valido'):
+                contrato.status = "assinatura"
+                contrato.save()
+                messages.success(request, u"Sucesso! Contrato Analisado. Definido como Aguardando Assinatura")
             return redirect(reverse("comercial:analise_de_contratos"))
     else:
         form_analisar_contrato = FormAnalisarContrato(instance=contrato)
@@ -1076,4 +1148,3 @@ def gerencia_comissoes_novo_fechamento(request):
         novo_fechamento.save()
     contratos_abertos = ContratoFechado.objects.filter(fechamentodecomissao=None).exclude(responsavel_comissionado=None)
     return render_to_response('frontend/comercial/comercial-gerencia-comissoes-novo-fechamento.html', locals(), context_instance=RequestContext(request),)
-    

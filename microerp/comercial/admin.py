@@ -29,9 +29,6 @@ from comercial.models import PerfilAcessoComercial
 from comercial.models import ContratoFechado
 from comercial.models import TipodeContratoFechado
 from comercial.models import CategoriaContratoFechado
-from comercial.models import Marca
-from comercial.models import Modelo
-from comercial.models import QuantidadeDeMarca
 from comercial.models import FollowUpDePropostaComercial
 from comercial.models import RequisicaoDeProposta
 from comercial.models import GrupoIndicadorDeProdutoProposto
@@ -68,9 +65,6 @@ class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
     list_filter = 'modelo', 'ativo'
 
-class QuantidadeDeMarcaInline(admin.StackedInline):
-    model = QuantidadeDeMarca
-    extra = 0
     
 class LancamentoFinanceiroReceberInline(admin.TabularInline):
     model = LancamentoFinanceiroReceber
@@ -79,7 +73,7 @@ class LancamentoFinanceiroReceberInline(admin.TabularInline):
 class ContratoFechadoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'status',
     search_fields = 'cliente__nome', 
-    inlines = [QuantidadeDeMarcaInline, LancamentoFinanceiroReceberInline]
+    inlines = [LancamentoFinanceiroReceberInline]
     actions = [lancar_contrato,]
 
 class TipodeContratoFechadoAdmin(admin.ModelAdmin):
@@ -103,8 +97,6 @@ admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
 admin.site.register(ContratoFechado, ContratoFechadoAdmin)
 admin.site.register(TipodeContratoFechado, TipodeContratoFechadoAdmin)
 admin.site.register(CategoriaContratoFechado)
-admin.site.register(Marca)
-admin.site.register(Modelo)
 admin.site.register(FollowUpDePropostaComercial, FollowUpDePropostaComercialAdmin)
 admin.site.register(RequisicaoDeProposta)
 admin.site.register(GrupoIndicadorDeProdutoProposto)
