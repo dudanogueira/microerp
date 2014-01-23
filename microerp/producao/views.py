@@ -1271,12 +1271,12 @@ def editar_subproduto(request, subproduto_id):
 class FormEnviarSubProdutoParaTeste(forms.Form):
 
     def __init__(self, *args, **kwargs):
-        quantidade_maxima_permitida = kwargs.pop('quantidade_maxima')
+        self.quantidade_maxima_permitida = kwargs.pop('quantidade_maxima')
         subproduto = kwargs.pop('subproduto', None)
         super(FormEnviarSubProdutoParaTeste, self).__init__(*args, **kwargs)
-        self.fields['quantidade_maxima_permitida'] = forms.IntegerField(initial=quantidade_maxima_permitida)
+        self.fields['quantidade_maxima_permitida'] = forms.IntegerField(initial=self.quantidade_maxima_permitida)
         self.fields['quantidade_maxima_permitida'].widget = forms.HiddenInput()
-        self.fields['quantidade_preenchida'].initial = quantidade_maxima_permitida
+        self.fields['quantidade_preenchida'].initial = self.quantidade_maxima_permitida
         self.fields['quantidade_preenchida'].label = u"Quantidade para enviar para teste"
         self.fields['subproduto'].initial=subproduto
         self.fields['subproduto'].widget = forms.HiddenInput()
@@ -1288,8 +1288,8 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
         quantidade_preenchida = cleaned_data.get("quantidade_preenchida")
         quantidade_permitida = cleaned_data.get("quantidade_maxima_permitida")
         if quantidade_preenchida == 0:
-            raise forms.ValidationError("Impossível mover 0 :)")
-        if int(quantidade_preenchida) > int(quantidade_permitida):
+            raise forms.ValidationError("Impossível mover 0 :) Máximo Permitido: %s" % self.quantidade_maxima_permitida)
+        if int(quantidade_preenchida) > int(self.quantidade_maxima_permitida):
             raise forms.ValidationError("Quantidade máxima permitida: %s" % quantidade_permitida)
         return quantidade_preenchida
     
