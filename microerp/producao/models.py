@@ -972,7 +972,7 @@ class LinhaSubProdutoAgregado(models.Model):
             raise ValidationError(u"Erro! Quantidade deve ser maior que 0")
     
     def custo(self):
-        return self.quantidade * self.subproduto_agregado.valor_total_de_custo
+        return self.quantidade * self.subproduto_agregado.custo()
         
     
     def disponivel_estoque(self):
