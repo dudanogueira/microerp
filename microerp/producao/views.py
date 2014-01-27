@@ -3109,7 +3109,7 @@ def ordem_de_compra(request):
                 ordem_de_compra = form_adicionar_ordem_de_compra.save(commit=False)
                 ordem_de_compra.funcionario = request.user.funcionario
                 ordem_de_compra.save()
-                messages.success("Novo Controle de Atividade de Compra criado.")
+                messages.success(request, "Novo Controle de Atividade de Compra criado.")
                 form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
         if request.POST.get('registrar-atividade', None):
             form_add_atividade = FormAddAtividadeOrdemDeCompra(request.POST, registro=True)
@@ -3176,7 +3176,7 @@ def ordem_de_compra_atividade_fechar(request, ordem_de_compra_id, atividade_id):
     atividade = get_object_or_404(AtividadeDeCompra, pk=atividade_id, controle_de_compra__pk=ordem_de_compra_id)
     atividade.data_fechado = datetime.datetime.now()
     atividade.fechado_por = request.user
-    atividade.save()
+    atividade.save()    
     messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s Fechada!" % (atividade.descricao, atividade.controle_de_compra.id))
     return redirect(reverse('producao:ordem_de_compra'))
 
