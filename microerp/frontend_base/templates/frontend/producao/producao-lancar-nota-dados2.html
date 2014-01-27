@@ -32,8 +32,6 @@ Periodo: {{periodo}}
 </div>
 
 
-
-
 <script>
 
 function addCommas(nStr)
@@ -55,26 +53,20 @@ function formatter(val, axis) {
 
 		var data = [ 
 			{% for item in total_notas_por_dia %}
-			["{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}", {{item.soma|safe}}],
+			[(new Date("{{item.data_entrada|date:"Y/m/d"}}")).getTime(), {{item.soma|safe}}],
 			{% endfor %}
 		 ];
 		 
 		$.plot("#placeholder-dia", [ data ], {
-			series: {
-				bars: {
-					show: true,
-					barWidth: 0.6,
-					align: "center"
-				}
-			},
 			xaxis: {
-				mode: "categories",
+				mode: "time",
+				timeformat: "%d.%m.%y",
+				minTickSize: [15, 'day']
 			},
 			yaxis: {
 				//ticks: ticks,
 				tickFormatter: formatter
 			}
-			
 			
 		});
 		
