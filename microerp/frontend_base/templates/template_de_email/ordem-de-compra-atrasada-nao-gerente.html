@@ -1,5 +1,4 @@
-Relatório Diário de Ordens de Compra Aberta
-{% for ordem in ordens_abertas %}{% if ordem.atrasada %}
+Alerta: Controle de Compra Atrasado
 -------------------
 ORDEM {{ordem.id}}
 -------------------
@@ -10,4 +9,3 @@ DESCRIÇÃO: {{ordem.descricao}}
 CRITICIDADE: {{ordem.get_criticidade_display}}
 ATIVIDADES ATRASADAS{% for atividade in ordem.atividades_atrasadas %}
 	- {{atividade.data|date:"SHORT_DATETIME_FORMAT"}} - Atrasado há: {{atividade.data|timesince}} - {{atividade.descricao}}{% endfor %}
-{% endif %}{% endfor %}

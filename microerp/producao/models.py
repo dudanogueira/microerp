@@ -102,7 +102,6 @@ class EstoqueFisico(models.Model):
         else:
             return 0
     
-    
     '''Estoque fisico onde se armazena componentes'''
     ativo = models.BooleanField(default=True)
     nome = models.CharField(blank=True, max_length=100)
@@ -172,7 +171,6 @@ class LinhaFornecedorFabricanteComponente(models.Model):
     part_number_fabricante = models.CharField(blank=True, null=True, max_length=100, )
     fabricante = models.ForeignKey('FabricanteFornecedor', related_name="fabricante_componente_set", blank=True, null=True)
     
-
 class Componente(models.Model):
     '''Componente de SubProdutos e Produtos
     part_number deve ser formado por:
@@ -209,7 +207,6 @@ class Componente(models.Model):
             if linha.quantidade:
                 valor += linha.quantidade
         return valor
-
 
     def total_participacao_padrao_subproduto(self):
         valor = 0
@@ -257,7 +254,6 @@ class Componente(models.Model):
         estoque_produtor,created = EstoqueFisico.objects.get_or_create(identificacao=slug_estoque_produtor)
         return self.posicao_no_estoque(estoque_produtor) or 0
     
-    
     def registrar_preco_medio(self):
         pm = LancamentoComponente.objects.filter(componente=self).aggregate(avg=Avg('valor_unitario_final'))['avg']
         self.preco_medio_unitario = pm
@@ -268,13 +264,11 @@ class Componente(models.Model):
         for estoque in EstoqueFisico.objects.all():
             total_em_estoques += self.posicao_no_estoque(estoque)
         return total_em_estoques
-        
     
     def componente_local_imagem(instance, filename):
         return os.path.join(
             'componente/', str(instance.part_number), 'imagem', filename
           )
-    
     
     # geral
     ativo = models.BooleanField(default=True)
@@ -1470,61 +1464,60 @@ class RegistroValorEstoque(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-class OrdemDeCompra(models.Model):
+
+class ControleDeCompra(models.Model):
+        
+    class Meta:
+        ordering = ['-criado']
+    
+    def __unicode__(self):
+        if not self.data_fechado:
+            return u"Ordem de Compra #%s ABERTA por funcionário %s em %s" % (self.id, self.funcionario, self.data_aberto)
+        else:
+            return u"Ordem de Compra #%s FECHADA por funcionário %s em %s" % (self.id, self.funcionario, self.data_aberto)
     
     def proxima_atividade(self):
-        proxima = self.atividadedeordemdecompra_set.filter(data_fechado=None).order_by('data')
+        proxima = self.atividadedecompra_set.filter(data_fechado=None).order_by('data')
         if proxima:
             return proxima[0]
         else:
             return None
 
     def atividades_atrasadas(self):
-        return self.atividadedeordemdecompra_set.filter(data__lte=datetime.datetime.now(), data_fechado=None).all()
+        return self.atividadedecompra_set.filter(data__lte=datetime.datetime.now(), data_fechado=None).all()
     
     def atrasada(self):
-        if self.atividadedeordemdecompra_set.filter(data__lte=datetime.datetime.now(), data_fechado=None):
+        if self.atividadedecompra_set.filter(data__lte=datetime.datetime.now(), data_fechado=None):
             return True
         else:
             return False
-    
-    
-    class Meta:
-        ordering = ['-criado']
-    
-    def __unicode__(self):
-        if not self.data_fechado:
-            return u"Ordem de Compra #%s ABERTA por funcionário %s no valor de R$ %s em %s" % (self.id, self.funcionario, self.valor, self.data_aberto)
-        else:
-            return u"Ordem de Compra #%s FECHADA por funcionário %s no valor de R$ %s em %s" % (self.id, self.funcionario, self.valor, self.data_aberto)
     
     def dias_aberto(self):
         if self.data_fechado:
             dias = self.data_aberto - self.data_fechado
             return dias.days
     
-    funcionario = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário")
-    data_aberto = models.DateField(blank=True, default=datetime.datetime.now)
+    titulo = models.CharField(blank=True, max_length=100)
+    funcionario = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
+    data_aberto = models.DateField(blank=True, default=datetime.datetime.today)
     data_fechado = models.DateField("Data de Fechamento", blank=True, null=True)
-    valor = models.DecimalField("Valor Total (R$)", max_digits=10, decimal_places=2, default=0)
     descricao = models.TextField(u"Descrição", blank=False)
-    fornecedor = models.ForeignKey('FabricanteFornecedor')
-    notafiscal = models.CharField("Nota Fiscal", blank=True, null=True, max_length=100)
+    fornecedor = models.ForeignKey('FabricanteFornecedor', blank=True, null=True)
     criticidade = models.IntegerField(blank=False, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-class AtividadeDeOrdemDeCompra(models.Model):
+class AtividadeDeCompra(models.Model):
     
     class Meta:
         ordering = ('data',)
     
     def __unicode__(self):
         if not self.data_fechado:
-            return "ATIVIDADE #%s/%s ABERTA: %s - %s" % (self.ordem_de_compra.id, self.id, self.data, self.descricao)
+            return "ATIVIDADE #%s/%s ABERTA: %s - %s" % (self.controle_de_compra.id, self.id, self.data, self.descricao)
         else:
-            return "ATIVIDADE #%s/%s FECHADA: %s - %s" % (self.ordem_de_compra.id, self.id, self.data, self.descricao)
+            return "ATIVIDADE #%s/%s FECHADA: %s - %s" % (self.controle_de_compra.id, self.id, self.data, self.descricao)
     
     def atrasada(self):
         if self.data > datetime.datetime.now():
@@ -1536,8 +1529,8 @@ class AtividadeDeOrdemDeCompra(models.Model):
             else:
                 return True
     
-    ordem_de_compra = models.ForeignKey('OrdemDeCompra')
-    data = models.DateTimeField("Data de Lembrete", default=datetime.datetime.now)
+    controle_de_compra = models.ForeignKey('ControleDeCompra')
+    data = models.DateTimeField("Data", default=datetime.datetime.now)
     descricao = models.TextField(u"Descrição", blank=False)
     data_fechado = models.DateTimeField(blank=True, null=True)
     fechado_por = models.ForeignKey(settings.AUTH_USER_MODEL, blank=True, null=True)
@@ -1545,21 +1538,6 @@ class AtividadeDeOrdemDeCompra(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
-class ComponentesDaOrdemDeCompra(models.Model):
-    
-    class Meta:
-        ordering = ['-criado']
-        
-    def valor_total(self):
-        return float(self.quantidade_comprada) * float(self.valor)
-    ordem_de_compra = models.ForeignKey('OrdemDeCompra')
-    quantidade_comprada = models.DecimalField(max_digits=15, decimal_places=2)
-    componente_comprado = models.ForeignKey('Componente')
-    valor = models.DecimalField("Valor Unitário (R$)", max_digits=10, decimal_places=2, default=0)
-    
-    # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 class RequisicaoDeCompra(models.Model):
     

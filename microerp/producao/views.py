@@ -39,9 +39,8 @@ from producao.models import OrdemProducaoProduto
 from producao.models import RegistroEnvioDeTesteSubProduto
 from producao.models import RegistroSaidaDeTesteSubProduto
 from producao.models import RegistroValorEstoque
-from producao.models import OrdemDeCompra
-from producao.models import AtividadeDeOrdemDeCompra
-from producao.models import ComponentesDaOrdemDeCompra
+from producao.models import ControleDeCompra
+from producao.models import AtividadeDeCompra
 from producao.models import RequisicaoDeCompra
 from producao.models import PerfilAcessoProducao
 from producao.models import OrdemConversaoSubProduto
@@ -3024,32 +3023,25 @@ class FormAdicionarOrdemDeCompra(forms.ModelForm):
         super(FormAdicionarOrdemDeCompra, self).__init__(*args, **kwargs)
         self.fields['data_aberto'].initial  = datetime.date.today()
         self.fields['data_aberto'].widget = forms.HiddenInput()
-        self.fields['valor'].localize=True
-        self.fields['valor'].widget.is_localized = True
-        self.fields['valor'].widget.attrs['class'] = 'nopoint'
         self.fields['fornecedor'].widget.attrs['class'] = 'select2'
         
-    
+
     class Meta:
-        model = OrdemDeCompra
-        fields = ('data_aberto', 'valor', 'descricao', 'fornecedor', 'notafiscal', 'criticidade')
+        model = ControleDeCompra
+        fields = ('titulo', 'data_aberto','descricao', 'fornecedor', 'criticidade')
 
 class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(FormAdicionarOrdemDeCompraFull, self).__init__(*args, **kwargs)
         self.fields['data_aberto'].initial  = datetime.date.today()
         self.fields['data_aberto'].widget = forms.HiddenInput()
         self.fields['data_fechado'].widget.attrs['class'] = 'datepicker'
-        self.fields['valor'].localize=True
-        self.fields['valor'].widget.is_localized = True
-        self.fields['valor'].widget.attrs['class'] = 'nopoint'
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
         self.fields['fornecedor'].widget.attrs['class'] = 'select2'
-        
-    class Meta:
-        model = OrdemDeCompra
 
+    class Meta:
+        model = ControleDeCompra
 
 class FormReagendarAtividadeDeCompra(forms.ModelForm):
     
@@ -3065,12 +3057,12 @@ class FormReagendarAtividadeDeCompra(forms.ModelForm):
         self.fields['data'].widget.attrs['class'] = 'datetimepicker'
     
     class Meta:
-        model = AtividadeDeOrdemDeCompra
+        model = AtividadeDeCompra
         fields = 'data',
     
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_atividade_reagendar(request, ordem_de_compra_id, atividade_id):
-    atividade = get_object_or_404(AtividadeDeOrdemDeCompra, pk=atividade_id, ordem_de_compra__pk=ordem_de_compra_id)
+    atividade = get_object_or_404(AtividadeDeCompra, pk=atividade_id, controle_de_compra__pk=ordem_de_compra_id)
     # formulario
     if request.POST:
         form = FormReagendarAtividadeDeCompra(request.POST, instance=atividade)
@@ -3083,50 +3075,33 @@ def ordem_de_compra_atividade_reagendar(request, ordem_de_compra_id, atividade_i
         form = FormReagendarAtividadeDeCompra(instance=atividade)
         return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
         
-    return redirect(reverse('producao:ordem_de_compra_editar', args=[atividade.ordem_de_compra.id]))
+    return redirect(reverse('producao:ordem_de_compra'))
         
 
 class FormAddAtividadeOrdemDeCompra(forms.ModelForm):
     
     def clean_data(self):
         data = self.cleaned_data.get('data', None)
-        if data < datetime.datetime.now():
-            raise ValidationError(u"Erro. Data não pode ser menor que a data e hora atual")
+        if data < datetime.datetime.now() and not self.registro:
+            raise ValidationError(u"Erro. Data não pode ser menor que a data e hora atual.")
         return data
     
     def __init__(self, *args, **kwargs):
-        ordem_de_compra = kwargs.pop('ordem_de_compra')
+        ordem_de_compra = kwargs.pop('ordem_de_compra', None)
+        self.registro = kwargs.pop('registro', False)
         super(FormAddAtividadeOrdemDeCompra, self).__init__(*args, **kwargs)
-        self.fields['ordem_de_compra'].initial  = ordem_de_compra
-        self.fields['ordem_de_compra'].widget = forms.HiddenInput()
+        self.fields['controle_de_compra'].initial  = ordem_de_compra
+        self.fields['controle_de_compra'].widget = forms.HiddenInput()
         self.fields['data'].widget.attrs['class'] = 'datetimepicker'
-
     
     class Meta:
-        model = AtividadeDeOrdemDeCompra
-        fields = 'data', 'descricao', 'ordem_de_compra'
-
-class FormAddComponentesDaOrdemDeCompra(forms.ModelForm):
-    
-    def __init__(self, *args, **kwargs):
-        ordem_de_compra = kwargs.pop('ordem_de_compra')
-        super(FormAddComponentesDaOrdemDeCompra, self).__init__(*args, **kwargs)
-        self.fields['ordem_de_compra'].initial  = ordem_de_compra
-        self.fields['ordem_de_compra'].widget = forms.HiddenInput()
-        self.fields['quantidade_comprada'].widget.attrs['class'] = 'nopoint'
-        self.fields['componente_comprado'].widget.attrs['class'] = 'select2'
-        self.fields['valor'].widget.attrs['class'] = 'nopoint'
-        self.fields['valor'].localize=True
-        self.fields['valor'].widget.is_localized = True
-        
-        
-        
-    class Meta:
-        model = ComponentesDaOrdemDeCompra
+        model = AtividadeDeCompra
+        fields = 'data', 'descricao', 'controle_de_compra'
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra(request):
-    ordens = OrdemDeCompra.objects.filter(data_fechado=None)
+    ordens = ControleDeCompra.objects.filter(data_fechado=None)
+    form_add_atividade = FormAddAtividadeOrdemDeCompra()
     if request.POST:
         if request.POST.get("form-adicionar-ordem-de-compra", None):
             form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra(request.POST)
@@ -3134,18 +3109,33 @@ def ordem_de_compra(request):
                 ordem_de_compra = form_adicionar_ordem_de_compra.save(commit=False)
                 ordem_de_compra.funcionario = request.user.funcionario
                 ordem_de_compra.save()
-                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem_de_compra.id]))
+                messages.success("Novo Controle de Atividade de Compra criado.")
+                form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
+        if request.POST.get('registrar-atividade', None):
+            form_add_atividade = FormAddAtividadeOrdemDeCompra(request.POST, registro=True)
+            if form_add_atividade.is_valid():
+                atividade = form_add_atividade.save(commit=False)
+                atividade.data_fechado = datetime.datetime.now()
+                atividade.save()
+                messages.success(request, u"Atividade #%s Registrada ao Controle de Compra #%s" % (atividade, atividade.controle_de_compra))
+        if request.POST.get('agendar-atividade', None):
+            form_add_atividade = FormAddAtividadeOrdemDeCompra(request.POST, registro=False)
+            if form_add_atividade.is_valid():
+                atividade = form_add_atividade.save()
+                messages.success(request, u"Atividade #%s Agendada ao Controle de Compra #%s" % (atividade, atividade.controle_de_compra))
+        
+            
         if request.POST.get("form-filtrar-ordem-de-compra", None):
             filtro = True
             form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
             form_filtro = FormOrdemDeCompraFiltro(request.POST)
             if form_filtro.is_valid():
                 # define o filtro
-                ordens = OrdemDeCompra.objects.all()
+                ordens = controle_de_compra.objects.all()
                 if form_filtro.cleaned_data['data_inicio_abertura'] and form_filtro.cleaned_data['data_fim_abertura']:
-                    ordens = OrdemDeCompra.objects.filter(data_aberto__range=(form_filtro.cleaned_data['data_inicio_abertura'], form_filtro.cleaned_data['data_fim_abertura'])).order_by('data_aberto')
+                    ordens = ControleDeCompra.objects.filter(data_aberto__range=(form_filtro.cleaned_data['data_inicio_abertura'], form_filtro.cleaned_data['data_fim_abertura'])).order_by('data_aberto')
                 if form_filtro.cleaned_data['data_inicio_fechamento'] and form_filtro.cleaned_data['data_fim_fechamento']:
-                    ordens = OrdemDeCompra.objects.filter(data_fechado__range=(form_filtro.cleaned_data['data_inicio_fechamento'], form_filtro.cleaned_data['data_fim_fechamento'])).order_by('data_aberto')
+                    ordens = ControleDeCompra.objects.filter(data_fechado__range=(form_filtro.cleaned_data['data_inicio_fechamento'], form_filtro.cleaned_data['data_fim_fechamento'])).order_by('data_aberto')
                 
                 if form_filtro.cleaned_data['mostrar_somente_atrasados']:
                     mostrar_somente_atrasados = True
@@ -3169,44 +3159,9 @@ def ordem_de_compra(request):
     return render_to_response('frontend/producao/producao-ordem-de-compra.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
-def ordem_de_compra_editar(request, ordem_de_compra_id):
-    ordem = get_object_or_404(OrdemDeCompra, pk=ordem_de_compra_id)
-    if request.POST:
-        if request.POST.get('editar-ordem', None):
-            form_add_atividade = FormAddAtividadeOrdemDeCompra(ordem_de_compra=ordem)
-            form_add_componentes = FormAddComponentesDaOrdemDeCompra(ordem_de_compra=ordem)
-            form_editar_ordem = FormAdicionarOrdemDeCompraFull(request.POST, instance=ordem)
-            if form_editar_ordem.is_valid():
-                atividade = form_editar_ordem.save()
-                messages.success(request, u"Ordem de Compra %s alterada" % ordem)
-                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
-        if request.POST.get('adicionar-atividade', None):
-            form_editar_ordem = FormAdicionarOrdemDeCompraFull(instance=ordem)
-            form_add_componentes = FormAddComponentesDaOrdemDeCompra(ordem_de_compra=ordem)
-            form_add_atividade = FormAddAtividadeOrdemDeCompra(request.POST, ordem_de_compra=ordem)
-            if form_add_atividade.is_valid():
-                atividade = form_add_atividade.save()
-                messages.success(request, u"Atividade #%s Adicionada à Ordem de Compra %s" % (atividade, ordem))
-                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
-        if request.POST.get('vincular_componentes', None):
-            form_add_componentes = FormAddComponentesDaOrdemDeCompra(request.POST, ordem_de_compra=ordem)
-            form_editar_ordem = FormAdicionarOrdemDeCompraFull(instance=ordem)
-            form_add_atividade = FormAddAtividadeOrdemDeCompra(ordem_de_compra=ordem)
-            if form_add_componentes.is_valid():
-                vinculacao = form_add_componentes.save()
-                messages.success(request, u"Componente %s com Quantidade %s vinculado à ordem de Compra %s" % (vinculacao.componente_comprado, vinculacao.quantidade_comprada, vinculacao.ordem_de_compra))
-                return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
-            
-    else:
-        form_editar_ordem = FormAdicionarOrdemDeCompraFull(instance=ordem)
-        form_add_atividade = FormAddAtividadeOrdemDeCompra(ordem_de_compra=ordem)
-        form_add_componentes = FormAddComponentesDaOrdemDeCompra(ordem_de_compra=ordem)
-    return render_to_response('frontend/producao/producao-ordem-de-compra-editar-ordem.html', locals(), context_instance=RequestContext(request),)
-
-@user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_fechar(request, ordem_de_compra_id):
-    ordem = get_object_or_404(OrdemDeCompra, pk=ordem_de_compra_id)
-    atividades_abertas = ordem.atividadedeordemdecompra_set.filter(data_fechado=None).count()
+    ordem = get_object_or_404(ControleDeCompra, pk=ordem_de_compra_id)
+    atividades_abertas = ordem.atividadedecompra_set.filter(data_fechado=None).count()
     if atividades_abertas:
         messages.error(request, u"Erro! Existem %s Atividades abertas nesta ordem. É preciso fechar essas atividades antes de fechar a Ordem" % atividades_abertas)
         return redirect(reverse('producao:ordem_de_compra_editar', args=[ordem.id]))
@@ -3218,27 +3173,19 @@ def ordem_de_compra_fechar(request, ordem_de_compra_id):
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_atividade_fechar(request, ordem_de_compra_id, atividade_id):
-    atividade = get_object_or_404(AtividadeDeOrdemDeCompra, pk=atividade_id, ordem_de_compra__pk=ordem_de_compra_id)
+    atividade = get_object_or_404(AtividadeDeCompra, pk=atividade_id, controle_de_compra__pk=ordem_de_compra_id)
     atividade.data_fechado = datetime.datetime.now()
     atividade.fechado_por = request.user
     atividade.save()
-    messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s Fechada!" % (atividade.descricao, atividade.ordem_de_compra.id))
-    return redirect(reverse('producao:ordem_de_compra_editar', args=[atividade.ordem_de_compra.id]))
+    messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s Fechada!" % (atividade.descricao, atividade.controle_de_compra.id))
+    return redirect(reverse('producao:ordem_de_compra'))
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_atividade_remover(request, ordem_de_compra_id, atividade_id):
-    atividade = get_object_or_404(AtividadeDeOrdemDeCompra, pk=atividade_id, ordem_de_compra__pk=ordem_de_compra_id)
+    atividade = get_object_or_404(AtividadeDeCompra, pk=atividade_id, controle_de_compra__pk=ordem_de_compra_id)
     atividade.delete()
-    messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s APAGADO!" % (atividade.descricao, atividade.ordem_de_compra.id))
-    return redirect(reverse('producao:ordem_de_compra_editar', args=[atividade.ordem_de_compra.id]))
-
-
-@user_passes_test(possui_perfil_acesso_producao)
-def ordem_de_compra_componente_comprado_remover(request, ordem_de_compra_id, vinculacao_id):
-    vinculo = get_object_or_404(ComponentesDaOrdemDeCompra, pk=vinculacao_id, ordem_de_compra__pk=ordem_de_compra_id)
-    vinculo.delete()
-    messages.success(request, u"Sucesso! Vínculação de Componente %s e Quantidade %s removido da %s" % (vinculo.componente_comprado, vinculo.quantidade_comprada, vinculo.ordem_de_compra))
-    return redirect(reverse('producao:ordem_de_compra_editar', args=[vinculo.ordem_de_compra.id]))
+    messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s APAGADO!" % (atividade.descricao, atividade.controle_de_compra.id))
+    return redirect(reverse('producao:ordem_de_compra'))
 
 class AddRequisicaoDeCompra(forms.ModelForm):
     

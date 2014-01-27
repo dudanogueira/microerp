@@ -27,9 +27,8 @@ from models import OrdemProducaoProduto
 from models import RegistroEnvioDeTesteSubProduto
 from models import RegistroSaidaDeTesteSubProduto
 from models import RegistroValorEstoque
-from models import OrdemDeCompra
-from models import AtividadeDeOrdemDeCompra
-from models import ComponentesDaOrdemDeCompra
+from models import ControleDeCompra
+from models import AtividadeDeCompra
 from models import RequisicaoDeCompra
 from models import OrdemConversaoSubProduto
 from models import LancamentoProdProduto
@@ -235,9 +234,8 @@ admin.site.register(LinhaSubProdutodoProduto, LinhaSubProdutodoProdutoAdmin)
 admin.site.register(RegistroEnvioDeTesteSubProduto, RegistroEnvioDeTesteSubProdutoAdmin)
 admin.site.register(RegistroSaidaDeTesteSubProduto, RegistroSaidaDeTesteSubProdutoAdmin)
 admin.site.register(RegistroValorEstoque)
-admin.site.register(OrdemDeCompra)
-admin.site.register(AtividadeDeOrdemDeCompra)
-admin.site.register(ComponentesDaOrdemDeCompra)
+admin.site.register(ControleDeCompra)
+admin.site.register(AtividadeDeCompra)
 admin.site.register(RequisicaoDeCompra)
 admin.site.register(OrdemConversaoSubProduto)
 admin.site.register(LancamentoProdProduto, LancamentoProdProdutoAdmin)
