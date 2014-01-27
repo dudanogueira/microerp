@@ -36,17 +36,28 @@ Periodo: {{periodo}}
 
 <script>
 
+function addCommas(nStr)
+{
+	nStr += '';
+	x = nStr.split('.');
+	x1 = x[0];
+	x2 = x.length > 1 ? ',' + x[1] : '';
+	var rgx = /(\d+)(\d{3})/;
+	while (rgx.test(x1)) {
+		x1 = x1.replace(rgx, '$1' + '.' + '$2');
+	}
+	return x1 + x2;
+}
+
+function formatter(val, axis) {
+    return "<span style='font-weight: bold'>" + 'R$ '+  addCommas(val) + "</span>"; 
+}
+
 		var data = [ 
 			{% for item in total_notas_por_dia %}
 			["{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}", {{item.soma|safe}}],
 			{% endfor %}
 		 ];
-		 
- 		var ticks = [ 
- 			{% for item in total_notas_por_dia %}
- 			["{{item.soma|safe}}", "R${{item.soma}}"],
- 			{% endfor %}
- 		 ];
 		 
 		$.plot("#placeholder-dia", [ data ], {
 			series: {
@@ -60,7 +71,8 @@ Periodo: {{periodo}}
 				mode: "categories",
 			},
 			yaxis: {
-				ticks: ticks,
+				//ticks: ticks,
+				tickFormatter: formatter
 			}
 			
 			
@@ -109,13 +121,7 @@ Periodo: {{periodo}}
 			["{{item.month|date:"M/y"}}", {{item.soma|safe}}],
 			{% endfor %}
 		 ];
-		 
- 		var ticks = [ 
- 			{% for item in total_notas_por_mes %}
- 			["{{item.soma|safe}}", "R${{item.soma}}"],
- 			{% endfor %}
- 		 ];
-		 
+		 		 
 		$.plot("#placeholder-mes", [ data ], {
 			series: {
 				bars: {
@@ -128,7 +134,7 @@ Periodo: {{periodo}}
 				mode: "categories",
 			},
 			yaxis: {
-				ticks: ticks,
+				tickFormatter: formatter
 			}
 			
 			
