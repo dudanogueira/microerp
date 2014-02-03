@@ -114,10 +114,11 @@ def importa_nota_sistema(f):
             infNFE = xmldoc.getElementsByTagName('NFe')[0]
         
         try:
-            # specs da nota fiscal eletronica.
+            # specs da nota fiscal eletronica...
             idnfe = infNFE.firstChild.nodeValue[22:34]
         except:
-            pass
+            idnfe = infNFE.firstChild.getAttribute('Id')[22:34]
+            
         numero = idnfe[3:]
         serie = idnfe[0:3] 
         nome_emissor = xmldoc.getElementsByTagName('xNome')[0]
@@ -331,6 +332,7 @@ class NotaFiscalForm(forms.ModelForm):
     class Meta:
         model = NotaFiscal
         fields = ['fabricante_fornecedor', 'serie', 'numero', 'tipo', 'taxas_diversas', 'cotacao_dolar',]
+        localized_fields = ('taxas_diversas', 'cotacao_dolar')
 
 # MODEL FORM LANCAMENTO NOTA FISCAL
 
@@ -352,8 +354,6 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         self.fields['componente'].queryset = Componente.objects.filter(ativo=True)
         self.fields['fabricante'].widget.attrs['class'] = 'select2'
 
-        
-
         if nota.tipo == 'n':
             self.fields['valor_unitario'].label = "Valor Unitário (R$):"
         else:
@@ -365,6 +365,7 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
     class Meta:
         model = LancamentoComponente
         fields = 'part_number_fornecedor', 'quantidade', 'valor_unitario', 'impostos', 'componente', 'fabricante', 'part_number_fabricante', 'aprender'
+        localized_fields = ('quantidade', 'valor_unitario', 'impostos')
 
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_nota(request):
