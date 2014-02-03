@@ -10,7 +10,6 @@ from django.core.mail import EmailMessage
 
 # SITES
 from django.contrib.sites.models import Site
-from account.models import User
 # RH
 from rh.models import Funcionario, Departamento
 # Cadastro
