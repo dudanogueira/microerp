@@ -339,7 +339,7 @@ class NotaFiscalForm(forms.ModelForm):
 class LancamentoNotaFiscalForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
-        nota = kwargs.pop('nota')
+        self.nota = kwargs.pop('nota')
         super(LancamentoNotaFiscalForm, self).__init__(*args, **kwargs)
         self.fields['quantidade'].localize=True
         self.fields['quantidade'].widget.is_localized = True
@@ -354,7 +354,7 @@ class LancamentoNotaFiscalForm(forms.ModelForm):
         self.fields['componente'].queryset = Componente.objects.filter(ativo=True)
         self.fields['fabricante'].widget.attrs['class'] = 'select2'
 
-        if nota.tipo == 'n':
+        if self.nota.tipo == 'n':
             self.fields['valor_unitario'].label = "Valor Unitário (R$):"
         else:
             self.fields['valor_unitario'].label = "Valor Unitário (USD):"
@@ -897,7 +897,9 @@ class MoverEstoque(forms.Form):
         if estoque_origem:
             self.fields['estoque_origem'].initial = estoque_origem
         self.fields['componente'].widget.attrs.update({'class' : 'select2'})
-    
+        self.fields['quantidade'].localize=True
+        self.fields['quantidade'].widget.is_localized = True
+        
     
     def clean(self):
         cleaned_data = super(MoverEstoque, self).clean()
@@ -919,12 +921,14 @@ class MoverEstoque(forms.Form):
                 
         return cleaned_data    
     
-    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
+    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True, localize=True)
     componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True)
     estoque_origem = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     estoque_destino = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
-    justificativa = forms.CharField(widget=forms.Textarea, required=True)
-    
+    justificativa = forms.CharField(widget=forms.Textarea, required=False)
+
+    class Meta:
+        localized_fields = ('quantidade',)    
 
 class AlterarEstoque(forms.Form):
     
@@ -937,8 +941,9 @@ class AlterarEstoque(forms.Form):
             self.fields['estoque'].initial = estoque
         if componente:
             self.fields['componente'].initial = componente
-    
-    
+        self.fields['quantidade'].localize=True
+        self.fields['quantidade'].widget.is_localized = True
+            
     def clean(self):
         cleaned_data = super(AlterarEstoque, self).clean()
         quantidade = cleaned_data.get("quantidade")
@@ -947,7 +952,7 @@ class AlterarEstoque(forms.Form):
         componente = cleaned_data.get("componente")
         
         # se operacao for remover, verificar se existe a quantidade
-        if alteracao_tipo == "remover":            
+        if alteracao_tipo == "remover" and componente:            
             quantidade_atual = componente.posicao_no_estoque(estoque)
             if quantidade_atual < quantidade:
                 raise forms.ValidationError(u"Erro! Quantidade no estoque %s é %s, menor do que a quantidade a se remover, %s" % (estoque, quantidade_atual, quantidade))
@@ -955,7 +960,7 @@ class AlterarEstoque(forms.Form):
         return cleaned_data
     
     alteracao_tipo = forms.ChoiceField(label="Tipo de Alteração", choices=(('adicionar', 'Adicionar'), ('remover', 'Remover')))
-    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True)
+    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True, localize=True)
     componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True,)
     estoque = forms.ModelChoiceField(queryset=EstoqueFisico.objects.all(), required=True)
     justificativa = forms.CharField(widget=forms.Textarea, required=True)
@@ -3025,24 +3030,23 @@ class FormAdicionarOrdemDeCompra(forms.ModelForm):
         self.fields['data_aberto'].initial  = datetime.date.today()
         self.fields['data_aberto'].widget = forms.HiddenInput()
         self.fields['fornecedor'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
         
 
     class Meta:
         model = ControleDeCompra
-        fields = ('titulo', 'data_aberto','descricao', 'fornecedor', 'criticidade')
+        fields = ('titulo', 'data_aberto','descricao', 'fornecedor', 'funcionario', 'criticidade')
 
-class FormAdicionarOrdemDeCompraFull(forms.ModelForm):
+class FormEditarControleDeCompra(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
-        super(FormAdicionarOrdemDeCompraFull, self).__init__(*args, **kwargs)
-        self.fields['data_aberto'].initial  = datetime.date.today()
-        self.fields['data_aberto'].widget = forms.HiddenInput()
-        self.fields['data_fechado'].widget.attrs['class'] = 'datepicker'
+        super(FormEditarControleDeCompra, self).__init__(*args, **kwargs)
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
         self.fields['fornecedor'].widget.attrs['class'] = 'select2'
 
     class Meta:
         model = ControleDeCompra
+        fields = 'titulo', 'descricao', 'funcionario', 'fornecedor', 'criticidade'
 
 class FormReagendarAtividadeDeCompra(forms.ModelForm):
     
@@ -3180,6 +3184,20 @@ def ordem_de_compra_atividade_fechar(request, ordem_de_compra_id, atividade_id):
     atividade.save()    
     messages.success(request, u"Sucesso! Atividade (%s) da Ordem de Compra #%s Fechada!" % (atividade.descricao, atividade.controle_de_compra.id))
     return redirect(reverse('producao:ordem_de_compra'))
+
+@user_passes_test(possui_perfil_acesso_producao)
+def ordem_de_compra_editar(request, ordem_de_compra_id):
+    controle = get_object_or_404(ControleDeCompra, pk=ordem_de_compra_id)
+    if request.POST:
+        form_ordem = FormEditarControleDeCompra(request.POST, instance=controle)
+        if form_ordem.is_valid():
+            controle = form_ordem.save()
+            messages.success(request, u"Sucesso! Controle alterado.")
+            return redirect(reverse("producao:ordem_de_compra"))
+    else:
+        form_ordem = FormEditarControleDeCompra(instance=controle)
+    return render_to_response('frontend/producao/producao-ordem-de-compra-editar.html', locals(), context_instance=RequestContext(request),)
+
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_atividade_remover(request, ordem_de_compra_id, atividade_id):

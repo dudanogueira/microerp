@@ -37,7 +37,7 @@
 	{% endif %}
 	
 </div>
-		
+	
 <!-- Modal FILTRO -->
 <div id="FiltroModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-header">
@@ -52,7 +52,7 @@
 			</form>
 		</div>
 		<div class="modal-footer">
-			<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+			<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
 			<button form="filtro-ordem-compra" type="submit" class="btn btn-primary" name="form-filtrar-ordem-de-compra" value="filtrar"><i class="fa fa-filter"></i> Filtrar</button>
 		</div>
 	</div>
@@ -61,7 +61,7 @@
 <div id="AddOrdemModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		<div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3 id="myModalLabel"><i class="fa fa-plus"></i> Adicionar Ordem de Compra</h3>
+			<h3 id="myModalLabel"><i class="fa fa-plus"></i> Adicionar Controle de Compra</h3>
 		</div>
 		<div class="modal-body">
 
@@ -73,55 +73,52 @@
 
 		</div>
 		<div class="modal-footer">
-			<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+			<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
 			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-add-ordem" value="adicionar"><i class="fa fa-plus"></i> Adicionar</button>
-			
-
 
 		</div>
-	</div>
+</div>
 
 <!-- Modal Reagendar Atividade -->
 <div id="ReagendarAtividadeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3 id="myModalLabel"><i class="fa fa-plus"></i> Reagendar Atividade</h3>
-		</div>
-		<div class="modal-body" id="body-modal-reagendar-atividade">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3 id="myModalLabel"><i class="fa fa-plus"></i> Reagendar Atividade</h3>
+	</div>
+	<div class="modal-body" id="body-modal-reagendar-atividade">
 
 
-		</div>
-		<div class="modal-footer">
-			<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
-			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-reagendar-atividade" value="adicionar"><i class="fa fa-resfresh"></i> Reagendar Atividade</button>
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+		<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-reagendar-atividade" value="adicionar"><i class="fa fa-resfresh"></i> Reagendar Atividade</button>
 			
 
 
-		</div>
 	</div>
+</div>
 
 <!-- Modal Add Atividade-->
 <div id="FormAddAtividade" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	  <div class="modal-header">
-	    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-	    <h3 id="myModalLabel">Adicionar Nova Atividade</h3>
-	  </div>
-	  <div class="modal-body">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3 id="myModalLabel">Adicionar Nova Atividade</h3>
+	</div>
+	<div class="modal-body">
 
-			<form method="POST" id="form-add-atividade">
-				{% csrf_token %}
-				{{form_add_atividade.as_p}}
-			</form>
+		<form method="POST" id="form-add-atividade">
+			{% csrf_token %}
+			{{form_add_atividade.as_p}}
+		</form>
 
-	  </div>
-	  <div class="modal-footer">
-	    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-			<button form="form-add-atividade" type="submit" name="registrar-atividade" value="adicionar" class="btn btn-success"><i class="fa fa-plus"></i> Registrar</button> 			<button form="form-add-atividade" type="submit" name="agendar-atividade" value="adicionar" class="btn btn-info"><i class="fa fa-clock-o"></i> Agendar</button>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+		<button form="form-add-atividade" type="submit" name="registrar-atividade" value="adicionar" class="btn btn-success"><i class="fa fa-plus"></i> Registrar</button> 			<button form="form-add-atividade" type="submit" name="agendar-atividade" value="adicionar" class="btn btn-info"><i class="fa fa-clock-o"></i> Agendar</button>
 
     
-	  </div>
 	</div>
-
+</div>
 
 {% endblock %}
 

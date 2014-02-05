@@ -93,6 +93,7 @@ urlpatterns = patterns('',
     # ordem de compra
     url(r'^controle-de-compra/$', 'producao.views.ordem_de_compra', name='ordem_de_compra'),
     url(r'^controle-de-compra/(?P<ordem_de_compra_id>[0-9]+)/fechar/$', 'producao.views.ordem_de_compra_fechar', name='ordem_de_compra_fechar'),
+    url(r'^controle-de-compra/(?P<ordem_de_compra_id>[0-9]+)/editar/$', 'producao.views.ordem_de_compra_editar', name='ordem_de_compra_editar'),
     url(r'^controle-de-compra/(?P<ordem_de_compra_id>[0-9]+)/atividade/(?P<atividade_id>[0-9]+)/fechar/$', 'producao.views.ordem_de_compra_atividade_fechar', name='ordem_de_compra_atividade_fechar'),
     url(r'^controle-de-compra/(?P<ordem_de_compra_id>[0-9]+)/atividade/(?P<atividade_id>[0-9]+)/ajax/reagendar/$', 'producao.views.ordem_de_compra_atividade_reagendar', name='ordem_de_compra_atividade_reagendar'),
     url(r'^controle-de-compra/(?P<ordem_de_compra_id>[0-9]+)/atividade/(?P<atividade_id>[0-9]+)/remover/$', 'producao.views.ordem_de_compra_atividade_remover', name='ordem_de_compra_atividade_remover'),

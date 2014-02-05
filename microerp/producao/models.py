@@ -403,13 +403,18 @@ class LancamentoComponente(models.Model):
                 self.componente = conversoes[0].componente
                 self.save()
         
-    def clean(self):
+    def save(self, *args, **kwargs):
+        super(LancamentoComponente, self).save(*args, **kwargs)
         #self.calcula_totais_lancamento()
         # mecanismo para atualizar a memoria de opcao do lancamento
         if self.aprender and self.part_number_fornecedor and self.componente:
             # aprender a combinacao de PN Fornecedor com PN Mestria, 
             # PN Fabricante e Fabricante para uso posterior
-            conversao,created = LinhaFornecedorFabricanteComponente.objects.get_or_create(part_number_fornecedor=self.part_number_fornecedor, fornecedor=self.nota.fabricante_fornecedor, componente=self.componente)
+            conversao,created = LinhaFornecedorFabricanteComponente.objects.get_or_create(
+                part_number_fornecedor=self.part_number_fornecedor,
+                fornecedor=self.nota.fabricante_fornecedor,
+                componente=self.componente
+            )
             if created:
                 conversao.componente = self.componente
                 conversao.part_number_fornecedor = self.part_number_fornecedor
@@ -1497,7 +1502,7 @@ class ControleDeCompra(models.Model):
             dias = self.data_aberto - self.data_fechado
             return dias.days
     
-    titulo = models.CharField(blank=True, max_length=100)
+    titulo = models.CharField(u"Título", blank=True, max_length=100)
     funcionario = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário Responsável", blank=True, null=True)
     data_aberto = models.DateField(blank=True, default=datetime.datetime.today)
     data_fechado = models.DateField("Data de Fechamento", blank=True, null=True)

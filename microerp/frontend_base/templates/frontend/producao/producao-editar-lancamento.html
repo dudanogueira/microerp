@@ -11,7 +11,7 @@
     {% csrf_token %}
     {{lancamento_form.as_p}}
     <p>
-        <button type="submit" class='btn btn-primary'><i class="icon-pencil"></i> Alterar este Lançamento</button>
+        <button type="submit" class='btn btn-primary'><i class="fa fa-pencil"></i> Alterar este Lançamento</button>
     </p>
 </form>
     
@@ -26,8 +26,8 @@
 <script>
 $(document).ready(function() {
     /* Adiciona Botão Adicionar Componente */
-    $("select#id_componente").after('<a href="{% url "producao:listar_componentes" %}" class="btn btn-primary"><i class="icon-plus"></i></a>');
-    $("select#id_fabricante").after('<a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="icon-plus"></i></a>');
+    $("select#id_componente").after('<a href="{% url "producao:listar_componentes" %}" class="btn btn-primary"><i class="fa fa-plus"></i></a>');
+    $("select#id_fabricante").after('<a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="fa fa-plus"></i></a>');
     
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
     $(".nopoint").keyup(function() {
