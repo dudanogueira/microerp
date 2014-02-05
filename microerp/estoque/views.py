@@ -41,8 +41,6 @@ from django.db.models import Count, Q
 
 from estoque.models import Produto
 
-from django_select2 import AutoModelSelect2MultipleField
-
 #
 # DECORADORES
 #
@@ -64,10 +62,6 @@ def possui_perfil_acesso_estoque_gerente(user, login_url="/"):
 
 
 ## FORMS
-
-class SelecionaProdutosField(AutoModelSelect2MultipleField):
-    queryset = Produto.objects
-    search_fields = ['codigo', 'nome__icontains', 'descricao__icontains']
 
 class SelecionaProdutos(forms.Form):
     produtos_adicionar = forms.CharField()
