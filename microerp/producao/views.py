@@ -3136,7 +3136,7 @@ def ordem_de_compra(request):
             form_filtro = FormOrdemDeCompraFiltro(request.POST)
             if form_filtro.is_valid():
                 # define o filtro
-                ordens = controle_de_compra.objects.all()
+                ordens = ControleDeCompra.objects.all()
                 if form_filtro.cleaned_data['data_inicio_abertura'] and form_filtro.cleaned_data['data_fim_abertura']:
                     ordens = ControleDeCompra.objects.filter(data_aberto__range=(form_filtro.cleaned_data['data_inicio_abertura'], form_filtro.cleaned_data['data_fim_abertura'])).order_by('data_aberto')
                 if form_filtro.cleaned_data['data_inicio_fechamento'] and form_filtro.cleaned_data['data_fim_fechamento']:
