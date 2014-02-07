@@ -408,8 +408,13 @@ class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
         self.fields['data_cobranca'].widget.attrs['class'] = 'datepicker'
         self.fields['valor_cobrado'].localize = True
         self.fields['valor_cobrado'].widget.is_localized = True
-        
         self.fields['valor_cobrado'].widget.attrs['class'] = 'valor_parcela'
+    
+    def clean_data_cobranca(self):
+        data = self.cleaned_data['data_cobranca']
+        if data < datetime.date.today():
+            raise forms.ValidationError("Erro! Data de Cobrança deve ser maior que data atual")
+        return data
     
     class Meta:
         model = LancamentoFinanceiroReceber
@@ -497,7 +502,7 @@ def editar_proposta_converter(request, proposta_id):
                             return redirect(reverse("comercial:analise_de_contratos"))
                         else:
                             # caso contrario, retorna para a ficha do cliente
-                            return redirect(reverse("comercial:cliente_ver", args=[cliente.id]))
+                            return redirect(reverse("comercial:cliente_ver", args=[novo_contrato.cliente.id]))
                     else:
                         messages.error(request, u"Erro! Valor das parcelas (R$ %s) NÃO CONFERE com valor proposto: R$ %s" % (total_lancamentos, proposta.valor_proposto))
 
