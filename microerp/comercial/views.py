@@ -520,7 +520,7 @@ def precliente_adicionar(request):
                 precliente.adicionado_por = request.user.funcionario
                 precliente.save()
                 messages.success(request, u'Pré Cliente %s adicionado com sucesso!' % precliente)
-                return redirect(reverse('comercial:home'))
+                return redirect(reverse('comercial:propostas_comerciais_precliente_adicionar', args=[precliente.id]))
         except:
             raise
     else:
