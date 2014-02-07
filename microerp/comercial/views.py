@@ -68,6 +68,7 @@ class AdicionarPropostaForm(forms.ModelForm):
     class Meta:
         model = PropostaComercial
         fields = 'probabilidade', 'valor_proposto', 'observacoes'
+        localized_fields = 'valor_proposto',
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
     
@@ -410,11 +411,31 @@ class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
     class Meta:
         model = LancamentoFinanceiroReceber
         fields = ("data_cobranca", 'valor_cobrado', 'modo_recebido')
+        localized_fields = 'valor_cobrado',
+
+class ConfigurarContratoBaseadoEmProposta(forms.Form):
+    '''Formulario usado pra alterar as informacoes que serao importadas
+    pro contrato com base na proposta'''
+    
+    objeto = forms.CharField(widget = forms.Textarea, label="Objeto do Contrato", required=True)
+    garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
+    items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
+    items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
+    observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=1, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
+    configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
+        initial={
+            'objeto': proposta.objeto_proposto,
+            'garantia': proposta.garantia_proposto,
+            'items_incluso': proposta.descricao_items_proposto,
+            'items_nao_incluso': proposta.items_nao_incluso,
+            'observacoes': proposta.forma_pagamento_proposto,
+        }
+    )
     form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
     if proposta.cliente:
         # tratar a proposta do cliente e converter
@@ -425,8 +446,9 @@ def editar_proposta_converter(request, proposta_id):
                 cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ 1
                 form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
             elif 'converter-contrato' in request.POST:
+                configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
                 form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
-                if form_configurar_contrato.is_valid():
+                if form_configurar_contrato.is_valid() and configurar_contrato_form.is_valid():
                     # checa se total preenchido no formulario bate com valor proposto
                     total_lancamentos = 0
                     for form in form_configurar_contrato.forms:
@@ -459,6 +481,13 @@ def editar_proposta_converter(request, proposta_id):
                                 novo_lancamento.contrato = novo_contrato
                                 novo_lancamento.peso = i
                                 novo_lancamento.save()
+                        # registra os dados configurados para o contrato (alterados ou importados da proposta)
+                        novo_contrato.objeto = configurar_contrato_form.cleaned_data['objeto']
+                        novo_contrato.garantia = configurar_contrato_form.cleaned_data['garantia']
+                        novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
+                        novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
+                        novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
+                        novo_contrato.save()
                         # retorna para a view contratos em analise
                         if request.user.perfilacessocomercial.gerente:
                             # se gerente, retorna para contratos em analise
@@ -467,7 +496,7 @@ def editar_proposta_converter(request, proposta_id):
                             # caso contrario, retorna para a ficha do cliente
                             return redirect(reverse("comercial:cliente_ver", args=[cliente.id]))
                     else:
-                        messages.error(request, u"Erro! Valor das parcelas NÃO CONFERE com valor proposto.: %s %s" % (total_lancamentos, proposta.valor_proposto))
+                        messages.error(request, u"Erro! Valor das parcelas (R$ %s) NÃO CONFERE com valor proposto: R$ %s" % (total_lancamentos, proposta.valor_proposto))
 
         return render_to_response('frontend/comercial/comercial-proposta-converter.html', locals(), context_instance=RequestContext(request),)
     else:
@@ -729,7 +758,7 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         model = PropostaComercial
         fields = 'nome_do_proposto', 'documento_do_proposto', 'rua_do_proposto', 'bairro_do_proposto', \
         'cep_do_proposto', 'cidade_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
-        'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'forma_pagamento_proposto', 'garantia_proposto',
+        'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'items_nao_incluso', 'forma_pagamento_proposto', 'garantia_proposto',
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
@@ -833,18 +862,174 @@ def adicionar_follow_up(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus(request):
-    meus_contratos = ContratoFechado.objects.filter(responsavel_comissionado=request.user.funcionario).order_by('status')
+    meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status')
     return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
+
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph
+ 
+class MyPrint:
+    def __init__(self, buffer, pagesize):
+        self.buffer = buffer
+        if pagesize == 'A4':
+            self.pagesize = A4
+        elif pagesize == 'Letter':
+            self.pagesize = letter
+        self.width, self.height = self.pagesize
+    
+    def _header_footer(self, canvas, doc):
+            # Save the state of our canvas so we can draw on it
+            canvas.saveState()
+            styles = getSampleStyleSheet()
+ 
+            # Footer
+            footer = Paragraph('POP CO 001-F01', styles['Normal'])
+            footer.wrap(doc.width, doc.bottomMargin)
+            footer.drawOn(canvas, 10, doc.bottomMargin+10)
+
+            footer = Paragraph('REV-001', styles['Normal'])
+            footer.wrap(doc.width, doc.bottomMargin)
+            footer.drawOn(canvas, 10, doc.bottomMargin)
+ 
+            # Release the canvas
+            canvas.restoreState()
+    
+    def print_contrato(self, contrato):
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer
+            from reportlab.lib.units import inch 
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from django.contrib.auth.models import User
+            from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
+        
+            buffer = self.buffer
+            doc = SimpleDocTemplate(buffer,
+                                    rightMargin=10,
+                                    leftMargin=10,
+                                    topMargin=10,
+                                    bottomMargin=10,
+                                    pagesize=self.pagesize)
+            
+            # A large collection of style sheets pre-made for us
+            styles = getSampleStyleSheet()
+            styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
+            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
+            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
+            styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
+            
+            # Our container for 'Flowable' objects
+            elements = []
+            
+            # logo empresa
+            im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'))
+            im.hAlign = 'LEFT'
+            elements.append(im)
+            
+            # id do contrato
+            id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
+            elements.append(id_contrato)
+            
+            # descricao
+            id_contrato_p = Paragraph("CONTRATO DE PRESTAÇÃO DE SERVIÇOS.", styles['centered_h1'])
+            elements.append(id_contrato_p)
+            
+            # space
+            elements.append(Spacer(1, 12))
+            
+            # CONTRATANTE DESC
+            contratante_text = "<b>CONTRATANTE</b>: Nome completo do cliente, CPF: xxx.xxx.xxx-xx, RG nº xx-xx.xx.xxx, residente e domiciliado na endereço: centro, CEP: xx.xxx-xxx, Cidade de  xxx xxx, no Estado de xxx."
+            contratante_p = Paragraph(contratante_text, styles['justify'])
+            elements.append(contratante_p)
+            
+            # space
+            elements.append(Spacer(1, 12))
+            
+            # CONTRATADA DESC
+            contratada_texto = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Texto descrevendo a empresa")
+            contratada_p = Paragraph("<b>CONTRATADA</b>: %s" % contratada_texto, styles['justify'])
+            elements.append(contratada_p)
+            
+            # space
+            elements.append(Spacer(1, 12))
+            #
+            # CLAUSULA 1 - DO OBJETO
+            #
+            clausula_1_p = Paragraph("CLÁSULA 1ª – DO OBJETO", styles['left_h1'])
+            elements.append(clausula_1_p)
+            # space
+            elements.append(Spacer(1, 12))
+            
+            objeto_p = Paragraph(str(contrato.objeto).replace("\n", "<br />"), styles['justify'])
+            elements.append(objeto_p)
+            # space
+            elements.append(Spacer(1, 5))
+            # itens incluso titulo
+            itens_incluso_titulo_p = Paragraph(u". Itens inclusos:", styles['left_h2'])
+            elements.append(itens_incluso_titulo_p)
+            # itens incluso texto
+            itens_inclusos_p = Paragraph(unicode(contrato.items_incluso).replace("\n", "<br />"), styles['justify'])
+            elements.append(itens_inclusos_p)
+            # space
+            elements.append(Spacer(1, 5))
+            # itens N incluso titulo
+            itens_n_incluso_titulo_p = Paragraph(". Itens não inclusos:", styles['left_h2'])
+            elements.append(itens_n_incluso_titulo_p)
+            # itens N incluso texto
+            itens_n_inclusos_p = Paragraph(unicode(contrato.items_nao_incluso).replace("\n", "<br />"), styles['justify'])
+            elements.append(itens_n_inclusos_p)
+            
+            # space
+            elements.append(Spacer(1, 5))
+            
+            #
+            # CLAUSULA 2 - NORMAS DE EXECUÇÃO
+            #
+            clausula_2_p = Paragraph("CLÁUSULA 2ª - NORMAS DE EXECUÇÃO", styles['left_h1'])
+            elements.append(clausula_2_p)
+            # space
+            elements.append(Spacer(1, 12))
+            
+            normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Texto descrevendo as normas de execução do contrato")    
+            normas_execucao_p = Paragraph(str(normas_execucao_texto).replace("\n", "<br />"), styles['justify'])
+            elements.append(normas_execucao_p)
+            
+            
+ 
+            doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer)
+ 
+            # Get the value of the BytesIO buffer and write it to the response.
+            pdf = buffer.getvalue()
+            buffer.close()
+            return pdf
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_gerar_impressao(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
+    from io import BytesIO
+    # Create the HttpResponse object with the appropriate PDF headers.
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="CONTRATO-%s.pdf"' % contrato.id
+
+    buffer = BytesIO()
+
+    report = MyPrint(buffer, 'Letter')
+    pdf = report.print_contrato(contrato)
+    response.write(pdf)
+    return response
+    
+    
     texto_contratada = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Texto descrevendo a empresa")
+    texto_normas_execucao = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Texto descrevendo as normas de execução do contrato")    
     texto_juros_valor_contrato = getattr(settings, "TEXTO_CONTRATO_JUROS_VALORES", "Texto descrevendo a forma de juros e multas regidos por este contrato")    
     texto_contrato_dos_prazos = getattr(settings, "TEXTO_HTML_PRAZOS", "Texto descrevendo as informações sobre Prazos")
     texto_contrato_rescisao = getattr(settings, "TEXTO_HTML_RESCISAO", "Texto descrevendo as informações sobre Rescisão")
     texto_contrato_foro = getattr(settings, "TEXTO_HTML_FORO", "Texto descrevendo as informações sobre o Foro")
     nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
-    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
+    
     return render_to_response('frontend/comercial/comercial-contratos-gerar-impressao.html', locals(), context_instance=RequestContext(request),)
 
 class FormRevalidarContrato(forms.ModelForm):
@@ -857,7 +1042,8 @@ class FormRevalidarContrato(forms.ModelForm):
     
     class Meta:
         model = ContratoFechado
-        fields = 'categoria', 'objeto', 'valor', 'tipo',
+        fields = 'categoria', 'objeto', 'garantia', 'items_incluso', 'items_nao_incluso', 'valor', 'tipo',
+        localized_fields = 'valor',
 
 
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -1113,10 +1299,11 @@ class FormAnalisarContrato(forms.ModelForm):
         super(FormAnalisarContrato, self).__init__(*args, **kwargs)
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['responsavel_comissionado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
-    
+        self.fields['responsavel_comissionado'].widget.attrs['class'] = 'select2'    
+        
     class Meta:
         model = ContratoFechado
-        fields = ('categoria', 'objeto', 'responsavel_comissionado')
+        fields = ('objeto', 'categoria', 'responsavel_comissionado', 'responsavel')
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos_analisar(request, contrato_id):

@@ -180,7 +180,6 @@ INSTALLED_APPS = (
     'frontend_base',
     # admin
     'django_admin_bootstrapped',
-    'django_select2',
     # customizado
     'django.contrib.admin',
     'django.contrib.admindocs',
@@ -197,6 +196,7 @@ INSTALLED_APPS = (
     'solicitacao',
     'estoque',
     'treinamento',
+    'producao',
     #'account',
 )
 

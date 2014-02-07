@@ -92,7 +92,9 @@
 								</li>
 								{% endif %}
 								{% empty %}
+								{% if not ordem.data_fechado %}
 								<small><a href="#FormAddAtividade" role="button" class="btn-add-atividade" data-controle-id="{{ordem.id}}" data-toggle="modal">Nenhuma Atividade. Adicione uma nova atividade.</a></small>
+								{% endif %}
 								{% endfor %}
 							</ul>
 						</div>

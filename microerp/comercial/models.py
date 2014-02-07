@@ -141,6 +141,7 @@ class PropostaComercial(models.Model):
     email_proposto = models.CharField(blank=True, max_length=100)
     objeto_proposto = models.TextField(blank=True)
     descricao_items_proposto = models.TextField(blank=True)
+    items_nao_incluso = models.TextField(blank=True)
     forma_pagamento_proposto = models.TextField(blank=True)
     garantia_proposto = models.TextField(blank=True)
     # definido perdido
@@ -308,7 +309,6 @@ class ContratoFechado(models.Model):
     def total_valor_recebido_lancamentos(self):
         return self.lancamento_set.all().aggregate(Sum('valor_recebido'))
 
-    
     def ultimo_lancamento(self):
         try:
             ultimo_lancamento = self.lancamento_set.all().order_by('-criado')[0]
@@ -320,6 +320,9 @@ class ContratoFechado(models.Model):
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)
     categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
     objeto = models.TextField(blank=False)
+    garantia = models.TextField(blank=True)
+    items_incluso = models.TextField("Itens Incluso", blank=True)
+    items_nao_incluso = models.TextField("Itens Não Incluso", blank=True)
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
@@ -332,6 +335,7 @@ class ContratoFechado(models.Model):
     responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")
     responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="contrato_comissionado_set")
     motivo_invalido = models.TextField(blank=True)
+    observacoes = models.TextField(blank=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")

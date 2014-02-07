@@ -60,7 +60,6 @@ def possui_perfil_acesso_estoque_gerente(user, login_url="/"):
     except:
         return False
 
-
 ## FORMS
 
 class SelecionaProdutos(forms.Form):

@@ -8,7 +8,7 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato</h1>
 <ul>
 {% for contrato in contratos_em_analise %}
-	<li><a href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">{{contrato}}</a></li>
+	<li><a href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">{{contrato}}. Responsável: {{contrato.responsavel}}, Comissionado: {{contrato.responsavel_comissionado}}</a></li>
 {% endfor %}
 </ul>
 

@@ -5,7 +5,7 @@
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
-<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Converter Proposta Comercial</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Converter Proposta  Comercial (#{{proposta.id}}) em Contrato</h1>
 
 <div class="well well-small">
 	<div class="row-fluid">
@@ -26,11 +26,22 @@
 </div>
 
 <form method="post" class="form form-inline">
+	
 	{% csrf_token %}
-	{{form_configurar_contrato.management_form}}
-	{%for form in form_configurar_contrato %}
-	<h4>Parcela {{forloop.counter}}</h4>
-	<div class="row-fluid">
+	
+	<div class="well well-small">
+		<h4>Configurações do Contrato</h4>
+		{{configurar_contrato_form.as_p}}
+	</div>
+	
+	
+	<div class="well well-small">
+		<h4>Configurações de Parcelas</h4>
+	
+		{{form_configurar_contrato.management_form}}
+		{%for form in form_configurar_contrato %}
+		<h4>Parcela {{forloop.counter}}</h4>
+		<div class="row-fluid">
 		<div class="span4">
 			{{form.data_cobranca.errors}}
 			{{form.data_cobranca.label}}
@@ -51,7 +62,8 @@
 		</div>
 		
 	</div>
-	{% endfor %}
+		{% endfor %}
+	</div>
 	<hr />
 	<p>
 		<button type="submit" class="btn btn-primary" name="adicionar-parcela" value="adicionar"><i class="fa fa-plus"></i> Adicionar Parcela</button>
