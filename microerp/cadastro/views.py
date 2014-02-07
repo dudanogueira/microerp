@@ -268,7 +268,7 @@ def requisicao_proposta_cliente(request):
             try:
                 cliente = get_object_or_404(Cliente, pk=request.POST.get('cliente-requisicao-proposta'))
                 # adiciona requisicao
-                requisicao = cliente.requisicaodeproposta_set.create(criado_por=request.user, descricao=request.POST.get('descricao-requisicao-proposta', None))
+                requisicao = cliente.requisicaodeproposta_set.create(criado_por=request.user.funcionario, descricao=request.POST.get('descricao-requisicao-proposta', None))
                 messages.success(request, u"Requisição de Proposta para %s realizada para Funcionário %s" % (cliente, cliente.designado))
             except:
                 raise
