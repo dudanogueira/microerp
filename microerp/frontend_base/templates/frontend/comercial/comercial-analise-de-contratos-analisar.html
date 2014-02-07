@@ -55,7 +55,7 @@
 			{% endfor %}
 		</ul>
 		{% if contrato.propostacomercial.orcamento_set.all %}
-		<h2>Orçamentos Inclusos</h2>
+		<h2>Orçamentos Vinculados</h2>
 		<ul>
 		{% for orcamento in contrato.propostacomercial.orcamento_set.all %}
 			<li>{{orcamento.descricao}} - R$ {{orcamento.custo_total}}</li>
@@ -66,7 +66,7 @@
 		<h2>Check List</h2>
 		<ul>
 			<li>
-				Lançamentos Vinculados: {% if contrato.lancamentofinanceiroreceber_set.count %}
+				Lançamentos Configurado: {% if contrato.lancamentofinanceiroreceber_set.count %}
 					<span class="label label-success">{{contrato.lancamentofinanceiroreceber_set.count}}</span>
 				{% else %}
 					<span class="label label-important">{{contrato.lancamentofinanceiroreceber_set.count}}</span>

@@ -970,7 +970,7 @@ class MyPrint:
             # space
             elements.append(Spacer(1, 12))
             
-            objeto_p = Paragraph(str(contrato.objeto).replace("\n", "<br />"), styles['justify'])
+            objeto_p = Paragraph(unicode(contrato.objeto).replace("\n", "<br />"), styles['justify'])
             elements.append(objeto_p)
             # space
             elements.append(Spacer(1, 5))
