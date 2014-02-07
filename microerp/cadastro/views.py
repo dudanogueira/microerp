@@ -78,9 +78,6 @@ class AdicionarRecadoForm(forms.ModelForm):
         model = Recado
         fields = ('texto', 'tipo', 'tipo_outros', 'remetente', 'cliente', 'destinatario', 'avisar_departamento')
     
-
-
-
 class PreClienteAdicionarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         sugestao = kwargs.pop('sugestao')
@@ -88,7 +85,6 @@ class PreClienteAdicionarForm(forms.ModelForm):
         self.fields['designado'].empty_label = "Nenhum"
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['designado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
-        
         
         if sugestao:
             self.fields['nome'].initial = sugestao

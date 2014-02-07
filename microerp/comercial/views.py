@@ -51,6 +51,8 @@ class PreClienteAdicionarForm(forms.ModelForm):
         if not perfil.gerente:
             self.fields['designado'].widget = forms.HiddenInput()
             self.fields['designado'].initial = perfil.user.funcionario
+        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        self.fields['designado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
         
     class Meta:
         model = PreCliente
@@ -924,7 +926,7 @@ class MyPrint:
             elements = []
             
             # logo empresa
-            im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'))
+            im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
             im.hAlign = 'LEFT'
             elements.append(im)
             
