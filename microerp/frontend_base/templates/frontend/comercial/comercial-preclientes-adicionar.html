@@ -14,9 +14,12 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 <script>
 $(document).ready(function() {
-    $("#menu-comercial-cliente-pre-cliente, #top-menu-cadastro").addClass("active");
+    $("#menu-comercial-cliente-pre-cliente, #top-menu-comercial").addClass("active");
 });
 </script>
 {% endaddtoblock %}
