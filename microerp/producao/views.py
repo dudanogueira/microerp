@@ -1748,7 +1748,8 @@ def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subpro
             opcao.linha.subproduto.save()
             
             messages.success(request, u"Sucesso! Opção adiconada com sucesso em %s" % linha)
-            return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
+            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+            #return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
     else:
         form = OpcaoLinhaSubProdutoForm(linha=linha)
     return render_to_response('frontend/producao/producao-editar-linha-subproduto-adicionar-opcao.html', locals(), context_instance=RequestContext(request),)    
