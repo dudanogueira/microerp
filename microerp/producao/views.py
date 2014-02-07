@@ -1642,7 +1642,12 @@ class AdicionarLinhaSubProdutoForm(forms.ModelForm):
         super(AdicionarLinhaSubProdutoForm, self).__init__(*args, **kwargs)
         self.fields['subproduto'].initial  = subproduto
         self.fields['subproduto'].widget = forms.HiddenInput()
+        self.fields['componente'].widget.attrs['class'] = 'select2'
+        if not subproduto.possui_tags:
+            del self.fields['tag']
     
+    quantidade = forms.DecimalField(max_digits=15, decimal_places=2, required=True, localize=True)
+    componente = forms.ModelChoiceField(queryset=Componente.objects.filter(ativo=True), required=True)
     
     class Meta:
         model = LinhaSubProduto
@@ -1690,23 +1695,21 @@ def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_linha_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
-    if subproduto.possui_tags:
-        if request.POST:
-            form = AdicionarLinhaSubProdutoForm(request.POST, subproduto=subproduto)
-            if form.is_valid():
-                linha = form.save()
-                messages.success(request, u"Sucesso! Linha Adicionada.")
-                return redirect(reverse("producao:editar_linha_subproduto_adicionar_opcao", args=[subproduto.id, linha.id]) + "#linhas-componente")
-        else:
-            form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
+    if request.POST:
+        form = AdicionarLinhaSubProdutoForm(request.POST, subproduto=subproduto)
+        if form.is_valid():
+            linha = form.save()
+            messages.success(request, u"Sucesso! Linha Adicionada.")
+            # criando a opcao da linha
+            componente = form.cleaned_data['componente']
+            quantidade = form.cleaned_data['quantidade']
+            opcao = linha.opcaolinhasubproduto_set.create(componente=componente, quantidade=quantidade, padrao=True)
+            opcao.linha.valor_custo_da_linha = linha.custo()
+            opcao.linha.save()
+            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
     else:
-        linha = LinhaSubProduto.objects.create(subproduto=subproduto)
-        messages.success(request, u"Sucesso! Linha Criada.")
-        messages.info(request, u"Defina agora a composição de opções.")
-        return redirect(reverse("producao:editar_linha_subproduto_adicionar_opcao", args=[subproduto.id, linha.id]) + "#linhas-componente")
+        form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
     return render_to_response('frontend/producao/producao-adicionar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
-    
-    
 
 class OpcaoLinhaSubProdutoForm(forms.ModelForm):
     
