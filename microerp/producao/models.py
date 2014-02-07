@@ -575,7 +575,7 @@ class NotaFiscal(models.Model):
     
     #arquivo = models.FileField(upload_to=arquivo)
     numero = models.CharField("Número", max_length=100, blank=False, null=False)
-    serie = models.CharField("Série", max_length=100, blank=False, null=False)
+    serie = models.CharField("Série", max_length=100, blank=True, null=True)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Valores Diversos (R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (R$)", help_text="utilizado somente em notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)
