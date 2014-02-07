@@ -1748,7 +1748,7 @@ def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subpro
             opcao.linha.subproduto.save()
             
             messages.success(request, u"Sucesso! Opção adiconada com sucesso em %s" % linha)
-            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+            return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
             #return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
     else:
         form = OpcaoLinhaSubProdutoForm(linha=linha)
