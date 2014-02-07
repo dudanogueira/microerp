@@ -149,6 +149,7 @@
 
 
 <h2>Propostas Abertas Válidas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
+
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -161,7 +162,7 @@
 
 		{% for linha in propostas_abertas_nao_expiradas_por_criador %}
 		<tr class="">
-			<td class="alert alert-info"><strong>{{linha.criado_por__funcionario__nome}}</strong></td>
+			<td class="alert alert-info"><strong>{{linha.criado_por__nome}}</strong></td>
 			<td>{{linha.id__count}}</td>
 			<td>R$ {{linha.valor_proposto__sum}}</td>
 		</tr>
@@ -265,7 +266,7 @@
 	</tbody>
 </table>
 
-<h2>Propostas Perdidas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
+<h2>Propostas Declinadas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>
@@ -344,7 +345,7 @@
 </table>
 
 
-<h2>Indicadores de Grupo de Produtos Em Propostas Perdidas em {{ano}}</h2>
+<h2>Indicadores de Grupo de Produtos Em Propostas Declinadas em {{ano}}</h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
 		<tr>

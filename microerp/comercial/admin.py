@@ -49,7 +49,7 @@ class PerfilAcessoComercialAdmin(admin.ModelAdmin):
 
 class PropostaComercialAdmin(admin.ModelAdmin):
     list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada'
-    list_filter = 'probabilidade', 'data_expiracao'
+    list_filter = 'probabilidade', 'data_expiracao', 'status'
     list_display_links = list_display
 
 class LinhaRecursoMaterialInLine(admin.TabularInline):
