@@ -169,14 +169,14 @@
 								{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
 								{# MENU DO GERENTE#}
 								
-						        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+						        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
 
 							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 
 									
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 									
-									<a href="" class="btn "><i class="fa fa-print"></i></a>
+									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
 								{% else %}
 								
 								{% endif %}
