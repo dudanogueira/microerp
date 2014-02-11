@@ -48,7 +48,7 @@ class PerfilAcessoComercialAdmin(admin.ModelAdmin):
     list_display = 'user', 'gerente', 'analista'
 
 class PropostaComercialAdmin(admin.ModelAdmin):
-    list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada'
+    list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada', 'contrato_id'
     list_filter = 'probabilidade', 'data_expiracao', 'status'
     list_display_links = list_display
 
@@ -71,7 +71,7 @@ class LancamentoFinanceiroReceberInline(admin.TabularInline):
     extra = 0
 
 class ContratoFechadoAdmin(admin.ModelAdmin):
-    list_display = 'id', 'cliente', 'valor', 'status', 'responsavel'
+    list_display = 'id', 'cliente', 'valor', 'status', 'responsavel', 'proposta_id'
     list_filter = 'tipo', 'status',
     search_fields = 'cliente__nome', 'id'
     #inlines = [LancamentoFinanceiroReceberInline]

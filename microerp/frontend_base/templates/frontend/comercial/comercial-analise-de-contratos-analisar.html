@@ -101,6 +101,15 @@
 				<span class="label label-important">Não especificado</span>
 				{% endif %}
 			</li>
+			
+			<li>
+				Endereços do Cliente: {% if contrato.cliente.enderecocliente_set %}
+				<span class="label label-success">{{contrato.cliente.enderecocliente_set.count}} Endereço{{contrato.cliente.enderecocliente_set.count|pluralize:"s"}}</span>
+				{% else %}
+				<span class="label label-important">Não possui</span>
+				{% endif %}
+			</li>
+			
 		</ul>
 		
 	</div>

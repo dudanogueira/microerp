@@ -20,15 +20,26 @@ from solicitacao.models import Solicitacao
 # comercial
 from comercial.models import RequisicaoDeProposta, PerfilAcessoComercial
 
+from models import EnderecoCliente
+
 from django import forms
 #
 # FORMS
 #
 
-from django_select2.widgets import Select2Widget
-
-from django_select2 import AutoModelSelect2Field
-
+class AdicionarEnderecoClienteForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        self.cliente = kwargs.pop('cliente', None)    
+        super(AdicionarEnderecoClienteForm, self).__init__(*args, **kwargs)
+        if self.cliente:
+            self.fields['cliente'].initial = self.cliente
+            #self.fields['cliente'].widget = forms.HiddenInput()
+        self.fields['principal'].widget = forms.HiddenInput()
+        self.fields['bairro'].widget.attrs['class'] = 'select2'
+        
+    class Meta:
+        model = EnderecoCliente
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
     
@@ -50,9 +61,7 @@ class AdicionarSolicitacaoForm(forms.ModelForm):
         else:
             self.fields['cliente'].widget = forms.HiddenInput()
             self.fields['precliente'].widget = forms.HiddenInput()
-            
         
-    
     class Meta:
         model = Solicitacao
         fields = 'descricao', 'cliente', 'precliente', 'contato', 'tipo',
@@ -93,8 +102,6 @@ class PreClienteAdicionarForm(forms.ModelForm):
         model = PreCliente
         fields = 'nome', 'contato', 'dados', 'designado'
 
-
-
 #
 # DECORATORS
 #
@@ -104,7 +111,6 @@ def possui_perfil_acesso_recepcao(user, login_url="/"):
             return True
     except:
         return False
-
 #
 # VIEWS
 #

@@ -92,11 +92,38 @@
 				</div>
 		
 			</div>
-	
-	
 		</div>
 
 		<h4>Endereços</h4>
+		<!-- Button trigger modal -->
+		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalAdicionarEndereco">
+		  <i class="fa fa-plus"></i> Adicionar Endereço
+		</button>
+
+		<!-- Modal -->
+		<div class="modal fade" id="ModalAdicionarEndereco" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title" id="myModalLabel">Adicionar Endereço</h4>
+		      </div>
+		      <div class="modal-body">
+				  <form method="POST" id="form-adicionar-endereco">
+					{% csrf_token %}
+				  	{{form_adicionar_endereco.as_p}}
+				  </form>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+		        <button type="submit" class="btn btn-primary" form="form-adicionar-endereco" name="form-adicionar-endereco" value="adicionar">Adicionar Endereço</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+		
+
+		
 		<div id="enderecos">
 			{% for endereco in cliente.enderecocliente_set.all %}
 				<div class="well well-small {% if endereco.principal %}alert alert-success{%endif%}">
@@ -494,6 +521,9 @@
 {% addtoblock "js" %}
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 
 <script>
 
@@ -511,6 +541,13 @@ $(document).ready(function() {
     {% if form_adicionar_follow_up.errors %}
 		$('#modal-follow-up-add').modal('show');
     {% endif %}	
+	
+	{% if form_adicionar_endereco.errors %}
+		$('#ModalAdicionarEndereco').modal('show');
+	{% endif %}	
+	
+	
+	
 	
 	
 	$('.popover_item').popover({

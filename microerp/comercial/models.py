@@ -114,6 +114,9 @@ class PropostaComercial(models.Model):
         '''soma todos os valores de orcamentos ativos presentes'''
         return self.orcamento_set.filter(ativo=True).aggregate(Sum("custo_total"))['custo_total__sum']
 
+    def contrato_id(self):
+        return self.pk
+
     def clean(self):
         if self.status == 'convertida' and self.definido_convertido_em is None:
               raise ValidationError('Para ser convertida, uma proposta deve possuir a data de conversão.')
@@ -266,6 +269,9 @@ class CategoriaContratoFechado(models.Model):
 class ContratoFechado(models.Model):
     
     
+    def proposta_id(self):
+        return self.propostacomercial.id
+    
     def lancar(self, request=None):
         '''lancar o contrato'''
         if self.status  == 'emaberto':
@@ -315,6 +321,23 @@ class ContratoFechado(models.Model):
         except:
             ultimo_lancamento = None
         return ultimo_lancamento
+    
+    def sugerir_texto_contratante(self):
+        if self.cliente.tipo == "pj":
+            pass
+            
+            
+        else:
+            #self.cliente.tipo =="pf"
+            texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado na endereço: %s''' % (
+            
+                unicode(self.cliente.nome),
+                unicode(self.cliente.cpf or "_" * 30 ),
+                unicode(self.cliente.rg or "_" * 30  ),
+                unicode(self.cliente.logradouro_completo()),
+            
+            )
+        return texto
     
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)

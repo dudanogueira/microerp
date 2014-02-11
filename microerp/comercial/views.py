@@ -36,6 +36,18 @@ from rh import utils
 
 from django.http import HttpResponse
 
+# FORM DE OUTROS APPS
+from cadastro.views import AdicionarEnderecoClienteForm
+
+
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak
+from reportlab.lib.units import inch, mm 
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from django.contrib.auth.models import User
+from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
+
+
+
 #
 # FORMULARIOS
 #
@@ -253,8 +265,21 @@ def clientes(request):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_ver(request, cliente_id):
     cliente = get_object_or_404(Cliente, pk=cliente_id)
+    if request.POST.get('form-adicionar-endereco', None):
+        form_adicionar_endereco = AdicionarEnderecoClienteForm(request.POST, cliente=cliente)
+        if form_adicionar_endereco.is_valid():
+            endereco = form_adicionar_endereco.save(commit=False)
+            if cliente.enderecocliente_set.count():
+                endereco.principal = False
+            else:
+                endereco.principal = True
+            endereco.save()
+            messages.success(request, 'Endereço Adicionado!')
+    else:
+        form_adicionar_endereco = AdicionarEnderecoClienteForm(cliente=cliente)
     cliente_q = request.GET.get('cliente', None)
     form_adicionar_follow_up = FormAdicionarFollowUp()
+
     return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 class FormEditarProposta(forms.ModelForm):
@@ -876,6 +901,33 @@ def contratos_meus(request):
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph
+from reportlab.pdfgen import canvas
+ 
+class NumberedCanvas(canvas.Canvas):
+    def __init__(self, *args, **kwargs):
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self._saved_page_states = []
+ 
+    def showPage(self):
+        self._saved_page_states.append(dict(self.__dict__))
+        self._startPage()
+ 
+    def save(self):
+        """add page info to each page (page x of y)"""
+        num_pages = len(self._saved_page_states)
+        for state in self._saved_page_states:
+            self.__dict__.update(state)
+            self.draw_page_number(num_pages)
+            canvas.Canvas.showPage(self)
+        canvas.Canvas.save(self)
+ 
+    def draw_page_number(self, page_count):
+        self.setFont("Helvetica", 7)
+        # Change the position of this to wherever you want the page number to be
+        self.drawRightString(211 * mm, 15 * mm + (0.2 * inch),
+                             u"Página %d de %d" % (self._pageNumber, page_count))
+ 
+ 
  
 class MyPrint:
     def __init__(self, buffer, pagesize):
@@ -904,11 +956,7 @@ class MyPrint:
             canvas.restoreState()
     
     def print_contrato(self, contrato):
-            from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer
-            from reportlab.lib.units import inch 
-            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-            from django.contrib.auth.models import User
-            from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
+            
         
             buffer = self.buffer
             doc = SimpleDocTemplate(buffer,
@@ -926,6 +974,7 @@ class MyPrint:
             styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=15, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
+            styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
             
             # Our container for 'Flowable' objects
@@ -948,7 +997,7 @@ class MyPrint:
             elements.append(Spacer(1, 12))
             
             # CONTRATANTE DESC
-            contratante_text = "<b>CONTRATANTE</b>: Nome completo do cliente, CPF: xxx.xxx.xxx-xx, RG nº xx-xx.xx.xxx, residente e domiciliado na endereço: centro, CEP: xx.xxx-xxx, Cidade de  xxx xxx, no Estado de xxx."
+            contratante_text = contrato.sugerir_texto_contratante()
             contratante_p = Paragraph(contratante_text, styles['justify'])
             elements.append(contratante_p)
             
@@ -956,7 +1005,7 @@ class MyPrint:
             elements.append(Spacer(1, 12))
             
             # CONTRATADA DESC
-            contratada_texto = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Texto descrevendo a empresa")
+            contratada_texto = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Settings: TEXTO_CONTRATO_CONTRATADA - Texto descrevendo a empresa")
             contratada_p = Paragraph("<b>CONTRATADA</b>: %s" % contratada_texto, styles['justify'])
             elements.append(contratada_p)
             
@@ -1000,13 +1049,130 @@ class MyPrint:
             # space
             elements.append(Spacer(1, 12))
             
-            normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Texto descrevendo as normas de execução do contrato")    
+            normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato")    
             normas_execucao_p = Paragraph(str(normas_execucao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(normas_execucao_p)
             
+            #
+            # CLAUSULA 3 - FORMAS DE PAGAMENTO
+            #
+            clausula_3_p = Paragraph("CLÁUSULA 3ª – DO VALOR E FORMA DE PAGAMENTO", styles['left_h1'])
+            elements.append(clausula_3_p)
+            # space
+            elements.append(Spacer(1, 12))
+            forma_pagamento_p = Paragraph(unicode(contrato.propostacomercial.forma_pagamento_proposto).replace("\n", "<br />"), styles['justify'])
+            elements.append(forma_pagamento_p)
+            elements.append(Spacer(1, 12))
+
+            for lancamento in contrato.lancamentofinanceiroreceber_set.all():
+                lancamento_text = "<b>Parcela %s</b> de R$ %s no dia %s na forma de %s" % (lancamento.peso, lancamento.valor_cobrado, lancamento.data_cobranca.strftime("%d/%m/%y"), lancamento.get_modo_recebido_display())
+                lancamento_p = Paragraph(unicode(lancamento_text).replace("\n", "<br />"), styles['justify'])
+                elements.append(lancamento_p)
+                elements.append(Spacer(1, 12))
             
- 
-            doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer)
+            total_texto = "Total: R$ %s" % contrato.valor
+            total_p = Paragraph(unicode(total_texto).replace("\n", "<br />"), styles['left_h2'])
+            elements.append(total_p)
+            elements.append(Spacer(1, 12))
+            
+                
+            elements.append(PageBreak())
+            
+            #
+            # CLÁUSULA 4ª – DOS PRAZOS
+            #
+            clausula_4_p = Paragraph("CLÁUSULA 4ª – DOS PRAZOS", styles['left_h1'])
+            elements.append(clausula_4_p)
+            # space
+            elements.append(Spacer(1, 12))
+            
+            prazos_texto = getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato")    
+            prazos_p = Paragraph(str(prazos_texto).replace("\n", "<br />"), styles['justify'])
+            elements.append(prazos_p)
+            elements.append(Spacer(1, 12))
+
+            #
+            #
+            #  CLÁUSULA 5ª – DA RESCISÃO
+            #
+            clausula_5_p = Paragraph("CLÁUSULA 5ª – DA RESCISÃO", styles['left_h1'])
+            elements.append(clausula_5_p)
+            # space
+            elements.append(Spacer(1, 12))
+            # 
+            rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
+            rescisao_p = Paragraph(str(rescisao_texto).replace("\n", "<br />"), styles['justify'])
+            elements.append(rescisao_p)
+            
+            elements.append(Spacer(1, 12))
+            #
+            #
+            #  CLÁUSULA 6ª – DO FORO
+            #
+            clausula_6_p = Paragraph("CLÁUSULA 6ª – DO FORO", styles['left_h1'])
+            elements.append(clausula_6_p)
+            # space
+            # 
+            foro_texto = getattr(settings, "TEXTO_HTML_FORO", "Settings: TEXTO_HTML_FORO - Texto descrevendo O FORO do contrato")    
+            foro_p = Paragraph(str(foro_texto).replace("\n", "<br />"), styles['justify'])
+            elements.append(foro_p)
+            elements.append(Spacer(1, 12))
+            
+            ## cidade do contrato
+            elements.append(Spacer(1, 30))
+            import locale
+            locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
+            cidade = getattr(settings, "CIDADE_CONTRATO", "Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
+            cidade_texto = "%s, %s" % (cidade, datetime.date.today().strftime("%d de %B de %Y"))
+            cidade_p = Paragraph(str(cidade_texto).replace("\n", "<br />"), styles['right'])
+            elements.append(cidade_p)
+            elements.append(Spacer(1, 12))
+            
+            
+            
+            # REPRESENTANTE LEGAL EMPRESA
+            #
+            elements.append(Spacer(1, 50))
+            representante_linha = Paragraph(str("_"*500), styles['justify'])
+            elements.append(representante_linha)
+            representante_empresa = getattr(settings, "REPRESENTATE_LEGAL_EMPRESA", "Settings: REPRESENTATE_LEGAL_EMPRESA - Texto descrevendo Representante Legal da Empresa")    
+            representante_p = Paragraph(str(representante_empresa), styles['left'])
+            elements.append(representante_p)
+            elements.append(Spacer(1, 12))
+            
+            
+            # CLIENTE / PROPOSTO LEGAL
+            #
+            elements.append(Spacer(1, 50))
+            cliente_linha = Paragraph(str("_"*500), styles['justify'])
+            elements.append(cliente_linha)
+            representante_p = Paragraph(unicode(contrato.sugerir_texto_contratante()), styles['left'])
+            elements.append(representante_p)
+            elements.append(Spacer(1, 12))
+            
+            # TESTEMUNHA 1
+            #
+            elements.append(Spacer(1, 50))
+            testemunha_linha = Paragraph(str("_"*500), styles['justify'])
+            elements.append(testemunha_linha)
+            testeminha_texto = Paragraph(unicode("TESTEMUNHA 1"), styles['left'])
+            elements.append(testeminha_texto)
+            elements.append(Spacer(1, 12))
+            
+            
+            # TESTEMUNHA 1
+            #
+            elements.append(Spacer(1, 50))
+            testemunha_linha = Paragraph(str("_"*500), styles['justify'])
+            elements.append(cliente_linha)
+            representante_p = Paragraph(unicode("TESTEMUNHA 2"), styles['left'])
+            elements.append(representante_p)
+            elements.append(Spacer(1, 12))
+            
+            
+            
+            # build pdf
+            doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
  
             # Get the value of the BytesIO buffer and write it to the response.
             pdf = buffer.getvalue()
@@ -1046,7 +1212,6 @@ class FormRevalidarContrato(forms.ModelForm):
         super(FormRevalidarContrato, self).__init__(*args, **kwargs)
         self.fields['valor'].localize = True
         self.fields['valor'].widget.is_localized = True
-    
     
     class Meta:
         model = ContratoFechado

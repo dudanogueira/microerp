@@ -125,7 +125,11 @@ class Cliente(models.Model):
         return self.solicitacaocomercial_set.count()
     
     def logradouro_completo(self):
-        string = u"%s, %s, %s - %s, CEP: %s" % (self.rua, self.numero, self.cidade.nome, self.cidade.estado, self.cep)
+        if self.enderecocliente_set.all():
+            endereco = self.enderecocliente_set.filter(principal=True)[0] or self.enderecocliente_set.all()[0]
+            string = u"%s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro.cidade.nome, endereco.bairro.cidade.estado, endereco.cep)
+        else: 
+            string = None
         return string
     
     def logradouro_completo_busca(self):
