@@ -50,14 +50,14 @@
 				<span class="label label-success">{{lancamento.contrato.cliente.get_tipo_display}}</span> 
 				{% endif %}<br />
 				{% if lancamento.contrato.cliente.telefone_fixo %}
-				<small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
+				<small class="label label-info"><i class="fa fa-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
 				{% endif %}
 				{% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
-				<small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
+				<small class="label label-info"><i class="fa fa-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
 				{% endif %}
 				{% if lancamento.contrato.cliente.contato %}
 				<br />
-				<i class="icon-user"></i> {{lancamento.contrato.cliente.contato}}
+				<i class="fa fa-user"></i> {{lancamento.contrato.cliente.contato}}
 				{% endif %}
     
                 
@@ -72,7 +72,7 @@
 				<button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.categoria}}" data-html="true" 
 				data-content='
 				<p class="well well-small"><strong>Objeto</strong>: {{lancamento.contrato.objeto}}</p>
-				<strong><i class="icon-user"></i> Responsável</strong>: {{lancamento.contrato.responsavel}}<br />
+				<strong><i class="fa fa-user"></i> Responsável</strong>: {{lancamento.contrato.responsavel}}<br />
 				<p class="well well-small">
 				<strong>Valor Total</strong>: {{lancamento.contrato.valor}}<br />
 				{% if lancamento.contrato.valor_entrada %}
@@ -116,7 +116,7 @@
 				{% if lancamento.observacaolancamento_set.count %}
 				<!-- disparador do lancamento-comentario modal -->
 				<p>
-					<a href="{% url "financeiro:ajax_lancamento_comentarios" lancamento.id %}" class="btn btn-lancamento-comentarios" >{{lancamento.observacaolancamento_set.count}} <i class="icon-comment"></i></a>
+					<a href="{% url "financeiro:ajax_lancamento_comentarios" lancamento.id %}" class="btn btn-lancamento-comentarios" >{{lancamento.observacaolancamento_set.count}} <i class="fa fa-comment"></i></a>
 				</p>
  
 
@@ -126,29 +126,29 @@
 			<td>
 				<p class="btn-group">
 					
-					<a href="{% url "financeiro:ajax_lancamento_informacao_pagamento" lancamento.id %}"   class="btn btn-informacoes-pagamento tooltip-items" data-toggle="tooltip" title="Informações do Pagamento" data-placement="bottom"><i class="icon-info"></i> </a>
+					<a href="{% url "financeiro:ajax_lancamento_informacao_pagamento" lancamento.id %}"   class="btn btn-informacoes-pagamento tooltip-items" data-toggle="tooltip" title="Informações do Pagamento" data-placement="bottom"><i class="fa fa-info"></i> </a>
 					
 					
 					{% if lancamento.antecipado %}
 					<a href="" class="tooltip-items btn btn-warning disabled" data-toggle="tooltip" title="Antecipado" data-placement="bottom">
-						<i class="icon-usd"></i> </a>
+						<i class="fa fa-usd"></i> </a>
 					</a>
                 
 					{% else %}
 
 						{% if lancamento.antecipavel %}
 						<a href="{% url "financeiro:lancamentos_a_receber_antecipar" %}?lancamento={{lancamento.id}}" class="btn btn-danger tooltip-items" data-toggle="tooltip" title="Antecipar" data-placement="bottom">
-							<i class="icon-arrow-left"></i> 
+							<i class="fa fa-arrow-left"></i> 
 						</a>
 						{% endif %}
                 
                     
 					{% endif %}
 					{% if not lancamento.data_recebido %}
-					<a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="tooltip-items  btn btn-primary" data-toggle="tooltip" title="Receber" data-placement="bottom"><i class="icon-thumbs-up"></i> </a>
+					<a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="tooltip-items  btn btn-primary" data-toggle="tooltip" title="Receber" data-placement="bottom"><i class="fa fa-thumbs-up"></i> </a>
 					{% endif %}
 					
-					<a href="{% url "financeiro:lancamentos_a_receber_comentar" lancamento.id %}"   class="btn btn-success btn-comentar tooltip-items" data-toggle="tooltip" title="Comentar" data-placement="bottom"><i class="icon-comment"></i> </a>
+					<a href="{% url "financeiro:lancamentos_a_receber_comentar" lancamento.id %}"   class="btn btn-success btn-comentar tooltip-items" data-toggle="tooltip" title="Comentar" data-placement="bottom"><i class="fa fa-comment"></i> </a>
                 
                 
 				</p>

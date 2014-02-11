@@ -7,7 +7,7 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-paperclip"></i> Lançamentos</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-paperclip"></i> Lançamentos</h1>
 
 <h2>A Receber</h2>
 
@@ -24,12 +24,12 @@
   </ul>
   
   <div class="tab-content">
-    <div class="tab-pane active" id="hoje"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+    <div class="tab-pane active" id="hoje"><i class='fa fa-spinner fa-spin fa-large fa-3x'></i></div>
 		
-    <div class="tab-pane" id="nesta-semana"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
-    <div class="tab-pane" id="proxima-semana"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+    <div class="tab-pane" id="nesta-semana"><i class='fa fa-spinner fa-spin fa-large fa-3x'></i></div>
+    <div class="tab-pane" id="proxima-semana"><i class='fa fa-spinner fa-spin fa-large fa-3x'></i></div>
 		
-    <div class="tab-pane" id="pendentes"><i class='icon-spinner icon-spin icon-large icon-3x'></i></div>
+    <div class="tab-pane" id="pendentes"><i class='fa fa-spinner fa-spin fa-large fa-3x'></i></div>
 	
 <div class="tab-pane" id="buscar-filtrar">
 	{% include "frontend/financeiro/financeiro-include-lancamentos-buscar.html" %}
@@ -76,7 +76,7 @@ $('.nav-tabs').on("click", '.ajaxtab', function(e){
 	var pane = $(this);
 	// ajax load from data-url
 	$(href).load(url)
-	$(href).html("<i class='icon-spinner icon-spin icon-large icon-3x'></i>");
+	$(href).html("<i class='fa-spinner fa-spin fa-large fa-3x fa'></i>");
 	pane.tab('show');		
 	
 })
@@ -166,7 +166,7 @@ $('.tab-content').on("click", "#btn-submit-info-pagamento", function(e){
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-    <button class="btn btn-primary" type="submit"><i class="icon-comment"> </i>Comentar</button>
+    <button class="btn btn-primary" type="submit"><i class="fa fa-comment"> </i>Comentar</button>
     </form>
   </div>
 </div>

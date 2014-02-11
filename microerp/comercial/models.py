@@ -281,13 +281,13 @@ class ContratoFechado(models.Model):
                 # verifica se tem entrada
                 if self.valor_entrada != 0:
                     # cria lancamento de entrada
-                    lancamento = self.lancamento_set.create(valor_cobrado=self.valor_entrada, peso=0, data_cobranca=datetime.date.today(), modo_recebido=self.forma_pagamento)
+                    lancamento = self.lancamentofinanceiroreceber_set.create(valor_cobrado=self.valor_entrada, peso=0, data_cobranca=datetime.date.today(), modo_recebido=self.forma_pagamento)
                     if request:
                         messages.info(request, u"Sucesso! Lançamento de Entrada para o contrato #%s, valor %s em %s" % (self.pk, self.valor_entrada, lancamento.data_cobranca.strftime("%d/%m/%y")))
                 valor_parcela = (self.valor - self.valor_entrada) / self.parcelas
                 for peso_parcela in range(1, self.parcelas+1):
                     data_cobranca = self.inicio_cobranca + datetime.timedelta(days=30) * peso_parcela
-                    self.lancamento_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca, modo_recebido=self.forma_pagamento)
+                    self.lancamentofinanceiroreceber_set.create(valor_cobrado=valor_parcela, peso=peso_parcela, data_cobranca=data_cobranca, modo_recebido=self.forma_pagamento)
                     if request:
                         messages.info(request, u"Sucesso! Lançamento para o contrato #%s, Parcela %s, valor %s, no dia %s realizado" % (self.pk, peso_parcela, valor_parcela, data_cobranca.strftime("%d/%m/%y")))
                 # fecha o contrato
@@ -299,7 +299,7 @@ class ContratoFechado(models.Model):
 
     def proximo_peso_lancamento(self):
         try:
-            ultimo_peso = self.lancamento_set.order_by('-peso')[0].peso
+            ultimo_peso = self.lancamentofinanceiroreceber_set.order_by('-peso')[0].peso
         except:
             ultimo_peso = 0
         proximo_peso = int(ultimo_peso) + 1
@@ -310,14 +310,14 @@ class ContratoFechado(models.Model):
             (self.id, self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.inicio_cobranca, self.get_status_display(), self.categoria)
     
     def total_valor_cobrado_lancamentos(self):
-        return self.lancamento_set.all().aggregate(Sum('valor_cobrado'))
+        return self.lancamentofinanceiroreceber_set.all().aggregate(Sum('valor_cobrado'))
 
     def total_valor_recebido_lancamentos(self):
-        return self.lancamento_set.all().aggregate(Sum('valor_recebido'))
+        return self.lancamentofinanceiroreceber_set.all().aggregate(Sum('valor_recebido'))
 
     def ultimo_lancamento(self):
         try:
-            ultimo_lancamento = self.lancamento_set.all().order_by('-criado')[0]
+            ultimo_lancamento = self.lancamentofinanceiroreceber_set.all().order_by('-criado')[0]
         except:
             ultimo_lancamento = None
         return ultimo_lancamento

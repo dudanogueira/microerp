@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-rocket"></i> Contratos a Lançar</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-rocket"></i> Contratos a Lançar</h1>
 
 
 <div id="contratos-fechados" class="well">
@@ -40,10 +40,15 @@
                     
                 
                 </td>
-                <td>{{contrato.parcelas}}x</td>
+                <td>{% if contrato.lancamentofinanceiroreceber_set.count %}
+					{{contrato.lancamentofinanceiroreceber_set.count}} Lançamentos já configurados
+					{% else %}
+					{{contrato.parcelas}}x
+					{% endif %}
+				</td>
                 <td>{{contrato.get_tipo_display}}</td>
                 <td>{{contrato.inicio_cobranca|date:"SHORT_DATE_FORMAT"}}</td>
-                <td><a href="{% url "financeiro:realizar_lancamento" contrato.id %}" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>
+                <td><a href="{% url "financeiro:realizar_lancamento" contrato.id %}" class="btn btn-danger"> <i class="fa fa-rocket"></i> Lançar</a>
                 </td>
                 
             </tr>
@@ -89,7 +94,7 @@
                 <td>{{contrato.get_tipo_display}}</td>
                 <td>{{contrato.concluido|yesno|capfirst}}</td>
                 <td>
-                    {% if contrato.concluido %}<a href="{% url "financeiro:realizar_lancamento" contrato.id %}" class="btn btn-danger"> <i class="icon-rocket"></i> Lançar</a>{% endif %}
+                    {% if contrato.concluido %}<a href="{% url "financeiro:realizar_lancamento" contrato.id %}" class="btn btn-danger"> <i class="fa fa-rocket"></i> Lançar</a>{% endif %}
                 </td>
                 
             </tr>
@@ -128,6 +133,7 @@
                 <strong>Recebido</strong>: R$ {% if contrato.total_valor_recebido_lancamentos.valor_recebido__sum  %}{{contrato.total_valor_recebido_lancamentos.valor_recebido__sum}}{% else %}0{% endif %}</td>
                     
                 <td>
+					
                     
                             {% if contrato.ultimo_lancamento %}   {{contrato.ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}<br />
                     <strong>Cobrado</strong>: R$ {{contrato.ultimo_lancamento.valor_cobrado}}<br />
@@ -139,8 +145,8 @@
                     {% endif %}
                 </td>
                 <td>
-                    <a href="{% url "financeiro:contrato_adicionar_lancamento" contrato.id %}" class="btn btn-primary"> <i class="icon-plus"></i> <i class="icon-rocket"></i> Adicionar Lançamento</a><br />
-                    <a href="{% url "financeiro:contrato_fechar" contrato.id %}" class="btn btn-danger"> <i class="icon-close"></i> Fechar Contrato</a>
+                    <a href="{% url "financeiro:contrato_adicionar_lancamento" contrato.id %}" class="btn btn-primary"> <i class="fa fa-plus"></i> <i class="fa fa-rocket"></i> Adicionar Lançamento</a><br />
+                    <a href="{% url "financeiro:contrato_fechar" contrato.id %}" class="btn btn-danger"> <i class="fa -close"></i> Fechar Contrato</a>
                 </td>
                     
                 
