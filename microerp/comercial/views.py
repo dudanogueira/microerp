@@ -479,6 +479,7 @@ def editar_proposta_converter(request, proposta_id):
                 cp = request.POST.copy()
                 cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ 1
                 form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
+                configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
             elif 'converter-contrato' in request.POST:
                 configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
                 form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
