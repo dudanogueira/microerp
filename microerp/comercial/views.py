@@ -944,14 +944,9 @@ class MyPrint:
             styles = getSampleStyleSheet()
  
             # Footer
-            footer = Paragraph('POP CO 001-F01', styles['Normal'])
+            footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-001', styles['Normal'])
             footer.wrap(doc.width, doc.bottomMargin)
-            footer.drawOn(canvas, 10, doc.bottomMargin+10)
-
-            footer = Paragraph('REV-001', styles['Normal'])
-            footer.wrap(doc.width, doc.bottomMargin)
-            footer.drawOn(canvas, 10, doc.bottomMargin)
- 
+            footer.drawOn(canvas, 10, 10)
             # Release the canvas
             canvas.restoreState()
     
@@ -963,7 +958,7 @@ class MyPrint:
                                     rightMargin=10,
                                     leftMargin=10,
                                     topMargin=10,
-                                    bottomMargin=10,
+                                    bottomMargin=70,
                                     pagesize=self.pagesize)
             
             # A large collection of style sheets pre-made for us
