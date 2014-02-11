@@ -359,6 +359,9 @@ class ContratoFechado(models.Model):
     responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="contrato_comissionado_set")
     motivo_invalido = models.TextField(blank=True)
     observacoes = models.TextField(blank=True)
+    # Datas
+    data_validacao = models.DateTimeField(blank=True, null=True)
+    funcionario_validador = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário que Validou", related_name="contrato_validado_set", blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")

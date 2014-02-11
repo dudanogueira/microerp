@@ -293,6 +293,7 @@ class FormEditarProposta(forms.ModelForm):
     class Meta:
         model = PropostaComercial
         fields = 'valor_proposto', 'observacoes'
+        localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
     
@@ -1468,7 +1469,7 @@ class FormAnalisarContrato(forms.ModelForm):
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['responsavel_comissionado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
         self.fields['responsavel_comissionado'].widget.attrs['class'] = 'select2'    
-        
+
     class Meta:
         model = ContratoFechado
         fields = ('objeto', 'categoria', 'responsavel_comissionado', 'responsavel')
@@ -1490,6 +1491,8 @@ def analise_de_contratos_analisar(request, contrato_id):
                 
             elif request.POST.get('contrato-valido'):
                 contrato.status = "assinatura"
+                contrato.data_validacao = datetime.datetime.now()
+                contrato.funcionario_validador = request.user.funcionario
                 contrato.save()
                 messages.success(request, u"Sucesso! Contrato Analisado. Definido como Aguardando Assinatura")
             return redirect(reverse("comercial:analise_de_contratos"))

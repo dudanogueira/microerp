@@ -116,9 +116,14 @@ class AdicionarLancamentoForm(forms.ModelForm):
 def realizar_lancamento(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
     if contrato.status == 'emaberto':
-        messages.success(request, u'Sucesso! Contrato #%s Lançado!' % contrato.id)
-        contrato.lancar(request)
+        if contrato.lancamentofinanceiroreceber_set.count():
+            contrato.status= 'lancado'
+            contrato.inicio_cobranca = contrato.lancamentofinanceiroreceber_set.order_by('data_cobranca').values('data_cobranca')[0]['data_cobranca']
+            contrato.save()
+        else:
+            contrato.lancar(request)
         
+        messages.success(request, u'Sucesso! Contrato #%s Lançado!' % contrato.id)
     else:
         messages.error(request, u'Erro! Contrato não está em Aberto')
     return redirect(reverse('financeiro:contratos_a_lancar'))

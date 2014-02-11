@@ -52,6 +52,7 @@ class PerfilAcessoFinanceiro(models.Model):
         verbose_name = u"Perfil de Acesso ao Financeiro"
         verbose_name_plural = u"Perfis de Acesso ao Financeiro"
     
+    
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
