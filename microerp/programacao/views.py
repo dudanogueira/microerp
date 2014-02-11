@@ -7,7 +7,12 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
+from models import FollowUpDeContrato
+
 from comercial.models import ContratoFechado
+
+
+from django import forms
 
 def possui_perfil_acesso_programacao(user, login_url="/"):
     try:
@@ -23,12 +28,40 @@ def possui_perfil_acesso_programacao_gerente(user, login_url="/"):
     except:
         return False
 
+
+#
+# FORMS
+#
+
+class FormAdicionaFollowUpContrato(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormAdicionaFollowUpContrato, self).__init__(*args, **kwargs)
+        self.fields['contrato'].widget = forms.HiddenInput()
+        self.fields['criado_por'].widget = forms.HiddenInput()
+    
+    class Meta:
+        model = FollowUpDeContrato
+
 #
 # VIEWS
 #
 
+
+
 @user_passes_test(possui_perfil_acesso_programacao, login_url='/')
 def home(request):
+    if request.POST:
+        form_add_followup_contrato = FormAdicionaFollowUpContrato(request.POST)
+        if form_add_followup_contrato.is_valid():
+            fup = form_add_followup_contrato.save(commit=False)
+            fup.criado_por = request.user.funcionario
+            fup.save()
+            fup.contrato.porcentagem_execucao = form_add_followup_contrato.cleaned_data['porcentagem_execucao']
+            fup.contrato.save()
+            messages.success(request, 'FollowUp de Contrato Adicionado!')
+    else:
+        form_add_followup_contrato = FormAdicionaFollowUpContrato(initial={'criado_por': request.user.funcionario})
     contratos = ContratoFechado.objects.filter(status='lancado').order_by('status_execucao')
     return render_to_response('frontend/programacao/programacao-home.html', locals(), context_instance=RequestContext(request),)
     
@@ -42,3 +75,30 @@ def marcar_contrato_iniciado(request, contrato_id):
     # cria um follow up
     contrato.followupdecontrato_set.create(criado_por=request.user.funcionario, texto="Execução Iniciada", porcentagem_execucao=contrato.porcentagem_execucao)
     return redirect(reverse("programacao:home"))
+
+@user_passes_test(possui_perfil_acesso_programacao, login_url='/')
+def marcar_contrato_aguardando_cliente(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    contrato.status_execucao = "pendente"
+    contrato.aguardando_cliente = True
+    contrato.data_marcado_pendente = datetime.datetime.now()
+    contrato.save()
+    messages.success(request, "Contrato Marcado Como Pendente")
+    # cria um follow up
+    contrato.followupdecontrato_set.create(criado_por=request.user.funcionario, texto="Execução Pendente: Aguardando o Cliente", porcentagem_execucao=contrato.porcentagem_execucao)
+    return redirect(reverse("programacao:home"))
+
+@user_passes_test(possui_perfil_acesso_programacao, login_url='/')
+def marcar_contrato_retorno_cliente(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    contrato.status_execucao = "emandamento"
+    contrato.aguardando_cliente = False
+    contrato.data_marcado_retorno_cliente = datetime.datetime.now()
+    contrato.save()
+    messages.success(request, "Contrato Marcado Como Retornado pelo Cliente.")
+    # cria um follow up
+    contrato.followupdecontrato_set.create(criado_por=request.user.funcionario, texto="Execução Retornada: Retorno do Cliente", porcentagem_execucao=contrato.porcentagem_execucao)
+    return redirect(reverse("programacao:home"))
+
+    
+    

@@ -35,7 +35,11 @@
         {% for contrato in contrato_grupo.list %}
         <tr>
 			<td>{{contrato.id}}</td>
-			<td>{{contrato.cliente}}</td>
+			<td>{{contrato.cliente}}
+				{% if contrato.aguardando_cliente %}
+				<span class="label label-important">Aguardando Cliente</span>
+				{% endif %}
+			</td>
 			<td>
 				
 				<div class="progress progress-striped active" style="width:100%px;">
@@ -60,7 +64,7 @@
 					data-follow-ups="
 					
 					{% for fup in contrato.followupdecontrato_set.all %}
-						<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}, {{fup.porcentagem_execucao}}%
+						<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}, {{fup.porcentagem_execucao}}% <small>{{fup.criado}}</small>
 						<hr />
 					{% endfor %}
 					"
@@ -74,15 +78,33 @@
 				{%endif %}
 				
 				<!-- Button to trigger modal de follow up -->
-				<a href="#modal-follow-up-add" data-contrato-id="{{contrato.id}}" data-porcentagem-execucao={{contrato.porcentagem_execucao}} data-title="Contrato: {{contrato.contrato.id}}. Valor: R$ {{contrato.valor|floatformat:2}}." data-action-url="" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+				<a href="#modal-follow-up-add" data-contrato-id="{{contrato.id}}" data-porcentagem_execucao={{contrato.porcentagem_execucao}} data-title="Contrato: {{contrato.contrato.id}}. Valor: R$ {{contrato.valor|floatformat:2}}." data-action-url="" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				
 			</td>
 			<td>
 				{% if contrato.status_execucao == "naoiniciado" %}
-				<a href="{% url "programacao:marcar_contrato_iniciado" contrato.id %}" class="btn btn-success"><i class=" fa fa-play"></i> Iniciar</a>
+				<a href="{% url "programacao:marcar_contrato_iniciado" contrato.id %}" class="btn btn-success"><i class=" fa fa-play"></i></a>
 				{% endif %}
+				{% if contrato.status_execucao == "emandamento" %}
 
+					{% if contrato.aguardando_cliente %}
+					
+					<a href="{% url "programacao:marcar_contrato_retorno_cliente" contrato.id %}" class="btn btn-success"><i class="fa fa-play"></i></a>
+					
+					{% else %}
+					
+					<a href="{% url "programacao:marcar_contrato_aguardando_cliente" contrato.id %}" class="btn btn-danger"><i class="fa fa-pause"></i></a>
+							
+					{% endif %}
+					
+					
 				
+				{% endif %}
+				{% if contrato.status_execucao == "pendente" %}
+					{% if contrato.aguardando_cliente %}
+						<a href="{% url "programacao:marcar_contrato_retorno_cliente" contrato.id %}" class="btn btn-success"><i class=" fa fa-play"></i></a>
+					{% endif %}
+				{% endif %}
 			</td>
 		</tr>
 		{% endfor %}
@@ -90,7 +112,6 @@
 </table>
 
 {% endfor %}
-
 
 <!-- Modal Exibe FollowUps -->
 <div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
@@ -105,7 +126,6 @@
   </div>
 </div>
 
-
 <!-- Modal Adiciona FollowUp -->
 <div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
@@ -116,28 +136,25 @@
 		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
 		<form method="POST" id="form-adicionar-follow-up" action="">
 			{% csrf_token %}
-			{{form_adicionar_follow_up.proposta}}
+			{{form_adicionar_follow_up.contrato}}
+			{{form_add_followup_contrato.errors}}
 			<table>
 				<tr>
 					<td>
-						{{form_adicionar_follow_up.texto.label}}
-						{{form_adicionar_follow_up.texto}}
-						{{form_adicionar_follow_up.texto.errors}}
+						
+						{{form_add_followup_contrato.contrato}}
+						{{form_add_followup_contrato.criado_por}}
+						
+						
+						{{form_add_followup_contrato.texto.label}}
+						{{form_add_followup_contrato.texto}}
+						{{form_add_followup_contrato.texto.errors}}
 					</td>
 					<td>
-						{{form_adicionar_follow_up.probabilidade.label}}
-						{{form_adicionar_follow_up.probabilidade}}
-						{{form_adicionar_follow_up.probabilidade.errors}}
+						{{form_add_followup_contrato.porcentagem_execucao.label}}
+						{{form_add_followup_contrato.porcentagem_execucao}}
+						{{form_add_followup_contrato.porcentagem_execucao.errors}}
 						<br />
-						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
-						{{form_adicionar_follow_up.reagenda_data_expiracao}}
-						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
-						<br />
-						<div id="data-expiracao-modal-container">
-						{{form_adicionar_follow_up.data_expiracao.label}}
-						{{form_adicionar_follow_up.data_expiracao}}
-						{{form_adicionar_follow_up.data_expiracao.errors}}						
-						</div>
 					</td>
 				</tr>
 			</table>
@@ -168,13 +185,19 @@ $(document).ready(function() {
 	});
 	
 	$('.btn-modal-add-follow-up').click(function(e){
-		
 			$("#descricao-modal-add-follow-up").html( $(this).data('title') );
-			$("#id_proposta").val($(this).data('proposta-id'));
+			$("#id_contrato").val($(this).data('contrato-id'));
 			$("#id_texto").val('');
-			$("#id_percetual_execucao").val($(this).data('percetual_execucao'));
+			$("#id_porcentagem_execucao").val($(this).data('porcentagem_execucao'));
 			$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
 	});
+	
+    {% if form_add_followup_contrato.errors %}
+		$('#modal-follow-up-add').modal('show');
+    {% endif %}	
+	
+	
+	
 	
 	
 });

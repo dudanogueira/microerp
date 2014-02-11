@@ -379,6 +379,7 @@ class ContratoFechado(models.Model):
     data_aguardando_cliente = models.DateTimeField(blank=True, null=True)
     data_marcado_emandamento = models.DateTimeField(blank=True, null=True)
     data_marcado_pendente = models.DateTimeField(blank=True, null=True)
+    data_marcado_retorno_cliente = models.DateTimeField(blank=True, null=True)
     data_marcado_finalizado = models.DateTimeField(blank=True, null=True)
     previsao_inicio_execucao = models.DateField(default=datetime.datetime.today)
     previsao_termino_execucao = models.DateField(blank=True, null=True)
