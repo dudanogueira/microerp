@@ -1,0 +1,186 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Programação{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-clock-o"></i> Programação</h1>
+
+{% if request.user.perfilacessocomercial.gerente %}
+<h4>Como Gerente</h4>
+
+{% endif %}
+{% regroup contratos by status_execucao as contratos_por_status %}
+
+
+
+{% for contrato_grupo in contratos_por_status %}
+
+<h2>{{contrato_grupo.list.0.get_status_execucao_display}}</h2>
+<table class="table table-bordered table-condensed table-hover">
+    <thead>
+        <tr>
+          <th>ID</th>
+		  <th>Cliente</th>
+          <th>Porcentagem</th>
+		  <th>Valor</th>
+		  <th>Status</th>
+		  <th>FollowUp</th>
+          <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for contrato in contrato_grupo.list %}
+        <tr>
+			<td>{{contrato.id}}</td>
+			<td>{{contrato.cliente}}</td>
+			<td>
+				
+				<div class="progress progress-striped active" style="width:100%px;">
+					<div class="bar" style="width: {{contrato.porcentagem_execucao}}%;">
+						<strong>{{contrato.porcentagem_execucao}}%</strong>
+					</div>
+				</div>
+				
+				
+</td>
+			<td>R$ {{contrato.valor}}</td>
+			<td>{{contrato.get_status_execucao_display}}</td>
+			<td>
+				
+				
+				
+				{% if contrato.ultimo_followup %}
+				<a href="#modal-follow-up-exibir"
+					role="button" 
+					data-toggle="modal"
+					data-exibir-modal-title="Follow Ups do Contrato #{{contrato.id}}"
+					data-follow-ups="
+					
+					{% for fup in contrato.followupdecontrato_set.all %}
+						<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}, {{fup.porcentagem_execucao}}%
+						<hr />
+					{% endfor %}
+					"
+					class="btn popover_item carregar_follow_ups_modal"
+					data-toggle="popover"
+					data-title="<b>Follow Up <small>(há {{contrato.ultimo_followup.criado|timesince}})</small></b>" data-html=True data-content="<strong>{{contrato.ultimo_followup.criado_por.funcionario}}</strong> : {{contrato.ultimo_followup.texto}}<br />
+					<p class='alert alert-info'>{{contrato.ultimo_followup.criado|date:"SHORT_DATETIME_FORMAT"}} </p>
+					">
+					{{contrato.followupdecontrato_set.count}}
+				</a> <i class="fa fa-exchange"></i>
+				{%endif %}
+				
+				<!-- Button to trigger modal de follow up -->
+				<a href="#modal-follow-up-add" data-contrato-id="{{contrato.id}}" data-porcentagem-execucao={{contrato.porcentagem_execucao}} data-title="Contrato: {{contrato.contrato.id}}. Valor: R$ {{contrato.valor|floatformat:2}}." data-action-url="" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+				
+			</td>
+			<td>
+				{% if contrato.status_execucao == "naoiniciado" %}
+				<a href="{% url "programacao:marcar_contrato_iniciado" contrato.id %}" class="btn btn-success"><i class=" fa fa-play"></i> Iniciar</a>
+				{% endif %}
+
+				
+			</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+{% endfor %}
+
+
+<!-- Modal Exibe FollowUps -->
+<div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="ModalExibirFollowUpsLabel"></h3>
+  </div>
+  <div class="modal-body" id="ModalExibirFollowUpsBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
+
+
+<!-- Modal Adiciona FollowUp -->
+<div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Adicionar Follow Up</h3>
+  </div>
+  <div class="modal-body">
+		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+		<form method="POST" id="form-adicionar-follow-up" action="">
+			{% csrf_token %}
+			{{form_adicionar_follow_up.proposta}}
+			<table>
+				<tr>
+					<td>
+						{{form_adicionar_follow_up.texto.label}}
+						{{form_adicionar_follow_up.texto}}
+						{{form_adicionar_follow_up.texto.errors}}
+					</td>
+					<td>
+						{{form_adicionar_follow_up.probabilidade.label}}
+						{{form_adicionar_follow_up.probabilidade}}
+						{{form_adicionar_follow_up.probabilidade.errors}}
+						<br />
+						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
+						<br />
+						<div id="data-expiracao-modal-container">
+						{{form_adicionar_follow_up.data_expiracao.label}}
+						{{form_adicionar_follow_up.data_expiracao}}
+						{{form_adicionar_follow_up.data_expiracao.errors}}						
+						</div>
+					</td>
+				</tr>
+			</table>
+		</form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-programacao-home, #top-menu-programacao").addClass("active");
+	
+	$('.popover_item').popover({
+			trigger: "hover",
+			placement: 'top'
+	});
+	
+	$('.carregar_follow_ups_modal').click(function(e){
+			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
+	});
+	
+	$('.btn-modal-add-follow-up').click(function(e){
+		
+			$("#descricao-modal-add-follow-up").html( $(this).data('title') );
+			$("#id_proposta").val($(this).data('proposta-id'));
+			$("#id_texto").val('');
+			$("#id_percetual_execucao").val($(this).data('percetual_execucao'));
+			$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+	});
+	
+	
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/programacao/programacao-menu.html" %}
+{% endblock%}

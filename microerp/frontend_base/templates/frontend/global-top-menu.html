@@ -30,6 +30,10 @@
   {% if request.user.perfilacessoproducao and  "producao"|is_installed_app %}
   <li id="top-menu-producao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Produção" href="{% url "producao:home" %}"><i class="fa-white fa fa-dropbox fa-2x"><span class="visible-phone">Produção</span></i></a></li>
   {% endif %}
+  
+  {% if request.user.perfilacessoprogramacao and  "programacao"|is_installed_app %}
+  <li id="top-menu-programacao"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Programação" href="{% url "programacao:home" %}"><i class="fa-white fa fa-clock-o fa-2x"><span class="visible-phone">Programação</span></i></a></li>
+  {% endif %}
 
   
   {% if request.user.perfilacessofinanceiro and  "financeiro"|is_installed_app %}

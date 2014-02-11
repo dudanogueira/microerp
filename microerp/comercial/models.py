@@ -69,6 +69,15 @@ CONTRATO_STATUS_CHOICES = (
     
 )
 
+CONTRATO_STATUS_DE_EXECUCAO_CHOICES = (
+    ('naoiniciado', 'Não Iniciado'),
+    ('emandamento', 'Em Andamento'),
+    ('pendente', 'Pendente'),
+    ('finalizado', 'Finalizado'),
+    
+)
+
+
 class PropostaComercial(models.Model):
 
     def __unicode__(self):
@@ -93,7 +102,7 @@ class PropostaComercial(models.Model):
             return False
 
     def ultimo_followup(self):
-        if self.followupdepropostacomercial_set.all():
+        if self.followupdepropostacomercial_set.count():
             return self.followupdepropostacomercial_set.all().order_by('-criado')[0]
         else:
             return False
@@ -269,6 +278,13 @@ class CategoriaContratoFechado(models.Model):
 class ContratoFechado(models.Model):
     
     
+    def ultimo_followup(self):
+        if self.followupdecontrato_set.count():
+            return self.followupdecontrato_set.all().order_by('-criado')[0]
+        else:
+            return False
+    
+    
     def proposta_id(self):
         return self.propostacomercial.id
     
@@ -354,6 +370,22 @@ class ContratoFechado(models.Model):
     receber_apos_conclusao = models.BooleanField("Receber após a conclusão do Contrato", default=False)
     tipo = models.CharField(blank=False, max_length=100, default="fechado", choices=CONTRATO_TIPO_CHOICES)
     status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)
+    # programacao
+    status_execucao = models.CharField(u"Status da Execução do Contrato", blank=False, max_length=100, default="naoiniciado", choices=CONTRATO_STATUS_DE_EXECUCAO_CHOICES)
+    porcentagem_execucao = models.DecimalField(max_digits=3, decimal_places=0)
+    termo_de_entrega_recebido = models.BooleanField(default=False)
+    numero_termo_de_entrega = models.CharField(blank=True, max_length=100)
+    aguardando_cliente = models.BooleanField(default=False)
+    data_aguardando_cliente = models.DateTimeField(blank=True, null=True)
+    data_marcado_emandamento = models.DateTimeField(blank=True, null=True)
+    data_marcado_pendente = models.DateTimeField(blank=True, null=True)
+    data_marcado_finalizado = models.DateTimeField(blank=True, null=True)
+    previsao_inicio_execucao = models.DateField(default=datetime.datetime.today)
+    previsao_termino_execucao = models.DateField(blank=True, null=True)
+    efetivo_inicio_execucao = models.DateField(default=datetime.datetime.today)
+    efetivo_termino_execucao = models.DateField(blank=True, null=True)
+    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="projetos_participado", blank=True, null=True)
+    #
     concluido = models.BooleanField(default=False)
     responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")
     responsavel_comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="contrato_comissionado_set")

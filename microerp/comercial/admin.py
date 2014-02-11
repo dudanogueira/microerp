@@ -68,7 +68,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
     
 class LancamentoFinanceiroReceberInline(admin.TabularInline):
     model = LancamentoFinanceiroReceber
-    extra = 1
+    extra = 0
 
 class ContratoFechadoAdmin(admin.ModelAdmin):
     list_display = 'id', 'cliente', 'valor', 'status', 'responsavel', 'proposta_id'
