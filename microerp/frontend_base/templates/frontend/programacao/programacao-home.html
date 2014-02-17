@@ -81,6 +81,7 @@
 				<a href="#modal-follow-up-add" data-contrato-id="{{contrato.id}}" data-porcentagem_execucao={{contrato.porcentagem_execucao}} data-title="Contrato: {{contrato.contrato.id}}. Valor: R$ {{contrato.valor|floatformat:2}}." data-action-url="" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 			</td>
 			<td>
+				<p class="btn-group">
 				{% if contrato.status_execucao == "naoiniciado" %}
 				<a href="{% url "programacao:marcar_contrato_iniciado" contrato.id %}" class="btn btn-success"><i class=" fa fa-play"></i></a>
 				{% endif %}
@@ -104,6 +105,7 @@
 				{% endif %}
 				
 				<a href="{% url "programacao:editar_programacao_contrato" contrato.id %}" class="btn btn-primary"><i class="fa fa-pencil"></i> </a>
+				</p>
 			</td>
 		</tr>
 		{% endfor %}
