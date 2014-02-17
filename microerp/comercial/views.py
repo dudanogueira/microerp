@@ -1472,7 +1472,9 @@ class FormAnalisarContrato(forms.ModelForm):
         super(FormAnalisarContrato, self).__init__(*args, **kwargs)
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['responsavel_comissionado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
-        self.fields['responsavel_comissionado'].widget.attrs['class'] = 'select2'    
+        self.fields['responsavel_comissionado'].widget.attrs['class'] = 'select2'
+        self.fields['responsavel'].widget.attrs['class'] = 'select2'
+        self.fields['responsavel'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
 
     class Meta:
         model = ContratoFechado
