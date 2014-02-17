@@ -1,0 +1,36 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Editar Programação de Contrato{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-clock-o"></i> Editar Programação de Contrato</h1>
+
+<h2>Programação do Contrato #{{contrato.id}}</h2>
+
+{% if request.user.perfilacessocomercial.gerente %}
+<h4>Como Gerente</h4>
+{% endif %}
+<form method="POST">
+	{% csrf_token %}
+	{{form_editar_contrato.as_p}}
+	<button type="submit" class="btn btn-success">Alterar Contrato</button>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-programacao-home, #top-menu-programacao").addClass("active");
+	
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/programacao/programacao-menu.html" %}
+{% endblock%}

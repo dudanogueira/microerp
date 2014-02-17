@@ -46,7 +46,7 @@
 		
 		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
 		
-		<h2>Lançamentos Configurados</h2>
+		<h4>Lançamentos Configurados</h4>
 		<ul>
 			{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
 				<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> - R${{lancamento.valor_cobrado}} <em><small>{{lancamento.modo_recebido}}</small></em></li>
@@ -54,16 +54,59 @@
 			Nenhum Lançamento				
 			{% endfor %}
 		</ul>
+		<hr />
 		{% if contrato.propostacomercial.orcamento_set.all %}
-		<h2>Orçamentos Vinculados</h2>
+		<h4>Orçamentos Vinculados</h4>
+		
+		<h6>Valor Consolidado: R$ {{contrato.propostacomercial.consolidado}}</h6>
 		<ul>
-		{% for orcamento in contrato.propostacomercial.orcamento_set.all %}
-			<li>{{orcamento.descricao}} - R$ {{orcamento.custo_total}}</li>
+		{% for orcamento in contrato.propostacomercial.orcamentos_ativos.all %}
+		<li>
+			<a href="" data-toggle="modal" data-target="#modal-orcamento-{{orcamento.id}}">
+			  {{orcamento.descricao}} - R$ {{orcamento.custo_total}} <i class="fa fa-list"></i>
+			</a>
+			<!-- Modal -->
+			<div class="modal fade" id="modal-orcamento-{{orcamento.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			  <div class="modal-dialog">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			        <h4 class="modal-title" id="myModalLabel">{{orcamento}}</h4>
+			      </div>
+			      <div class="modal-body">
+					  <table class="table table-bordered">
+						  <thead>
+							  <tr>
+								  <th>Quantidade</th>
+								  <th>Produto</th>
+							  </tr>
+						  </thead>
+						  <tbody>
+						  {% for linha in orcamento.linharecursomaterial_set.all %}
+						  <tr>
+							  <td>{{linha.quantidade}}</td>
+							  <td>{{linha.produto}}</td>
+						  </tr>
+						  {% endfor %}
+						  </tbody>
+						  
+					  </table>
+					  
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-default btn-danger" data-dismiss="modal">X Fechar</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			
+		</li>
+			
 		{% endfor %}
 		</ul>
 		{% endif %}
-		
-		<h2>Check List</h2>
+		<hr />
+		<h4>Check List</h4>
 		<ul>
 			<li>
 				Lançamentos Configurado: {% if contrato.lancamentofinanceiroreceber_set.count %}
@@ -73,10 +116,10 @@
 				{% endif %}
 			</li>
 			<li>
-				Orçamentos Vinculados: {% if contrato.propostacomercial.orcamento_set.count %}
-					<span class="label label-success">{{contrato.propostacomercial.orcamento_set.count}}</span>
+				Orçamentos Vinculados: {% if contrato.propostacomercial.orcamentos_ativos.count %}
+					<span class="label label-success">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
 				{% else %}
-					<span class="label label-important">{{contrato.propostacomercial.orcamento_set.count}}</span>
+					<span class="label label-important">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
 				{% endif %}
 			</li>
 			

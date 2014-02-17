@@ -409,6 +409,9 @@ class FormFecharProposta(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_fechar(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    if not request.user.perfilacessocomercial.gerente:
+        messages.warning(request, u"Atenção: Função exclusiva do gerente. Acesso negada!")
+        return redirect(reverse("comercial:propostas_comerciais_minhas"))
     if request.POST:
         form_fechar = FormFecharProposta(request.POST)
         if form_fechar.is_valid():

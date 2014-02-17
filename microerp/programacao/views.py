@@ -43,6 +43,14 @@ class FormAdicionaFollowUpContrato(forms.ModelForm):
     class Meta:
         model = FollowUpDeContrato
 
+class FormEditarProgramacaoDeContrato(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(FormEditarProgramacaoDeContrato, self).__init__(*args, **kwargs)
+
+    class Meta:
+        model = ContratoFechado
+        fields = 'previsao_inicio_execucao', 'previsao_termino_execucao', 'efetivo_inicio_execucao', 'efetivo_termino_execucao', 'funcionarios_participantes'
 #
 # VIEWS
 #
@@ -100,5 +108,20 @@ def marcar_contrato_retorno_cliente(request, contrato_id):
     contrato.followupdecontrato_set.create(criado_por=request.user.funcionario, texto="Execução Retornada: Retorno do Cliente", porcentagem_execucao=contrato.porcentagem_execucao)
     return redirect(reverse("programacao:home"))
 
+
+
+
+@user_passes_test(possui_perfil_acesso_programacao, login_url='/')
+def editar_programacao_contrato(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    if request.POST:
+        form_editar_contrato = FormEditarProgramacaoDeContrato(request.POST, instance=contrato)
+        if form_editar_contrato.is_valid():
+            contrato = form_editar_contrato.save()
+            messages.success(request, 'Programação de Contrato Alterada')
+            return redirect(reverse("programacao:home"))
+    else:
+        form_editar_contrato = FormEditarProgramacaoDeContrato(instance=contrato)
+    return render_to_response('frontend/programacao/programacao-editar-programacao-contrato.html', locals(), context_instance=RequestContext(request),)
     
     

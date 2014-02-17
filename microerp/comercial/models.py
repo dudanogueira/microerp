@@ -372,7 +372,7 @@ class ContratoFechado(models.Model):
     status = models.CharField(u"Status/Situação do Contrato", blank=False, max_length=100, default="emaberto", choices=CONTRATO_STATUS_CHOICES)
     # programacao
     status_execucao = models.CharField(u"Status da Execução do Contrato", blank=False, max_length=100, default="naoiniciado", choices=CONTRATO_STATUS_DE_EXECUCAO_CHOICES)
-    porcentagem_execucao = models.DecimalField(max_digits=3, decimal_places=0)
+    porcentagem_execucao = models.DecimalField(max_digits=3, decimal_places=0, default=0)
     termo_de_entrega_recebido = models.BooleanField(default=False)
     numero_termo_de_entrega = models.CharField(blank=True, max_length=100)
     aguardando_cliente = models.BooleanField(default=False)
