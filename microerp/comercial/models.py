@@ -341,7 +341,7 @@ class ContratoFechado(models.Model):
     
     def sugerir_texto_contratante(self):
         if self.cliente.tipo == "pj":
-            texto = u'''%s, CNPJ %s, endereço''' % (
+            texto = u'''%s, CNPJ %s, endereço %s''' % (
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cnpj or "_" * 30 ),
                 unicode(self.cliente.logradouro_completo() or "_" * 30),
