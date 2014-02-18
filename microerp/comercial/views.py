@@ -213,6 +213,9 @@ def home(request):
         Q(proposta__designado=request.user.funcionario) | Q(proposta__cliente__designado=request.user.funcionario) | Q(proposta__precliente__designado=request.user.funcionario) | \
         Q(proposta__designado=None) | (Q(proposta__cliente__designado=None) & Q(proposta__precliente__designado=None))
     )[0:10]
+    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None).count()
+    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).count()
+    
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 class FiltrarPreClientesERequisicoesForm(forms.Form):

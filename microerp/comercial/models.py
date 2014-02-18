@@ -244,6 +244,7 @@ class Orcamento(models.Model):
     custo_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     custo_mao_de_obra = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # metadata
+    #orcamento_modelo = models.ForeignKey(self)
     criado_por = models.ForeignKey('rh.Funcionario', related_name="orcamento_criado_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
@@ -340,9 +341,11 @@ class ContratoFechado(models.Model):
     
     def sugerir_texto_contratante(self):
         if self.cliente.tipo == "pj":
-            pass
-            
-            
+            texto = u'''%s, CNPJ %s, endereço''' % (
+                unicode(self.cliente.nome),
+                unicode(self.cliente.cnpj or "_" * 30 ),
+                unicode(self.cliente.logradouro_completo() or "_" * 30),
+            )
         else:
             #self.cliente.tipo =="pf"
             texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado na endereço: %s''' % (

@@ -5,7 +5,9 @@
                 <small class="label label-info"><i class="fa fa-phone"></i> {{precliente.contato}}</small>
             {% endif %}
 			{% if precliente.dados %}
-                <small class="label"><i class="fa fa-comment"></i> {{precliente.dados}}</small>
+				<p>
+                <i class="fa fa-comment"></i> {{precliente.dados}}
+				</p>
             {% endif %}
 			{% if precliente.designado %}
 			<span class="label label-important"><i class="fa fa-hand-o-right"></i> {{precliente.designado}}</span>
