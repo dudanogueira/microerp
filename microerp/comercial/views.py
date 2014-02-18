@@ -1001,7 +1001,7 @@ class MyPrint:
             
             # CONTRATANTE DESC
             contratante_text = contrato.sugerir_texto_contratante()
-            contratante_p = Paragraph(contratante_text, styles['justify'])
+            contratante_p = Paragraph("<b>CONTRATANTE</b>: %s" % contratante_text, styles['justify'])
             elements.append(contratante_p)
             
             # space
