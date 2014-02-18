@@ -1440,6 +1440,8 @@ def ver_subproduto(request, subproduto_id):
         
         if request.POST.get('enviar-subproduto-teste-btn', None):
             form_enviar_para_teste = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_teste")
+            form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_testando, subproduto=subproduto, prefix="enviar_para_funcional")
+            
             if form_enviar_para_teste.is_valid():
                 # OK, pode fazer a operacao
                 # primeiro, mover as quantidades
@@ -1472,6 +1474,7 @@ def ver_subproduto(request, subproduto_id):
         
         if request.POST.get('enviar-subproduto-funcional-btn', None):
             form_enviar_para_funcional = FormEnviarSubProdutoParaTeste(request.POST, quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_funcional")
+            form_enviar_para_teste = FormEnviarSubProdutoParaTeste(quantidade_maxima=subproduto.total_montado, subproduto=subproduto, prefix="enviar_para_teste")
             if form_enviar_para_funcional.is_valid():
                 quantidade_preenchida = form_enviar_para_funcional.cleaned_data['quantidade_preenchida']
                 data_envio = form_enviar_para_funcional.cleaned_data['data_envio']
