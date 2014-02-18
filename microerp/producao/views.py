@@ -2483,7 +2483,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                         faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
                         producao_liberada = False
                         componente = Componente.objects.get(pk=int(item[0]))
-                        messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
+                        #messages.error(request, "Quantidade Indisponível (Faltou %s) de Componente ID %s" % (faltou, componente))
                 elif type(item[0]) == str:
                     subproduto_id = item[0].split("-")[1]
                     subproduto_usado = SubProduto.objects.get(id=subproduto_id)
@@ -2493,7 +2493,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     if qtd_subproduto > quantidade_disponivel: 
                         producao_liberada = False
                         faltou = float(qtd_subproduto) - float(quantidade_disponivel)
-                        messages.error(request, "Quantidade Indisponível (FALTOU: %s) de Sub Produto %s" % (faltou, item[0]))
+                        #messages.error(request, "Quantidade Indisponível (FALTOU: %s) de Sub Produto %s" % (faltou, item[0]))
                     
             
             calculado = True
@@ -2515,7 +2515,8 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     producao_liberada = False
                 else:
                     pode = True
-                quantidades_componente[linha.componente.id] = (linha, quantidade_usada, posicao_em_estoque_produtor, pode)
+                necessario_comprar = quantidade_usada - posicao_em_estoque_produtor
+                quantidades_componente[linha.componente.id] = (linha, quantidade_usada, posicao_em_estoque_produtor, pode, necessario_comprar)
 
             # calcula os subprodutos agregados
             quantidades_agregados = []
@@ -2525,9 +2526,9 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                 if quantidade_usada > total_disponivel:
                     pode = False
                     producao_liberada = False
-                    faltou = float(quantidade_usada) - float(linha.subproduto_agregado.total_disponivel())
                 else:
                     pode = True
+                faltou = float(quantidade_usada) - float(linha.subproduto_agregado.total_disponivel())
                 quantidades_agregados.append((linha, quantidade_usada, linha.subproduto_agregado.total_disponivel(), pode))
 
             if producao_liberada:

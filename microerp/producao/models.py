@@ -370,8 +370,6 @@ class LancamentoComponente(models.Model):
         except:
             pass
             
-        
-
     def calcula_totais_lancamento(self):
         if self.nota.status == 'a':
             if self.nota.tipo == 'n':
@@ -385,7 +383,9 @@ class LancamentoComponente(models.Model):
                 self.valor_total_sem_imposto = float(self.quantidade) * float(self.valor_unitario) * float(self.nota.cotacao_dolar)
                 # nota internacional, calculo direto, com conversao de dolar, com imposto
                 percentual = float(self.valor_unitario * self.nota.cotacao_dolar) * float(self.impostos) / float(100)
-                self.valor_total_com_imposto = (float(self.valor_unitario * self.nota.cotacao_dolar) + float(percentual)) * float(self.quantidade)
+                valor_unitario_em_real = float(self.valor_unitario * self.nota.cotacao_dolar)
+                valor_unitario_em_real_com_imposto = float(valor_unitario_em_real) + float(percentual)
+                self.valor_total_com_imposto = float(valor_unitario_em_real_com_imposto) * float(self.quantidade)
         self.save()
             
     #def save(self, *args, **kwargs):
@@ -575,7 +575,7 @@ class NotaFiscal(models.Model):
     
     #arquivo = models.FileField(upload_to=arquivo)
     numero = models.CharField("Número", max_length=100, blank=False, null=False)
-    serie = models.CharField("Série", max_length=100, blank=True, null=True)
+    serie = models.CharField("Série / Tipo de Nota", max_length=100, blank=True, null=True)
     tipo = models.CharField(blank=False, max_length=1, choices=TIPO_NOTA_FISCAL)
     taxas_diversas = models.DecimalField("Valores Diversos (R$)", max_digits=10, decimal_places=2, default=0, blank=True, null=True)
     cotacao_dolar = models.DecimalField("Cotação do Dolar em Relação ao Real (R$)", help_text="utilizado somente em notas Internacionais", max_digits=10, decimal_places=2, blank=True, null=True)

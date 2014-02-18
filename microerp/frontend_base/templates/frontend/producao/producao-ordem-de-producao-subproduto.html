@@ -118,6 +118,7 @@
 					<th>Qtd Utilizada</th>
 					<th>Qtd Consumida</th>
 					<th>Disponível em Estoque</th>
+					<th>Necessário Comprar</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -140,6 +141,7 @@
 						<td>
 							{{linha.2}} {{linha.0.componente.medida}}
 						</td>
+						<td>{{linha.4}}</td>
 					</tr>
 			{% endfor %}				
 			</tbody>	
@@ -225,10 +227,12 @@
 	
 		</div>
 	{% endif %}
+	{% comment %}
 	{% if get_componentes %}
 	<strong>Notação de Produção Abreviada</strong>: {{get_componentes}}<br />
 	<strong>Notação de Produção Completa Não Agrupada</strong>: {{get_componentes_nao_agrupados}}<br />
 	{% endif %}
+	{% endcomment %}
 	
 {% endblock %}
 
