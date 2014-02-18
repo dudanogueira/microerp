@@ -1294,7 +1294,7 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
         quantidade_permitida = cleaned_data.get("quantidade_maxima_permitida")
         if quantidade_preenchida == 0:
             raise forms.ValidationError("Impossível mover 0 :) Máximo Permitido: %s" % self.quantidade_maxima_permitida)
-        if int(quantidade_preenchida) > int(self.quantidade_maxima_permitida):
+        if int(quantidade_preenchida) > int(quantidade_permitida):
             raise forms.ValidationError("Quantidade máxima permitida: %s" % quantidade_permitida)
         return quantidade_preenchida
     
