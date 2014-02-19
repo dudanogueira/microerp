@@ -222,7 +222,7 @@ class EnderecoCliente(models.Model):
 
     # cliente
     cliente = models.ForeignKey(Cliente)
-    principal = models.NullBooleanField(default=None, unique=True, help_text="Endereço Principal")
+    principal = models.NullBooleanField(default=None, help_text="Endereço Principal")
     # telefone
     telefone = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX", verbose_name="Telefone Associado")
     # endereço
