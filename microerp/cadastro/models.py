@@ -207,7 +207,7 @@ class Cliente(models.Model):
 class EnderecoCliente(models.Model):
     
     def __unicode__(self):
-        return u"Endereço ID#%d do Cliente %s" % (self.id, self.cliente.nome)
+        return u"Endereço ID#%s do Cliente %s" % (self.id, self.cliente.nome)
 
     class Meta:
         verbose_name = "Endereço de Cliente"
