@@ -7,7 +7,7 @@
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos - Revalidar</h1>
 {{contrato}}
-
+{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
 <h2>Informações do Contrato</h2>
 
 <div class="alert alert-danger"><strong>Motivo da Invalidez</strong>: {{contrato.motivo_invalido}}</div>
@@ -70,6 +70,12 @@
 <script>
 $(document).ready(function() {
     $("#menu-comercial-meus-contratos, #top-menu-comercial").addClass("active");
+	
+	$('.popover-items').popover({
+			trigger: "hover",
+			placement: 'bottom'
+	});
+	
 	
 	$( ".datepicker" ).datepicker({
 		inline: true,

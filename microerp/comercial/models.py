@@ -354,7 +354,6 @@ class ContratoFechado(models.Model):
                 unicode(self.cliente.cpf or "_" * 30 ),
                 unicode(self.cliente.rg or "_" * 30  ),
                 unicode(self.cliente.logradouro_completo()),
-            
             )
         return texto
     
