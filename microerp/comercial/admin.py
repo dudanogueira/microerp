@@ -47,10 +47,15 @@ lancar_contrato.short_description = u"Lançar Contrato para o Financeiro"
 class PerfilAcessoComercialAdmin(admin.ModelAdmin):
     list_display = 'user', 'gerente', 'analista'
 
+class FollowUpPropostaInlineAdmin(admin.StackedInline):
+    model = FollowUpDePropostaComercial
+    extra = 0
+
 class PropostaComercialAdmin(admin.ModelAdmin):
     list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada', 'contrato_id'
     list_filter = 'probabilidade', 'data_expiracao', 'status'
     list_display_links = list_display
+    inlines = [FollowUpPropostaInlineAdmin]
 
 class LinhaRecursoMaterialInLine(admin.TabularInline):
     raw_id_fields = ("produto",)

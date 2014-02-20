@@ -20,7 +20,7 @@
 			 
 			 <p class="btn-group">
         <button type="submit" class="btn btn-info"><i class="fa fa-search"></i> Buscar</button>
-        <a data-placement="top" data-toggle="tooltip" title="Adicionar Pré Cliente" href="{% url "comercial:precliente_adicionar" %}" class="btn btn btn-success tooltip-items"><i class="fa fa-plus"></i></a>
+        <a data-placement="top" data-toggle="tooltip" title="Adicionar Pré Cliente" href="{% url "comercial:precliente_adicionar" %}?sugestao={{cliente_q}}" class="btn btn btn-success tooltip-items"><i class="fa fa-plus"></i></a>
 				{% if cliente_q %}
              <a href="." class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Limpar Busca"><i class="fa fa-trash-o"></i> </a>
 				{% endif %}
@@ -58,7 +58,6 @@
 	</form>
 	
 </div>
-	
 {% endif %}
 
 <div id="tab-content-comercial-clientes" class="tab-content">

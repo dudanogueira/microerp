@@ -234,8 +234,10 @@ def clientes(request):
     form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()  
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
+        cliente_q = cliente_q.strip()
         clientes = Cliente.objects.filter(
             Q(nome__icontains=cliente_q) | \
+            Q(fantasia__icontains=cliente_q) | \
             Q(cnpj__icontains=cliente_q) | \
             Q(cpf__icontains=cliente_q)
         )
@@ -245,8 +247,8 @@ def clientes(request):
         clientes = Cliente.objects.all()
         preclientes = PreCliente.objects.filter(cliente_convertido=None)
 
-    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None)
-    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False)
+    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None).order_by('nome')
+    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
     # se nao for gerente, limita a listagem para os que lhe sao designados
     if not request.user.perfilacessocomercial.gerente:
         preclientes = preclientes.filter(designado=request.user.funcionario)
@@ -737,6 +739,7 @@ class ConfirmarDesignacao(forms.Form):
         super(ConfirmarDesignacao, self).__init__(*args, **kwargs)
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['designado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        self.fields['designado'].widget.attrs['class'] = 'select2'
         self.fields['preclientes'].widget = forms.MultipleHiddenInput()
         self.fields['clientes'].widget = forms.MultipleHiddenInput()
         if clientes:

@@ -10,69 +10,9 @@
 <div class="row-fluid">
     <div class="span6">
         <div class="well well-small">
-            <h2><i class="fa fa-user"></i> Buscar Funcionário</h2>
-            <form class="form-search" action="{% url "cadastro:home" %}">
-                <input tabindex=1 type="text" class="input-medium search-query" id="funcionario_busca" name="funcionario" value="{% if funcionario_q %}{{funcionario_q}}{%endif%}">
-                <button type="submit" class="btn btn-info"><i class="fa fa-white fa-search"></i> Buscar</button>
-                {% if funcionario_q %}
-                <a href="."><i class="fa fa-remove"></i> Limpar</a>
-                {% endif %}
-            </form>
-            {% if funcionario_q %}
-
-            <table class="table table-hover table-striped table-condensed">
-                <thead>
-                    <tr>
-                        <th>Funcionário</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-            
-                    {% for funcionario in funcionarios %}
-          
-                    <tr>
-                        <td>{% if not funcionario.periodo_trabalhado_corrente %}
-                            <span class="badge">inativo</span>
-                            {% endif %}
-                            <strong>{{funcionario.nome}}</strong><br />
-                            {% if funcionario.telefone_fixo %}
-                                <small class="label label-info"><i class="fa-phone"></i> {{funcionario.telefone_fixo|phonenumber}}</small>
-                            {% endif %}
-                            {% if funcionario.telefone_celular|phonenumber %}
-<small class="label label-info"><i class="fa-mobile-phone"></i> {{funcionario.telefone_celular|phonenumber}}</small>
-{% endif %}
-                        </td>
-                        <td>
-                            <a class="btn" href="{% url "cadastro:funcionarios_recados_listar" funcionario.id %}"><i class="fa fa-inbox"></i></a>
-                            <a class="btn" href="{% url "cadastro:funcionarios_recados_adicionar"  funcionario.id %}"><i class="fa fa-plus"></i></a>
-
-                        </td>
-                    </tr>
-                    {% empty %}
-            
-                    <tr>
-                        <td class="alert alert-info"><strong>Nenhum Funcionário Encontrado</strong></td>
-                        <td>            {% if funcionario_q %}
-                            <a href="."><i class="fa fa-remove"></i> Limpar Busca</a>
-                            {% endif %}
-                        </td>
-                    </tr>
-
-                    {% endfor %}
-            
-            
-                </tbody>
-            </table>
-
-            {% endif %}
-        </div>
-    </div>
-    <div class="span6">
-        <div class="well well-small">
             <h2><i class="fa fa-briefcase"></i> Buscar Pré / Cliente</h2>
             <form class="form-search" action="{% url "cadastro:home" %}">
-                <input tabindex="2" type="text" class="input-medium search-query" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
+                <input tabindex="2" type="text" class="input-medium search-query" id="cliente_busca" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
                 <button type="submit" class="btn btn-info"><i class="fa fa-white fa-search"></i> Buscar</button>
                 {% if cliente_q %}
                 <a href="."><i class="fa fa-remove"></i> Limpar</a>
@@ -166,6 +106,67 @@
             {% endif %}
         </div>
     </div>
+    <div class="span6">
+        <div class="well well-small">
+            <h2><i class="fa fa-user"></i> Buscar Funcionário</h2>
+            <form class="form-search" action="{% url "cadastro:home" %}">
+                <input tabindex=1 type="text" class="input-medium search-query" id="funcionario_busca" name="funcionario" value="{% if funcionario_q %}{{funcionario_q}}{%endif%}">
+                <button type="submit" class="btn btn-info"><i class="fa fa-white fa-search"></i> Buscar</button>
+                {% if funcionario_q %}
+                <a href="."><i class="fa fa-remove"></i> Limpar</a>
+                {% endif %}
+            </form>
+            {% if funcionario_q %}
+
+            <table class="table table-hover table-striped table-condensed">
+                <thead>
+                    <tr>
+                        <th>Funcionário</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+            
+                    {% for funcionario in funcionarios %}
+          
+                    <tr>
+                        <td>{% if not funcionario.periodo_trabalhado_corrente %}
+                            <span class="badge">inativo</span>
+                            {% endif %}
+                            <strong>{{funcionario.nome}}</strong><br />
+                            {% if funcionario.telefone_fixo %}
+                                <small class="label label-info"><i class="fa-phone"></i> {{funcionario.telefone_fixo|phonenumber}}</small>
+                            {% endif %}
+                            {% if funcionario.telefone_celular|phonenumber %}
+<small class="label label-info"><i class="fa-mobile-phone"></i> {{funcionario.telefone_celular|phonenumber}}</small>
+{% endif %}
+                        </td>
+                        <td>
+                            <a class="btn" href="{% url "cadastro:funcionarios_recados_listar" funcionario.id %}"><i class="fa fa-inbox"></i></a>
+                            <a class="btn" href="{% url "cadastro:funcionarios_recados_adicionar"  funcionario.id %}"><i class="fa fa-plus"></i></a>
+
+                        </td>
+                    </tr>
+                    {% empty %}
+            
+                    <tr>
+                        <td class="alert alert-info"><strong>Nenhum Funcionário Encontrado</strong></td>
+                        <td>            {% if funcionario_q %}
+                            <a href="."><i class="fa fa-remove"></i> Limpar Busca</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+            
+            
+                </tbody>
+            </table>
+
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 
 <!-- Modal Enviar para Teste -->
@@ -196,7 +197,7 @@
 <script>
 $(document).ready(function() {
     $("#menu-cadastro-home, #top-menu-cadastro").addClass("active");
-    $("#funcionario_busca").focus()
+    $("#cliente_busca").focus()
 	$('.popover-items').popover({placement: 'top'})
 });
 

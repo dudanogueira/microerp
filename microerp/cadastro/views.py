@@ -7,6 +7,7 @@ from django.core.urlresolvers import reverse
 
 from django.contrib.auth.decorators import user_passes_test
 from django.core.mail import EmailMessage
+from django.db.models import Q
 
 # SITES
 from django.contrib.sites.models import Site
@@ -119,11 +120,18 @@ def home(request):
     # widget funcionario
     funcionario_q = request.GET.get('funcionario', False)
     if funcionario_q:
+        funcionario_q = funcionario_q.strip()
         funcionarios = Funcionario.objects.filter(nome__icontains=funcionario_q)
     # widget cliente
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
-        clientes = Cliente.objects.filter(nome__icontains=cliente_q)
+        cliente_q = cliente_q.strip()
+        clientes = Cliente.objects.filter(
+            Q(nome__icontains=cliente_q) | \
+            Q(fantasia__icontains=cliente_q) | \
+            Q(cnpj__icontains=cliente_q) | \
+            Q(cpf__icontains=cliente_q)
+        )
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     return render_to_response('frontend/cadastro/cadastro-home.html', locals(), context_instance=RequestContext(request),)
 
