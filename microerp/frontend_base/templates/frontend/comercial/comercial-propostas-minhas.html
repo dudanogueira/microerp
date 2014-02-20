@@ -92,7 +92,7 @@
 						
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
 							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.contrato.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
