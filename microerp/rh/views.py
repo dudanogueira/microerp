@@ -368,9 +368,7 @@ def demitir_funcionario(request, funcionario_id):
             periodo_trabalhado_finalizado = funcionario.periodo_trabalhado_corrente
             # encerra Periodo Trabalhado Corrente e desvincula ao funcionario
             funcionario.periodo_trabalhado_corrente.fim = datetime.date.today()
-            funcionario.periodo_trabalhado_corrente = None
             funcionario.periodo_trabalhado_corrente.save()
-            funcionario.save()
             messages.info(request, u'Período Trabalhado Desvinculado')
             # agenda rotina de médico demissional com padrões do cargo
             exame = funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.create(
@@ -386,10 +384,12 @@ def demitir_funcionario(request, funcionario_id):
             demissao = funcionario.demissao_set.create(
                 data=datetime.date.today(),
                 periodo_trabalhado_finalizado=periodo_trabalhado_finalizado,
-                demissor=request.user,
+                demissor=request.user.funcionario,
             )
             messages.info(request, u'Entrada de Demissão Criada: ID#%s' % demissao.id)
             # sucesso no processo
+            funcionario.periodo_trabalhado_corrente = None
+            funcionario.save()
             messages.success(request, u'Processo de Demissão Iniciado com Sucesso!')
             # redireciona pra tela do usuário
             return redirect(reverse('rh:ver_funcionario', args=[funcionario.id,]))

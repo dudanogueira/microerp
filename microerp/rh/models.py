@@ -181,7 +181,7 @@ class Funcionario(models.Model):
             raise ValidationError(u"Número do CPF Inválido!")
     
     def salario(self):
-        if self.periodo_trabalhado_corrente.promocaosalario_set.filter(aprovado=True).count():
+        if self.periodo_trabalhado_corrente and self.periodo_trabalhado_corrente.promocaosalario_set.filter(aprovado=True).count():
             return self.periodo_trabalhado_corrente.promocaosalario_set.filter(aprovado=True).order_by('-criado')[0].valor_destino
         else:
             return self.salario_inicial
