@@ -39,6 +39,7 @@ class Command(BaseCommand):
                         marcado_ativo = False
                     else:
                         marcado_ativo = True
+                    marcado_ativo = True
                     print "ATIVO:", marcado_ativo
                     importado_nacional = row[5].value
                     print "IMPORTADO/NACIONAL:", importado_nacional
@@ -50,6 +51,8 @@ class Command(BaseCommand):
                         lead_time = 1
                     print "LEADTIME:", lead_time
                     pmu = row[8].value
+                    if not pmu:
+                        pmu = 0
                     pmu = float(str(pmu).replace(',', '.'))
                     print "PMU - Preco Medio Unitario", pmu
                     medida = row[10].value
