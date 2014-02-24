@@ -939,8 +939,6 @@ def controle_de_epi(request):
     ).order_by('controle__criado', 'data_previsao_devolucao')
     return render_to_response('frontend/rh/rh-controle-de-epi.html', locals(), context_instance=RequestContext(request),)
 
-
-
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_epi_adicionar(request):

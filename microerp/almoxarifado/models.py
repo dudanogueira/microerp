@@ -74,6 +74,9 @@ class ControleDeEquipamento(models.Model):
 
 class LinhaControleEquipamento(models.Model):
     
+    def __unicode__(self):
+        return u"%s Quantidades de %s" % (self.quantidade, self.produto)
+    
     def pendente(self):
         if self.data_previsao_devolucao > datetime.date.today():
             return False
