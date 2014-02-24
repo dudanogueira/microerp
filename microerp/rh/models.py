@@ -205,7 +205,7 @@ class Funcionario(models.Model):
 
     def exames_passados(self):
         if self.periodo_trabalhado_corrente:
-            return self.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(data__lt=datetime.date.today()).order_by('data')
+            return self.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(data__lt=datetime.date.today()).order_by('-data')
 
     def exames_data_indefinida(self):
         if self.periodo_trabalhado_corrente:
