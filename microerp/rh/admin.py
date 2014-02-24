@@ -119,7 +119,7 @@ class AtribuicaoDeCargoInline(admin.StackedInline):
     extra=0
 
 class SolicitacaoDeLicencaInline(admin.StackedInline):
-    model = SolicitacaoDeLicencaInline
+    model = SolicitacaoDeLicenca
     extra = 0
 
 class PeriodoTrabalhadoAdmin(admin.ModelAdmin):
