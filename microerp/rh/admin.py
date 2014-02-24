@@ -146,7 +146,7 @@ class RotinaExameMedicoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'periodo_trabalhado__funcionario', 'realizado'
     list_display = 'id', 'tipo', 'periodo_trabalhado', 'realizado'
     date_hierarchy = 'data'
-    filter_horizontal = 'exames'
+    filter_horizontal = 'exames',
 
 class CompetenciaAdmin(admin.ModelAdmin):
     list_filter = 'grupo',
