@@ -32,7 +32,7 @@
                <h5>Dias Agendados</h5>
                    <ul>
                    {% for d in funcionario.ferias_dias_agendados %}
-                       <li>{{d.delta.days}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
+                       <li>{{d.delta}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
                    {% empty %}
                    <li>Nenhum dia Agendado</li>
                    {% endfor %}
@@ -41,7 +41,7 @@
                <h5>Dias Autorizados</h5>
                    <ul>
                    {% for d in funcionario.ferias_dias_autorizados %}
-                       <li>{{d.delta.days}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
+                       <li>{{d.delta}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
                    {% empty %}
                    <li>Nenhum dia Autorizado</li>
                    {% endfor %}
@@ -51,7 +51,7 @@
                <h5>Dias Gozados</h5>
                    <ul>
                    {% for d in funcionario.ferias_dias_gozados %}
-                       <li>{{d.delta.days}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
+                       <li>{{d.delta}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
                    {% empty %}
                    <li>Nenhum dia Gozado</li>
                    {% endfor %}
