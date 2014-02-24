@@ -118,11 +118,15 @@ class AtribuicaoDeCargoInline(admin.StackedInline):
     ordering = ['inicio']
     extra=0
 
+class SolicitacaoDeLicencaInline(admin.StackedInline):
+    model = SolicitacaoDeLicencaInline
+    extra = 0
+
 class PeriodoTrabalhadoAdmin(admin.ModelAdmin):
     list_filter = 'inicio', 'fim', 'funcionario', 'funcionario__cargo_atual'
     list_display = 'id', 'funcionario', 'inicio', 'fim'
     list_display_links = list_display
-    inlines = [AtribuicaoDeCargoInline]
+    inlines = [AtribuicaoDeCargoInline, SolicitacaoDeLicencaInline]
 
 class FeriadoAdmin(admin.ModelAdmin):
     list_filter = 'importado_por_sync',

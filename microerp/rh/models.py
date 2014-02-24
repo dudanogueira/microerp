@@ -718,7 +718,7 @@ class SolicitacaoDeLicenca(models.Model):
     
     def delta(self):
         delta = self.fim - self.inicio
-        return delta
+        return delta.days + 1
     
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     motivo = models.TextField(blank=False)
