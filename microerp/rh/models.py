@@ -123,10 +123,11 @@ DEPENDENTE_FUNCIONARIO_CHOICES = (
 )
 
 ROTINA_EXAME_MEDICO_CHOICES = (
-    ('a', u"Admissão"),
-    ('d', u"Demissão"),
-    ('u', u"Atualização"),
-    ('p', u"Promoção"),
+    ('a', u"Admissonal"),
+    ('d', u"Demissonal"),
+    ('u', u"Periódico"),
+    ('p', u"Mudança de Função"),
+    ('r', u"Retorno ao Trabalho"),
 )
 
 FUNCIONARIO_FORMA_PAGAMENTO_CHOICES = (
