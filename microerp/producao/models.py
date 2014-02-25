@@ -76,6 +76,12 @@ TIPO_FALHA_DE_TESTE_CHOICES = (
 class PerfilAcessoProducao(models.Model):
     '''Perfil de Acesso à Produção'''
     
+    def __unicode__(self):
+        if self.gerente:
+            return u"Perfil de Acesso ao módulo Produção para %s do tipo Gerente" % self.user
+        else:
+            return u"Perfil de Acesso ao módulo Produção para %s do tipo Analista" % self.user
+    
     class Meta:
         verbose_name = u"Perfil de Acesso à Produção"
         verbose_name_plural = u"Perfis de Acesso à Produção"
@@ -1686,7 +1692,6 @@ def subproduto_pre_save(signal, instance, sender, **kwargs):
           linha.subproduto_principal.valor_custo_total_dos_sub_produtos_agregados = instance.custo_total_dos_sub_produtos_agregados()
           linha.subproduto_principal.valor_total_de_custo =  instance.valor_custo_total_linhas + instance.valor_custo_total_dos_sub_produtos_agregados
           linha.subproduto_principal.save()
-          
 
 # SIGNALS CONNECTION
 signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)

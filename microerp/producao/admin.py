@@ -212,6 +212,10 @@ class LinhaLancamentoFalhaDeTesteAdmin(admin.ModelAdmin):
     list_filter = 'falha__tipo', 'lancamento_teste__subproduto', 'lancamento_teste__data_lancamento', 'lancamento_teste__funcionario_testador' 
     list_display = 'quantidade', 'falha', 'lancamento_teste',
 
+class PerfilAcessoProducaoAdmin(admin.ModelAdmin):
+    list_filter = 'user', 'gerente', 'analista'
+    list_display = 'user', 'gerente', 'analista'
+
 admin.site.register(OrdemProducaoSubProduto)
 admin.site.register(OrdemProducaoProduto)
 admin.site.register(EstoqueFisico)
@@ -228,7 +232,7 @@ admin.site.register(DocumentoTecnicoSubProduto, DocumentoTecnicoSubProdutoAdmin)
 admin.site.register(LinhaSubProduto, LinhaSubProdutoAdmin)
 admin.site.register(ProdutoFinal, ProdutoAdmin)
 admin.site.register(LinhaComponenteAvulsodoProduto, LinhaComponenteAvulsodoProdutoAdmin)
-admin.site.register(PerfilAcessoProducao)
+admin.site.register(PerfilAcessoProducao, PerfilAcessoProducaoAdmin)
 admin.site.register(ArquivoAnexoComponente, ArquivoAnexoComponenteAdmin)
 admin.site.register(LinhaSubProdutodoProduto, LinhaSubProdutodoProdutoAdmin)
 admin.site.register(RegistroEnvioDeTesteSubProduto, RegistroEnvioDeTesteSubProdutoAdmin)

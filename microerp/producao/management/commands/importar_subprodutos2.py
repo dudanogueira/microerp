@@ -38,6 +38,7 @@ class Command(BaseCommand):
                     subproduto,created = SubProduto.objects.get_or_create(part_number=part_number, id=id_inicial)
                     subproduto.nome = nome
                     subproduto.save()
+                    print "CRIOU/ALTEROU"
                     i = 0
                     for curr_row in range(worksheet.nrows):
                         if curr_row > 3:
