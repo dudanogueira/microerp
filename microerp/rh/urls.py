@@ -28,6 +28,7 @@ urlpatterns = patterns('',
     
     # exames medicos
     url(r'^exames-medicos/$', 'rh.views.exames_medicos', name='exames_medicos'),
+    url(r'^exames-medicos/relatorios/custos/$', 'rh.views.exames_medicos_relatorios_custos', name='exames_medicos_relatorios_custos'),
     url(r'^exames-medicos/(?P<exame_id>[0-9]+)/realizado_hoje/$', 'rh.views.exames_medicos_exame_realizado_hoje', name='exame_realizado_hoje'),
     url(r'^exames-medicos/(?P<exame_id>[0-9]+)/$', 'rh.views.exames_medicos_ver', name='exames_medicos_ver'),
 

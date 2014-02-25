@@ -4,7 +4,23 @@
 <title>{%block title %}{{block.super}} - RH>Exames Médicos{% endblock %}</title>
 
 {% block content %}
-<h1><i class="fa fa-th"></i> <i class="fa fa-user-md"></i> Exames Médicos</h1>
+<div class="row-fluid">
+	<div class="span6">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-user-md"></i> Exames Médicos</h1>
+		
+	</div>
+
+	<div class="span6">
+		<div class="btn-group pull-right" id="funcionarios-relatorios-botao">
+		    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="icon icon-list-alt icon-white"></i> Relatórios <span class="caret"></span></button>
+		    <ul class="dropdown-menu">
+		        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:exames_medicos_relatorios_custos" %}" class=""><i class="icon-check"></i>Custos</a></li>
+		    </ul>
+		</div>
+	</div>
+	
+</div>
+
 <h2>Data Indefinida</h2>
 <ul>
 {% for exame in exames_data_pendente %}

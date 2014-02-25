@@ -29,8 +29,6 @@ from django.conf import settings
 
 from almoxarifado.models import ControleDeEquipamento, LinhaControleEquipamento
 
-from django_select2 import AutoModelSelect2Field, AutoHeavySelect2Widget
-
 #
 # FORMULARIOS
 #
@@ -215,6 +213,40 @@ def solicitacao_licencas_autorizar(request, solicitacao_id):
     return redirect(reverse('rh:solicitacao_licencas'))
 
 #
+
+class SelecionaMesReferencia(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(SelecionaMesReferencia, self).__init__(*args, **kwargs)
+        self.fields['dia_referencia'].widget.attrs['class'] = 'datepicker'
+    
+    dia_referencia = forms.DateField(label=u"Selecione o Mês/Ano de Referência", initial=datetime.date.today())
+
+@user_passes_test(possui_perfil_acesso_rh)
+def exames_medicos_relatorios_custos(request):
+    if request.POST:
+        form_mes_referencia = SelecionaMesReferencia(request.POST)
+        if form_mes_referencia.is_valid():
+            resultados = True
+            data_referencia = form_mes_referencia.cleaned_data['dia_referencia']
+            #calcula quantidade de funcionarios ativos
+            periodos_trabalhados = PeriodoTrabalhado.objects.filter(
+            Q(inicio__lte=data_referencia, fim=None) | \
+            Q(inicio__lte=data_referencia, fim__gte=data_referencia)
+            )
+            valor_exames_mensal_por_ativo = getattr(settings, "VALOR_EXAME_MENSAL_FUNCIONARIO", 4)
+            total_mensal_exame = float(periodos_trabalhados.count()) * float(valor_exames_mensal_por_ativo)
+            # calcula quantidade de rotinas medicas
+            rotinas = RotinaExameMedico.objects.filter(data__month=data_referencia.month, data__year=data_referencia.year, realizado=True)
+            total_rotinas = 0
+            for rotina in rotinas:
+                total_rotinas += rotina.valor_total()
+            total_geral = float(total_rotinas) + float(total_mensal_exame)
+    else:
+        form_mes_referencia = SelecionaMesReferencia()
+    return render_to_response('frontend/rh/rh-exames-medicos-relatorios-custos.html', locals(), context_instance=RequestContext(request),)
+    
+
 @user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos(request):
     exames_data_pendente = RotinaExameMedico.objects.filter(data=None)
