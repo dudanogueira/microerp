@@ -266,7 +266,7 @@ class Funcionario(models.Model):
         if solicitacoes:
             for solicitacao in solicitacoes:
                 delta = solicitacao.fim - solicitacao.inicio
-                dias.append(delta.days)
+                dias.append(delta.days + 1)
         else:
             dias.append(0)
         import operator
