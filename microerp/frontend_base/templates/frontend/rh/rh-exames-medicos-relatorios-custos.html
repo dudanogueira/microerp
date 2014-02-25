@@ -26,7 +26,7 @@ Relatório de: {{data_referencia|date:"F"}} de {{data_referencia|date:"Y"}}
 	<h4>Quantidade de Funcionários Ativos: {{funcionarios_ativos.count}}</h4>
 	<ul>
 	{% for periodo in periodos_trabalhados %}
-	<li>{{periodo.funcionario}} - <strong>Início</strong>: {{periodo.inicio|date:"SHORT_DATE_FORMAT"}}{% if periodo.fim %}, <strong>Fim</strong>: {{periodo.fim|date:"SHORT_DATE_FORMAT"}}{% endif %}</li>
+	<li>Período: <span class="badge badge-info">#{{periodo.id}}</span> - {{periodo.funcionario}} - <strong>Início</strong>: {{periodo.inicio|date:"SHORT_DATE_FORMAT"}}{% if periodo.fim %}, <strong>Fim</strong>: {{periodo.fim|date:"SHORT_DATE_FORMAT"}}{% endif %}</li>
 	{% endfor %}
 	</ul>
 	<h5>Total Mensal de Exames: R$ {{total_mensal_exame}}</h5>
