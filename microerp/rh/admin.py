@@ -148,7 +148,7 @@ class DemissaoAdmin(admin.ModelAdmin):
 
 class RotinaExameMedicoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'periodo_trabalhado__funcionario', 'realizado'
-    list_display = 'id', 'tipo', 'periodo_trabalhado', 'realizado'
+    list_display = 'id', 'tipo', 'periodo_trabalhado', 'realizado', 'data'
     date_hierarchy = 'data'
     filter_horizontal = 'exames',
 
