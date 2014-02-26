@@ -1693,5 +1693,14 @@ def subproduto_pre_save(signal, instance, sender, **kwargs):
           linha.subproduto_principal.valor_total_de_custo =  instance.valor_custo_total_linhas + instance.valor_custo_total_dos_sub_produtos_agregados
           linha.subproduto_principal.save()
 
+def componente_post_save(signal, instance, sender, **kwargs):
+    # apos salvar cada componente, deverá ser atualizada todas as linhas que ele faz parte
+    for opcao in instance.opcaolinhasubproduto_set.filter(padrao=True):
+        linha = opcao.linha
+        linha.valor_custo_da_linha = linha.custo()
+        linha.save()
+    linha.subproduto.save()
+
 # SIGNALS CONNECTION
 signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)
+signals.post_save.connect(componente_post_save, sender=Componente)
