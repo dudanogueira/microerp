@@ -1699,7 +1699,7 @@ def componente_post_save(signal, instance, sender, **kwargs):
         linha = opcao.linha
         linha.valor_custo_da_linha = linha.custo()
         linha.save()
-    linha.subproduto.save()
+        linha.subproduto.save()
 
 # SIGNALS CONNECTION
 signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)
