@@ -235,6 +235,10 @@ class Funcionario(models.Model):
         # diferença de ferias de direito com dias é maior do que 30 dias        
         elif delta > 30:
             return "error"
+        
+        # VERDE, a quantidade de dias de direito é menor que a quantidade de ferias gozadas
+        elif ferias_direito < self.ferias_dias_total_soma():
+            return 'success'
          
     def dias_trabalhados(self):
         dias_trabalhados = datetime.date.today() - self.periodo_trabalhado_corrente.inicio
