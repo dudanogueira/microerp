@@ -1034,8 +1034,11 @@ class LinhaSubProduto(models.Model):
     def ipp(self):
         '''Índice de Peso de Participacao'''
         total = self.subproduto.custo()
-        ipp = 100 * self.custo() / total
-        return ipp
+        if total == 0:
+            return 0
+        else:
+            ipp = 100 * self.custo() / total
+            return ipp
 
     peso = models.IntegerField("Item", blank=True, null=True)
     subproduto = models.ForeignKey('SubProduto')
