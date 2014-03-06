@@ -1709,6 +1709,9 @@ def adicionar_linha_subproduto(request, subproduto_id):
             opcao = linha.opcaolinhasubproduto_set.create(componente=componente, quantidade=quantidade, padrao=True)
             opcao.linha.valor_custo_da_linha = linha.custo()
             opcao.linha.save()
+            # atualiza o subproduto
+            subproduto.save()
+            #
             return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
     else:
         form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
