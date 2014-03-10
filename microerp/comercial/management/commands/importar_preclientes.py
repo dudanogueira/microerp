@@ -42,7 +42,7 @@ class Command(BaseCommand):
                     try:
                         funcionario = Funcionario.objects.get(pk=funcionario_id)
                     except:
-                        funcionario = Funcionario.objects.first()
+                        funcionario = Funcionario.objects.all().first()
                     print "Funcionario:",funcionario
                     #
                     probabilidade = row[4].value
