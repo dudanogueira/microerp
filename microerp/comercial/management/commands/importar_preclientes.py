@@ -62,7 +62,7 @@ class Command(BaseCommand):
                     
                     # registra
                     precliente,created = PreCliente.objects.get_or_create(nome=nome.title(), contato=contato, dados=dados, adicionado_por=funcionario)
-                    proposta,created = precliente.propostacomercial_set.get_or_create(valor_proposto=valor, probabilidade=probabilidade, criado_por=funcionario)
+                    proposta,created = precliente.propostacomercial_set.get_or_create(valor_proposto=valor, probabilidade=probabilidade, criado_por=funcionario, observacoes=dados)
                     followup, crated = proposta.followupdepropostacomercial_set.get_or_create(criado_por=funcionario, texto=texto, probabilidade=probabilidade, criado=datetime.date(data[0], data[1], data[2]))
                     
                     

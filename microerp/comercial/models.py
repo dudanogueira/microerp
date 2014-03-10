@@ -323,8 +323,8 @@ class ContratoFechado(models.Model):
         return proximo_peso
     
     def __unicode__(self):
-        return u"Contrato #%d  com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s. Categoria: %s" % \
-            (self.id, self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.inicio_cobranca, self.get_status_display(), self.categoria)
+        return u"Contrato #%d  com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s. Categoria: %s. Responsável: %s, Comissionado: %s" % \
+            (self.id, self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.previsao_inicio_execucao, self.get_status_display(), self.categoria, self.responsavel, self.responsavel_comissionado)
     
     def total_valor_cobrado_lancamentos(self):
         return self.lancamentofinanceiroreceber_set.all().aggregate(Sum('valor_cobrado'))

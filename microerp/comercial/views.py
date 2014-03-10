@@ -8,6 +8,10 @@ from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Sum
 
+from django.core.mail import EmailMessage
+
+from django.contrib.sites.models import Site
+
 from django.core.exceptions import ValidationError
 from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
@@ -71,7 +75,6 @@ class PreClienteAdicionarForm(forms.ModelForm):
         model = PreCliente
         fields = 'nome', 'contato', 'dados', 'designado'
 
-
 class AdicionarPropostaForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -105,8 +108,6 @@ class AdicionarSolicitacaoForm(forms.ModelForm):
         else:
             self.fields['cliente'].widget = forms.HiddenInput()
             self.fields['precliente'].widget = forms.HiddenInput()
-            
-        
     
     class Meta:
         model = Solicitacao
@@ -530,7 +531,7 @@ def editar_proposta_converter(request, proposta_id):
                         novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
                         novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
                         novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
-                        novo_contrato.save()
+                        novo_contrato.save()  
                         # retorna para a view contratos em analise
                         if request.user.perfilacessocomercial.gerente:
                             # se gerente, retorna para contratos em analise
@@ -906,7 +907,10 @@ def adicionar_follow_up(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus(request):
-    meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status')
+    if request.user.perfilacessocomercial.gerente:
+        meus_contratos = ContratoFechado.objects.all().order_by('responsavel')
+    else:
+        meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status')
     return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
 
 from reportlab.lib.pagesizes import letter, A4
@@ -1250,6 +1254,34 @@ def contratos_meus_revalidar(request, contrato_id):
                 contrato.save()
                 form_configurar_contrato.save()
                 messages.success(request, u"Sucesso! Contrato Revalidado")
+                # envia email para gerentes do comercial
+                dest = []
+                for perfil in PerfilAcessoComercial.objects.filter(gerente=True):
+                    dest.append(perfil.user.funcionario.email or perfil.user.email)
+
+                assunto = u'Contrato para Análise: #%s' % contrato.id
+                
+                current_site_domain = Site.objects.get_current().domain
+                template = loader.get_template('template_de_email/comercial/novo-contrato-em-analise.html')
+                c = Context(
+                        {
+                            "contrato": contrato,
+                            "current_site_domain": current_site_domain
+                        }
+                    )
+                conteudo = template.render(c)
+                email = EmailMessage(
+                        assunto, 
+                        conteudo,
+                        'SISTEMA',
+                        dest,
+                    )
+                try:
+                    email.send(fail_silently=False)
+                    messages.success(request, u'Sucesso! Uma mensagem de email foi enviado para os Gerentes!')
+                except:
+                    messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para os Gerentes!')
+                
                 return redirect(reverse("comercial:contratos_meus"))
             else:
                 messages.error(request, u"Erro. Valor de Lançamentos não confere com o valor do contrato.")

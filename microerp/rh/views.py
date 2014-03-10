@@ -73,6 +73,13 @@ class AdicionarArquivoRotinaExameForm(forms.ModelForm):
 
 #
 class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
+    
+    
+    def __init__(self, *args, **kwargs):
+        super(AdicionarSolicitacaoLicencaForm, self).__init__(*args, **kwargs)
+        self.fields['inicio'].widget.attrs['class'] = 'datepicker'
+        self.fields['fim'].widget.attrs['class'] = 'datepicker'
+    
     class Meta:
         model = SolicitacaoDeLicenca
         fields = ('tipo', 'motivo', 'inicio', 'fim')

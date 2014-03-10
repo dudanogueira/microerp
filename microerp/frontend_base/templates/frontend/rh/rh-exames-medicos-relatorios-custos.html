@@ -23,7 +23,7 @@
 Relatório de: {{data_referencia|date:"F"}} de {{data_referencia|date:"Y"}}
 <a href="{% url "rh:exames_medicos_relatorios_custos" %}">Novo Relatório</a>
 <div class="well well-small">
-	<h4>Quantidade de Funcionários Ativos: {{funcionarios_ativos.count}}. Valor Mensal por Funcionário: R$ {{valor_exames_mensal_por_ativo}}</h4>
+	<h4>Quantidade de Funcionários Ativos: {{periodos_trabalhados.count}}. Valor Mensal por Funcionário: R$ {{valor_exames_mensal_por_ativo}}</h4>
 	<ul>
 	{% for periodo in periodos_trabalhados %}
 	<li>Período: <span class="badge badge-info">#{{periodo.id}}</span> - {{periodo.funcionario}} - <strong>Início</strong>: {{periodo.inicio|date:"SHORT_DATE_FORMAT"}}{% if periodo.fim %}, <strong>Fim</strong>: {{periodo.fim|date:"SHORT_DATE_FORMAT"}}{% endif %}</li>

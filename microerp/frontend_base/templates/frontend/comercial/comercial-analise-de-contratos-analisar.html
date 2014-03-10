@@ -44,7 +44,7 @@
 	
 	<div class="span6">
 		
-		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
+		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}  <strong>Valor do Contrato: R$ {{contrato.valor}}</strong>
 		
 		<h4>Lançamentos Configurados</h4>
 		<ul>
@@ -54,8 +54,9 @@
 			Nenhum Lançamento				
 			{% endfor %}
 		</ul>
-		<hr />
+
 		{% if contrato.propostacomercial.orcamento_set.all %}
+		<hr />
 		<h4>Orçamentos Vinculados</h4>
 		
 		<h6>Valor Consolidado: R$ {{contrato.propostacomercial.consolidado}}</h6>
@@ -123,30 +124,29 @@
 				{% endif %}
 			</li>
 			
-			<li>
+			<li {% if contrato.garantia %} class="popover-items" data-trigger="hover" data-title="Garantia" data-content='{{contrato.garantia}}' {% endif %}>
 				Garantia: {% if contrato.garantia %}
-				{{contrato.garantia}}
+				<span class="badge badge-success"><i class="fa fa-check"></i>
 				{% else %}
 				<span class="label label-important">Não especificado</span>
 				{% endif %}
 			</li>
-			<li>
+			<li {% if contrato.items_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Inclusos" data-content='{{contrato.items_incluso}}' {% endif %}>
 				Itens Incluso: {% if contrato.items_incluso %}
-				{{contrato.items_incluso}}
+				<span class="badge badge-success"><i class="fa fa-check"></i>
 				{% else %}
 				<span class="label label-important">Não especificado</span>
 				{% endif %}
 			</li>
-			<li>
+			<li {% if contrato.items_nao_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Não Inclusos" data-content='{{contrato.items_nao_incluso}}' {% endif %}>
 				Itens Não Incluso: {% if contrato.items_nao_incluso %}
-				{{contrato.items_nao_incluso}}
+				<span class="badge badge-success"><i class="fa fa-check"></i>
 				{% else %}
 				<span class="label label-important">Não especificado</span>
 				{% endif %}
-			</li>
-			
-			<li>
-				Endereços do Cliente: {% if contrato.cliente.enderecocliente_set %}
+			</li>			
+			<li {% if contrato.cliente.enderecocliente_set.count %}class="popover-items" data-trigger="hover" data-title="Endereço" data-content='{{contrato.cliente.logradouro_completo}}' {% endif %}>
+				Endereços do Cliente: {% if contrato.cliente.enderecocliente_set.count %}
 				<span class="label label-success">{{contrato.cliente.enderecocliente_set.count}} Endereço{{contrato.cliente.enderecocliente_set.count|pluralize:"s"}}</span>
 				{% else %}
 				<span class="label label-important">Não possui</span>
@@ -154,7 +154,7 @@
 			</li>
 			
 		</ul>
-		
+
 	</div>
 	
 </div>

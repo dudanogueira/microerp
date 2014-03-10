@@ -5,8 +5,12 @@
 <title>{%block title %}{{block.super}} - Comercial - Meus Contratos{% endblock %}</title>
 
 {% block content %}
-<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
 
+{# PARA FUNCIONARIOS NORMAIS #}
+
+{% if not request.user.perfilacessocomercial.gerente %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
 {% regroup meus_contratos by get_status_display as meus_contratos_por_status %}
 {% for lista in meus_contratos_por_status %}
 <h4>{{lista.grouper}}</h4>
@@ -30,8 +34,46 @@
 	{% endif %}
 {% endfor %}
 </ul>
-
 {% endfor %}
+
+{% else %}
+
+{# PARA FUNCIONARIOS GERENTES #}
+
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
+{% regroup meus_contratos by responsavel as meus_contratos_por_responsavel %}
+{% for lista in meus_contratos_por_responsavel %}
+<h4>{{lista.grouper}}</h4>
+<ul>
+{% for contrato in lista.list %}
+	{% if contrato.status == "invalido" %}
+	<li> 
+		<span class="badge badge-important">{{contrato.get_status_display}}</span> <a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}">{{contrato}}</a>
+	</li>
+	{% else %}
+		{% if contrato.status == "assinatura" %}
+		<li> 
+			<span class="badge">{{contrato.get_status_display}}</span> {{contrato}} - <a href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" class="btn btn-info">Gerar Contrato para impressão</a> <a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
+		</li>
+		{% else %}
+		<li> 
+			<span class="badge">{{contrato.get_status_display}}</span> {{contrato}}
+		</li>
+		
+		{% endif %}
+	{% endif %}
+{% endfor %}
+</ul>
+{% endfor %}
+
+
+
+{% endif %}
+
+
+
+
 
 {% endblock %}
 
