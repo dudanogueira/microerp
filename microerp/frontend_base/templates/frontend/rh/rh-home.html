@@ -19,7 +19,7 @@
 <h2>Demissões em Andamento</h2>
 <ul>
 {% for demissao in demissoes_andamento %}
-    <li>{{demissao.funcionario}} - {{demissao.data}}</li>
+    <li>{{demissao.demitido}} - {{demissao.data}}</li>
     {% empty %}
     <li>Nenhuma Demissão Em Andamento</li>
 {% endfor %}
