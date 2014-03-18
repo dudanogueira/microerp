@@ -10,10 +10,9 @@
 <div class="row-fluid" id="sub-menu-controle-epi">
 	
 	<div class="span8">
-		<ul class="nav nav-tabs">
+		<ul class="nav nav-tabs" id="navtab-status-controle-ferramentas">
 		    <li class="active"><a href="#pendentes" data-toggle="tab">Pendentes</a></li>
 		    <li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
-		
 		</ul>
 		
 	</div>
@@ -29,84 +28,84 @@
 	<div class="tab-pane fade in active" id="pendentes">
 		
 		<h2>Sem o Arquivo Impresso e Assinado</h2>	
-    <table class="table table-condensed table-hover table-rounded">
-      <thead>
-            <tr>
-                <th>ID</th>
-                <th>Funcionário Assinante</th>
-								<th>Criado</th>
-                <th>Ações</th>
-            </tr>
-       </thead>
-			<tbody>
-					<tr>
-					{% for controle in controles_sem_arquivos %}
-						<td>{{controle.id}}</td>
-						<td>{{controle.funcionario}}</td>
-						<td>{{controle.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{controle.criado|timesince}}</small>) por {{controle.criado_por.funcionario}}</td></td>
-						<td>
-							<p class='btn-group'>
-								<a href="{% url "rh:controle_de_ferramenta_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
+		    <table class="table table-condensed table-hover table-rounded">
+		      <thead>
+		            <tr>
+		                <th>ID</th>
+		                <th>Funcionário Assinante</th>
+										<th>Criado</th>
+		                <th>Ações</th>
+		            </tr>
+		      </thead>
+			  <tbody>
+				  <tr>
+							{% for controle in controles_sem_arquivos %}
+								<td>{{controle.id}}</td>
+								<td>{{controle.funcionario}}</td>
+								<td>{{controle.criado|date:"SHORT_DATE_FORMAT"}} (<small>{{controle.criado|timesince}}</small>) por {{controle.criado_por.funcionario}}</td></td>
+								<td>
+									<p class='btn-group'>
+										<a href="{% url "rh:controle_de_ferramenta_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
 								
-								<a href="{% url "rh:controle_de_ferramenta_vincular_arquivo" controle.id %}" class="btn btn-primary"><i class="fa fa-file"></i> </a>
+										<a href="{% url "rh:controle_de_ferramenta_vincular_arquivo" controle.id %}" class="btn btn-primary"><i class="fa fa-file"></i> </a>
 								
+									</p>
+								</td>
+				  </tr>
+							{% empty %}
+							<tr>
+							<td>Nenhum Item</td>
+							<td></td>
+							<td></td>
+							<td></td>
+							</tr>
+							{% endfor %}
+			  </tbody>
+			</table>
+		
+		
+			<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
+			{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
+		
+				{% for linha in linhas_group_list %}
+				<div class="well well-small">
+				<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
+				<table class="table table-condensed">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Código</th>
+							<th>Produto</th>
+							<th>Quantidade</th>
+							<th>Data de Devolução</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for equipamento in linha.list %}
+						<tr>
+							<td>{{equipamento.id}}</td>
+							<td>{{equipamento.produto.codigo}}</td>
+							<td>{{equipamento.produto.nome}}</td>
+							<td>{{equipamento.quantidade}}</td>
+							<td>{{equipamento.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}</td>
+							<td>
+								<p class="btn-group">
+								<a class="btn btn-success" href="{% url "rh:controle_de_ferramenta_retornar"  equipamento.controle.id equipamento.id %}"><i class="fa fa-thumbs-up"></i> recebido</a>
 							</p>
-						</td>
-					</tr>
-					{% empty %}
-					<tr>
-					<td>Nenhum Item</td>
-					<td></td>
-					<td></td>
-					<td></td>
-				</tr>
-					{% endfor %}
-			</tbody>
-		</table>
-		
-		
-		<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
-		{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
-		
-		{% for linha in linhas_group_list %}
-		<div class="well well-small">
-		<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
-		<table class="table table-condensed">
-			<thead>
-				<tr>
-					<th>ID</th>
-					<th>Código</th>
-					<th>Produto</th>
-					<th>Quantidade</th>
-					<th>Data de Devolução</th>
-					<th>Ações</th>
-				</tr>
-			</thead>
-			<tbody>
-				{% for equipamento in linha.list %}
-				<tr>
-					<td>{{equipamento.id}}</td>
-					<td>{{equipamento.produto.codigo}}</td>
-					<td>{{equipamento.produto.nome}}</td>
-					<td>{{equipamento.quantidade}}</td>
-					<td>{{equipamento.data_previsao_devolucao|date:"SHORT_DATE_FORMAT"}}</td>
-					<td>
-						<p class="btn-group">
-						<a class="btn btn-success" href="{% url "rh:controle_de_ferramenta_retornar"  equipamento.controle.id equipamento.id %}"><i class="fa fa-thumbs-up"></i> recebido</a>
-					</p>
-					</td>
-				</tr>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
 				{% endfor %}
-			</tbody>
-		</table>
-		{% endfor %}
-		</div>
+				</div>
 	</div>
 	
 	
-	<div class="tab-pane fade in" id="filtrar">
+	<div class="tab-pane fade" id="filtrar">
 		
-		<form method="POST" action="#filtrar">
+		<form method="POST" action="#tab_filtrar">
 		{% csrf_token %}
 		{{form_filtra_ferramentas}}
 		<button type="submit" class="btn btn-primary" name="filtrar-controleepi-btn">Filtrar</button>
@@ -194,16 +193,28 @@
 <script>
 $(document).ready(function() {
 	$("#menu-rh-controle-de-ferramentas, #top-menu-rh").addClass("active");
-  var activeTab = $('[href=' + location.hash + ']');
-  activeTab && activeTab.click();
 });
-$('#sub-menu-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-status-controle-ferramentas').on("click", 'ul.nav.nav-tabs li a', function(e){
 	e.preventDefault();	
 	var href = this.hash;
-	window.location.hash = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
 	pane.tab('show');		
 })
+
 
 $('#reagendar-btn').on("click", function(e){
 	$('#titulo-atualizar').html($(this).data('titulo'));

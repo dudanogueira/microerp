@@ -561,7 +561,7 @@ class PeriodoTrabalhado(models.Model):
         verbose_name_plural = u"Períodos Trabalhados"
         ordering = ['-criado',]
     
-    def atribuicao_atual(self, user=None):
+    def atribuicao_atual(self):
         '''retorna atribuicao_atual, e cria, se necessário'''
         atribuicao_atual = self.atribuicaodecargo_set.filter(fim=None).order_by('-inicio')
         if atribuicao_atual.count() >= 1:
@@ -592,7 +592,7 @@ class AtribuicaoDeCargo(models.Model):
     '''
     
     def __unicode__(self):
-        return u"Atribuição de Cargo %s, período %s" % (self.cargo, self.periodo_trabalhado)
+        return u"Atribuição de Cargo %s, período %s. Início:%s e Fim: %s" % (self.cargo, self.periodo_trabalhado, self.inicio, self.fim)
     
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     cargo = models.ForeignKey('Cargo')
@@ -939,7 +939,9 @@ class Competencia(models.Model):
     
     def __unicode__(self):
         return u"%s: %s" % (self.grupo, self.nome)
-    
+        
+    def funcionarios_ativos(self):
+        return self.funcionario_set.exclude(periodo_trabalhado_corrente=None)
     grupo = models.ForeignKey('GrupoDeCompetencia')
     nome = models.CharField(blank=True, max_length=100)
     # meta

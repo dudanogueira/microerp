@@ -9,7 +9,7 @@
 
 <div class="row-fluid" id="sub-menu-controle-epi">
 	<div class="span8">
-		<ul class="nav nav-tabs">
+		<ul class="nav nav-tabs" id="navtab-status-controle-epi">
 			<li class="active"><a href="#pendentes" data-toggle="tab">Pendentes</a></li>
 			<li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
 		</ul>
@@ -98,13 +98,11 @@
 	</div>
 	
 	<div class="tab-pane fade in" id="filtrar">
-		<form method="POST" action="#filtrar">
+		<form method="POST" action="#tab_filtrar">
 			{% csrf_token %}
 			{{form_filtra_epi}}
 			<button type="submit" class="btn btn-primary" name="filtrar-controleepi-btn">Filtrar</button>
 		</form>
-		
-		
 		
 		{% if controles_do_funcionario %}
 		{% for controle in controles_do_funcionario %}
@@ -144,10 +142,14 @@
 			<tbody>
 				{% for linha in controle.linhacontroleequipamento_set.all %}
 				{% if linha.data_devolvido %}
-				<tr class="alert alert-success">
+					<tr class="alert alert-success">
+				{% else %}
+					{% if linha.pendente %}
+						<tr class="alert alert-danger">
 					{% else %}
-					{% if linha.pendente %}<tr class="alert alert-danger">{% else %}<tr class="alert alert-info">{% endif %}
+						<tr class="alert alert-info">
 					{% endif %}
+				{% endif %}
 							<td>{{linha.id}}</td>
 							<td>{{linha.produto}}</td>
 							<td>{{linha.quantidade}}</td>
@@ -159,18 +161,16 @@
 								<strong><small>daqui há {{linha.data_previsao_devolucao|timeuntil}}</small></strong>
 								{% endif %}
 							</td>
-							<td>{% if linha.data_devolvido %}<i class="fa fa-check"></i> {{linha.data_devolvido|date:"SHORT_DATE_FORMAT"}}{% endif %}</td>
-					</tr>
+							<td>{% if linha.data_devolvido %}<i class="fa fa-check"></i> {{linha.data_devolvido|date:"SHORT_DATE_FORMAT"}}{% else %}<a href="{% url "rh:controle_de_epi_retornar" controle.id linha.id %}" class="btn btn-primary">Marcar Devolvido</a>{% endif %}</td>
+				</tr>
 						{% endfor %}
 			</tbody>
 		</table>
 				{% endfor %}
-				{% endif %}
-		
-		
-		
+				{% endif %}		
 		
 	</div>
+
 </div>
 
 {% endblock %}
@@ -183,17 +183,32 @@
 <script>
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
-	var activeTab = $('[href=' + location.hash + ']');
-	activeTab && activeTab.click();
 	
 });
-$('#sub-menu-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){
+
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-status-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){
 	e.preventDefault();	
 	var href = this.hash;
-	window.location.hash = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
 	pane.tab('show');		
 })
+
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/rh/rh-menu.html" %}

@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load thumbnail %}
 
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
@@ -13,7 +14,7 @@
     <div class="row-fluid">
         
         <div class="span6">
-            
+            {% if rh_usa_banco_de_horas %}
             <div class="alert alert-{{request.user.funcionario.banco_de_horas_situacao}}">
                 <i class="fa fa-clock-o fa-4x pull-left"></i>
                 <h2>Banco de Horas</h2>
@@ -25,7 +26,13 @@
                      Nenhum lançamento
                      {% endif %}
                  </p>
-            </div>
+			</div>
+			{% else %}
+             {% thumbnail request.user.funcionario.foto "100x100" crop="center" as im %}
+                <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+            {% endthumbnail %}
+			
+			{% endif %}
         </div>
 
         <div class="span6">

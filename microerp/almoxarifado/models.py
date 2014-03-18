@@ -48,7 +48,7 @@ CONTROLE_TIPO_CHOICES = (
 class ControleDeEquipamento(models.Model):
     
     def __unicode__(self):
-        return u"Controle de Movimento de Equipamento gerado no dia %s para %s" % (self.criado, self.funcionario)
+        return u"Controle de Movimento (%s) gerado no dia %s para %s" % (self.get_tipo_display(), self.criado, self.funcionario)
 
     class Meta:
         verbose_name = u"Controle de Equipamento"

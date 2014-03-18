@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-trophy"></i> Matriz de Competências</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-trophy"></i> Matriz de Competências</h1>
 
 <h2>Competências</h2>
     {% for competencia in competencias %}
@@ -15,7 +15,7 @@
             <div class="span6">
                 <h4>Funcionários</h4>
                 <ul>
-                {% for funcionario in competencia.funcionario_set.all %}
+                {% for funcionario in competencia.funcionarios_ativos %}
                     <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}} ({{funcionario.cargo_atual}} - {{funcionario.cargo_atual.departamento}})</a></li>
                 {% endfor %}
                 </ul>
@@ -30,7 +30,6 @@
                 </ul>
                 
             </div>
-            
             
         </div>
     </div>

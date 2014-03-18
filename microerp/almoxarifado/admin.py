@@ -41,7 +41,9 @@ class LinhaControleEquipamentoAdmin(admin.ModelAdmin):
     list_filter = 'controle__tipo', 'controle__funcionario'
     
 class ControleDeEquipamentoAdmin(admin.ModelAdmin):
-    list_filter = 'tipo', 'funcionario'
+    list_filter = 'tipo', 'funcionario', 'status'
+    list_display = 'id', 'tipo', 'funcionario', 'status'
+    list_display_links = list_display
     search_fields = 'id', 'funcionario__nome', 'linhacontroleequipamento__produto__nome'
     inlines = [LinhaControleEquipamentoInLine]
 

@@ -45,15 +45,6 @@
 </ul>
 
 
-<h2>Exames Realizados</h2>
-<ul>
-{% for exame in exames_realizados %}
-    <li><a href="{% url "rh:exames_medicos_ver" exame.id %}"><strong>#ID{{exame.id}}</strong> {{exame}}</a></li>
-{% endfor %}
-</ul>
-
-
-
 
 {% endblock %}
 

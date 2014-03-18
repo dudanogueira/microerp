@@ -64,6 +64,12 @@ class Produto(models.Model):
             soma = float(self.preco_custo) + float(percentual)
             return soma
 
+    def unidade(self):
+        return self.unidade_de_venda or self.unidade_de_compra
+    
+    def get_unidade_display(self):
+        return self.get_unidade_de_venda_display() or self.get_unidade_de_compra_display()
+
     codigo = models.CharField(blank=False, max_length=500)
     nome = models.CharField(blank=False, max_length=300)
     descricao = models.CharField(blank=False, max_length=300)

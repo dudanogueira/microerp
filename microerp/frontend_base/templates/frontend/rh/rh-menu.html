@@ -20,8 +20,9 @@
     <li id="menu-rh-solicitacao-licenca"><a href="{% url "rh:solicitacao_licencas" %}"><i class="fa fa-external-link"></i> Licenças</a></li>
 
     <li id="menu-rh-controle-de-ferias"><a href="{% url "rh:controle_de_ferias" %}"><i class="fa fa-picture-o"></i> Controle de Férias</a></li>
-
+	{% if rh_usa_banco_de_horas %}
     <li id="menu-rh-controle-de-bh"><a href="{% url "rh:controle_de_banco_de_horas" %}"><i class="fa fa-clock-o"></i> Banco de Horas</a></li>
+	{% endif %}
 
     <li id="menu-rh-matriz-de-competencias"><a href="{% url "rh:matriz_de_competencias" %}"><i class="fa fa-trophy"></i> Matriz de Competências</a></li>
 

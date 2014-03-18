@@ -25,13 +25,19 @@
 {% endfor %}
 </ul>
 
-<h2>Agendamentos de Exame Futuros ou Pendentes</h2>
-    <div class="well">
-        <ul>
-{% for exame in exames_futuros %}
-       <li> <a href="{% url "rh:exames_medicos_ver" exame.id %}">{{exame}} <strong>Realizado</strong>: {{exame.realizado|yesno}}</a></li>
+<h2>Agendamentos de Exames Entre {{inicio_semana|date:"SHORT_DATE_FORMAT"}} e {{fim_semana|date:"SHORT_DATE_FORMAT"}}</h2>
+    <div class="well well-small">
+{% for exame in exames_semana %}
+       <p> <a href="{% url "rh:exames_medicos_ver" exame.id %}">{{exame}} <strong>Realizado</strong>: {{exame.realizado|yesno}}</a></p>
 {% endfor %}
-</ul>
+</div>
+
+<h2>Retorno de Equipamentos EPI e Ferramentas Entre {{inicio_semana|date:"SHORT_DATE_FORMAT"}} e {{fim_semana|date:"SHORT_DATE_FORMAT"}}</h2>
+<div class="well well-small">
+		{% for linha in retorno_equipamento_semana %}
+			<p {% if linha.data_devolvido %}class="alert alert-success"{% else %}class="alert alert-danger"{% endif %}>
+			<span class="label label-default">Controle ID#{{linha.controle.id}} - {{linha.controle.get_tipo_display}}</span>	{{linha.quantidade}} {{linha.produto.unidade}} de <strong class="label label-info">{{linha.produto}}</strong> - {{linha.controle.funcionario}} - {% if linha.data_devolvido %}<i class="fa fa-check"></i> {{linha.data_devolvido|date:"SHORT_DATE_FORMAT"}} <i class="fa fa-arrow-left"></i> {{linha.funcionario_receptor}}{% else %}<a href="{% url "rh:controle_de_epi_retornar" linha.controle.id linha.id %}" class="btn btn-danger">Devolver</a>{% endif %}</p>
+		{% endfor %}
 </div>
 
 {% endblock %}

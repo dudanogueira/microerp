@@ -44,6 +44,7 @@ urlpatterns = patterns('',
     
     # demissoes
     url(r'^processos-demissao/$', 'rh.views.processos_demissao', name='processos_demissao'),
+    url(r'^processos-demissao/finalizar/(?P<processo_id>[0-9]+)/$', 'rh.views.processos_demissao_finalizar', name='processo_demissao_finalizar'),
     
     # demissoes
     url(r'^processos-admissao/$', 'rh.views.processos_admissao', name='processos_admissao'),

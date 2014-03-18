@@ -9,18 +9,22 @@
 {% if processos_abertos %}
     <h2>Processos em Aberto</h2>
     <div class="well">
+		<ul>
         {% for processo in processos_abertos %}
-            {{processo}}
+            <li><span class="badge badge-info">ID#{{processo.id}}</span> - <strong>Funcionário {{processo.periodo_trabalhado_finalizado.funcionario}}</strong> em {{processo.criado}} por {{processo.demissor}} <a href="{% url "rh:processo_demissao_finalizar" processo.id %}" class="btn btn-primary">Finalizar</a></li>
         {% endfor %}
+		</ul>
     </div>
 {% endif %}
 
 {% if processos_fechados %}
     <h2>Processos Fechados</h2>
     <div class="well">
+		<ul>
         {% for processo in processos_fechados %}
-            {{processo}}
+            <li><span class="badge badge-info">ID#{{processo.id}}</span> - <strong>Funcionário {{processo.periodo_trabalhado_finalizado.funcionario}}</strong> em {{processo.criado}} por {{processo.demissor}}</li>
         {% endfor %}
+		</ul>
     </div>
 {% endif %}
 

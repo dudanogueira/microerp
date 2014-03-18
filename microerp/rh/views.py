@@ -56,8 +56,6 @@ class AdicionarEntradaFolhaDePontoForm(forms.ModelForm):
         model = EntradaFolhaDePonto
         fields = ('inicio', 'fim', 'total')
 
-
-
 #
 class AdicionarArquivoRotinaExameForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -70,10 +68,8 @@ class AdicionarArquivoRotinaExameForm(forms.ModelForm):
         model = RotinaExameMedico
         fields = ('arquivo',)
 
-
 #
 class AdicionarSolicitacaoLicencaForm(forms.ModelForm):
-    
     
     def __init__(self, *args, **kwargs):
         super(AdicionarSolicitacaoLicencaForm, self).__init__(*args, **kwargs)
@@ -101,7 +97,11 @@ def home(request):
     # demissoes
     demissoes_andamento = Demissao.objects.filter(status="andamento")
     # exames por vir
-    exames_futuros = RotinaExameMedico.objects.filter(data__gt=datetime.date.today()) | RotinaExameMedico.objects.filter(realizado=False)
+    semana_exibir = get_weeks()[0]
+    inicio_semana = semana_exibir[0]
+    fim_semana = semana_exibir[-1]
+    exames_semana = RotinaExameMedico.objects.filter(data__range=(inicio_semana,fim_semana)).order_by('data')
+    retorno_equipamento_semana = LinhaControleEquipamento.objects.filter(data_previsao_devolucao__range=(inicio_semana,fim_semana)).order_by('data_previsao_devolucao')
     # aniversarios
     this_week = get_weeks()[0]
     days = [day.day for day in this_week]
@@ -277,7 +277,6 @@ def exames_medicos_ver(request, exame_id):
     
     return render_to_response('frontend/rh/rh-exames-medicos-ver.html', locals(), context_instance=RequestContext(request),)
 
-
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def exames_medicos_exame_realizado_hoje(request, exame_id):
@@ -291,9 +290,9 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
                 exame_alterado.realizado = True
                 exame_alterado.save()
                 messages.success(request, u"Exame marcado como Realizado!")
-                # Se é exame admissional, ou atualização
+                # Se é exame admissional, ou atualização ou mudança de cargo
                 # marcar para daqui a X dias o exame de atualização
-                if exame_alterado.tipo == "a" or exame_alterado.tipo == "u":
+                if exame_alterado.tipo in ["a", "u", "p"]:
                     dias_proximo_exame = exame_alterado.periodo_trabalhado.funcionario.cargo_atual.dias_renovacao_exames
                     data_novo_exame = datetime.date.today() + relativedelta( days = dias_proximo_exame )
                     novo_exame = exame.periodo_trabalhado.rotinaexamemedico_set.create(
@@ -301,7 +300,7 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
                         data=data_novo_exame,
                         periodo_trabalhado=exame.periodo_trabalhado,
                     )
-                    messages.info(request, u"Um Novo Exame do Tipo Atualização foi Criado: #ID%s" % novo_exame.id)
+                    messages.info(request, u"Um Novo Exame do Tipo %s foi Criado: #ID%s" % (novo_exame.get_tipo_display(), novo_exame.id))
                     # adiciona os exames padrao para o cargo do funcionario
                     for exame_padrao in exame.periodo_trabalhado.funcionario.cargo_atual.exame_medico_padrao.all():
                         novo_exame.exames.add(exame_padrao)
@@ -392,6 +391,13 @@ def processos_demissao(request):
     processos_fechados = Demissao.objects.filter(status="finalizado")
     return render_to_response('frontend/rh/rh-processos-demissao.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_rh)
+def processos_demissao_finalizar(request, processo_id):
+    processo = get_object_or_404(Demissao, pk=processo_id)
+    processo.status = 'finalizado'
+    processo.save()
+    return redirect(reverse("rh:processos_demissao"))
+
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def demitir_funcionario(request, funcionario_id):
@@ -408,7 +414,10 @@ def demitir_funcionario(request, funcionario_id):
             # encerra Periodo Trabalhado Corrente e desvincula ao funcionario
             funcionario.periodo_trabalhado_corrente.fim = datetime.date.today()
             funcionario.periodo_trabalhado_corrente.save()
-            messages.info(request, u'Período Trabalhado Desvinculado')
+            messages.info(request, u'Período Trabalhado Finalizado')
+            # remove todos os exames não realizados
+            funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(realizado=False).delete()
+            messages.info(request, u'Exames Médicos Futuros Cancelados')
             # agenda rotina de médico demissional com padrões do cargo
             exame = funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.create(
                 data=data_exame_demissional,
@@ -429,6 +438,7 @@ def demitir_funcionario(request, funcionario_id):
             # sucesso no processo
             funcionario.periodo_trabalhado_corrente = None
             funcionario.save()
+            messages.info(request, u'Período Trabalhado Desvinculado como Corrente')
             messages.success(request, u'Processo de Demissão Iniciado com Sucesso!')
             # redireciona pra tela do usuário
             return redirect(reverse('rh:ver_funcionario', args=[funcionario.id,]))
@@ -464,11 +474,12 @@ class FormPromoverFuncionario(forms.Form):
         self.atribuicao = kwargs.pop('atribuicao', None)
         super(FormPromoverFuncionario, self).__init__(*args, **kwargs)
         self.fields['novo_cargo'].widget.attrs['class'] = 'select2'
+        self.fields['novo_cargo'].queryset = Cargo.objects.all().exclude(id=self.atribuicao.cargo.id)
         self.fields['data_promocao'].widget.attrs['class'] = 'datepicker'
 
     data_promocao = forms.DateField(initial=datetime.date.today(), label=u"Data de Promoção")
     # cargo
-    novo_cargo = forms.ModelChoiceField(queryset=Cargo.objects.all(), required=False)
+    novo_cargo = forms.ModelChoiceField(queryset=[], required=False)
     observacao_cargo = forms.CharField(widget=forms.Textarea, required=False)
     # salario
     novo_valor_salarial = forms.DecimalField(max_digits=15, decimal_places=2, required=False)
@@ -480,7 +491,7 @@ def promover_funcionario(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, id=funcionario_id)
     # pega a atribuicao de cargo atual, ou se cria
     if funcionario.periodo_trabalhado_corrente:
-        created, atribuicao = funcionario.periodo_trabalhado_corrente.atribuicao_atual(user=request.user)
+        created, atribuicao = funcionario.periodo_trabalhado_corrente.atribuicao_atual()
         if atribuicao:
             if created:
                 messages.warning(request, u"Atenção! Funcionário não possuía Atribuição de Cargo!")
@@ -554,6 +565,15 @@ def promover_funcionario(request, funcionario_id):
                             avaliado=True,
                             data_resolucao=datetime.date.today(),
                         )
+                        # apaga todos os exames não realizados (provavelmente somente exame periodico)
+                        funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(realizado=False).delete()
+                        # gera novo exame do tipo promoção
+                        exame = funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.create(
+                            tipo='p',
+                        )
+                        for exame_padrao in novo_cargo.exame_medico_padrao.all():
+                            exame.exames.add(exame_padrao)
+                        exame.save()
                         messages.success(request, u"Promoção de Cargo Registrada: #%s para %s" % (promocao_cargo, promocao_cargo.beneficiario))
                     # retorna para lista de promoções
                     return redirect(reverse("rh:ver_funcionario", args=[funcionario.id]))
@@ -690,7 +710,7 @@ def capacitacao_de_procedimentos_confirmar(request, funcionario_id, atribuicao_r
 # controle_de_ferias
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferias(request):
-    funcionarios = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None)
+    funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
     return render_to_response('frontend/rh/rh-controle-de-ferias.html', locals(), context_instance=RequestContext(request),)
 
 # controle_de_banco_de_horas
@@ -807,6 +827,7 @@ class FormControleFerramentasAdicionar(forms.ModelForm):
         self.fields['tipo'].widget = forms.HiddenInput()
         #self.fields['funcionario'] = EscolhaDeFuncionario()
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
+        self.fields['funcionario'].queryset = Funcionario.objects.all().exclude(periodo_trabalhado_corrente=None).order_by('nome')
     
     class Meta:
         model = ControleDeEquipamento

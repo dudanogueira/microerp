@@ -4,8 +4,6 @@
 <title>{%block title %}{{block.super}} - RH -> Controle de Ferramenta: Adicionar{% endblock %}</title>
 {% block content %}
 
-{% url "ajax_consulta_produto" %}
-
 <h1><i class="fa fa-th"></i> <i class="fa fa-wrench"></i> RH - Adicionar Controle de Ferramenta</h1>
 <form method="POST">
 {% csrf_token%}
