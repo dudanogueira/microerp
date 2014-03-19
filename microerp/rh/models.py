@@ -894,7 +894,7 @@ class Demissao(models.Model):
     periodo_trabalhado_finalizado = models.ForeignKey('PeriodoTrabalhado')
     demissor = models.ForeignKey('rh.Funcionario', related_name="demissor_set")
     status = models.CharField(blank=True, max_length=100, choices=DEMISSAO_FUNCIONARIO_CHOICES, default="andamento")
-    termo_recisorio = models.FileField(blank=False, upload_to=funcionario_termo_recisorio_path)
+    termo_recisorio = models.FileField(blank=True, null=True, upload_to=funcionario_termo_recisorio_path)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")    
