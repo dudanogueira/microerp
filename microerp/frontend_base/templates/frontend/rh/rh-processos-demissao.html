@@ -57,7 +57,13 @@
 				<td>{{processo.periodo_trabalhado_finalizado.funcionario}}</td>
 				<td>{{processo.criado|date:"SHORT_DATE_FORMAT"}}</td>
 				<td>{{processo.demissor}}</td>
-				<td><a class="btn btn-info" href="{{processo.termo_recisorio.url}}"><i class="fa fa-file"></i></a></td>
+				<td>
+					{% if processo.termo_recisorio %}
+					<a class="btn btn-info" href="{{processo.termo_recisorio.url}}"><i class="fa fa-file"></i></a>
+					{% else %}
+					<i><small>Não anexado</small></i>
+					{% endif %}
+				</td>
 			</tr>
 	        {% endfor %}
 				
