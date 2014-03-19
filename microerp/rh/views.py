@@ -394,6 +394,8 @@ def processos_demissao(request):
 @user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao_finalizar(request, processo_id):
     processo = get_object_or_404(Demissao, pk=processo_id)
+    if request.POST and request.FILES['termo_recisorio']:
+        processo.termo_recisorio = request.FILES['termo_recisorio']
     processo.status = 'finalizado'
     processo.save()
     return redirect(reverse("rh:processos_demissao"))
