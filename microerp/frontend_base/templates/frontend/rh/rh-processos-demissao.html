@@ -9,7 +9,7 @@
 {% if processos_abertos %}
     <h2>Processos em Aberto</h2>
     <div class="well">
-		<table class="table">
+		<table class="table table-bordered">
 			<thead>
 				<tr>
 				<th>ID</th>
@@ -39,12 +39,31 @@
 {% if processos_fechados %}
     <h2>Processos Fechados</h2>
     <div class="well">
-		<ul>
-        {% for processo in processos_fechados %}
-            <li><span class="badge badge-info">ID#{{processo.id}}</span> - <strong>Funcionário {{processo.periodo_trabalhado_finalizado.funcionario}}</strong> em {{processo.criado}} por {{processo.demissor}}</li>
-        {% endfor %}
-		</ul>
-    </div>
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+				<th>ID</th>
+				<th>Funcionário</th>
+				<th>Início</th>
+				<th>Demissor</th>
+				<th>Termo Recisório</th>
+				<tr>
+			</thead>
+			<tbody>
+				
+	        {% for processo in processos_fechados %}
+			<tr>
+				<td>ID#{{processo.id}}</td>
+				<td>{{processo.periodo_trabalhado_finalizado.funcionario}}</td>
+				<td>{{processo.criado|date:"SHORT_DATE_FORMAT"}}</td>
+				<td>{{processo.demissor}}</td>
+				<td><a class="btn btn-info" href="{{processo.termo_recisorio.url}}"><i class="fa fa-file"></i></a></td>
+			</tr>
+	        {% endfor %}
+				
+			</tbody>
+		</table>
+	</div>
 {% endif %}
 
 
