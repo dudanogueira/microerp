@@ -90,6 +90,7 @@
 
 <div class="row-fluid">
     <div class="span6">
+		{% if rh_usa_banco_de_horas %}
         <h3>Folhas de Ponto</h3>
         <div class="well">
             
@@ -101,6 +102,8 @@
             <a href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}" class="btn btn-info"><i class="fa fa-time-o"></i> Gerenciar Folhas de Ponto</a>
             
         </div>
+		{% endif %}
+		
         <h3>Competências</h3>
         <div class="well">
             {{funcionario.competencias.all|join:","}}
