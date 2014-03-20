@@ -338,12 +338,27 @@ def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
     return render_to_response('frontend/comercial/comercial-editar-proposta-editar-orcamento.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def editar_proposta_reajustar_orcamento(request, proposta_id, orcamento_id):
+    orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
+    orcamento.reajusta_custo()
+    messages.success(request, u"Sucesso! Orçamento Reajustado.")
+    return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def editar_proposta_imprimir_orcamento(request, proposta_id, orcamento_id):
+    orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
+    return render_to_response('frontend/comercial/comercial-editar-proposta-imprimir-orcamento.html', locals(), context_instance=RequestContext(request),)
+
+
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_inativar_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
     orcamento.ativo = False
     orcamento.save()
     messages.success(request, u"Sucesso! Orçamento Inativado.")
     return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
+
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_ativar_orcamento(request, proposta_id, orcamento_id):

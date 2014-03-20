@@ -1,0 +1,59 @@
+{% extends "frontend/base.html" %}
+{% load sekizai_tags %}
+{% block content %}
+<title>{%block title %}{{block.super}} - Comercial -> Imprimir Orçamento{% endblock %}</title>
+<div class="container">
+<div class="row-fluid">
+	<div class="span4">
+		<img src="{{logo_empresa}}">
+	</div>
+	<div class="span8">
+		<h1>Orçamento #ID{{orcamento.id}}, da Proposta ID#{{orcamento.proposta.id}}</h1>
+		<h2>{% if orcamento.proposta.precliente %}{{orcamento.proposta.precliente}}{% else %}{{orcamento.proposta.cliente}}{% endif %}</h2>
+	</div>
+	
+	<table class="table table-condensed table-bordered table-rounded">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Produto</th>
+				<th>Und</th>
+				<th>QTD</th>
+				<th>Valor Unit</th>
+				<th>Total</th>
+			</tr>
+		</thead>
+		</tbody>
+		{% for linha in orcamento.linharecursomaterial_set.all %}
+			<tr>
+				<td>{{linha.produto.codigo}}</td>
+				<td>{{linha.produto.nome}}</td>
+				<td>{{linha.produto.unidade}}</td>
+				<td>{{linha.quantidade}}</td>
+				<td>R$ {{linha.custo_unitario}}</td>
+				<td>R$ {{linha.custo_total}}</td>
+			</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td><strong>R$ {{orcamento.custo_total}}</strong></td>
+		</tr>
+		</tbody>
+	</table>
+	
+</div>
+
+	
+
+	
+</div>
+	
+
+	
+	
+
+{% endblock %}

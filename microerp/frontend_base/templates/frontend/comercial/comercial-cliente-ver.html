@@ -136,7 +136,7 @@
 	</div>
 
 	<div class="tab-pane fade in" id="propostas">
-
+		{% if cliente.propostas_abertas.count %}
 		<h4 class="alert">Propostas Abertas: {{cliente.propostas_abertas.count}}</h4>
 		<table class="table table-condensed table.stripped">
 			<thread>
@@ -219,7 +219,9 @@
    		 	{% empty %}
 			{% endfor %}
 		</table>
-
+		{% endif %}
+		
+		{% if cliente.propostas_expiradas.count %}
 		<h4 class="well well-small">Propostas Expiradas: {{cliente.propostas_expiradas.count}}</h4>
 		<table class="table table-condensed table.stripped">
 			<thread>
@@ -297,15 +299,17 @@
    		 	{% empty %}
 			{% endfor %}
 		</table>
-
-		
-		<h4 class="alert alert-success">Propostas Convertidas</h4>
+		{% endif %}
+		{% if cliente.propostas_convertidas.count %}
+		<h4 class="alert alert-success">Propostas Convertidas {{cliente.propostas_convertidas.count}}</h4>
 		<ul>
 		{% for proposta in cliente.propostas_convertidas %}
 			<li><strong>Proposta #{{proposta.id}}</strong> <i class="fa fa-arrow-right"></i> <strong>Contrato #{{proposta.contrato_vinculado.id}}</strong> - R${{proposta.contrato_vinculado.valor}} - Responsável: {{proposta.contrato_vinculado.responsavel}}, Comissionado: {{proposta.contrato_vinculado.responsavel_comissionado}}</li>
 		{% endfor %}
 		</ul>
+		{% endif %}
 		
+		{% if cliente.propostas_perdidas.count %}
 		<h4 class="alert alert-danger">Propostas Perdidas: {{cliente.propostas_perdidas.count}}</h4>
 		<table class="table table-condensed table.stripped">
 			<thread>
@@ -358,6 +362,8 @@
    		 	{% empty %}
 			{% endfor %}
 		</table>
+		{% endif %}
+		
 	</div>
 
 	<div class="tab-pane fade in" id="requisicao-de-proposta">

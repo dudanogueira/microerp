@@ -66,6 +66,9 @@
 		<p class="btn-group">
 			<a href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
 			<a href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
+			<a href="{% url "comercial:editar_proposta_reajustar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-success"><i class="fa fa-refresh"></i></a>
+			<a href="{% url "comercial:editar_proposta_imprimir_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-info"><i class="fa fa-print"></i></a>
+			
 		</p>
 	</div>
 </div>
