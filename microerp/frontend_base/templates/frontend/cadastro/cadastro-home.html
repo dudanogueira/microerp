@@ -135,10 +135,10 @@
                             {% endif %}
                             <strong>{{funcionario.nome}}</strong><br />
                             {% if funcionario.telefone_fixo %}
-                                <small class="label label-info"><i class="fa-phone"></i> {{funcionario.telefone_fixo|phonenumber}}</small>
+                                <small class="label label-info"><i class="fa fa-phone"></i> {{funcionario.telefone_fixo|phonenumber}}</small>
                             {% endif %}
                             {% if funcionario.telefone_celular|phonenumber %}
-<small class="label label-info"><i class="fa-mobile-phone"></i> {{funcionario.telefone_celular|phonenumber}}</small>
+<small class="label label-info"><i class="fa fa-mobile-phone"></i> {{funcionario.telefone_celular|phonenumber}}</small>
 {% endif %}
                         </td>
                         <td>

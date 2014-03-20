@@ -51,7 +51,7 @@
       {% if request.user.funcionario.solicitacoes_total %}
 			<li class="purple">
 				<a href="{% url "minhas_solicitacoes" %}">
-					<i class="fa-bell-alt fa-animated-bell fa-only"></i>
+					<i class="fa-bell-alt fa-animated-bell fa-only fa"></i>
 					<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>
 				</a>
 			</li>
