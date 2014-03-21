@@ -31,30 +31,44 @@
 		<h4>Orçamentos à partir de Modelos</h4>
 		<form method="POST" class="form form-inline">
 		{% csrf_token %}
-		{{seleciona_modelos_proposta}}
+		{{seleciona_modelos_proposta.as_p}}
 		<p class="btn-group">
-			<button type="submit" class="btn btn-info" name="adicionar-modelos" value="adicionar">Adicionar Modelos Selecionados</button>
-			<a href="" class="btn btn-primary" data-toggle="modal" data-target="#ModalAdicionaNovoOrcamento"><i class="fa fa-plus"></i> Novo Orçamento</a>
+			<button type="submit" class="btn btn-info" name="adicionar-modelos" value="adicionar"><i class="fa fa-plus"></i> Modelos</button>
 		</p>
 		</form>
 		
 	</div>
 	
 	<div class="span6">
+		<div class="well well-small">
+			<form method="POST" class="form form-inline " id="form-editar-proposta">
+			{% csrf_token %}
+			<h2>Valor Consolidado: R$ {{proposta.consolidado|floatformat:2}}</h2>
+			{{form_editar_proposta.as_p}}
+			</form>
 		
-		<form method="POST" class="form form-inline well well-small">
-		{% csrf_token %}
-		<h2>Valor Consolidado: R$ {{proposta.consolidado|floatformat:2}}</h2>
-		{{form_editar_proposta.as_p}}
-		<button type="submit" class="btn btn-danger" name="alterar-proposta" value="alterar"><i class="fa fa-pencil"></i> Alterar Proposta</button>
-		</form>
+		
+			<p class="btn-group">
+				<button type="submit" class="btn btn-danger btn-large" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-pencil"></i></button>
+				{% if proposta.orcamentos_ativos %}
+				<a href="{% url "comercial:editar_proposta_imprimir_orcamentos_da_proposta" proposta.id %}" class="btn btn-info btn-large"><i class="fa fa-print"></i></a>
+				{% endif %}
+			</p>
+		</div>
+		
 		
 	</div>
 </div>
+		<a href="" class="btn btn-primary" data-toggle="modal" data-target="#ModalAdicionaNovoOrcamento"><i class="fa fa-plus"></i></a>
+
 
 {% if proposta.orcamentos_ativos %}
 
-<h3>Orçamentos Ativos</h3>
+		<h3>Orçamentos Ativos</h3>
+		
+
+
+
 {% for orcamento_ativo in proposta.orcamentos_ativos %}
 <div class="row-fluid">
 	<div class="span8">

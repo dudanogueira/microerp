@@ -72,7 +72,6 @@ class PreCliente(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
     
-    
 class PerfilClienteLogin(models.Model):
     '''
     Perfil para login do cliente na interface do sistema.
@@ -175,7 +174,6 @@ class Cliente(models.Model):
     
     def requisicao_proposta_atendidas(self):
         return self.requisicaodeproposta_set.filter(atendido=True)
-    
     
     uuid = UUIDField()
     id_referencia = models.IntegerField(blank=True, null=True)

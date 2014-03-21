@@ -66,7 +66,6 @@ CONTRATO_STATUS_CHOICES = (
     ('assinatura', u'Aguardando Assinatura'),
     ('emaberto', 'Em Aberto'),
     ('lancado', u'Contrato Lançado'),
-    
 )
 
 CONTRATO_STATUS_DE_EXECUCAO_CHOICES = (
@@ -74,9 +73,7 @@ CONTRATO_STATUS_DE_EXECUCAO_CHOICES = (
     ('emandamento', 'Em Andamento'),
     ('pendente', 'Pendente'),
     ('finalizado', 'Finalizado'),
-    
 )
-
 
 class PropostaComercial(models.Model):
 
@@ -129,7 +126,7 @@ class PropostaComercial(models.Model):
     def clean(self):
         if self.status == 'convertida' and self.definido_convertido_em is None:
               raise ValidationError('Para ser convertida, uma proposta deve possuir a data de conversão.')
-    
+
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -233,7 +230,7 @@ class Orcamento(models.Model):
         self.custo_total = self.custo_material + self.custo_humano
         if save:
             self.save()
-    
+
     descricao = models.CharField(u"Descrição", blank=True, max_length=100)
     proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
     selecionado = models.BooleanField(default=True)
@@ -284,7 +281,6 @@ class ContratoFechado(models.Model):
             return self.followupdecontrato_set.all().order_by('-criado')[0]
         else:
             return False
-    
     
     def proposta_id(self):
         return self.propostacomercial.id
@@ -341,10 +337,12 @@ class ContratoFechado(models.Model):
     
     def sugerir_texto_contratante(self):
         if self.cliente.tipo == "pj":
-            texto = u'''%s, CNPJ %s, endereço %s''' % (
+            texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s''' % (
                 unicode(self.cliente.nome),
-                unicode(self.cliente.cnpj or "_" * 30 ),
-                unicode(self.cliente.logradouro_completo() or "_" * 30),
+                unicode(self.cliente.cnpj or "CNPJ: "+("_" * 30) ),
+                unicode(self.nome_proposto_legal or "Representante Legal: "+("_" * 30) ),
+                unicode(self.documento_proposto_legal or "Documento Representante Legal: "+("_" * 30) ),
+                unicode(self.cliente.logradouro_completo() or u"ENDEREÇO: "+("_" * 30)),
             )
         else:
             #self.cliente.tipo =="pf"
@@ -357,10 +355,17 @@ class ContratoFechado(models.Model):
             )
         return texto
     
+    def form_configurar_impressao_contrato(self):
+        from views import ConfigurarImpressaoContrato
+        form = ConfigurarImpressaoContrato(contrato=self)
+        return form
+    
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)
     categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
     objeto = models.TextField(blank=False)
+    nome_proposto_legal = models.CharField(blank=True, max_length=100)
+    documento_proposto_legal = models.CharField(blank=True, max_length=100)
     garantia = models.TextField(blank=True)
     items_incluso = models.TextField("Itens Incluso", blank=True)
     items_nao_incluso = models.TextField("Itens Não Incluso", blank=True)
@@ -387,7 +392,8 @@ class ContratoFechado(models.Model):
     previsao_termino_execucao = models.DateField(blank=True, null=True)
     efetivo_inicio_execucao = models.DateField(default=datetime.datetime.today)
     efetivo_termino_execucao = models.DateField(blank=True, null=True)
-    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="projetos_participado", blank=True, null=True)
+    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participados", blank=True, null=True)
+    apoio_tecnico = models.ForeignKey('rh.Funcionario', related_name="contratos_apoio_tecnico", blank=True, null=True, verbose_name=u"Apoio Técnico")
     #
     concluido = models.BooleanField(default=False)
     responsavel = models.ForeignKey('rh.Funcionario', verbose_name=u"Responsável pelo Contrato")

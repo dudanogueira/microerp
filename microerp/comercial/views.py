@@ -50,11 +50,20 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from django.contrib.auth.models import User
 from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
 
-
-
 #
 # FORMULARIOS
 #
+
+class ConfigurarImpressaoContrato(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        contrato = kwargs.pop('contrato')
+        super(ConfigurarImpressaoContrato, self).__init__(*args, **kwargs)
+        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        initial1 = contrato.responsavel_comissionado or None
+        self.fields['testemunha1'] = forms.ModelChoiceField(queryset=Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis), initial=initial1, label="Testemunha 1")
+        self.fields['testemunha2'] = forms.ModelChoiceField(queryset=Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis), required=False, label="Testemunha 2")
+
 
 class PreClienteAdicionarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -294,11 +303,10 @@ class FormEditarProposta(forms.ModelForm):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
         self.fields['valor_proposto'].localize = True
         self.fields['valor_proposto'].widget.is_localized = True
-        
     
     class Meta:
         model = PropostaComercial
-        fields = 'valor_proposto', 'observacoes'
+        fields = 'valor_proposto', 'observacoes', 'nome_do_proposto', 'documento_do_proposto'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
@@ -348,6 +356,12 @@ def editar_proposta_reajustar_orcamento(request, proposta_id, orcamento_id):
 def editar_proposta_imprimir_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
     return render_to_response('frontend/comercial/comercial-editar-proposta-imprimir-orcamento.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def editar_proposta_imprimir_orcamentos_da_proposta(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    return render_to_response('frontend/comercial/comercial-editar-proposta-imprimir-orcamentos.html', locals(), context_instance=RequestContext(request),)
+
 
 
 
@@ -475,11 +489,19 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     '''Formulario usado pra alterar as informacoes que serao importadas
     pro contrato com base na proposta'''
     
+    def __init__(self, *args, **kwargs):
+        super(ConfigurarContratoBaseadoEmProposta, self).__init__(*args, **kwargs)
+        self.fields['apoio_tecnico'].widget.attrs['class'] = 'select2'
+    
     objeto = forms.CharField(widget = forms.Textarea, label="Objeto do Contrato", required=True)
     garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
     observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
+    nome_do_proposto_legal = forms.CharField()
+    documento_do_proposto_legal = forms.CharField()
+    apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
@@ -492,6 +514,8 @@ def editar_proposta_converter(request, proposta_id):
             'items_incluso': proposta.descricao_items_proposto,
             'items_nao_incluso': proposta.items_nao_incluso,
             'observacoes': proposta.forma_pagamento_proposto,
+            'nome_do_proposto_legal': proposta.nome_do_proposto,
+            'documento_do_proposto_legal': proposta.documento_do_proposto,
         }
     )
     form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
@@ -511,8 +535,9 @@ def editar_proposta_converter(request, proposta_id):
                     # checa se total preenchido no formulario bate com valor proposto
                     total_lancamentos = 0
                     for form in form_configurar_contrato.forms:
-                        if form.cleaned_data:
-                            total_lancamentos += float(form.cleaned_data['valor_cobrado'])
+                        if form not in form_configurar_contrato.deleted_forms:
+                            if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
+                                total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
                     if float(total_lancamentos) == float(proposta.valor_proposto):
                         # converte proposta e marca data e quem converteu
                         proposta.status = "convertida"
@@ -546,6 +571,9 @@ def editar_proposta_converter(request, proposta_id):
                         novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
                         novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
                         novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
+                        novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
+                        novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
+                        novo_contrato.apoio_tecnico = configurar_contrato_form.cleaned_data['apoio_tecnico']
                         novo_contrato.save()  
                         # retorna para a view contratos em analise
                         if request.user.perfilacessocomercial.gerente:
@@ -959,7 +987,11 @@ class NumberedCanvas(canvas.Canvas):
  
  
  
-class MyPrint:
+class ContratoPrint:
+    """ 
+    Imprime o contrato impresso.
+    """
+
     def __init__(self, buffer, pagesize):
         self.buffer = buffer
         if pagesize == 'A4':
@@ -980,7 +1012,7 @@ class MyPrint:
             # Release the canvas
             canvas.restoreState()
     
-    def print_contrato(self, contrato):
+    def print_contrato(self, contrato, testemunha1=None, testemunha2=None):
             
         
             buffer = self.buffer
@@ -1153,8 +1185,6 @@ class MyPrint:
             elements.append(cidade_p)
             elements.append(Spacer(1, 12))
             
-            
-            
             # REPRESENTANTE LEGAL EMPRESA
             #
             elements.append(Spacer(1, 50))
@@ -1164,7 +1194,6 @@ class MyPrint:
             representante_p = Paragraph(str(representante_empresa), styles['left'])
             elements.append(representante_p)
             elements.append(Spacer(1, 12))
-            
             
             # CLIENTE / PROPOSTO LEGAL
             #
@@ -1180,22 +1209,33 @@ class MyPrint:
             elements.append(Spacer(1, 50))
             testemunha_linha = Paragraph(str("_"*500), styles['justify'])
             elements.append(testemunha_linha)
-            testeminha_texto = Paragraph(unicode("TESTEMUNHA 1"), styles['left'])
-            elements.append(testeminha_texto)
+            if testemunha1:
+                texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
+            else:                
+                if contrato.responsavel_comissionado:
+                    texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
+                
+                else:
+                    texto = Paragraph(unicode("TESTEMUNHA 1"), styles['left'])
+            testemunha_texto = Paragraph(unicode(texto), styles['left'])
+            elements.append(testemunha_texto)
             elements.append(Spacer(1, 12))
             
-            
-            # TESTEMUNHA 1
+            # TESTEMUNHA 2
             #
             elements.append(Spacer(1, 50))
             testemunha_linha = Paragraph(str("_"*500), styles['justify'])
-            elements.append(cliente_linha)
-            representante_p = Paragraph(unicode("TESTEMUNHA 2"), styles['left'])
-            elements.append(representante_p)
+            elements.append(testemunha_linha)
+            if testemunha2:
+                texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
+            else:                
+                if contrato.responsavel_comissionado:
+                    texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
+                else:
+                    texto = Paragraph(unicode("TESTEMUNHA 2"), styles['left'])
+            testemunha_texto = Paragraph(unicode(texto), styles['left'])
+            elements.append(testemunha_texto)
             elements.append(Spacer(1, 12))
-            
-            
-            
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
  
@@ -1215,8 +1255,15 @@ def contratos_gerar_impressao(request, contrato_id):
 
     buffer = BytesIO()
 
-    report = MyPrint(buffer, 'Letter')
-    pdf = report.print_contrato(contrato)
+    report = ContratoPrint(buffer, 'Letter')
+    if request.GET:
+        try:
+            testemunha1 = Funcionario.objects.get(pk=int(request.GET.get('testemunha1')))
+            testemunha2 = Funcionario.objects.get(pk=int(request.GET.get('testemunha2')))
+        except:
+            testemunha1 = None
+            testemunha2 = None
+    pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2)
     response.write(pdf)
     return response
     
@@ -1531,7 +1578,7 @@ class FormAnalisarContrato(forms.ModelForm):
 
     class Meta:
         model = ContratoFechado
-        fields = ('objeto', 'categoria', 'responsavel_comissionado', 'responsavel')
+        fields = ('objeto', 'categoria', 'responsavel_comissionado', 'responsavel', 'nome_proposto_legal', 'documento_proposto_legal', 'apoio_tecnico')
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos_analisar(request, contrato_id):

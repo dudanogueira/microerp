@@ -50,7 +50,7 @@ class FormEditarProgramacaoDeContrato(forms.ModelForm):
 
     class Meta:
         model = ContratoFechado
-        fields = 'previsao_inicio_execucao', 'previsao_termino_execucao', 'efetivo_inicio_execucao', 'efetivo_termino_execucao', 'funcionarios_participantes'
+        fields = 'previsao_inicio_execucao', 'previsao_termino_execucao', 'efetivo_inicio_execucao', 'efetivo_termino_execucao', 'funcionarios_participantes', 'apoio_tecnico'
 #
 # VIEWS
 #

@@ -17,22 +17,18 @@
 </ul>
 {% endif %}
 
-
 {% if clientes %}
 <h4>Clientes</h4>
-
-<ul>
-{% for cliente in clientes %}
-	<li>{{cliente}}</li>
-{% endfor %}
-</ul>
-
+	<ul>
+	{% for cliente in clientes %}
+		<li>{{cliente}}</li>
+	{% endfor %}
+	</ul>
 {% endif %}
 
 <form method="POST">
 {% csrf_token %}
 {{form.as_p}}
-
 <button type="submit" class="btn btn-primary" name="confirmar-designacoes-btn" value="designar">Designar</button>
 </form>
 

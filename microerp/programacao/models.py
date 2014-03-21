@@ -33,6 +33,7 @@ class FollowUpDeContrato(models.Model):
     class Meta:
         ordering = ['-criado']
     
+    
     contrato = models.ForeignKey('comercial.ContratoFechado')
     texto = models.TextField(blank=False)
     porcentagem_execucao = models.DecimalField(max_digits=3, decimal_places=0)

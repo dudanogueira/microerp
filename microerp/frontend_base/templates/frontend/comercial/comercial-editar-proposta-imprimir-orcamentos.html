@@ -6,13 +6,15 @@
 <div class="row-fluid">
 	<div class="span4">
 		<img src="{{logo_empresa}}">
-		<h1>Proposta ID#{{orcamento.proposta.id}}</h1>
 	</div>
 	<div class="span8">
-		<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}}</h2>
-		<h3>{% if orcamento.proposta.precliente %}{{orcamento.proposta.precliente}}{% else %}{{orcamento.proposta.cliente}}{% endif %}</h3>
+		<h1>Proposta ID#{{proposta.id}}</h1>
+		<h3>{% if proposta.precliente %}{{proposta.precliente}}{% else %}{{proposta.cliente}}{% endif %}</h3>
 	</div>
 	
+	{% for orcamento in proposta.orcamentos_ativos %}
+	
+	<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}}</h2>
 	<table class="table table-condensed table-bordered table-rounded">
 		<thead>
 			<tr>
@@ -45,6 +47,10 @@
 		</tr>
 		</tbody>
 	</table>
+	
+	
+	{% endfor %}
+
 	
 </div>
 
