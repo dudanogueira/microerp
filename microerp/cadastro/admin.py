@@ -24,6 +24,7 @@ from django.contrib import admin
 from cadastro.models import Cliente, Cidade, Bairro, Ramo, ClienteOrigem, ConsultaDeCredito, TipoDeConsultaDeCredito
 from cadastro.models import PerfilAcessoRecepcao
 from cadastro.models import PreCliente
+from cadastro.models import PreClienteSemInteresseOpcao
 from cadastro.models import PerfilClienteLogin
 from cadastro.models import Recado
 from cadastro.models import EnderecoCliente
@@ -120,3 +121,4 @@ admin.site.register(PreCliente, PreClienteAdmin)
 admin.site.register(Recado, RecadoAdmin)
 admin.site.register(PerfilClienteLogin, PerfilClienteLoginAdmin)
 admin.site.register(EnderecoEmpresa)
+admin.site.register(PreClienteSemInteresseOpcao)

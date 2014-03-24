@@ -228,6 +228,35 @@ def home(request):
     
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
+
+class DefinePreClienteSemInteresseForm(forms.ModelForm):
+    
+    def clean(self):
+        cleaned_data=super(DefinePreClienteSemInteresseForm, self).clean()
+        opcao = cleaned_data.get('sem_interesse_opcao')
+        motivo = cleaned_data.get('sem_interesse_motivo')
+        if not opcao and not motivo:
+            raise ValidationError('Pelo menos uma opção deve ser preenchida')
+        return cleaned_data
+    class Meta:
+        model = PreCliente
+        fields =  'sem_interesse_opcao', 'sem_interesse_motivo'
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def clientes_precliente_sem_interesse(request, precliente_id):
+    precliente = get_object_or_404(PreCliente, pk=precliente_id)
+    if request.POST:
+        form = DefinePreClienteSemInteresseForm(request.POST, instance=precliente)
+        if form.is_valid():
+            precliente = form.save(commit=False)
+            precliente.sem_interesse = True
+            precliente.sem_interesse_data = datetime.datetime.now()
+            precliente.save()
+            messages.success(request, "Sucesso! Pré Cliente marcado como Sem Interesse.")
+    else:
+        form = DefinePreClienteSemInteresseForm(instance=precliente)
+    return render_to_response('frontend/comercial/comercial-cliente-precliente-sem-interesse.html', locals(), context_instance=RequestContext(request),)
+
 class FiltrarPreClientesERequisicoesForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
@@ -238,6 +267,7 @@ class FiltrarPreClientesERequisicoesForm(forms.Form):
         
 
     funcionario = forms.ModelChoiceField(queryset=None, label="Funcionário", required=False, empty_label="Todos do Comercial")
+
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def clientes(request):
@@ -252,12 +282,12 @@ def clientes(request):
             Q(cpf__icontains=cliente_q)
         )
         #puxa todos os pre clientes, menos os já convertidos)
-        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
+        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None, sem_interesse=False) 
     else:
         clientes = Cliente.objects.all()
-        preclientes = PreCliente.objects.filter(cliente_convertido=None)
+        preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
 
-    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None).order_by('nome')
+    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, sem_interesse=False).order_by('nome')
     requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
     # se nao for gerente, limita a listagem para os que lhe sao designados
     if not request.user.perfilacessocomercial.gerente:

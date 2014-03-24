@@ -38,6 +38,7 @@ from comercial.models import LancamentoDeFechamentoComissao
 from comercial.models import TabelaDeComissao
 from financeiro.models import LancamentoFinanceiroReceber
 
+
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
     for contrato in queryset:

@@ -49,6 +49,13 @@ RECADO_TIPO_CHOICES = (
     ('informacao_projeto', u'Informação sobre Projeto'),
 )
 
+class PreClienteSemInteresseOpcao(models.Model):
+    
+    def __unicode__self(self):
+        return self.nome
+
+    nome = models.CharField(blank=True, max_length=100)
+
 class PreCliente(models.Model):
     '''
     Um Pre cliente é convertido depois em Cliente
@@ -66,6 +73,10 @@ class PreCliente(models.Model):
     dados = models.TextField(blank=True)
     designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
     # metadata
+    sem_interesse = models.BooleanField(default=False)
+    sem_interesse_motivo = models.TextField("Motivo do Desinteresse", blank=True,)
+    sem_interesse_opcao = models.ForeignKey('PreClienteSemInteresseOpcao', blank=True, null=True, verbose_name="Opção de Desinteresse")
+    sem_interesse_data = models.DateTimeField(blank=True, default=datetime.datetime.now)
     data_convertido = models.DateField(blank=True, null=True)
     convertido_por = models.ForeignKey('rh.Funcionario', related_name="precliente_convertido_set", blank=True, null=True)
     adicionado_por = models.ForeignKey('rh.Funcionario', related_name="precliente_lancado_set")

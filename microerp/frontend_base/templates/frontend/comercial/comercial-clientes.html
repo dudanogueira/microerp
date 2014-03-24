@@ -216,9 +216,14 @@
 						
 									<a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="fa fa-bell-o"></i> {{cliente.solicitacao_set.count}}</a>
         {% endif %}
-						
 
         <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_precliente_adicionar" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+		
+		
+		        <a class="btn btn-danger tooltip-items" data-placement="top" data-toggle="tooltip" title="Sem Interesse" href="{% url "comercial:clientes_precliente_sem_interesse" cliente.id %}"><i class="fa fa-thumbs-down"></i> </a>
+		
+		
+		
 							</p>
 	                    </td>
 	                </tr>

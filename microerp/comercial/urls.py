@@ -10,6 +10,7 @@ urlpatterns = patterns('',
     # cliente
     url(r'^clientes/$', 'comercial.views.clientes', name='clientes'),
     url(r'^clientes/(?P<cliente_id>[0-9]+)/$', 'comercial.views.cliente_ver', name='cliente_ver'),
+    url(r'^clientes/precliente/(?P<precliente_id>[0-9]+)/sem-interesse/$', 'comercial.views.clientes_precliente_sem_interesse', name='clientes_precliente_sem_interesse'),
     # solicitações
     url(r'^solicitacao/adicionar/$', 'comercial.views.solicitacao_adicionar', name='solicitacao_adicionar'),
     # propostas  cliente
