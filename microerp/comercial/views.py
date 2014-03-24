@@ -302,7 +302,7 @@ class FormEditarProposta(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
         
-        if kwargs['instance'].cliente and kwargs['instance'].cliente.tipo != "pj":
+        if (kwargs['instance'].cliente and kwargs['instance'].cliente.tipo != "pj") or kwargs['instance'].precliente :
             del self.fields['nome_do_proposto']
             del self.fields['documento_do_proposto']
         
