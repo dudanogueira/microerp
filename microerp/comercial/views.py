@@ -301,6 +301,11 @@ class FormEditarProposta(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
+        
+        if kwargs['instance'].cliente and kwargs['instance'].cliente.tipo != "pj":
+            del self.fields['nome_do_proposto']
+            del self.fields['documento_do_proposto']
+        
         self.fields['valor_proposto'].localize = True
         self.fields['valor_proposto'].widget.is_localized = True
     

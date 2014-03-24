@@ -47,7 +47,6 @@
 			{{form_editar_proposta.as_p}}
 			</form>
 		
-		
 			<p class="btn-group">
 				<button type="submit" class="btn btn-danger btn-large" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-pencil"></i></button>
 				{% if proposta.orcamentos_ativos %}
@@ -65,9 +64,6 @@
 {% if proposta.orcamentos_ativos %}
 
 		<h3>Orçamentos Ativos</h3>
-		
-
-
 
 {% for orcamento_ativo in proposta.orcamentos_ativos %}
 <div class="row-fluid">
