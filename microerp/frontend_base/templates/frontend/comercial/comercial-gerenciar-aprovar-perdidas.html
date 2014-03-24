@@ -19,6 +19,7 @@
 			<th>Valor</th>
 			<th>Follow Ups</th>
 			<th>Motivo</th>
+			<th>Expiração</th>
 		</tr>
 	</thead>
 		{% for proposta in propostas_fechadas %}
@@ -66,6 +67,7 @@
 				
 				</td>
 				<td>{{proposta.definido_perdido_motivo}}</td>
+				<td>{{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</td>
 			</tr>
 		{% endfor %}
 	

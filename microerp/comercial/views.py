@@ -453,11 +453,16 @@ def editar_proposta_fechar(request, proposta_id):
         form_fechar = FormFecharProposta(request.POST, instance=proposta)
         if form_fechar.is_valid():
             proposta = form_fechar.save(commit=False)
-            proposta.status = 'perdida_aguardando'
+            if request.user.perfilacessocomercial.gerente:
+                proposta.status = 'perdida'
+                messages.info(request, "Sucesso! Proposta fechada como Gerente")
+            else:
+                proposta.status = 'perdida_aguardando'
+                messages.info(request, "Sucesso! Proposta Fechada e Aguardando para Aprovação de Fechamento")
+                    
             proposta.definido_perdido_por = request.user.funcionario
             proposta.definido_perdido_em = datetime.datetime.now()
             proposta.save()
-            messages.info(request, "Sucesso! Proposta fechada e Enviada para Aprovação")
             if proposta.cliente:
                 return redirect(reverse("comercial:cliente_ver", args=[proposta.cliente.id]))
             else:
