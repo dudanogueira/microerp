@@ -27,6 +27,7 @@ urlpatterns = patterns('',
     url(r'^proposta/(?P<proposta_id>[0-9]+)/editar/orcamento/(?P<orcamento_id>[0-9]+)/editar/$', 'comercial.views.editar_proposta_editar_orcamento', name='editar_proposta_editar_orcamento'),
     url(r'^proposta/(?P<proposta_id>[0-9]+)/fechar/$', 'comercial.views.editar_proposta_fechar', name='editar_proposta_fechar'),
     url(r'^proposta/(?P<proposta_id>[0-9]+)/converter/$', 'comercial.views.editar_proposta_converter', name='editar_proposta_converter'),
+    url(r'^proposta/gerente/aprovar/fechamentos/$', 'comercial.views.gerencia_aprovar_fechamentos', name='gerencia_aprovar_fechamentos'),
     # propostas pre cliente
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/$', 'comercial.views.propostas_comerciais_precliente', name='propostas_comerciais_precliente'),
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/adicionar/$', 'comercial.views.propostas_comerciais_precliente_adicionar', name='propostas_comerciais_precliente_adicionar'),    

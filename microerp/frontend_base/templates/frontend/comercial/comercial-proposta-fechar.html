@@ -6,10 +6,13 @@
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Definir Proposta Comercial como Perdida</h1>
+
+<h2>Proposta: #{{proposta.id}}</h2>
+
 <form method="POST">
 {% csrf_token %}
 {{form_fechar}}
-<button class="btn btn-danger" id="fechar-proposta-btn" type="submit">Fechar Proposta</button>
+<button class="btn btn-danger" id="fechar-proposta-btn" type="submit"><i class="fa fa-thumbs-down"></i> Fechar Proposta</button>
 </form>
 
 {% endblock %}

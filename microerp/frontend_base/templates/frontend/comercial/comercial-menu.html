@@ -15,7 +15,12 @@
     <li id="menu-comercial-adicionar-solicitacao"><a href="{% url "comercial:solicitacao_adicionar" %}"><i class="fa fa-bell"></i> Adicionar Solicitação</a></li>
 	{% if user.perfilacessocomercial.gerente %}	
 	<h5>Gerência:</h5>
-    <li id="menu-comercial-analise-de-contratos"><a href="{% url "comercial:analise_de_contratos" %}"><i class="fa fa-search-plus"></i> Análise de Contratos</a></li>
+    
+	<li id="menu-comercial-analise-de-contratos"><a href="{% url "comercial:analise_de_contratos" %}"><i class="fa fa-search-plus"></i> Análise de Contratos</a></li>
+	
+	<li id="menu-comercial-aprovar-fechamentos"><a href="{% url "comercial:gerencia_aprovar_fechamentos" %}"><i class="fa fa-thumbs-down"></i> Aprovar Fechamentos</a></li>
+	
+	
 	    <li id="menu-comercial-gerencia-comissoes"><a href="{% url "comercial:gerencia_comissoes" %}"><i class="fa fa-ticket"></i> Comissões</a></li>
 	
 	

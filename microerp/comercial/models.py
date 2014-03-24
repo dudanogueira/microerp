@@ -42,6 +42,7 @@ PROPOSTA_COMERCIAL_STATUS_CHOICES = (
     ('aberta', 'Aberta'),
     ('convertida', 'Convertida'),
     ('perdida', 'Perdida'),
+    ('perdida_aguardando', 'Perdida: Aguardando Aprovação'),
 )
 
 CONTRATO_FORMA_DE_PAGAMENTO_CHOICES = (

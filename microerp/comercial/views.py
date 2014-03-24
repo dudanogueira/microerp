@@ -449,25 +449,41 @@ class FormFecharProposta(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_fechar(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
-    if not request.user.perfilacessocomercial.gerente:
-        messages.warning(request, u"Atenção: Função exclusiva do gerente. Acesso negada!")
-        return redirect(reverse("comercial:propostas_comerciais_minhas"))
     if request.POST:
-        form_fechar = FormFecharProposta(request.POST)
+        form_fechar = FormFecharProposta(request.POST, instance=proposta)
         if form_fechar.is_valid():
-            proposta.status = 'perdida'
+            proposta = form_fechar.save(commit=False)
+            proposta.status = 'perdida_aguardando'
             proposta.definido_perdido_por = request.user.funcionario
             proposta.definido_perdido_em = datetime.datetime.now()
             proposta.save()
-            messages.info(request, "Sucesso! Proposta fechada.")
+            messages.info(request, "Sucesso! Proposta fechada e Enviada para Aprovação")
             if proposta.cliente:
                 return redirect(reverse("comercial:cliente_ver", args=[proposta.cliente.id]))
             else:
                 return redirect(reverse("comercial:propostas_comerciais_minhas"))
-                
+
     else:
         form_fechar = FormFecharProposta()
     return render_to_response('frontend/comercial/comercial-proposta-fechar.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def gerencia_aprovar_fechamentos(request):
+    if request.POST:
+        propostas_a_fechar = request.POST.getlist('seleciona_propostas_fechar')
+        propostas = PropostaComercial.objects.filter(pk__in=propostas_a_fechar)
+        for proposta in propostas:
+            if request.POST.get('aprovar-fechamento'):
+                proposta.status = 'perdida'
+                messages.error(request, "Proposta #%s Fechada!" % proposta.id)
+            elif request.POST.get('reabrir-proposta'):
+                proposta.status = 'aberta'
+                messages.success(request, "Proposta #%s Reaberta!" % proposta.id)
+            proposta.save()
+                
+    propostas_fechadas = PropostaComercial.objects.filter(status="perdida_aguardando")
+    return render_to_response('frontend/comercial/comercial-gerenciar-aprovar-perdidas.html', locals(), context_instance=RequestContext(request),)
+
 
 class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
 
