@@ -67,6 +67,20 @@ class PreCliente(models.Model):
         verbose_name = "Pré Cliente"
         verbose_name_plural = "Pré Clientes"
     
+    def propostas_abertas(self):
+        return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())
+    
+    def propostas_expiradas(self):
+        return self.propostacomercial_set.filter(status="aberta", data_expiracao__lt=datetime.date.today())
+    
+    def propostas_convertidas(self):
+        return self.propostacomercial_set.filter(status="convertida")
+    
+    def propostas_perdidas(self):
+        return self.propostacomercial_set.filter(status="perdida")
+    
+    
+    
     cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)

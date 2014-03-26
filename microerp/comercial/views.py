@@ -253,6 +253,7 @@ def clientes_precliente_sem_interesse(request, precliente_id):
             precliente.sem_interesse_data = datetime.datetime.now()
             precliente.save()
             messages.success(request, "Sucesso! Pré Cliente marcado como Sem Interesse.")
+            return redirect(reverse("comercial:clientes"))
     else:
         form = DefinePreClienteSemInteresseForm(instance=precliente)
     return render_to_response('frontend/comercial/comercial-cliente-precliente-sem-interesse.html', locals(), context_instance=RequestContext(request),)
@@ -463,7 +464,7 @@ def editar_proposta(request, proposta_id):
             seleciona_modelos_proposta = FormSelecionaOrcamentoModelo(request.POST)
             if seleciona_modelos_proposta.is_valid():
                 pass
-        
+
     return render_to_response('frontend/comercial/comercial-editar-proposta.html', locals(), context_instance=RequestContext(request),)
 
 class FormFecharProposta(forms.ModelForm):
@@ -648,6 +649,12 @@ def editar_proposta_converter(request, proposta_id):
         # continuar processo de conversão
         messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
         return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def precliente_ver(request, pre_cliente_id):
+    form_adicionar_follow_up = FormAdicionarFollowUp()
+    precliente = get_object_or_404(PreCliente, pk=pre_cliente_id)
+    return render_to_response('frontend/comercial/comercial-precliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 # Pre Cliente
 @user_passes_test(possui_perfil_acesso_comercial)

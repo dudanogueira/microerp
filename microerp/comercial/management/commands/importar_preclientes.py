@@ -45,10 +45,13 @@ class Command(BaseCommand):
                         funcionario = Funcionario.objects.all().first()
                     print "Funcionario:",funcionario
                     #
-                    probabilidade = row[4].value
+                    probabilidade = row[4].value or 0
+                    if probabilidade < 1:
+                        probabilidade = probabilidade * 100
+                        
                     print "PROBABILIDADE:",probabilidade
                     #
-                    valor = row[5].value
+                    valor = row[5].value or 0
                     print "VALOR:",valor
                     #
                     observacoes = row[6].value
@@ -57,13 +60,26 @@ class Command(BaseCommand):
                     texto = row[7].value
                     print "TEXTO FOLLOW UP:",texto
                     #
-                    data = xlrd.xldate_as_tuple(row[8].value, 0)
-                    print "DATA FOLLOW UP:",data
+                    if row[8].value:
+                        try:
+                            data = xlrd.xldate_as_tuple(row[8].value, 0)
+                            data_followup = datetime.datetime(data[0], data[1], data[2], 12, 0, 0, 0)
+                        except:
+                            data_followup = datetime.datetime.now()
+                    else:
+                        data_followup = datetime.datetime.now()
+                    print "DATA FOLLOW UP:",data_followup
                     
-                    # registra
-                    precliente,created = PreCliente.objects.get_or_create(nome=nome.title(), contato=contato, dados=dados, adicionado_por=funcionario)
-                    proposta,created = precliente.propostacomercial_set.get_or_create(valor_proposto=valor, probabilidade=probabilidade, criado_por=funcionario, observacoes=dados)
-                    followup, crated = proposta.followupdepropostacomercial_set.get_or_create(criado_por=funcionario, texto=texto, probabilidade=probabilidade, criado=datetime.date(data[0], data[1], data[2]))
+                    # registra precliente se pegando pelo nome
+                    precliente,created = PreCliente.objects.get_or_create(nome=nome, adicionado_por=funcionario)
+                    precliente.contato = contato
+                    precliente.dados = dados
+                    precliente.save()
+                    # cria proposta
+                    proposta,created = precliente.propostacomercial_set.get_or_create(valor_proposto=valor, probabilidade=probabilidade, criado_por=funcionario, observacoes=observacoes, designado=funcionario)
+                    followup, crated = proposta.followupdepropostacomercial_set.get_or_create(criado_por=funcionario, texto=texto, probabilidade=probabilidade, criado=data_followup)
+                    followup.criado = data_followup
+                    followup.save()
                     
                     
                     

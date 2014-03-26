@@ -27,6 +27,7 @@ from reportlab.lib.units import mm, cm
 from django.http import HttpResponse
 
 import datetime
+import operator
 from django import forms
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -226,10 +227,9 @@ def ajax_consulta_produto(request):
     mostra_preco = request.GET.get('mostra_preco', None)
     id_produto = request.GET.get('id', None)
     if q:
-        produtos = Produto.objects.filter(
-        Q(nome__icontains=q) |
-        Q(codigo__icontains=q)
-        )
+        queries = q.split()
+        qset1 =  reduce(operator.__and__, [Q(codigo=query) | Q(descricao__icontains=query) | Q(nome__icontains=query)  for query in queries])
+        produtos = Produto.objects.filter(qset1)
     if id_produto:
         produto = Produto.objects.get(
             pk=id_produto

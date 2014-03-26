@@ -12,11 +12,19 @@
 	{{form_editar_linhas.management_form}}
 	{{form_orcamento.as_p}}
 	{{form.errors}}
+		<hr/>
 	 <a href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> <button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
-	<hr/>
+
 	{% for form in form_editar_linhas %}
 	<div class="row-fluid">
 		{{form.errors}}
+		
+		<div class="span6">
+			{{form.produto.label}}
+			{{form.produto}}
+			{{form.produto.errors}}
+		</div>
+		
 		<div class="span3">
 			{{form.quantidade.label}}
 			{{form.quantidade}}
@@ -24,11 +32,6 @@
 			{{form.id}}
 		</div>
 		
-		<div class="span6">
-			{{form.produto.label}}
-			{{form.produto}}
-			{{form.produto.errors}}
-		</div>
 		<div class="span3">
 			{{form.DELETE}} Apagar
 			<Br />
@@ -38,7 +41,12 @@
 	</div>
 	<hr />
 	{% endfor %}
+
+		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+		 <a href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> 
 	
+	<hr />
+		
 	<p class="alert alert-info">
 		Total Geral: <span class="total-geral">R$ {{orcamento.custo_total}}</span><br />
 	</p>
@@ -85,6 +93,7 @@ $(".select2-ajax").select2({
 	},
 });
 
+
 function calcula_linha(id){
 	id2 = parseInt(id) + 1;
 	var container = "#total-da-linha-"+id2;
@@ -120,7 +129,10 @@ $(".select2-ajax, .recalcula_quantidade_quando_muda").on('change', function(e) {
 
 $(document).ready(function() {
     $("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
-	$("#id_descricao").focus();
+	total = $(".select2-ajax").length - 1;
+	$("#s2id_id_orcamento-"+total+"-produto").select2('focus').select2('open');
+	$( ":checkbox" ).attr('tabindex', -1);
+
 });
 
 </script>

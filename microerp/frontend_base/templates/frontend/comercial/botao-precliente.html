@@ -1,5 +1,5 @@
 {% load phonenumber_br %}
-<a class="btn popover-items" href="" cliente.id %}" data-trigger="hover" data-title="{{precliente.nome}}" data-html="true" data-content='
+<a class="btn popover-items" href="{% url "comercial:precliente_ver" precliente.id %}" cliente.id %}" data-trigger="hover" data-title="{{precliente.nome}}" data-html="true" data-content='
 			<span class="label label-warning">Pré Cliente</span>
 			{% if precliente.contato %}
                 <small class="label label-info"><i class="fa fa-phone"></i> {{precliente.contato}}</small>

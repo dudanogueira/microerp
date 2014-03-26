@@ -87,6 +87,9 @@
 							<td>{{cliente.dados}}</td>
 		                    <td>
 													<p class="btn-group">
+														
+						        <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Ficha do Pré Cliente" href="{% url "comercial:precliente_ver" cliente.id %}"><i class='fa fa-eye'></i></a>
+								
 	
 		                        <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='fa fa-magic'></i></a>
 
@@ -209,6 +212,11 @@
 						
 	                    <td>
 							<p class="btn-group">
+
+		
+
+        <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Ficha do Pré Cliente" href="{% url "comercial:precliente_ver" cliente.id %}"><i class='fa fa-eye'></i></a>
+		
 
         <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='fa fa-magic'></i></a>
 
