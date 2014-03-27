@@ -28,7 +28,6 @@
 
 </ul>
 
-
 <div id="ficha-funcionario" class="tab-content">
 	<p class="text-right">
 	<a href="{% url "comercial:propostas_comerciais_precliente_adicionar" precliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
@@ -38,7 +37,8 @@
 		<strong>Nome:</strong> {{precliente.nome}}<br />
 		<strong>Dados:</strong> {{precliente.dados}}<br />
 		<strong>Contato:</strong> {{precliente.contato}}<br />
-		<strong>Contato:</strong> {{precliente.designado}}<br />
+		<strong>Designado:</strong> {{precliente.designado}}<br />
+		<hr />
 		
 		<h3>Vincular a Cliente</h3>
 		<form method="POST">

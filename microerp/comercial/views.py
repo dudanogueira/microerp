@@ -657,7 +657,6 @@ class VincularPreClienteParaClienteForm(forms.Form):
         super(VincularPreClienteParaClienteForm, self).__init__(*args, **kwargs)
         self.fields['cliente'].widget.attrs['class'] = 'select2'
     
-    
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
 
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -674,6 +673,8 @@ def precliente_ver(request, pre_cliente_id):
                 proposta.precliente = None
                 proposta.cliente = cliente_selecionado
                 proposta.save()
+                cliente_selecionado.designado = precliente.designado
+                cliente_selecionado.save()
                 messages.info(request, "Proposta %s vinculada ao Cliente %s" % (proposta.id, cliente_selecionado))
             messages.success(request, "Pré Cliente %s Removido" % precliente)
             precliente.delete()                
