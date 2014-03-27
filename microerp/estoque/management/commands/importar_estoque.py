@@ -86,16 +86,19 @@ class Command(BaseCommand):
                                         
                                         # TABELA
                                         tabela_nome = smart_text(row[28].value)
-                                        tabela_id = tabela_nome.split()[0]
-                                        print u"TABELA ID: %s" % tabela_id
-                                        print u"TABELA NOME: %s" % tabela_nome
-                                        if str(tabela_id).isdigit() and tabela_id != 0:
-                                            tabela,created = TabelaDePreco.objects.get_or_create(id=tabela_id)
-                                        else:
-                                            tabela,created = TabelaDePreco.objects.get_or_create(nome=tabela_nome)
-                                        print "TABELA CRIADA:",created
-                                        produto.tabela = tabela
-                                        
+                                        if tabela_nome:
+                                            try:
+                                                tabela_id = tabela_nome.split()[0]
+                                                print u"TABELA ID: %s" % tabela_id
+                                                print u"TABELA NOME: %s" % tabela_nome
+                                                if str(tabela_id).isdigit() and tabela_id != 0:
+                                                    tabela,created = TabelaDePreco.objects.get_or_create(id=tabela_id)
+                                                else:
+                                                    tabela,created = TabelaDePreco.objects.get_or_create(nome=tabela_nome)
+                                                print "TABELA CRIADA:",created
+                                                produto.tabela = tabela
+                                            except:
+                                                pass
                                         
                                         # TIPO / GRUPO
                                         tipo_id = int(row[8].value)

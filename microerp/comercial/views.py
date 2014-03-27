@@ -283,7 +283,7 @@ def clientes(request):
             Q(cpf__icontains=cliente_q)
         )
         #puxa todos os pre clientes, menos os já convertidos)
-        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None, sem_interesse=False) 
+        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     else:
         clientes = Cliente.objects.all()
         preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
@@ -650,10 +650,38 @@ def editar_proposta_converter(request, proposta_id):
         messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
         return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
 
+
+class VincularPreClienteParaClienteForm(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(VincularPreClienteParaClienteForm, self).__init__(*args, **kwargs)
+        self.fields['cliente'].widget.attrs['class'] = 'select2'
+    
+    
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def precliente_ver(request, pre_cliente_id):
-    form_adicionar_follow_up = FormAdicionarFollowUp()
     precliente = get_object_or_404(PreCliente, pk=pre_cliente_id)
+    form_adicionar_follow_up = FormAdicionarFollowUp()
+    
+    if request.POST:
+        form_vincular_a_cliente = VincularPreClienteParaClienteForm(request.POST)
+        if form_vincular_a_cliente.is_valid():
+            # passa todas as propostas deste precliente para o cliente selecionado
+            cliente_selecionado = form_vincular_a_cliente.cleaned_data.get('cliente')
+            for proposta in precliente.propostacomercial_set.all():
+                proposta.precliente = None
+                proposta.cliente = cliente_selecionado
+                proposta.save()
+                messages.info(request, "Proposta %s vinculada ao Cliente %s" % (proposta.id, cliente_selecionado))
+            messages.success(request, "Pré Cliente %s Removido" % precliente)
+            precliente.delete()                
+            return redirect(reverse("comercial:cliente_ver", args=[cliente_selecionado.id] ))
+            
+    else:
+        form_vincular_a_cliente = VincularPreClienteParaClienteForm()
+        
     return render_to_response('frontend/comercial/comercial-precliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 # Pre Cliente

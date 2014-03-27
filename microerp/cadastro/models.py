@@ -51,7 +51,7 @@ RECADO_TIPO_CHOICES = (
 
 class PreClienteSemInteresseOpcao(models.Model):
     
-    def __unicode__self(self):
+    def __unicode__(self):
         return self.nome
 
     nome = models.CharField(blank=True, max_length=100)

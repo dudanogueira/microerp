@@ -30,6 +30,9 @@
 
 
 <div id="ficha-funcionario" class="tab-content">
+	<p class="text-right">
+	<a href="{% url "comercial:propostas_comerciais_precliente_adicionar" precliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
+	</p>
 	
 	<div class="tab-pane fade in active" id="informacoes-gerais">
 		<strong>Nome:</strong> {{precliente.nome}}<br />
@@ -37,7 +40,15 @@
 		<strong>Contato:</strong> {{precliente.contato}}<br />
 		<strong>Contato:</strong> {{precliente.designado}}<br />
 		
+		<h3>Vincular a Cliente</h3>
+		<form method="POST">
+		{% csrf_token %}
+		{{form_vincular_a_cliente.as_p}}
+		<button type="submit" class="btn btn-primary">Vincular</button>
+		</form>
+		
 	</div>
+	
 	
 	<div class="tab-pane fade in" id="propostas">
 		
@@ -275,6 +286,12 @@
 		
 		
 	</div>
+	
+	{% if precliente.sem_interesse %}
+	<hr />
+	<div class="alert alert-danger">Marcado como Sem Interesse em {{precliente.sem_interesse_data|date:"SHORT_DATETIME_FORMAT"}} {% if precliente.sem_interesse_opcao %}<strong>Opção</strong> {{precliente.sem_interesse_opcao}}{% endif %} {% if precliente.sem_interesse_motivo %}<strong>Motivo</strong> {{precliente.sem_interesse_motivo}}{% endif %}</div>
+	{% endif %}
+	
 	
 </div>
 
