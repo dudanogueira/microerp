@@ -674,6 +674,11 @@ def precliente_ver(request, pre_cliente_id):
                 proposta.cliente = cliente_selecionado
                 proposta.save()
                 cliente_selecionado.designado = precliente.designado
+                texto = """DADOS VINCULADOS DO PRE CLIENTE
+                DADOS: %s
+                CONTATO: %s
+                """ % (precliente.dados, precliente.contato)
+                cliente_selecionado.observacao = texto
                 cliente_selecionado.save()
                 messages.info(request, "Proposta %s vinculada ao Cliente %s" % (proposta.id, cliente_selecionado))
             messages.success(request, "Pré Cliente %s Removido" % precliente)
