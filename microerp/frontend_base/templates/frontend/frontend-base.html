@@ -82,9 +82,21 @@
             {% endblock %}
             </div>  
             
-            
+        
         </div><!--/span-->
+		
+		
+		
         <div class="span9" id="content">
+				
+				{% if ambiente_testes %}
+					<div class="alert alert-danger">
+						<h4> <i class="fa fa-warning"></i> AMBIENTE DE TESES</h4>
+					</div>
+				{% endif %}
+				
+				
+			
     		{% if messages %}
     		<div id="alertas">
     		    {% for message in messages %}
