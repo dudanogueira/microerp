@@ -38,8 +38,6 @@
 		</div>
 		</div>
 		{% endif %}
-	
-	
 
 		
 		
@@ -54,6 +52,7 @@
 			{% else %}
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
 			{% endif %}
+
 			</p>
 		
 		<table class="table table-condensed table.stripped">
@@ -71,8 +70,14 @@
 			{% for proposta in proposta_list.list %}
 			<tr class="propostas-validas {% if proposta.designado %}propostas-validas-{{proposta.designado.id}}{% else %}propostas-validas-None{% endif %}">
 				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
-				<td><span class="label label-success"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
-        <small>{{proposta.data_expiracao|timeuntil}}</small></td>
+				<td>
+					{% if proposta.expira_hoje %}
+							<span class="badge badge-important">Hoje!</span>
+					{% else %}
+						<span class="label label-success"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span>
+							<small>{{proposta.data_expiracao|timeuntil}}</small>
+					{% endif %}
+				</td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
 				<td>
 					<div class="progress progress-striped active" style="width:100%px;">

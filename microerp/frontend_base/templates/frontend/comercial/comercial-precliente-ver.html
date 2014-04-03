@@ -23,7 +23,9 @@
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes-gerais" data-toggle="tab"><i class="fa fa-info"></i> Informações</a></li>
 
-    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{precliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{precliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{precliente.propostas_perdidas.count}}</span></a></li>
+    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{precliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{precliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{precliente.propostas_perdidas.count}}</span>
+		<span class="badge badge-default">{{precliente.propostas_expiradas.count}}</span>
+	</a></li>
 	
 
 </ul>

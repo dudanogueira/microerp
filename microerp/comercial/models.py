@@ -128,6 +128,12 @@ class PropostaComercial(models.Model):
         if self.status == 'convertida' and self.definido_convertido_em is None:
               raise ValidationError('Para ser convertida, uma proposta deve possuir a data de conversão.')
 
+    def expira_hoje(self):
+        if datetime.date.today() == self.data_expiracao:
+            return True
+        else:
+            return False
+
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')

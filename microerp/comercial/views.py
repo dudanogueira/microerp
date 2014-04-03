@@ -223,9 +223,8 @@ def home(request):
         Q(proposta__designado=request.user.funcionario) | Q(proposta__cliente__designado=request.user.funcionario) | Q(proposta__precliente__designado=request.user.funcionario) | \
         Q(proposta__designado=None) | (Q(proposta__cliente__designado=None) & Q(proposta__precliente__designado=None))
     )[0:10]
-    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None).count()
-    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).count()
-    
+    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, designado=request.user.funcionario, sem_interesse=False).count()
+    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False, cliente__designado=request.user.funcionario).count()
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -288,7 +287,7 @@ def clientes(request):
         clientes = Cliente.objects.all()
         preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
 
-    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, sem_interesse=False).order_by('nome')
+    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, sem_interesse=False, designado=request.user.funcionario).order_by('nome')
     requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
     # se nao for gerente, limita a listagem para os que lhe sao designados
     if not request.user.perfilacessocomercial.gerente:
@@ -791,7 +790,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
-    propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gt=datetime.date.today()).order_by('cliente', 'precliente')
+    propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente')
     propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())    
     form_adicionar_follow_up = FormAdicionarFollowUp()
 

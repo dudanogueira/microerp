@@ -22,7 +22,9 @@
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes-gerais" data-toggle="tab"><i class="fa fa-info"></i> Informações</a></li>
 
-    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{cliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{cliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{cliente.propostas_perdidas.count}}</span></a></li>
+    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{cliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{cliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{cliente.propostas_perdidas.count}}</span>
+	<span class="badge badge-default">{{cliente.propostas_expiradas.count}}</span>
+	</a></li>
 	
 	<li class=""><a href="#requisicao-de-proposta" data-toggle="tab">Requisições <span class="badge badge-important">{{cliente.requisicao_proposta_abertas.count}}</span> <span class="badge badge-success">{{cliente.requisicao_proposta_atendidas.count}}</span></a></li>
 
