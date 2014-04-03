@@ -11,7 +11,11 @@
     <ul>
         <li>Será <strong>ENCERRADO</strong> o {{funcionario.periodo_trabalhado_corrente}}, <strong>ID#{{funcionario.periodo_trabalhado_corrente.id}}</strong></li>
         <li>Será removido como Período de Trabalho Corrente do Funcionário: <strong>ID#{{funcionario.periodo_trabalhado_corrente.id}}</strong></li>
-        <li>Será <strong>Agendado um Exame Médico do Tipo Demissional</strong> com os tipos de exame padrão para o <strong>Cargo {{funcionario.cargo_atual}}</strong>, sendo eles: {% for exame in funcionario.cargo_atual.exame_medico_padrao.all %}Exame: {{exame.nome}} (R${{exame.valor}}){% endfor %} </li>
+		{% if funcionario.periodo_experiencia %}
+			<li><strong>NÃO HAVERÁ Exame Demissional</strong>. Funcionário em Experiência. </li>
+		{% else %}
+			<li>Será <strong>Agendado um Exame Médico do Tipo Demissional</strong> com os tipos de exame padrão para o <strong>Cargo {{funcionario.cargo_atual}}</strong>, sendo eles: {% for exame in funcionario.cargo_atual.exame_medico_padrao.all %}Exame: {{exame.nome}} (R${{exame.valor}}){% endfor %} </li>
+		{% endif %}
         <li>Será Criado uma Entrada no Registro de Demissões</li>
     </ul>
     

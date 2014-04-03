@@ -54,12 +54,26 @@
                 <strong><i class="fa fa-ban-circle"></i>  Período Inativo ID#{{periodo.id}}</strong>. Início: {{periodo.inicio}}. Fim: {{periodo.fim}}
             </div>
             {% endif %}
+			
+			{% if funcionario.periodo_experiencia %}
+			
+            <div class="alert alert-alert">
+            <b><i class="fa fa-warning"></i> Período de Experiência: {{periodo.dias_trabalhados}} dias trabalhados</b>
+            </div>
+			
+			
+			{% endif %}
+			
 
             {% endfor %}
+			
+			{% if funcionario.observacao %}
             <div class="alert alert-info">
             <b><i class="fa fa-certificate"></i> Observação:</b>
             {{funcionario.observacao}}
             </div>
+			{% endif %}
+			
     </div>
 </div>
 

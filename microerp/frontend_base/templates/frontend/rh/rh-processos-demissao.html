@@ -24,7 +24,15 @@
 	        {% for processo in processos_abertos %}
 			<tr>
 				<td>ID#{{processo.id}}</td>
-				<td>{{processo.periodo_trabalhado_finalizado.funcionario}}</td>
+				<td>
+					{{processo.periodo_trabalhado_finalizado.funcionario}}
+					
+					{% if processo.periodo_trabalhado_finalizado.periodo_experiencia %}
+						<small class="label label-info">Período de Experiência</small>
+					{% endif %}
+										
+				</td>
+				
 				<td>{{processo.criado|date:"SHORT_DATE_FORMAT"}}</td>
 				<td>{{processo.demissor}}</td>
 				<td><form method="post"  enctype="multipart/form-data" action="{% url "rh:processo_demissao_finalizar" processo.id %}" class="btn-group">{% csrf_token %}<input id="id_termo_recisorio" name="termo_recisorio" type="file" /><input type="hidden" name="processo_id" value="{{processo.id}}"><button type="submit" class="btn btn-primary"><i class="fa fa-check"></i></button></form></td>
@@ -54,7 +62,12 @@
 	        {% for processo in processos_fechados %}
 			<tr>
 				<td>ID#{{processo.id}}</td>
-				<td>{{processo.periodo_trabalhado_finalizado.funcionario}}</td>
+				<td>
+					{{processo.periodo_trabalhado_finalizado.funcionario}}
+					{% if processo.periodo_trabalhado_finalizado.periodo_experiencia %}
+						Período de Experiência
+					{% endif %}
+				</td>
 				<td>{{processo.criado|date:"SHORT_DATE_FORMAT"}}</td>
 				<td>{{processo.demissor}}</td>
 				<td>

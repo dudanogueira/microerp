@@ -421,15 +421,20 @@ def demitir_funcionario(request, funcionario_id):
             funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.filter(realizado=False).delete()
             messages.info(request, u'Exames Médicos Futuros Cancelados')
             # agenda rotina de médico demissional com padrões do cargo
-            exame = funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.create(
-                data=data_exame_demissional,
-                tipo='d',
-                periodo_trabalhado=periodo_trabalhado_finalizado,
-            )
-            for exame_padrao in funcionario.cargo_atual.exame_medico_padrao.all():
-                exame.exames.add(exame_padrao)
-            exame.save()
-            messages.info(request, u'Exame Médico Demissional criado em: %s, #ID%s' % (exame.data, exame.id))
+            # caso seja funcionario em periodo de experiencia, nao precisa de demissional
+            if periodo_trabalhado_finalizado.periodo_experiencia():
+                messages.info(request, u'Exame Médico Demissional NÃO CRIADO. Funcionário me período de Experiência: %s' % periodo_trabalhado_finalizado.dias_trabalhados())
+            else:
+                exame = funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.create(
+                    data=data_exame_demissional,
+                    tipo='d',
+                    periodo_trabalhado=periodo_trabalhado_finalizado,
+                )
+                for exame_padrao in funcionario.cargo_atual.exame_medico_padrao.all():
+                    exame.exames.add(exame_padrao)
+                exame.save()
+                messages.info(request, u'Exame Médico Demissional criado em: %s, #ID%s' % (exame.data, exame.id))
+            
             # Cria Registro de Demissão
             demissao = funcionario.demissao_set.create(
                 data=datetime.date.today(),

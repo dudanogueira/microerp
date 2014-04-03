@@ -174,6 +174,12 @@ class Funcionario(models.Model):
         else:
             return False
     
+    def periodo_experiencia(self):
+        if self.ativo() and self.dias_trabalhados() > 90:
+            return False
+        else:
+            return True
+    
     def clean(self):
         # check telefones
         if self.telefone_fixo:
@@ -561,6 +567,20 @@ class PeriodoTrabalhado(models.Model):
             return True
         else:
             return False
+    
+    def dias_trabalhados(self):
+        if not self.fim:
+            dias_trabalhados = datetime.date.today() - self.inicio
+        else:
+            dias_trabalhados = self.fim - self.inicio
+        return dias_trabalhados.days
+    
+    def periodo_experiencia(self):
+        if self.dias_trabalhados() > 90:
+            return False
+        else:
+            return True
+    
     
     class Meta:
         verbose_name = u"Período Trabalhado"
