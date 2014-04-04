@@ -2430,11 +2430,8 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
             )
             messages.success(request, u"Nova posição em Estoque de Produção para %s: %s - %s = %s" % (nova_posicao.componente, posicao_atual, float(item[1]), nova_posicao.quantidade))
             return redirect(reverse("producao:ordem_de_producao"))
-            
-        
         
     return render_to_response('frontend/producao/producao-ordem-de-producao-converter-subproduto.html', locals(), context_instance=RequestContext(request),)
-
 
 class FormConfiguradorProducaoSubProduto(forms.Form):
     
@@ -2500,7 +2497,6 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                         producao_liberada = False
                         faltou = float(qtd_subproduto) - float(quantidade_disponivel)
                         #messages.error(request, "Quantidade Indisponível (FALTOU: %s) de Sub Produto %s" % (faltou, item[0]))
-                    
             
             calculado = True
             quantidades_componente = {}
@@ -2521,7 +2517,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                     producao_liberada = False
                 else:
                     pode = True
-                necessario_comprar = quantidade_usada - posicao_em_estoque_produtor
+                necessario_comprar = float(quantidade_usada) - float(posicao_em_estoque_produtor)
                 quantidades_componente[linha.componente.id] = (linha, quantidade_usada, posicao_em_estoque_produtor, pode, necessario_comprar)
 
             # calcula os subprodutos agregados
@@ -2540,7 +2536,6 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             if producao_liberada:
                 for field in form_configurador_subproduto.fields:
                     form_configurador_subproduto[field].widget = forms.HiddenInput()
-
     else:
         form_configurador_subproduto = FormConfiguradorSubProduto(subproduto=subproduto)
         linhas_sem_alternativo = []
