@@ -2512,7 +2512,9 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
                 # puxa a posicao no estoque
                 posicao_em_estoque_produtor = estoque_produtor.posicao_componente(linha.componente)
                 # marca se é possível produzir, conforme estoque produtor
-                if quantidade_usada > posicao_em_estoque_produtor:
+                quantidade_usada = round(quantidade_usada, 2)
+                posicao_em_estoque_produtor = round(posicao_em_estoque_produtor, 2)
+                if float(quantidade_usada) > float(posicao_em_estoque_produtor):
                     pode = False
                     producao_liberada = False
                 else:
