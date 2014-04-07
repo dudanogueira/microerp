@@ -2479,8 +2479,8 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             for item in get_componentes.items():    
                 if type(item[0]) == long or type(item[0]) == int:
                     # verifica se possui a quantidade total deste componente em estoque
-                    qtd_componente = item[1]
-                    posicao_em_estoque_produtor = estoque_produtor.posicao_componente(item[0])
+                    qtd_componente = round(item[1], 2)
+                    posicao_em_estoque_produtor = round(estoque_produtor.posicao_componente(item[0]), 2)
                     # quantidade no estoque insuficiente
                     if qtd_componente > posicao_em_estoque_produtor:
                         faltou = float(qtd_componente) - float(posicao_em_estoque_produtor)
