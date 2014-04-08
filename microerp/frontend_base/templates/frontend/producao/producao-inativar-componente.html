@@ -9,22 +9,11 @@
 
 {% if not pode %}
 <p class="alert alert-info">
-Posição total em estoques: {{componente.total_em_estoques}} 	<button type="submit" form="consulta-estoque-produto" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="icon-search"> Consultar</i> </button>
-
-<form method="POST" id="consulta-estoque-produto" action="{% url "producao:listar_estoque" %}">
-	{% csrf_token %}
-	<input type="hidden" name="componente" value="{{componente.id}}">
-	<input type="hidden" name="estoque" value="">
-  
-</form>
-
-</p>
-<p class="alert alert-info">
 Quantidade Total de Participações: {{componente.total_unico_participacoes}} <a class="btn btn-primary" href="{% url "producao:ver_componente" componente.id %}#participacao">Ver Participações</a><br
 </p>
 
 <p class="alert alert-danger">
-	<strong>Não é possível inativar este Componente nessa situação</strong>.<br />Remova as participações e elimite o estoque antes de continuar.
+	<i class="fa fa-warning"></i> <strong>Não é possível inativar este Componente nesta situação</strong>.
 </p>
 {% else %}
 <p class="alert alert-danger">Este componente pode ser inativado.</p>

@@ -672,7 +672,7 @@ def editar_componente(request, componente_id):
 def inativar_componente(request, componente_id):
     componente = get_object_or_404(Componente.objects.select_related(), pk=componente_id)
     pode = True
-    if componente.total_em_estoques() or componente.total_unico_participacoes():
+    if componente.total_unico_participacoes():
         pode = False
     if request.GET.get('confirmar'):
         componente.ativo = False
@@ -1317,7 +1317,7 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
 def inativar_subproduto(request, subproduto_id):
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
     pode = True
-    if subproduto.total_montado or subproduto.total_testando or subproduto.total_funcional or subproduto.total_participacao():
+    if subproduto.total_participacao():
         pode = False
     if request.GET.get('confirmar'):
         subproduto.ativo = False

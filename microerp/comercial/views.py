@@ -1113,8 +1113,8 @@ class ContratoPrint:
         
             buffer = self.buffer
             doc = SimpleDocTemplate(buffer,
-                                    rightMargin=10,
-                                    leftMargin=10,
+                                    rightMargin=40,
+                                    leftMargin=40,
                                     topMargin=10,
                                     bottomMargin=70,
                                     pagesize=self.pagesize)
