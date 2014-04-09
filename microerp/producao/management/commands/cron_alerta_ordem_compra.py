@@ -69,7 +69,7 @@ class Command(BaseCommand):
                     dest,
                 )
             try:
-                #email.send(fail_silently=False)
+                email.send(fail_silently=False)
                 print "ASSUNTO:",assunto
                 print content
                 print "Email Enviado."
@@ -105,7 +105,7 @@ class Command(BaseCommand):
                                     dest,
                                 )
                             try:
-                                #email.send(fail_silently=False)
+                                email.send(fail_silently=False)
                                 print "Email Enviado para %s" % dest
                                 print "ASSUNTO: %s" % assunto
                                 print content
