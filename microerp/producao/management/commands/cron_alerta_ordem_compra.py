@@ -142,7 +142,7 @@ class Command(BaseCommand):
                                     dest,
                                 )
                             try:
-                                #email.send(fail_silently=False)
+                                email.send(fail_silently=False)
                                 print "Email Enviado para %s" % dest
                                 print "ASSUNTO: %s" % assunto
                                 print content
