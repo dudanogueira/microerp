@@ -12,12 +12,20 @@
 	
 	<li> <a href="#designacao-invalida" data-toggle="tab">Designação Inválida <span class="badge badge-warning">{{precliente_designacao_invalida.count}}</span> <span class="badge badge-success">{{cliente_designacao_invalida.count}}</span></a></li>
 	<li><a href="#buscar" data-toggle="tab">Buscar</a></li>
+	
 </ul>
 	<form id="definir-designacoes-clientes" method="POST" action="{% url "comercial:designacoes_confirmar" %}">
 		{% csrf_token %}
 		<div id="tab-content-comercial-designacoes" class="tab-content">
+			
+
+			
 			<div class="tab-pane fade in active" id="sem-designacao">
+
 	    	<div class="tabela-preclientes-sem-proposta">
+				{% if precliente_sem_designacao %}
+				<input type="button" class="check btn-primary" data-selector="preclientes-semdesignacao" value="selecionar todos" />
+				{% endif %}
 	        	<table class="table table-hover table-condensed">
 	            	<thead>
 	                	<caption><h4 class="alert">Pré Clientes</h4></caption>
@@ -33,7 +41,7 @@
 
 	                {% for cliente in precliente_sem_designacao %}
 	                <tr class="alert alert-info">
-						<td><input id="precliente-{{cliente.id}}" type="checkbox" name="preclientes" value="{{cliente.id}}" checked></td>
+						<td><input id="precliente-{{cliente.id}}" type="checkbox" class="preclientes-semdesignacao" name="preclientes" value="{{cliente.id}}" ></td>
 	                    <td><label for="precliente-{{cliente.id}}">{{cliente.nome}}</label></td>
 						<td><label for="precliente-{{cliente.id}}">{{cliente.contato}}</label></td>
 						<td><label for="precliente-{{cliente.id}}">{{cliente.dados}}</label></td>
@@ -67,6 +75,10 @@
 				</table>
 			</div>
 		
+			{% if cliente_sem_designacao %}
+			<input type="button" class="check btn-primary" data-selector="clientes-semdesignacao" value="selecionar todos" />
+			{% endif %}
+			
 			<div class="tabela-cliente-sem-proposta">
 				<table class="table table-hover table-condensed">
 					<thead>
@@ -80,7 +92,7 @@
 					<tbody>
 						{% for cliente in cliente_sem_designacao %}
 						<tr class="alert alert-info">
-							<td><input id="cliente-{{cliente.id}}" type="checkbox" name="clientes" value="{{cliente.id}}" checked></td>
+							<td><input id="cliente-{{cliente.id}}" type="checkbox" class="clientes-semdesignacao" name="clientes" value="{{cliente.id}}" ></td>
 		              	  	<td>
 								<label for="cliente-{{cliente.id}}">
 								{% if cliente.tipo == "pf" %}
@@ -116,6 +128,10 @@
 		</div>
 			<div class="tab-pane fade in" id="designacao-invalida">
 				<div class="tabela-preclientes-designacao-invalida">
+			{% if precliente_designacao_invalida %}
+			<input type="button" class="check btn-primary" data-selector="preclientes-designacaoinvalida" value="selecionar todos" />
+			{% endif %}
+			
 	        <table class="table table-hover table-condensed">
 	            <thead>
 	                <caption><h4 class="alert">Pré Clientes</h4></caption>
@@ -132,7 +148,7 @@
 
 	                {% for cliente in precliente_designacao_invalida %}
 	                <tr class="alert alert-info">
-						<td><input id="precliente-{{cliente.id}}" type="checkbox" name="preclientes" value="{{cliente.id}}" checked></td>
+						<td><input id="precliente-{{cliente.id}}" type="checkbox" class="preclientes-designacaoinvalida" name="preclientes" value="{{cliente.id}}" ></td>
 	                    <td><label for="precliente-{{cliente.id}}">{{cliente.nome}}</label></td>
 						<td><label for="precliente-{{cliente.id}}">{{cliente.contato}}</label></td>
 						<td><label for="precliente-{{cliente.id}}">{{cliente.dados}}</label></td>
@@ -167,6 +183,10 @@
 	        </table>
 	    </div>
 				<div class="tabela-cliente-sem-proposta">
+				{% if cliente_designacao_invalida %}
+					<input type="button" class="check btn-primary" data-selector="clientes-designacaoinvalida" value="selecionar todos" />
+				{% endif %}
+					
 			<table class="table table-hover table-condensed">
 				<thead>
 	                <caption><h4 class="alert alert-success" >Clientes</h4></caption>
@@ -180,7 +200,7 @@
 				<tbody>
 					{% for cliente in cliente_designacao_invalida %}
 					<tr class="alert alert-info">
-						<td><input id="cliente-{{cliente.id}}" type="checkbox" name="clientes" value="{{cliente.id}}" checked></td>
+						<td><input id="cliente-{{cliente.id}}" type="checkbox" class="clientes-designacaoinvalida" name="clientes" value="{{cliente.id}}" ></td>
 	              	  	<td>
 							<label for="cliente-{{cliente.id}}">
 							{% if cliente.tipo == "pf" %}
@@ -234,6 +254,20 @@
 <script>
 $(document).ready(function() {
     $("#menu-comercial-gerenciar-designacoes, #top-menu-comercial").addClass("active");
+	
+	
+    $('.check:button').toggle(function(){
+		seletor = "." + $(this).data('selector');
+		items = $(seletor)
+        items.attr('checked','checked');
+        $(this).val('deselecionar todos');
+    },function(){
+		seletor = "."+$(this).data('selector');
+		items = $(seletor)
+        items.removeAttr('checked');
+        $(this).val('selecionar todos');        
+    })
+	
 });
 
 // Javascript to enable link to tab

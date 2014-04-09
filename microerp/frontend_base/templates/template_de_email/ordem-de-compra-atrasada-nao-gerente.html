@@ -2,9 +2,10 @@ Alerta: Controle de Compra Atrasado
 -------------------
 ORDEM {{ordem.id}}
 -------------------
-FORNECEDOR: {{ordem.fornecedor}}
+{% if ordem.fornecedor %}FORNECEDOR: {{ordem.fornecedor}}{% endif %}
 TÍTULO: {{ordem.titulo}}
-FUNCIONÁRIO: {{ordem.funcionario}}, ABERTO EM: {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+FUNCIONÁRIO: {{ordem.funcionario}}
+ABERTO EM: {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
 DESCRIÇÃO: {{ordem.descricao}}
 CRITICIDADE: {{ordem.get_criticidade_display}}
 ATIVIDADES ATRASADAS{% for atividade in ordem.atividades_atrasadas %}

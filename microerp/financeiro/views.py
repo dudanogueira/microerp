@@ -66,13 +66,13 @@ def home(request):
     
     ## widget de lancamentos
     # pendentes
-    lancamentos_pendentes = LancamentoFinanceiroReceber.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+    lancamentos_pendentes = LancamentoFinanceiroReceber.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None, contrato__status='lancado')
     lancamentos_pendentes_total_valor =  lancamentos_pendentes.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     # atecipados
-    lancamentos_abertos_atencipados = LancamentoFinanceiroReceber.objects.filter(antecipado=True, data_recebido=None)
+    lancamentos_abertos_atencipados = LancamentoFinanceiroReceber.objects.filter(antecipado=True, data_recebido=None, contrato__status='lancado')
     lancamentos_abertos_atencipados_total_valor = lancamentos_abertos_atencipados.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     # a receber
-    lancamentos_a_receber = LancamentoFinanceiroReceber.objects.filter(antecipado=False, data_recebido=None, data_cobranca__gte=datetime.date.today())
+    lancamentos_a_receber = LancamentoFinanceiroReceber.objects.filter(antecipado=False, data_recebido=None, data_cobranca__gte=datetime.date.today(), contrato__status='lancado')
     lancamentos_a_receber_total_valor = lancamentos_a_receber.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     # total
     total_lancamentos_a_receber = lancamentos_pendentes.count() + lancamentos_abertos_atencipados.count() + lancamentos_a_receber.count()
@@ -237,20 +237,20 @@ def ajax_lancamento_buscar(request):
         if request.POST.get('numero-contrato', None):
             try:
                 id_contrato = int(request.POST.get('numero-contrato'))
-                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(contrato__pk=id_contrato)
+                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(contrato__pk=id_contrato, contrato__status='lancado')
             except:
                 id_contrato = 0
         if request.POST.get('numero-lancamento', None):
             try:
                 id_lancamento = int(request.POST.get('numero-lancamento'))
-                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(pk=id_lancamento)
+                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(pk=id_lancamento, contrato__status='lancado')
             except:
                 id_lancamento = 0
         if request.POST.get('data-inicio', None) and request.POST.get('data-fim', None):
             try:
                 data_inicio = datetime.datetime.strptime(request.POST.get('data-inicio', None), "%d/%m/%Y")
                 data_fim = datetime.datetime.strptime(request.POST.get('data-fim', None), "%d/%m/%Y")
-                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_cobranca__range=(data_inicio, data_fim))
+                lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_cobranca__range=(data_inicio, data_fim), contrato__status='lancado')
             except:
                 raise
                 
@@ -270,14 +270,14 @@ def ajax_lancamentos_receber(request, busca_tipo, offset):
         semana_exibir = semana[offset]
         inicio_semana = semana_exibir[0]
         fim_semana = semana_exibir[-1]
-        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
+        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana), contrato__status='lancado')
     elif busca_tipo == "dia":
         hoje = datetime.date.today()
         dia_buscado =  hoje + datetime.timedelta(days=offset)
-        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca=dia_buscado)
+        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca=dia_buscado, contrato__status='lancado')
     elif busca_tipo == "pendentes":
         pendentes = True
-        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None)
+        lancamentos_exibir = LancamentoFinanceiroReceber.objects.filter(data_cobranca__lt=datetime.date.today(), data_recebido=None, contrato__status='lancado')
     soma_lancamentos_futuro = lancamentos_exibir.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     soma_lancamentos_antecipados = lancamentos_exibir.filter(antecipado=True).aggregate(Sum('valor_recebido'))['valor_recebido__sum'] or 0
     

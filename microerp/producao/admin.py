@@ -216,6 +216,14 @@ class PerfilAcessoProducaoAdmin(admin.ModelAdmin):
     list_filter = 'user', 'gerente', 'analista'
     list_display = 'user', 'gerente', 'analista'
 
+
+class AtividadeDeCompraInline(admin.StackedInline):
+    model = AtividadeDeCompra
+    extra = 0
+
+class ControleDeCompraAdmin(admin.ModelAdmin):
+    inlines = [AtividadeDeCompraInline]
+
 admin.site.register(OrdemProducaoSubProduto)
 admin.site.register(OrdemProducaoProduto)
 admin.site.register(EstoqueFisico)
@@ -238,7 +246,7 @@ admin.site.register(LinhaSubProdutodoProduto, LinhaSubProdutodoProdutoAdmin)
 admin.site.register(RegistroEnvioDeTesteSubProduto, RegistroEnvioDeTesteSubProdutoAdmin)
 admin.site.register(RegistroSaidaDeTesteSubProduto, RegistroSaidaDeTesteSubProdutoAdmin)
 admin.site.register(RegistroValorEstoque)
-admin.site.register(ControleDeCompra)
+admin.site.register(ControleDeCompra, ControleDeCompraAdmin)
 admin.site.register(AtividadeDeCompra)
 admin.site.register(RequisicaoDeCompra)
 admin.site.register(OrdemConversaoSubProduto)

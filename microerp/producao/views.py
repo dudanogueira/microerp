@@ -3119,9 +3119,7 @@ def ordem_de_compra(request):
         if request.POST.get("form-adicionar-ordem-de-compra", None):
             form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra(request.POST)
             if form_adicionar_ordem_de_compra.is_valid():
-                ordem_de_compra = form_adicionar_ordem_de_compra.save(commit=False)
-                ordem_de_compra.funcionario = request.user.funcionario
-                ordem_de_compra.save()
+                ordem_de_compra = form_adicionar_ordem_de_compra.save()
                 messages.success(request, "Novo Controle de Atividade de Compra criado.")
                 form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
         if request.POST.get('registrar-atividade', None):

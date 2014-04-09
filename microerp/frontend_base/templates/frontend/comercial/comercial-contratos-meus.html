@@ -55,8 +55,18 @@
 					<span class="badge badge-important">{{contrato.get_status_display}}</span>
 				{% else %}
 				
+					{% if contrato.status == "emaberto" %}
+						<span class="badge badge-important">Em Aberto</span>
+						<small>Aguardando Financeiro</small>
+					{% endif %}
+					
+					{% if contrato.status == "emanalise" %}
+						<span class="badge badge-default">Em Análise</span>
+					{% endif %}
+				
+				
 					{% if contrato.status == "assinatura" %}
-						<span class="badge badge-success">Aguardando a sua Assinatura</span>
+						<span class="badge badge-success">Aguardando Assinatura</span>
 					{% endif %}
 					
 					{% if contrato.status == "lancado" %}
@@ -85,7 +95,17 @@
 					
 					{% if contrato.status == "assinatura" %}
 					<a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success"><i class="fa fa-check"></i> Assinado!</a>
+					
+					{% if request.user.perfilacessocomercial.gerente %}
+					
+					<a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-warning"><i class="fa fa-check"></i> Retornar para Consultor</a>
+					
 					{% endif %}
+					
+					
+					{% endif %}
+					
+					
 					
 					{% if contrato.status == "assinatura" %}
 					
