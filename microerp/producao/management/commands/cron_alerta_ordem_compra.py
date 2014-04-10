@@ -9,6 +9,8 @@ from django.core.mail import EmailMessage
 from django.db.models import Count
 import datetime
 
+from django.conf import settings
+
 from optparse import make_option
 
 class Command(BaseCommand):
@@ -65,7 +67,7 @@ class Command(BaseCommand):
             email = EmailMessage(
                     assunto, 
                     content,
-                    'Sistema MicroERP',
+                    settings.DEFAULT_FROM_EMAIL,
                     dest,
                 )
             try:
@@ -101,7 +103,7 @@ class Command(BaseCommand):
                             email = EmailMessage(
                                     assunto, 
                                     content,
-                                    'Sistema MicroERP',
+                                    settings.DEFAULT_FROM_EMAIL,
                                     dest,
                                 )
                             try:
@@ -138,7 +140,7 @@ class Command(BaseCommand):
                             email = EmailMessage(
                                     assunto, 
                                     content,
-                                    'Sistema MicroERP',
+                                    settings.DEFAULT_FROM_EMAIL,
                                     dest,
                                 )
                             try:
