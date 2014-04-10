@@ -3248,20 +3248,17 @@ def requisicao_de_compra(request):
             gerentes = PerfilAcessoProducao.objects.filter(gerente=True)
             dest = []
             for gerente in gerentes:
-                if gerente.user.email:
-                    dest.append(gerente.user.email)
-                if gerente.user.funcionario.email:
-                    dest.append(gerente.user.funcionario.email)
-                    
-            email = EmailMessage(
-                    'Requisição de Compra: #%s' % requisicao_compra.id, 
-                    content,
-                    'Sistema MicroERP',
-                    dest,
-                )
+                try:
+                    if gerente.user.email:
+                        dest.append(gerente.user.email)
+                    if gerente.user.funcionario:
+                        dest.append(gerente.user.funcionario.email)
+                except:
+                    pass
+            email = EmailMessage('Requisição de Compra: #%s' % requisicao_compra.id, content, settings.DEFAULT_FROM_EMAIL, dest,)
             try:
                 email.send(fail_silently=False)
-                messages.info(request, u"Email enviado para os gerentes.")
+                messages.info(request, u"Email enviado para os gerentes. %s" % dest)
             except:
                 messages.error(request, u"Erro! Email não enviado.")
             
