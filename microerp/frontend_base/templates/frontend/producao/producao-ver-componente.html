@@ -104,7 +104,10 @@
 					{% endif %}
 					{% if componente.preco_medio_unitario %}
 					<strong>Preço Médio Bruto Unitário</strong>: R$ {{componente.preco_medio_unitario}}
-					{% endif %}        
+					{% endif %}
+					{% if comonente.lancamentocomponente_set.all.last %}
+						Último Part Number Fornecedor:
+					{% endif %}
 				</div>
         
 
@@ -200,8 +203,10 @@
 					<tr>
 						<td>{{lancamento.nota.data_lancado_estoque|date:"d/m/y"}}</td>
 						<td>{{lancamento.nota.numero}}</td>
-						<td>{{lancamento.nota.fabricante_fornecedor.nome}}</td>
-						<td>{{lancamento.fabricante.nome}}</td>
+						<td>{{lancamento.nota.fabricante_fornecedor.nome}} {% if lancamento.part_number_fornecedor %}
+							({{lancamento.part_number_fornecedor}})
+							{% endif %}</td>
+						<td>{{lancamento.fabricante.nome}} {% if lancamento.part_number_fabricante %}({{lancamento.part_number_fabricante}}){% endif %}</td>
 						<td>{{lancamento.quantidade}} {{lancamento.componente.medida}}</td>
 						<td>{% ifequal lancamento.nota.tipo "i" %}USD {{lancamento.valor_unitario}}{% else %}R$ {{lancamento.valor_unitario}}{% endifequal %}</td>
 						<td>{% ifequal lancamento.nota.tipo "i" %}USD {{lancamento.valor_unitario_final}}{% else %}R$ {{lancamento.valor_unitario_final}}{% endifequal %}</td>

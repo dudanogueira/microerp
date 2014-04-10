@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, urllib, calendar
+import datetime, urllib, calendar, operator
 from xml.dom import minidom
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
@@ -592,12 +592,11 @@ def listar_componentes(request):
                 componentes_encontrados = Componente.objects.filter(ativo=True)
                 componentes_inativos = Componente.objects.filter(ativo=False).order_by('part_number')
             else:
-                componentes_encontrados = componentes_encontrados.filter(
-                    Q(part_number__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
-                )
-                componentes_inativos = componentes_inativos.filter(
-                    Q(part_number__icontains=q_componente) | Q(descricao__icontains=q_componente) | Q(tipo__nome__icontains=q_componente)
-                )
+                queries = q_componente.split()
+                qset1 =  reduce(operator.__and__, [Q(part_number__icontains=query) | Q(descricao__icontains=query) | Q(tipo__nome__icontains=query)  for query in queries])
+                
+                componentes_encontrados = componentes_encontrados.filter(qset1)
+                componentes_inativos = componentes_inativos.filter(qset1)
                 
         
     componente_form = ComponenteFormPreAdd()
@@ -1240,12 +1239,11 @@ def listar_subprodutos(request):
                 subprodutos_encontrados = SubProduto.objects.filter(ativo=True).order_by('part_number')
                 subprodutos_inativos = SubProduto.objects.filter(ativo=False).order_by('part_number')
             else:
-                subprodutos_encontrados = subprodutos_encontrados.filter(
-                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto) | Q(part_number__icontains=q_subproduto)
-                )
-                subprodutos_inativos = subprodutos_inativos.filter(
-                    Q(nome__icontains=q_subproduto) | Q(descricao__icontains=q_subproduto) | Q(slug__icontains=q_subproduto) | Q(part_number__icontains=q_subproduto)
-                )
+                queries = q_subproduto.split()
+                qset1 =  reduce(operator.__and__, [Q(part_number__icontains=query) | Q(descricao__icontains=query) | Q(nome__icontains=query) | Q(slug__icontains=query)  for query in queries])
+                subprodutos_encontrados = subprodutos_encontrados.filter(qset1)
+                subprodutos_inativos = subprodutos_inativos.filter(qset1)
+                
     return render_to_response('frontend/producao/producao-listar-subprodutos.html', locals(), context_instance=RequestContext(request),)    
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -1921,12 +1919,11 @@ def listar_produtos(request):
             if q_produto == "todos":
                 produtos_encontrados = ProdutoFinal.objects.filter(ativo=True)
             else:
-                produtos_encontrados = produtos_encontrados.filter(
-                    Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
-                )
-                produtos_inativos = produtos_inativos.filter(
-                    Q(nome__icontains=q_produto) | Q(descricao__icontains=q_produto)
-                )
+                
+                queries = q_produto.split()
+                qset1 =  reduce(operator.__and__, [Q(part_number__icontains=query) | Q(nome__icontains=query) | Q(descricao__icontains=query) for query in queries])
+                produtos_encontrados = produtos_encontrados.filter(qset1)
+                produtos_inativos = produtos_inativos.filter(qset1)
                 
     return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
 
