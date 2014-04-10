@@ -3273,7 +3273,7 @@ def requisicao_de_compra_atendido(request, requisicao_id):
     requisicao.atendido = True
     requisicao.atendido_em = datetime.datetime.now()
     requisicao.save()
-    return redirect(reverse('producao:requisicao_de_compra'))
+    return redirect(reverse('producao:requisicao_de_compra') + "#tab_abertos")
 
 
 REGISTROS_CHOICE_FIELD = (
