@@ -203,7 +203,7 @@
 									  <div class="modal-body">
 											<form method="POST" id="form-remover-testando">
 												{% csrf_token %}
-												{{form_remove_em_testes.as_p}}
+												{{form_remove_testes.as_p}}
 											</form>
 									  </div>
 									  <div class="modal-footer">
@@ -240,7 +240,7 @@
 									    <button form="form-adicionar-funcional" class="btn btn-success" name="adiciona-subproduto-funcional-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Funcional</button>
 									  </div>
 									</div>
-
+									
 									<!-- Modal Remover Funcional -->
 									<div id="remover-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 									  <div class="modal-header">
@@ -708,7 +708,7 @@ $(document).ready(function() {
     $('#adicionar-testando').modal('show');
     {% endif %}
 
-    {% if form_remove_em_testes.errors %}
+    {% if form_remove_testes.errors %}
     $('#remover-testando').modal('show');
     {% endif %}
 		

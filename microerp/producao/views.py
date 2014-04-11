@@ -1283,7 +1283,8 @@ class FormEnviarSubProdutoParaTeste(forms.Form):
         self.fields['quantidade_preenchida'].label = u"Quantidade para enviar para teste"
         self.fields['subproduto'].initial=subproduto
         self.fields['subproduto'].widget = forms.HiddenInput()
-        self.fields['funcionario'].label= u"Funcionário"        
+        self.fields['funcionario'].label= u"Funcionário"
+        self.fields['funcionario'].widget.attrs['class'] = 'select2'
         self.fields['data_envio'].widget.attrs['class'] = 'datepicker'
 
     def clean_quantidade_preenchida(self):
@@ -1340,6 +1341,7 @@ class FormMovimentoSubProduto(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         subproduto = kwargs.pop('subproduto')
+        self.quantidade_disponivel = kwargs.pop('quantidade_disponivel', None)
         operacao = kwargs.pop('operacao')
         situacao = kwargs.pop('situacao')
         super(FormMovimentoSubProduto, self).__init__(*args, **kwargs)
@@ -1350,6 +1352,13 @@ class FormMovimentoSubProduto(forms.ModelForm):
         self.fields['operacao'].initial = operacao
         self.fields['situacao'].widget = forms.HiddenInput()
         self.fields['situacao'].initial = situacao
+    
+    def clean_quantidade_movimentada(self):
+        quantidade_movimentada = self.cleaned_data.get('quantidade_movimentada', None)
+        if self.quantidade_disponivel and quantidade_movimentada:
+            if self.quantidade_disponivel < quantidade_movimentada:
+                raise ValidationError('Erro! Quantidade Disponível (%s) é Menor que Movimentada (%s)' % (self.quantidade_disponivel, quantidade_movimentada))
+        return quantidade_movimentada
     
     class Meta:
         model = MovimentoEstoqueSubProduto
@@ -1389,7 +1398,7 @@ def ver_subproduto(request, subproduto_id):
     form_remove_montado = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=0)
     # em testes
     form_adiciona_em_testes = FormMovimentoSubProduto(subproduto=subproduto, operacao='adiciona', situacao=1)
-    form_remove_em_testes = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=1)
+    form_remove_testes = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=1)
     # em funcional
     form_adiciona_funcional = FormMovimentoSubProduto(subproduto=subproduto, operacao='adiciona', situacao=2)
     form_remove_funcional = FormMovimentoSubProduto(subproduto=subproduto, operacao='remove', situacao=2)
@@ -1518,25 +1527,24 @@ def ver_subproduto(request, subproduto_id):
                     messages.success(request, u"Sucesso! Adicionado %s Sub Produtos %s como Montados" % (movimento.quantidade_movimentada, movimento.subproduto))
                 else:
                     messages.error(request, u"Erro! Somente números positivos")
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
                     
         if request.POST.get('remove-subproduto-montado-btn', None):
-            form_remove_montado = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=0)
+            form_remove_montado = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=0, quantidade_disponivel=subproduto.total_montado)
             if form_remove_montado.is_valid():
                 # registra a alteradacao de produco e altera o valor
                 movimento = form_remove_montado.save(commit=False)
-                if subproduto.total_montado >= movimento.quantidade_movimentada:
-                    # possui mais ou igual ao quer remover
-                    movimento.quantidade_anterior = subproduto.total_montado
-                    movimento.quantidade_nova = int(subproduto.total_montado) - int(movimento.quantidade_movimentada)
-                    subproduto.total_montado = movimento.quantidade_nova
-                    movimento.criado_por = request.user
-                    subproduto.save()
-                    movimento.save()
-                    messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Montados" % (movimento.quantidade_movimentada, movimento.subproduto))
-
-                else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s Montados. Impossível Remover %s" % (subproduto.total_montado, movimento.quantidade_movimentada))
-                    
+                movimento.quantidade_anterior = subproduto.total_montado
+                movimento.quantidade_nova = int(subproduto.total_montado) - int(movimento.quantidade_movimentada)
+                subproduto.total_montado = movimento.quantidade_nova
+                movimento.criado_por = request.user
+                subproduto.save()
+                movimento.save()
+                messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Montados" % (movimento.quantidade_movimentada, movimento.subproduto))
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+            else:
+                messages.warning(request, u"Erro. Este Sub produto possui somente %s Montados. Impossível Remover %s" % (subproduto.total_montado, form_remove_montado.data['quantidade_movimentada']))
+            
         
         # movimento de produtos - em testes
         if request.POST.get('adiciona-subproduto-testes-btn', None):
@@ -1555,26 +1563,24 @@ def ver_subproduto(request, subproduto_id):
                     messages.success(request, u"Sucesso! Adicionado %s Sub Produtos %s como Em Testes" % (movimento.quantidade_movimentada, movimento.subproduto))
                 else:
                     messages.error(request, u"Erro! Somente números positivos")
-                    
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+                
         if request.POST.get('remove-subproduto-testes-btn', None):
-            form_remove_testes = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=1)
+            form_remove_testes = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=1, quantidade_disponivel=subproduto.total_testando)
             if form_remove_testes.is_valid():
                 # registra a alteradacao de produco e altera o valor
                 movimento = form_remove_testes.save(commit=False)
-                if subproduto.total_testando >= movimento.quantidade_movimentada:
-                    # possui mais do que quer remover
-                    movimento.quantidade_anterior = subproduto.total_testando
-                    movimento.quantidade_nova = int(subproduto.total_testando) - int(movimento.quantidade_movimentada)
-                    subproduto.total_testando = movimento.quantidade_nova
-                    movimento.criado_por = request.user
-                    subproduto.save()
-                    movimento.save()
-                    messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Testando" % (movimento.quantidade_movimentada, movimento.subproduto))
-                else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Testando. Impossível remover %s" % (subproduto.total_testando, movimento.quantidade_movimentada))
-                    
-        
-        
+                # possui mais do que quer remover
+                movimento.quantidade_anterior = subproduto.total_testando
+                movimento.quantidade_nova = int(subproduto.total_testando) - int(movimento.quantidade_movimentada)
+                subproduto.total_testando = movimento.quantidade_nova
+                movimento.criado_por = request.user
+                subproduto.save()
+                movimento.save()
+                messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Testando" % (movimento.quantidade_movimentada, movimento.subproduto))
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+            else:
+                messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Testando. Impossível remover %s" % (subproduto.total_testando, form_remove_testes.data['quantidade_movimentada']))
 
         # movimento de produtos - funcional
         if request.POST.get('adiciona-subproduto-funcional-btn', None):
@@ -1593,25 +1599,25 @@ def ver_subproduto(request, subproduto_id):
                     messages.success(request, u"Sucesso! Adicionado %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
                 else:
                     messages.error(request, u"Erro! Somente números positivos")
-                    
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+                
         if request.POST.get('remove-subproduto-funcional-btn', None):
-            form_remove_funcional = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=2)
+            form_remove_funcional = FormMovimentoSubProduto(request.POST, subproduto=subproduto, operacao='remove', situacao=2, quantidade_disponivel=subproduto.total_funcional)
             if form_remove_funcional.is_valid():
                 # registra a alteradacao de produco e altera o valor
                 movimento = form_remove_funcional.save(commit=False)
-                if subproduto.total_funcional >= movimento.quantidade_movimentada:
-                    # possui mais do que quer remover
-                    movimento.quantidade_anterior = subproduto.total_funcional
-                    movimento.quantidade_nova = int(subproduto.total_funcional) - int(movimento.quantidade_movimentada)
-                    subproduto.total_funcional = movimento.quantidade_nova
-                    movimento.criado_por = request.user
-                    subproduto.save()
-                    movimento.save()
-                    messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
-
-                else:
-                    messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais. Impossível Remover %s" % (subproduto.total_funcional, movimento.quantidade_movimentada))
-                    
+                # possui mais do que quer remover
+                movimento.quantidade_anterior = subproduto.total_funcional
+                movimento.quantidade_nova = int(subproduto.total_funcional) - int(movimento.quantidade_movimentada)
+                subproduto.total_funcional = movimento.quantidade_nova
+                movimento.criado_por = request.user
+                subproduto.save()
+                movimento.save()
+                messages.success(request, u"Sucesso! Removido %s Sub Produtos %s como Funcional" % (movimento.quantidade_movimentada, movimento.subproduto))
+                return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
+            else:
+                messages.warning(request, u"Erro. Este Sub produto possui somente %s unidades Funcionais. Impossível Remover %s" % (subproduto.total_funcional, form_remove_funcional.data['quantidade_movimentada']))
+                
 
     # definir o total do somatório de componentes
     total_linha_componentes = linha_componentes_padrao.aggregate(Sum('linha__valor_custo_da_linha'))['linha__valor_custo_da_linha__sum']
@@ -1894,8 +1900,6 @@ class ArquivoAnexoProdutoForm(forms.ModelForm):
         model = DocumentoTecnicoProduto
         fields = 'arquivo', 'nome', 'produto'
     
-    
-
 ## VIEWS
 ##
 
@@ -3119,6 +3123,7 @@ def ordem_de_compra(request):
                 ordem_de_compra = form_adicionar_ordem_de_compra.save()
                 messages.success(request, "Novo Controle de Atividade de Compra criado.")
                 form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
+                return redirect(reverse('producao:ordem_de_compra'))
         if request.POST.get('registrar-atividade', None):
             form_add_atividade = FormAddAtividadeOrdemDeCompra(request.POST, registro=True)
             if form_add_atividade.is_valid():
@@ -3126,12 +3131,14 @@ def ordem_de_compra(request):
                 atividade.data_fechado = datetime.datetime.now()
                 atividade.save()
                 messages.success(request, u"Atividade #%s Registrada ao Controle de Compra #%s" % (atividade, atividade.controle_de_compra))
+                return redirect(reverse('producao:ordem_de_compra'))
+        
         if request.POST.get('agendar-atividade', None):
             form_add_atividade = FormAddAtividadeOrdemDeCompra(request.POST, registro=False)
             if form_add_atividade.is_valid():
                 atividade = form_add_atividade.save()
                 messages.success(request, u"Atividade #%s Agendada ao Controle de Compra #%s" % (atividade, atividade.controle_de_compra))
-        
+                return redirect(reverse('producao:ordem_de_compra'))
             
         if request.POST.get("form-filtrar-ordem-de-compra", None):
             filtro = True
