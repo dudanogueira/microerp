@@ -555,7 +555,10 @@ class NotaFiscal(models.Model):
             self.total_sem_imposto = totais['sem']
             self.total_com_imposto = totais['com']
             if self.tipo == 'i':
-                self.total_da_nota_em_dolar = self.total_sem_imposto / self.cotacao_dolar
+                if self.total_sem_imposto:
+                    self.total_da_nota_em_dolar = self.total_sem_imposto / self.cotacao_dolar
+                else:
+                    self.total_da_nota_em_dolar = 0
             self.save()
             # distribui as taxas extra proporcionalmente
             for item in self.lancamentocomponente_set.all():
