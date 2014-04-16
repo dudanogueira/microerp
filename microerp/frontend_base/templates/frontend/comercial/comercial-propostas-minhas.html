@@ -369,7 +369,7 @@ $("#id_reagenda_data_expiracao").on("change", function(e){
 	    $("#data-expiracao-modal-container").hide();
 })
 
-$("#filtro-designado-validas").on("change", function(e){
+$("#filtro-designado-validas, #filtro-designado-expiradas").on("change", function(e){
 	$(".dono-proposta-valida-group").show();
 	if ($(this).val() == "todos"){
 		
