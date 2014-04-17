@@ -559,10 +559,21 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
 
 
+
+class UsarCartaoCredito(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        super(UsarCartaoCredito, self).__init__(*args, **kwargs)
+        self.fields['data'].widget.attrs['class'] = 'datepicker'
+    
+    data = forms.DateField(initial=datetime.date.today())
+    parcelas = forms.IntegerField()
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=1, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
+    usar_cartao_credito = UsarCartaoCredito()
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
         initial={
             'objeto': proposta.objeto_proposto,
@@ -578,6 +589,36 @@ def editar_proposta_converter(request, proposta_id):
     if proposta.cliente:
         # tratar a proposta do cliente e converter
         if request.POST:
+            if 'usar-cartao' in request.POST:
+                form_cartao = UsarCartaoCredito(request.POST)
+                if form_cartao.is_valid():
+                    data = form_cartao.cleaned_data['data']
+                    parcelas = form_cartao.cleaned_data['parcelas']
+                    form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
+                    total_lancamentos = 0
+                    for form in form_configurar_contrato.forms:
+                        if form not in form_configurar_contrato.deleted_forms:
+                            if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
+                                total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
+                    total_restante = proposta.valor_proposto - total_lancamentos
+                    # nenhum lancamento inicial, será tudo no cartão
+                    cp = request.POST.copy()
+                    form_index_offset = len(form_configurar_contrato.forms)
+                    if total_lancamentos == 0:
+                        cp['configurar_contrato-TOTAL_FORMS'] = parcelas
+                        range_parcelas = range(parcelas)
+                    else:                        
+                        cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ parcelas
+                        range_parcelas = range(parcelas+form_index_offset)[form_index_offset:]
+                    cada_parcela = total_restante / parcelas
+                    for p in range_parcelas:
+                        data = data+datetime.timedelta(days=30)
+                        cp['configurar_contrato-%s-data_cobranca' % p] = data
+                        cp['configurar_contrato-%s-modo_recebido' % p] = 'credito'
+                        cp['configurar_contrato-%s-valor_cobrado' % p] = cada_parcela
+                    form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
+                    configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
+                    messages.info(request, 'Adicionando %s parcelas de %s para o dia %s' % (parcelas, cada_parcela, data))
             if 'adicionar-parcela' in request.POST:
                 messages.info(request, u"Nova Parcela de Lançamento Financeiro a Receber Adicionada!")
                 cp = request.POST.copy()

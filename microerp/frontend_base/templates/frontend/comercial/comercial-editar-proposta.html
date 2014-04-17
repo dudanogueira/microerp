@@ -31,7 +31,7 @@
 		<h4>Orçamentos à partir de Modelos</h4>
 		<form method="POST" class="form form-inline">
 		{% csrf_token %}
-		{{seleciona_modelos_proposta.as_p}}
+		{{seleciona_modelos_proposta.modelo}}
 		<p class="btn-group">
 			<button type="submit" class="btn btn-info" name="adicionar-modelos" value="adicionar"><i class="fa fa-plus"></i> Modelos</button>
 		</p>
@@ -74,10 +74,10 @@
 	</div>
 	<div class="span4">
 		<p class="btn-group">
-			<a href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning"><i class="fa fa-pencil"></i></a>
-			<a href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-			<a href="{% url "comercial:editar_proposta_reajustar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-success"><i class="fa fa-refresh"></i></a>
-			<a href="{% url "comercial:editar_proposta_imprimir_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-info"><i class="fa fa-print"></i></a>
+			<a data-toggle="tooltip" title="Editar" data-placement="top" href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning tooltip-items"><i class="fa fa-pencil"></i></a>
+			<a data-toggle="tooltip" title="Inativar" data-placement="top" href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger tooltip-items"><i class="fa fa-thumbs-down"></i></a>
+			<a data-toggle="tooltip" title="Reajustar" data-placement="top" href="{% url "comercial:editar_proposta_reajustar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-success tooltip-items"><i class="fa fa-refresh"></i></a>
+			<a data-toggle="tooltip" title="Imprimir" data-placement="top"  href="{% url "comercial:editar_proposta_imprimir_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-info tooltip-items"><i class="fa fa-print"></i></a>
 			
 		</p>
 	</div>
@@ -97,7 +97,7 @@
 	</div>
 	<div class="span4">
 		<p class="btn-group">
-			<a href="{% url "comercial:editar_proposta_ativar_orcamento" orcamento_inativo.proposta.id orcamento_inativo.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
+			<a data-toggle="tooltip" title="Reativar" data-placement="top" href="{% url "comercial:editar_proposta_ativar_orcamento" orcamento_inativo.proposta.id orcamento_inativo.id %}" class="btn btn-success tooltip-items"><i class="fa fa-thumbs-up"></i></a>
 		</p>
 	</div>
 </div>

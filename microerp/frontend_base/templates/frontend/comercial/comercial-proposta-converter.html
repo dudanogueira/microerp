@@ -25,7 +25,7 @@
 	</div>
 </div>
 
-<form method="post" class="form form-inline">
+<form method="post" class="form form-inline" id="form-converter" name="form-converter">
 	
 	{% csrf_token %}
 	
@@ -69,10 +69,33 @@
 		{% endfor %}
 	</div>
 	<hr />
-	<p>
+	<div class="btn-group">
 		<button type="submit" class="btn btn-primary" name="adicionar-parcela" value="adicionar"><i class="fa fa-plus"></i> Adicionar Parcela</button>
+		<a type="submit" class="btn btn-info" name="Usar Cartão de Crédito" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Cartão de Crédito</a>
 		<button type="submit" class="btn btn-success" name="converter-contrato" value="converter"><i class="fa fa-arrow-right"></i> Converter em Contrato</button> 
-	</p>
+	</div>
+	
+	
+	<!-- Modal -->
+	<div class="modal fade" id="ModalCredito" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	        <h4 class="modal-title" id="myModalLabel">Usar Cartão de Crédito</h4>
+	      </div>
+	      <div class="modal-body">
+				  {% csrf_token %}
+				  {{usar_cartao_credito.as_p}}
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+			<button form="form-converter" type="submit" class="btn btn-primary" name="usar-cartao" value="usar_cartao">Usar Cartão</button>
+	        
+	      </div>
+	    </div><!-- /.modal-content -->
+	  </div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
 
 
 </form>

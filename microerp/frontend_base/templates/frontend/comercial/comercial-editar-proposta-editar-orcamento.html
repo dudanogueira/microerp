@@ -13,7 +13,16 @@
 	{{form_orcamento.as_p}}
 	{{form.errors}}
 		<hr/>
-	 <a href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> <button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+
+		<div class="btn-group">
+		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+		
+		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-pencil"></i> Atualizar Orçamento</button>
+		
+	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> 
+		
+		</div>
+
 
 	{% for form in form_editar_linhas %}
 	<div class="row-fluid">
@@ -41,9 +50,15 @@
 	</div>
 	<hr />
 	{% endfor %}
-
+		<div class="btn-group">
 		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
-		 <a href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> 
+		
+		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-pencil"></i> Atualizar Orçamento</button>
+		
+	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> 
+		
+		</div>
+		
 	
 	<hr />
 		
@@ -51,7 +66,6 @@
 		Total Geral: <span class="total-geral">R$ {{orcamento.custo_total}}</span><br />
 	</p>
 	
-	<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-pencil"></i> Alterar Orçamento</button>
 </form>
 
 {% endblock %}
