@@ -157,6 +157,7 @@
 		{% regroup propostas_abertas_expiradas by dono as propostas_expiradas_por_cliente %}
 		
 		{% for proposta_list in propostas_expiradas_por_cliente %}
+		<div class="dono-proposta-expirada-group">
 			<p>
 			{% if proposta_list.list.0.cliente %}
 
@@ -240,6 +241,7 @@
 				{% endfor %}
 			</tbody>
 		</table>
+		</div>
 		{% endfor %}
 		
 	</div>
@@ -369,7 +371,7 @@ $("#id_reagenda_data_expiracao").on("change", function(e){
 	    $("#data-expiracao-modal-container").hide();
 })
 
-$("#filtro-designado-validas, #filtro-designado-expiradas").on("change", function(e){
+$("#filtro-designado-validas").on("change", function(e){
 	$(".dono-proposta-valida-group").show();
 	if ($(this).val() == "todos"){
 		
@@ -388,12 +390,17 @@ $("#filtro-designado-validas, #filtro-designado-expiradas").on("change", functio
 });
 
 $("#filtro-designado-expiradas").on("change", function(e){
-
+	$(".dono-proposta-expirada-group").show();
 	if ($(this).val() == "todos"){
 		$(".propostas-expiradas").show();
 	}else{
 		$(".propostas-expiradas").hide();
 		$(".propostas-expiradas-" + $(this).val()).show();
+		$(".dono-proposta-expirada-group").each(function(){
+			if($(this).find("tr:visible.propostas-expiradas").length == 0){
+				$(this).hide();
+			}
+		})
 	}
 			
 });
