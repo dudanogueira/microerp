@@ -601,24 +601,27 @@ def editar_proposta_converter(request, proposta_id):
                             if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
                                 total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
                     total_restante = proposta.valor_proposto - total_lancamentos
-                    # nenhum lancamento inicial, será tudo no cartão
-                    cp = request.POST.copy()
-                    form_index_offset = len(form_configurar_contrato.forms)
-                    if total_lancamentos == 0:
-                        cp['configurar_contrato-TOTAL_FORMS'] = parcelas
-                        range_parcelas = range(parcelas)
-                    else:                        
-                        cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ parcelas
-                        range_parcelas = range(parcelas+form_index_offset)[form_index_offset:]
-                    cada_parcela = total_restante / parcelas
-                    for p in range_parcelas:
-                        data = data+datetime.timedelta(days=30)
-                        cp['configurar_contrato-%s-data_cobranca' % p] = data
-                        cp['configurar_contrato-%s-modo_recebido' % p] = 'credito'
-                        cp['configurar_contrato-%s-valor_cobrado' % p] = cada_parcela
-                    form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
-                    configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
-                    messages.info(request, 'Adicionando %s parcelas de %s para o dia %s' % (parcelas, cada_parcela, data))
+                    if total_restante > 0:
+                        # nenhum lancamento inicial, será tudo no cartão
+                        cp = request.POST.copy()
+                        form_index_offset = len(form_configurar_contrato.forms)
+                        if total_lancamentos == 0:
+                            cp['configurar_contrato-TOTAL_FORMS'] = parcelas
+                            range_parcelas = range(parcelas)
+                        else:                        
+                            cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ parcelas
+                            range_parcelas = range(parcelas+form_index_offset)[form_index_offset:]
+                        cada_parcela = total_restante / parcelas
+                        for p in range_parcelas:
+                            data = data+datetime.timedelta(days=30)
+                            cp['configurar_contrato-%s-data_cobranca' % p] = data
+                            cp['configurar_contrato-%s-modo_recebido' % p] = 'credito'
+                            cp['configurar_contrato-%s-valor_cobrado' % p] = cada_parcela
+                        form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
+                        configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
+                        messages.info(request, 'Adicionando %s parcelas de %s para o dia %s' % (parcelas, cada_parcela, data))
+                    else:
+                        messages.error(request, u"Erro! Não existe mais Valor restante para parcelar no cartão")
             if 'adicionar-parcela' in request.POST:
                 messages.info(request, u"Nova Parcela de Lançamento Financeiro a Receber Adicionada!")
                 cp = request.POST.copy()
