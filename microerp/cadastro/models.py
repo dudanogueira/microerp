@@ -150,7 +150,10 @@ class Cliente(models.Model):
     
     def logradouro_completo(self):
         if self.enderecocliente_set.all():
-            endereco = self.enderecocliente_set.filter(principal=True)[0] or self.enderecocliente_set.all()[0]
+            if self.enderecocliente_set.filter(principal=True):
+                endereco = self.enderecocliente_set.filter(principal=True)[0]
+            else:
+                endereco = self.enderecocliente_set.all()[0]
             string = u"%s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro.cidade.nome, endereco.bairro.cidade.estado, endereco.cep)
         else: 
             string = None

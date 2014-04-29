@@ -14,10 +14,36 @@
 
 {{proposta.texto_descricao_items}}
 
-<form method="POST">
+<form method="POST" id="configurar-form" name="configurar-form">
 {%csrf_token %}
 {{form_configura.as_p}}
-<button type="submit">Gerar Impressão</button>
+
+<div class="btn-group">
+	<button type="submit" class="btn btn-primary"><i class="fa fa-print"></i> Gerar Impressão</button>
+	<button type="submit" class="btn btn-success" data-toggle="modal" data-target="#ModalEnviarPorEmail"><i class="fa fa-envelope"></i> Enviar por Email</button>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="ModalEnviarPorEmail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Enviar por Email</h4>
+      </div>
+      <div class="modal-body">
+			  {% csrf_token %}
+			  {{enviar_proposta_email.as_p}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        <button type="submit" class="btn btn-success" form="configurar-form" name="enviar-por-email" value="enviar-por-email"><i class="fa fa-envelope"></i> Enviar por Email</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 </form>
 
 {% endblock %}

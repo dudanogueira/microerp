@@ -44,7 +44,7 @@ from django.http import HttpResponse
 from cadastro.views import AdicionarEnderecoClienteForm
 
 
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak, Table, TableStyle
 from reportlab.lib.units import inch, mm 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from django.contrib.auth.models import User
@@ -988,9 +988,263 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         'cep_do_proposto', 'cidade_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
         'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'items_nao_incluso', 'forma_pagamento_proposto', 'garantia_proposto',
 
+class OrcamentoPrint:
+    """ 
+    Gera o orcamento impresso.
+    """
+
+    def __init__(self, buffer, pagesize):
+        self.buffer = buffer
+        if pagesize == 'A4':
+            self.pagesize = A4
+        elif pagesize == 'Letter':
+            self.pagesize = letter
+        self.width, self.height = self.pagesize
+    
+    def _header_footer(self, canvas, doc):
+            # Save the state of our canvas so we can draw on it
+            canvas.saveState()
+            styles = getSampleStyleSheet()
+ 
+            # Footer
+            footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-001', styles['Normal'])
+            footer.wrap(doc.width, doc.bottomMargin)
+            footer.drawOn(canvas, 10, 10)
+            # Release the canvas
+            canvas.restoreState()
+    
+    def print_proposta(self, proposta, tipo, perfil=None):
+        
+            buffer = self.buffer
+            doc = SimpleDocTemplate(buffer,
+                                    rightMargin=40,
+                                    leftMargin=40,
+                                    topMargin=10,
+                                    bottomMargin=70,
+                                    pagesize=self.pagesize)
+            
+            # A large collection of style sheets pre-made for us
+            styles = getSampleStyleSheet()
+            styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
+            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
+            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
+            styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
+
+            # Our container for 'Flowable' objects
+            elements = []
+            # logo empresa
+            
+            im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
+            im.hAlign = 'LEFT'
+            
+            # id da proposta
+            id_proposta = Paragraph("Nº PROPOSTA: %s" % str(proposta.id), styles['right'])
+            
+            data=[(im,id_proposta)]
+            table = Table(data, colWidths=270, rowHeights=79)
+            table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'MIDDLE')]))
+            elements.append(table)
+            
+            if tipo == 'servico':
+                # descricao
+                id_desc_p = Paragraph("PROPOSTA COMERCIAL", styles['centered_h1'])
+                elements.append(id_desc_p)
+                # AC
+                contratante_p = Paragraph(u"<b>A/C</b>: %s<br />\
+            	<b>Telefone</b>: %s<br />\
+            	<b>Endereço</b>: %s <br />\
+            	<b>E-mail</b>: %s<br />"% (
+                        proposta.nome_do_proposto, proposta.telefone_contato_proposto, 
+                        proposta.endereco_obra_proposto, proposta.email_proposto
+                    ), styles['justify'])
+                elements.append(contratante_p)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                texto_introducao_proposta = getattr(settings, 'TEXTO_INTRODUCAO_PROPOSTA_COMERCIAL', 'TEXTO INTRODUÇÃO PROPOSTA COMERCIAL')
+                texto_introducao_proposta_p = Paragraph(texto_introducao_proposta, styles['justify'])
+                elements.append(texto_introducao_proposta_p)
+
+                # space
+                elements.append(Spacer(1, 12))
+                
+                # 1 - DO OBJETO
+                do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
+                elements.append(do_objeto_titulo)
+                # objeto texto
+                texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
+                elements.append(texto_objeto_p)
+                # 1.1 - Descrição dos Itens
+                desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
+                elements.append(desc_itens_titulo)
+                # objeto texto
+                texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
+                elements.append(texto_desc_itens_p)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                # 2 - Do valor e formas de pagamento
+                titulo = Paragraph("2 - DOS VALORES", styles['left_h2'])
+                elements.append(titulo)
+                
+                texto = "O valor global da proposta é de R$ <strong>%s</strong>" % proposta.valor_proposto
+                texto_p = Paragraph(texto, styles['justify'])
+                elements.append(texto_p)
+                
+
+                # 2.1 - Descrição dos Itens
+                desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
+                elements.append(desc_itens_titulo)
+                # objeto texto
+                texto = Paragraph(proposta.forma_pagamento_proposto, styles['justify'])
+                elements.append(texto)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                # 3 - VALIDADE
+                titulo = Paragraph("3 - VALIDADE", styles['left_h2'])
+                elements.append(titulo)
+                
+                # texto validade
+                validade = "Essa proposta é válida até %s" % proposta.data_expiracao.strftime("%d/%m/%Y")
+                texto = Paragraph(validade, styles['justify'])
+                elements.append(texto)
+                
+            elif tipo == "projetoeletrico":
+                
+                id_desc_p = Paragraph("Proposta de Elaboração de Projeto Elétrico", styles['centered_h1'])
+                elements.append(id_desc_p)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                contratante_texto = u"<strong>Cliente</strong>: %s, <strong>Documento:</strong> %s, <strong>Localizado à rua</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s" %\
+                    (proposta.nome_do_proposto, proposta.documento_do_proposto, proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto)
+                contratante_texto_p = Paragraph(contratante_texto, styles['justify'])
+                elements.append(contratante_texto_p)
+
+                # space
+                elements.append(Spacer(1, 12))
+                                
+                endereco_texto = u"<strong>Endereço da Obra</strong>: %s, <strong>Representante Legal</strong>: %s, <strong>Telefone(s)</strong>: %s" % \
+                    (proposta.endereco_obra_proposto, proposta.representante_legal_proposto, proposta.telefone_contato_proposto)
+                endereco_texto_p = Paragraph(endereco_texto, styles['justify'])
+                elements.append(endereco_texto_p)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                # Proponente
+                texto_proponente = getattr(settings, 'TEXTO_PROPONENTE_PROJETO_ELETRICO', 'SETTINGS: TEXTO_PROPONENTE_PROJETO_ELETRICO')
+                texto_proponente_p = Paragraph(texto_proponente, styles['justify'])
+                elements.append(texto_proponente_p)
+
+                # space
+                elements.append(Spacer(1, 12))
+                                
+                # 1 - DO OBJETO
+                do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
+                elements.append(do_objeto_titulo)
+                # objeto texto
+                texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
+                elements.append(texto_objeto_p)
+
+                # 1.1 - Descrição dos Itens
+                desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
+                elements.append(desc_itens_titulo)
+                # objeto texto
+                texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
+                elements.append(texto_desc_itens_p)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                # 2.1 - Descrição dos Itens
+                desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
+                elements.append(desc_itens_titulo)
+                # objeto texto
+                texto = Paragraph(proposta.forma_pagamento_proposto, styles['justify'])
+                elements.append(texto)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                # 3 - VALIDADE
+                titulo = Paragraph("3 - VALIDADE", styles['left_h2'])
+                elements.append(titulo)
+                
+                # texto validade
+                validade = "Essa proposta é válida até %s" % proposta.data_expiracao.strftime("%d/%m/%Y")
+                texto = Paragraph(validade, styles['justify'])
+                elements.append(texto)
+                
+            # TEXTO ESQUERDA FINAL
+            if perfil.user.funcionario:
+                responsavel_proposta = perfil.user.funcionario
+            else:
+                responsavel_proposta = proposta.designado
+            
+            texto_esquerda_final = "Atenciosamente,<br /><br /><b>%s</b>" % responsavel_proposta
+            
+            if perfil.user.funcionario.sexo == "m":
+                texto_esquerda_final += "<br />Consultor de Vendas<br />"
+            else:
+                texto_esquerda_final += "<br />Consultora de Vendas<br />"
+            
+            if perfil.telefone_celular and perfil.telefone_fixo:
+                texto_esquerda_final += "%s / %s" % (perfil.telefone_celular, perfil.telefone_fixo)
+
+            elif perfil.telefone_fixo and not perfil.telefone_celular:
+                texto_esquerda_final += "%s" % perfil.telefone_fixo
+            else:
+                texto_esquerda_final += "%s" % perfil.telefone_celular
+			 
+            texto_esquerda_final_p = Paragraph(texto_esquerda_final, styles['left'])
+            
+            # TEXTO DIREITA FINAL
+            
+            texto_direita_final = """__________________________________________________<br />
+            <br />
+			Proposta aceita por %s<br /><br />
+			Em ___________ de _____________________ de %s.""" % (proposta.representante_legal_proposto, datetime.date.today().strftime("%Y"))
+            
+            texto_direita_final_p = Paragraph(texto_direita_final, styles['left'])
+            
+            data=[(texto_esquerda_final_p,texto_direita_final_p)]
+            table = Table(data, colWidths=270, rowHeights=79)
+            
+            elements.append(table)
+                
+            # build pdf
+            doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
+ 
+            # Get the value of the BytesIO buffer and write it to the response.
+            pdf = buffer.getvalue()
+            buffer.close()
+            return pdf
+
+
+class FormEnviarPropostaEmail(forms.Form):
+    
+    email = forms.CharField(help_text="Para mais emails: email1, email2, email3")
+
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    if proposta.cliente and proposta.cliente.email:
+        email_inicial = proposta.cliente.email
+    else:
+        email_inicial = None
+    enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
+    
     # tenta ao máximo auto completar os dados
     # nome
     if not proposta.nome_do_proposto:
@@ -1052,8 +1306,47 @@ def proposta_comercial_imprimir(request, proposta_id):
         form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, modelos=modelos_proposta)
         if form_configura.is_valid():
             proposta = form_configura.save()
+            template_escolhido_chave = form_configura.cleaned_data['modelo']
+            template_escolhido = dicionario_template_propostas[template_escolhido_chave]
+            # com tudo configurado, gera a proposta
+            from io import BytesIO
+            # Create the HttpResponse object with the appropriate PDF headers.
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="proposta-%s.pdf"' % proposta.id
+            buffer = BytesIO()
+            report = OrcamentoPrint(buffer, 'Letter')
+            pdf = report.print_proposta(proposta, tipo=template_escolhido_chave, perfil=request.user.perfilacessocomercial)
+            response.write(pdf)
+            if request.POST.get('enviar-por-email'):
+                f = forms.EmailField()
+                emails = request.POST.get('email').replace(' ', '')
+                dest = []
+                for email in emails.split(','):
+                    try:
+                        email_valido = f.clean(email)
+                        dest.append(email_valido)
+                    except:
+                        pass
+                messages.info(request, "%s" % dest)
+                assunto = "[%s] - Proposta Comercial" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA")
+                conteudo = "Segue anexo a Proposta Comercial"
+                email = EmailMessage(
+                        assunto,
+                        conteudo,
+                        settings.DEFAULT_FROM_EMAIL,
+                        dest,
+                    )
+                email.attach('proposta.pdf', pdf, 'application/pdf')
+                try:
+                    email.send(fail_silently=False)
+                    messages.success(request, u'Sucesso! Proposta enviada com sucesso.')
+                except:
+                    messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para os Gerentes!')
+                
+                return redirect(reverse("comercial:propostas_comerciais_minhas"))
+            else:
+                return response
             # descobre o template
-            template_escolhido = dicionario_template_propostas[form_configura.cleaned_data['modelo']]
             return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
     return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
 
@@ -1354,9 +1647,8 @@ class ContratoPrint:
             else:                
                 if contrato.responsavel_comissionado:
                     texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
-                
                 else:
-                    texto = Paragraph(unicode("TESTEMUNHA 1"), styles['left'])
+                    texto = "TESTEMUNHA 1"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
             elements.append(Spacer(1, 12))
@@ -1369,10 +1661,7 @@ class ContratoPrint:
             if testemunha2:
                 texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
             else:                
-                if contrato.responsavel_comissionado:
-                    texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
-                else:
-                    texto = Paragraph(unicode("TESTEMUNHA 2"), styles['left'])
+                texto = "TESTEMUNHA 2"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
             elements.append(Spacer(1, 12))
@@ -1387,7 +1676,10 @@ class ContratoPrint:
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_gerar_impressao(request, contrato_id):
-    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
+    if request.user.perfilacessocomercial.gerente:
+        contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    else:
+        contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
     from io import BytesIO
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
@@ -1396,13 +1688,14 @@ def contratos_gerar_impressao(request, contrato_id):
     buffer = BytesIO()
 
     report = ContratoPrint(buffer, 'Letter')
-    if request.GET:
-        try:
-            testemunha1 = Funcionario.objects.get(pk=int(request.GET.get('testemunha1')))
-            testemunha2 = Funcionario.objects.get(pk=int(request.GET.get('testemunha2')))
-        except:
-            testemunha1 = None
-            testemunha2 = None
+    if request.GET.get('testemunha1'):
+        testemunha1 = Funcionario.objects.get(pk=int(request.GET.get('testemunha1')))
+    else:
+        testemunha1 = None
+    if request.GET.get('testemunha2'):
+        testemunha2 = Funcionario.objects.get(pk=int(request.GET.get('testemunha2')))
+    else:
+        testemunha2 = None
     pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2)
     response.write(pdf)
     return response
