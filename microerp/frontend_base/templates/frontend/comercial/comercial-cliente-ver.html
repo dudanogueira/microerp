@@ -44,6 +44,10 @@
 		{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
 		
 		<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
+		
+		{% else %}
+		<small>Sem Permissão para Gerar Proposta</small>
+		
 		{% endif %}
 
 		 
@@ -188,7 +192,7 @@
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
 				</td>
 				<td>{{proposta.observacoes}}</td>
