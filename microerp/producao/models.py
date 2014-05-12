@@ -1067,7 +1067,7 @@ class OpcaoLinhaSubProduto(models.Model):
     
     def custo(self):
         valor = 0
-        valor = self.quantidade * self.componente.preco_medio_unitario
+        valor = float(self.quantidade) * float(self.componente.preco_medio_unitario)
         return valor
         
     linha = models.ForeignKey('LinhaSubProduto')
@@ -1688,6 +1688,7 @@ class LinhaLancamentoFalhaDeTeste(models.Model):
 def subproduto_pre_save(signal, instance, sender, **kwargs):
       ''' Atualiza os campos do subproduto
       '''
+      print "recalcula"
       # realiza calculo de custos
       instance.valor_custo_total_linhas = instance.custo_total_linhas()
       instance.valor_custo_total_dos_sub_produtos_agregados = instance.custo_total_dos_sub_produtos_agregados()
@@ -1707,6 +1708,12 @@ def componente_post_save(signal, instance, sender, **kwargs):
         linha.save()
         linha.subproduto.save()
 
+def opcao_post_save(signal, instance, sender, **kwargs):
+    if instance.padrao:
+        instance.linha.valor_custo_da_linha = instance.custo()
+    instance.linha.save()
+    instance.linha.subproduto.save()
 # SIGNALS CONNECTION
 signals.pre_save.connect(subproduto_pre_save, sender=SubProduto)
 signals.post_save.connect(componente_post_save, sender=Componente)
+signals.post_save.connect(opcao_post_save, sender=OpcaoLinhaSubProduto)
