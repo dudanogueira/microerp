@@ -190,10 +190,9 @@
 		</tr>
 	</thead>
 	<tbody>
-
 		{% for linha in propostas_abertas_expiradas_por_criador %}
 		<tr class="">
-			<td class="alert alert-info"><strong>{{linha.criado_por__funcionario__nome}}</strong></td>
+			<td class="alert alert-info"><strong>{{linha.criado_por__nome}}</strong></td>
 			<td>{{linha.id__count}}</td>
 			<td>R$ {{linha.valor_proposto__sum}}</td>
 		</tr>
