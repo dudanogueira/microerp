@@ -1198,6 +1198,10 @@ class OrcamentoPrint:
                 texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
                 elements.append(texto_objeto_p)
 
+                # space
+                elements.append(Spacer(1, 12))
+
+
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
@@ -1369,9 +1373,13 @@ def proposta_comercial_imprimir(request, proposta_id):
             template_escolhido = dicionario_template_propostas[template_escolhido_chave]
             # com tudo configurado, gera a proposta
             from io import BytesIO
+            
+            # nome do arquivo
+            nome_arquivo_gerado = "proposta-%s-%s.pdf" % (proposta.id, template_escolhido_chave)
+            
             # Create the HttpResponse object with the appropriate PDF headers.
             response = HttpResponse(content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="proposta-%s.pdf"' % proposta.id
+            response['Content-Disposition'] = 'attachment; filename="%s"' % nome_arquivo_gerado
             buffer = BytesIO()
             report = OrcamentoPrint(buffer, 'Letter')
             pdf = report.print_proposta(proposta, tipo=template_escolhido_chave, perfil=request.user.perfilacessocomercial)
@@ -1395,7 +1403,7 @@ def proposta_comercial_imprimir(request, proposta_id):
                         settings.DEFAULT_FROM_EMAIL,
                         dest,
                     )
-                email.attach('proposta.pdf', pdf, 'application/pdf')
+                email.attach(nome_arquivo_gerado, pdf, 'application/pdf')
                 try:
                     email.send(fail_silently=False)
                     messages.success(request, u'Sucesso! Proposta enviada com sucesso.')
