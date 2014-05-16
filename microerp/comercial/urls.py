@@ -50,6 +50,7 @@ urlpatterns = patterns('',
     # relatorios
     url(r'^relatorios/$', 'comercial.views.relatorios_comercial', name='relatorios_comercial'),
     url(r'^relatorios/probabilidade/$', 'comercial.views.relatorios_comercial_probabilidade', name='relatorios_comercial_probabilidade'),
+    url(r'^relatorios/propostas/declinadas/$', 'comercial.views.relatorios_comercial_propostas_declinadas', name='relatorios_comercial_propostas_declinadas'),
     # contratos
     url(r'^contrato/analises/$', 'comercial.views.analise_de_contratos', name='analise_de_contratos'),
     url(r'^contrato/(?P<contrato_id>[0-9]+)/analisar/$', 'comercial.views.analise_de_contratos_analisar', name='analise_de_contratos_analisar'),

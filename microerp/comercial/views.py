@@ -2105,7 +2105,36 @@ def relatorios_comercial_probabilidade(request):
     agrupador = request.GET.get('agrupador', 'tipo')
     propostas = PropostaComercial.objects.filter(probabilidade__gte=probabilidade, status="aberta")
     return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
-    
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def relatorios_comercial_propostas_declinadas(request):
+    agrupador = request.GET.get('agrupador', 'tipo')
+    erro = False
+    try:
+        de = request.GET.get('de', None)
+        if de:
+            de = datetime.datetime.strptime(de, '%d/%m/%Y')
+        ate = request.GET.get('ate', None)
+        if ate:
+            ate = datetime.datetime.strptime(ate, '%d/%m/%Y')
+        if de and ate and ate < de:
+            raise
+    except:
+        messages.error(request, "Intervalo de datas errado")
+        erro = True
+    if not erro:
+        if de and ate:
+            propostas = PropostaComercial.objects.filter(definido_perdido_em__range=(de,ate), status__in=['perdida', 'perdida_aguardando'])
+        if de and not ate:
+            de = datetime.datetime.combine(de, datetime.time(00, 00))
+            propostas = PropostaComercial.objects.filter(definido_perdido_em__gte=de, status__in=['perdida', 'perdida_aguardando'])
+        if not de and ate:
+            ate = datetime.datetime.combine(ate, datetime.time(23, 59))
+            propostas = PropostaComercial.objects.filter(definido_perdido_em__lte=ate, status__in=['perdida', 'perdida_aguardando'])
+        
+            
+    return render_to_response('frontend/comercial/comercial-relatorios-propostas-declinadas.html', locals(), context_instance=RequestContext(request),)
+
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos(request):
