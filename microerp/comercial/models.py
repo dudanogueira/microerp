@@ -137,6 +137,7 @@ class PropostaComercial(models.Model):
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
+    tipo = models.ForeignKey('TipoDeProposta', blank=True, null=True)
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True, default=50)
     probabilidade_inicial = models.IntegerField("Probabilidade Inicial (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
@@ -172,6 +173,13 @@ class PropostaComercial(models.Model):
     criado_por = models.ForeignKey('rh.Funcionario', related_name="proposta_adicionada_set",  blank=True, null=True)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class TipoDeProposta(models.Model):
+    
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
 
 class FollowUpDePropostaComercial(models.Model):
     

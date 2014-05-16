@@ -36,7 +36,9 @@ from comercial.models import SubGrupoIndicadorDeProdutoProposto
 from comercial.models import FechamentoDeComissao
 from comercial.models import LancamentoDeFechamentoComissao
 from comercial.models import TabelaDeComissao
+from comercial.models import TipoDeProposta
 from financeiro.models import LancamentoFinanceiroReceber
+
 
 
 # ADMIN ACTIONS
@@ -111,3 +113,4 @@ admin.site.register(SubGrupoIndicadorDeProdutoProposto)
 admin.site.register(FechamentoDeComissao, FechamentoDeComissaoAdmin)
 admin.site.register(LancamentoDeFechamentoComissao, LancamentoDeFechamentoComissaoAdmin)
 admin.site.register(TabelaDeComissao, TabelaDeComissaoAdmin)
+admin.site.register(TipoDeProposta)

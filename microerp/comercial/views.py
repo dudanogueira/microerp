@@ -94,7 +94,7 @@ class AdicionarPropostaForm(forms.ModelForm):
     
     class Meta:
         model = PropostaComercial
-        fields = 'probabilidade', 'valor_proposto',
+        fields = 'probabilidade', 'valor_proposto', 'tipo'
         localized_fields = 'valor_proposto',
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
@@ -355,7 +355,7 @@ class FormEditarProposta(forms.ModelForm):
     
     class Meta:
         model = PropostaComercial
-        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto'
+        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
@@ -2090,6 +2090,22 @@ def indicadores_do_comercial(request):
     
     
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def relatorios_comercial(request):
+    return render_to_response('frontend/comercial/comercial-relatorios.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def relatorios_comercial_probabilidade(request):
+    try:
+        probabilidade = int(request.GET.get('probabilidade'))
+    except:
+        probabilidade = 70
+    agrupador = request.GET.get('agrupador', 'tipo')
+    propostas = PropostaComercial.objects.filter(probabilidade__gte=probabilidade, status="aberta")
+    return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
+    
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos(request):

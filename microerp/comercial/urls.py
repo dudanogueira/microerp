@@ -47,6 +47,9 @@ urlpatterns = patterns('',
     url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/ajustar/$', 'comercial.views.orcamentos_modelo_reajustar', name='orcamentos_modelo_reajustar'),
     # indicadores
     url(r'^indicadores/$', 'comercial.views.indicadores_do_comercial', name='indicadores_do_comercial'),
+    # relatorios
+    url(r'^relatorios/$', 'comercial.views.relatorios_comercial', name='relatorios_comercial'),
+    url(r'^relatorios/probabilidade/$', 'comercial.views.relatorios_comercial_probabilidade', name='relatorios_comercial_probabilidade'),
     # contratos
     url(r'^contrato/analises/$', 'comercial.views.analise_de_contratos', name='analise_de_contratos'),
     url(r'^contrato/(?P<contrato_id>[0-9]+)/analisar/$', 'comercial.views.analise_de_contratos_analisar', name='analise_de_contratos_analisar'),
