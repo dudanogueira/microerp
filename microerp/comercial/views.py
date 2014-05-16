@@ -94,7 +94,7 @@ class AdicionarPropostaForm(forms.ModelForm):
     
     class Meta:
         model = PropostaComercial
-        fields = 'probabilidade', 'valor_proposto', 'observacoes'
+        fields = 'probabilidade', 'valor_proposto',
         localized_fields = 'valor_proposto',
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
@@ -142,6 +142,10 @@ class AdicionarCliente(forms.ModelForm):
                 cpf = BRCPFField().clean(cpf)
             except:
                 raise ValidationError(u"Número do CPF Inválido!")
+            # checa se já existe CPF no banco de dados
+            cliente = Cliente.objects.filter(cpf=cpf)
+            if cliente:
+                raise ValidationError(u"Já existe um cliente com este CPF!")
         return cpf
             
         
@@ -155,6 +159,12 @@ class AdicionarCliente(forms.ModelForm):
                 cnpj = BRCNPJField().clean(cnpj)
             except:
                 raise ValidationError(u"Número do CNPJ Inválido!")
+            
+            # checa se já existe CPF no banco de dados
+            cliente = Cliente.objects.filter(cnpj=cnpj)
+            if cliente:
+                raise ValidationError(u"Já existe um cliente com este CNPJ!")
+            
         return cnpj
     
     def __init__(self, *args, **kwargs):
@@ -219,10 +229,14 @@ def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
 def home(request):
     # widget cliente
     #ultimos followups
-    ultimos_followups = FollowUpDePropostaComercial.objects.filter(
-        Q(proposta__designado=request.user.funcionario) | Q(proposta__cliente__designado=request.user.funcionario) | Q(proposta__precliente__designado=request.user.funcionario) | \
-        Q(proposta__designado=None) | (Q(proposta__cliente__designado=None) & Q(proposta__precliente__designado=None))
-    )[0:10]
+    if not request.user.perfilacessocomercial.gerente:
+        ultimos_followups = FollowUpDePropostaComercial.objects.filter(
+            Q(proposta__designado=request.user.funcionario) | Q(proposta__cliente__designado=request.user.funcionario) | Q(proposta__precliente__designado=request.user.funcionario) | \
+            Q(proposta__designado=None) | (Q(proposta__cliente__designado=None) & Q(proposta__precliente__designado=None))
+        )[0:10]
+    else:
+        ultimos_followups = FollowUpDePropostaComercial.objects.all()[0:10]
+        
     preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, designado=request.user.funcionario, sem_interesse=False).count()
     requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False, cliente__designado=request.user.funcionario).count()
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
@@ -341,7 +355,7 @@ class FormEditarProposta(forms.ModelForm):
     
     class Meta:
         model = PropostaComercial
-        fields = 'valor_proposto', 'observacoes', 'nome_do_proposto', 'documento_do_proposto'
+        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
@@ -1044,7 +1058,12 @@ class OrcamentoPrint:
             # id da proposta
             id_proposta = Paragraph("Nº PROPOSTA: %s" % str(proposta.id), styles['right'])
             
-            data=[(im,id_proposta)]
+            imprime_logo = getattr(settings, 'IMPRIME_LOGO_PROPOSTA', True)
+            if imprime_logo:
+                data=[(im,id_proposta)]
+            else:
+                data=[('',id_proposta)]
+
             table = Table(data, colWidths=270, rowHeights=79)
             table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'MIDDLE')]))
             elements.append(table)
@@ -1079,12 +1098,31 @@ class OrcamentoPrint:
                 # objeto texto
                 texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
                 elements.append(texto_objeto_p)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
+                
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
+                
+                # 1.2 - Descrição dos Itens Não Inclusos
+                desc_itens_titulo = Paragraph("1.2 - ITENS NÃO INCLUSOS", styles['left_h2'])
+                elements.append(desc_itens_titulo)
+                # objeto texto
+                texto_desc_itens_p = Paragraph(proposta.items_nao_incluso.replace('\n', '<br />'), styles['justify'])
+                elements.append(texto_desc_itens_p)
+                
+                
+                
                 
                 # space
                 elements.append(Spacer(1, 12))
@@ -1097,6 +1135,10 @@ class OrcamentoPrint:
                 texto_p = Paragraph(texto, styles['justify'])
                 elements.append(texto_p)
                 
+
+                # space
+                elements.append(Spacer(1, 12))
+
 
                 # 2.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
@@ -1191,7 +1233,17 @@ class OrcamentoPrint:
             else:
                 responsavel_proposta = proposta.designado
             
-            texto_esquerda_final = "Atenciosamente,<br /><br /><b>%s</b>" % responsavel_proposta
+            
+            
+            if perfil and perfil.imagem_assinatura:
+                # space
+                elements.append(Spacer(1, 12))
+                
+                im = Image(perfil.imagem_assinatura.path, width=2*inch,height=1*inch,kind='proportional')
+                im.hAlign = 'LEFT'
+                elements.append(im)
+            
+            texto_esquerda_final = "Atenciosamente,<br /><b>%s</b>" % responsavel_proposta
             
             if perfil.user.funcionario.sexo == "m":
                 texto_esquerda_final += "<br />Consultor de Vendas<br />"
@@ -1205,7 +1257,10 @@ class OrcamentoPrint:
                 texto_esquerda_final += "%s" % perfil.telefone_fixo
             else:
                 texto_esquerda_final += "%s" % perfil.telefone_celular
-			 
+            
+            # space
+            elements.append(Spacer(1, 12))
+			
             texto_esquerda_final_p = Paragraph(texto_esquerda_final, styles['left'])
             
             # TEXTO DIREITA FINAL
@@ -1220,7 +1275,11 @@ class OrcamentoPrint:
             data=[(texto_esquerda_final_p,texto_direita_final_p)]
             table = Table(data, colWidths=270, rowHeights=79)
             
-            elements.append(table)
+            elements.append(texto_esquerda_final_p)
+            # space
+            elements.append(Spacer(1, 20))
+            
+            elements.append(texto_direita_final_p)
                 
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
@@ -1449,10 +1508,19 @@ class ContratoPrint:
             
         
             buffer = self.buffer
+            
+            imprime_logo = getattr(settings, 'IMPRIME_LOGO_CONTRATO', True)
+            
+            if imprime_logo:
+                margem_topo = 10
+            else:
+                margem_topo = 70
+                
+            
             doc = SimpleDocTemplate(buffer,
                                     rightMargin=40,
                                     leftMargin=40,
-                                    topMargin=10,
+                                    topMargin=margem_topo,
                                     bottomMargin=70,
                                     pagesize=self.pagesize)
             
@@ -1463,7 +1531,7 @@ class ContratoPrint:
             styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
             styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=15, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
-            styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
+            styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT, fontSize=10))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
             
@@ -1473,18 +1541,28 @@ class ContratoPrint:
             # logo empresa
             im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
             im.hAlign = 'LEFT'
-            elements.append(im)
             
             # id do contrato
             id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
-            elements.append(id_contrato)
+            
+            if imprime_logo:
+                data=[(im,id_contrato)]
+                table = Table(data, colWidths=270, rowHeights=79)
+            else:
+                data=[('',id_contrato)]
+                table = Table(data, colWidths=270, rowHeights=20)
+
+            table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'BOTTOM')]))
+            elements.append(table)
+            
+
             
             # descricao
             id_contrato_p = Paragraph("CONTRATO DE PRESTAÇÃO DE SERVIÇOS.", styles['centered_h1'])
             elements.append(id_contrato_p)
             
             # space
-            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 20))
             
             # CONTRATANTE DESC
             contratante_text = contrato.sugerir_texto_contratante()
@@ -1566,7 +1644,6 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             
                 
-            elements.append(PageBreak())
             
             #
             # CLÁUSULA 4ª – DOS PRAZOS
@@ -1594,12 +1671,26 @@ class ContratoPrint:
             rescisao_p = Paragraph(str(rescisao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
             
+            
             elements.append(Spacer(1, 12))
             #
             #
-            #  CLÁUSULA 6ª – DO FORO
+            #  CLÁUSULA 6ª – DA GARANTIA
             #
-            clausula_6_p = Paragraph("CLÁUSULA 6ª – DO FORO", styles['left_h1'])
+            clausula_6_p = Paragraph("CLÁUSULA 6ª – DA GARANTIA", styles['left_h1'])
+            elements.append(clausula_6_p)
+            elements.append(Spacer(1, 12))
+            # space
+            # 
+            garantia_p = Paragraph(str(contrato.garantia).replace("\n", "<br />"), styles['justify'])
+            elements.append(garantia_p)
+            elements.append(Spacer(1, 12))
+            
+            #
+            #
+            #  CLÁUSULA 7ª – DO FORO
+            #
+            clausula_6_p = Paragraph("CLÁUSULA 7ª – DO FORO", styles['left_h1'])
             elements.append(clausula_6_p)
             # space
             # 
@@ -1609,37 +1700,37 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             
             ## cidade do contrato
-            elements.append(Spacer(1, 30))
+            elements.append(Spacer(1, 12))
             import locale
             locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
             cidade = getattr(settings, "CIDADE_CONTRATO", "Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
             cidade_texto = "%s, %s" % (cidade, datetime.date.today().strftime("%d de %B de %Y"))
             cidade_p = Paragraph(str(cidade_texto).replace("\n", "<br />"), styles['right'])
             elements.append(cidade_p)
-            elements.append(Spacer(1, 12))
+            
+            
+            espaco_assinaturas = 30
             
             # REPRESENTANTE LEGAL EMPRESA
             #
-            elements.append(Spacer(1, 50))
+            elements.append(Spacer(1, espaco_assinaturas))
             representante_linha = Paragraph(str("_"*500), styles['justify'])
             elements.append(representante_linha)
             representante_empresa = getattr(settings, "REPRESENTATE_LEGAL_EMPRESA", "Settings: REPRESENTATE_LEGAL_EMPRESA - Texto descrevendo Representante Legal da Empresa")    
             representante_p = Paragraph(str(representante_empresa), styles['left'])
             elements.append(representante_p)
-            elements.append(Spacer(1, 12))
             
             # CLIENTE / PROPOSTO LEGAL
             #
-            elements.append(Spacer(1, 50))
+            elements.append(Spacer(1, espaco_assinaturas))
             cliente_linha = Paragraph(str("_"*500), styles['justify'])
             elements.append(cliente_linha)
             representante_p = Paragraph(unicode(contrato.sugerir_texto_contratante()), styles['left'])
             elements.append(representante_p)
-            elements.append(Spacer(1, 12))
             
             # TESTEMUNHA 1
             #
-            elements.append(Spacer(1, 50))
+            elements.append(Spacer(1, espaco_assinaturas))
             testemunha_linha = Paragraph(str("_"*500), styles['justify'])
             elements.append(testemunha_linha)
             if testemunha1:
@@ -1651,11 +1742,10 @@ class ContratoPrint:
                     texto = "TESTEMUNHA 1"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
-            elements.append(Spacer(1, 12))
             
             # TESTEMUNHA 2
             #
-            elements.append(Spacer(1, 50))
+            elements.append(Spacer(1, espaco_assinaturas))
             testemunha_linha = Paragraph(str("_"*500), styles['justify'])
             elements.append(testemunha_linha)
             if testemunha2:
@@ -1664,7 +1754,6 @@ class ContratoPrint:
                 texto = "TESTEMUNHA 2"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
-            elements.append(Spacer(1, 12))
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
  

@@ -19,7 +19,7 @@ __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
-import datetime
+import datetime, os
 
 from django.db import models
 from django.conf import settings
@@ -142,7 +142,6 @@ class PropostaComercial(models.Model):
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
-    observacoes = models.TextField("Observações", blank=False, null=False)
     designado = models.ForeignKey("rh.Funcionario", blank=True, null=True)
     # dados para impressao
     nome_do_proposto = models.CharField(blank=True, max_length=100)
@@ -201,11 +200,18 @@ class PerfilAcessoComercial(models.Model):
     class Meta:
         verbose_name = u"Perfil de Acesso ao Comercial"
         verbose_name_plural = u"Perfis de Acesso ao Comercial"
+        
+        
+    def assinatura_local_imagem(instance, filename):
+        return os.path.join(
+            'funcionarios/', str(instance.user.funcionario.uuid), 'assinaturas/', filename
+          )
     
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
     telefone_celular = models.CharField(blank=True, max_length=100)
     telefone_fixo = models.CharField(blank=True, max_length=100)
+    imagem_assinatura = models.ImageField(upload_to=assinatura_local_imagem, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")

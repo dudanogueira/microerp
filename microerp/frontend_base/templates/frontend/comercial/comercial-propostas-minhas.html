@@ -63,7 +63,6 @@
 						<th>Valor</th>
 						<th>Probabilidade</th>
 						<th>Follow Up</th>
-						<th>Descrição</th>
 						<th>Ações</th>
 					</tr>
 			</thead>
@@ -118,8 +117,7 @@
 					
 
 				</td>
-				<td><p class="popover_item" data-toggle="popover" data-title="<b>Observações</b>" data-content="{{proposta.observacoes}}" data-html="True">{{proposta.observacoes|truncatewords:5}}</td>
-						<td>
+				<td>
 							<div class="btn-group">
 	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success tooltip-items"
 			data-placement="top" data-toggle="tooltip" title="Converter Proposta em Contrato"
@@ -190,7 +188,6 @@
 						<th>Valor</th>
 						<th>Probabilidade</th>
 						<th>Follow Up</th>
-						<th>Descrição</th>
 						<th>Ações</th>
 					</tr>
 			</thead>
@@ -238,7 +235,6 @@
 					<small><i>solicite ao gerente</i></small>
 					{% endif %}
 				</td>
-				<td>{{proposta.observacoes}}</td>
 				<td>
 					<div class="btn-group">
 					{% if request.user.perfilacessocomercial.gerente %}

@@ -63,7 +63,7 @@ class Command(BaseCommand):
                             # abre o arquivp
                             print u"ARQUIVO: %s" % f
                             workbook = xlrd.open_workbook(f)
-                            worksheet = workbook.sheet_by_name('Plan1')
+                            worksheet = workbook.sheet_by_index(0)
                             i = 0
                             for curr_row in range(worksheet.nrows):
                                 if i == 0:
