@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load soma_valor_propostas_lista %}
 
 <title>{%block title %}{{block.super}} - Comercial - Relatórios{% endblock %}</title>
 
@@ -29,7 +30,7 @@
 
 
 {% for lista in propostas_agrupadas %}
-	<h2>{% if lista.grouper == None %}Não Definido{% else %}{{lista.grouper}}{% endif %}</h2>
+	<h2>{% if lista.grouper == None %}Não Definido{% else %}{{lista.grouper}}{% endif %} - Total: {{lista.list|total_propostas}}</h2>
 
 	{% for proposta in lista.list %}
 	<div class="well well-small">
@@ -42,7 +43,7 @@
 
 		<!-- Button trigger modal -->
 		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalFollowUps-{{proposta.id}}">
-		  Visualizar Follow Ups
+		  Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
 		</button>
 
 		<!-- Modal -->
