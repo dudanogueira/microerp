@@ -2131,16 +2131,21 @@ def relatorios_comercial_propostas_declinadas(request):
     if not erro:
         if de and ate:
             propostas = PropostaComercial.objects.filter(definido_perdido_em__range=(de,ate), status__in=['perdida', 'perdida_aguardando'])
-        if de and not ate:
+        elif de and not ate:
             de = datetime.datetime.combine(de, datetime.time(00, 00))
             propostas = PropostaComercial.objects.filter(definido_perdido_em__gte=de, status__in=['perdida', 'perdida_aguardando'])
-        if not de and ate:
+        elif not de and ate:
             ate = datetime.datetime.combine(ate, datetime.time(23, 59))
             propostas = PropostaComercial.objects.filter(definido_perdido_em__lte=ate, status__in=['perdida', 'perdida_aguardando'])
+        else:
+            propostas = PropostaComercial.objects.filter(status__in=['perdida', 'perdida_aguardando'])
+        
         if agrupador == "tipo":
             propostas = propostas.order_by('tipo')
         elif agrupador == "funcionario":
             propostas = propostas.order_by('designado')
+        
+    
             
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-declinadas.html', locals(), context_instance=RequestContext(request),)
 
