@@ -2112,6 +2112,27 @@ def relatorios_comercial_probabilidade(request):
     
     return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def relatorios_comercial_propostas_e_followups(request):
+    try:
+        followup_n = int(request.GET.get('followup_n'))
+    except:
+        followup_n = 0
+
+    agrupador = request.GET.get('agrupador', 'tipo')
+    propostas = PropostaComercial.objects.annotate(num_fup=Count('followupdepropostacomercial')).filter(num_fup=followup_n)
+    
+    if agrupador == "tipo":
+        propostas = propostas.order_by('tipo')
+    elif agrupador == "funcionario":
+        propostas = propostas.order_by('designado')
+    
+    
+    return render_to_response('frontend/comercial/comercial-relatorios-propostas-followups.html', locals(), context_instance=RequestContext(request),)
+
+
+
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_declinadas(request):
     agrupador = request.GET.get('agrupador', 'tipo')
