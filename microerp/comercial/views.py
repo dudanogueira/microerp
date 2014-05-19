@@ -2104,6 +2104,12 @@ def relatorios_comercial_probabilidade(request):
         probabilidade = 70
     agrupador = request.GET.get('agrupador', 'tipo')
     propostas = PropostaComercial.objects.filter(probabilidade__gte=probabilidade, status="aberta")
+
+    if agrupador == "tipo":
+        propostas = propostas.order_by('tipo')
+    elif agrupador == "funcionario":
+        propostas = propostas.order_by('designado')
+    
     return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -2131,7 +2137,10 @@ def relatorios_comercial_propostas_declinadas(request):
         if not de and ate:
             ate = datetime.datetime.combine(ate, datetime.time(23, 59))
             propostas = PropostaComercial.objects.filter(definido_perdido_em__lte=ate, status__in=['perdida', 'perdida_aguardando'])
-        
+        if agrupador == "tipo":
+            propostas = propostas.order_by('tipo')
+        elif agrupador == "funcionario":
+            propostas = propostas.order_by('designado')
             
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-declinadas.html', locals(), context_instance=RequestContext(request),)
 
