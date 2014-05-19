@@ -1677,7 +1677,7 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             # 
             rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
-            rescisao_p = Paragraph(unicode(rescisao_texto).replace("\n", "<br />"), styles['justify'])
+            rescisao_p = Paragraph(str(rescisao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
             
             
