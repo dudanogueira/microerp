@@ -1677,7 +1677,7 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             # 
             rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
-            rescisao_p = Paragraph(str(rescisao_texto).replace("\n", "<br />"), styles['justify'])
+            rescisao_p = Paragraph(unicode(rescisao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
             
             
@@ -1686,12 +1686,12 @@ class ContratoPrint:
             #
             #  CLÁUSULA 6ª – DA GARANTIA
             #
-            clausula_6_p = Paragraph("CLÁUSULA 6ª – DA GARANTIA", styles['left_h1'])
+            clausula_6_p = Paragraph(u"CLÁUSULA 6ª – DA GARANTIA", styles['left_h1'])
             elements.append(clausula_6_p)
             elements.append(Spacer(1, 12))
             # space
             # 
-            garantia_p = Paragraph(str(contrato.garantia).replace("\n", "<br />"), styles['justify'])
+            garantia_p = Paragraph(unicode(contrato.garantia).replace("\n", "<br />"), styles['justify'])
             elements.append(garantia_p)
             elements.append(Spacer(1, 12))
             
@@ -1699,7 +1699,7 @@ class ContratoPrint:
             #
             #  CLÁUSULA 7ª – DO FORO
             #
-            clausula_6_p = Paragraph("CLÁUSULA 7ª – DO FORO", styles['left_h1'])
+            clausula_6_p = Paragraph(u"CLÁUSULA 7ª – DO FORO", styles['left_h1'])
             elements.append(clausula_6_p)
             # space
             # 
