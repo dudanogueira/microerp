@@ -204,9 +204,8 @@
 								{# MENU DO GERENTE#}
 								
 						        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
-								{% if request.user.perfilacessocomercial.gerente %}
-							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-								{% endif %}
+
+						        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 									
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 									

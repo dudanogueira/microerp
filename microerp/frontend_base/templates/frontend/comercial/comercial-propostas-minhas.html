@@ -109,14 +109,12 @@
 						{{proposta.followupdepropostacomercial_set.count}}
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
-					
+
 					<!-- Button to trigger modal de follow up -->
 					
 					<!-- Button to trigger modal de follow up -->
 					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
-					
-
 				</td>
 				<td>
 							<div class="btn-group">
@@ -142,7 +140,7 @@
 		</div>
 		{% endfor %}
 	</div>
-	
+
 	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
 
 		{% if request.user.perfilacessocomercial.gerente %}
@@ -227,12 +225,9 @@
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
 
-					{% if request.user.perfilacessocomercial.gerente %}
+
 					<!-- Button to trigger modal de follow up -->
 					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
-					{% else %}
-					<small><i>solicite ao gerente</i></small>
-					{% endif %}
 				</td>
 				<td>
 					<div class="btn-group">

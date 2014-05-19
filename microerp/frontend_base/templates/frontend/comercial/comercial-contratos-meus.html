@@ -8,26 +8,168 @@
 
 {# PARA FUNCIONARIOS NORMAIS #}
 
+
 {% if not request.user.perfilacessocomercial.gerente %}
 
-<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
-{% regroup meus_contratos by get_status_display as meus_contratos_por_status %}
-{% for lista in meus_contratos_por_status %}
-<h4>{{lista.grouper}}</h4>
-<ul>
-{% for contrato in lista.list %}
-	{% if contrato.status == "invalido" %}
-		<li> 
-		<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}">{{contrato}}</a>
-	</li>
-	{% else %}
-		{% if contrato.status == "assinatura" %}
-		<li> 
-			{{contrato}}
-			<div class='btn-group'><!-- Button to trigger modal -->
+<div id="funcionarios">
+	
+	<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
+	{% regroup meus_contratos by get_status_display as meus_contratos_por_status %}
+	{% for lista in meus_contratos_por_status %}
+	<h4>{{lista.grouper}}</h4>
+	<ul>
+	{% for contrato in lista.list %}
+		{% if contrato.status == "invalido" %}
+			<li> 
+			<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}">{{contrato}}</a>
+		</li>
+		{% else %}
+			{% if contrato.status == "assinatura" %}
+			<li> 
+				{{contrato}}
+				<div class='btn-group'><!-- Button to trigger modal -->
 					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-print"></i> Imprimir</a><a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
-			</p>
+				</div>
 					
+				<!-- Modal -->
+				<div id="modal-configurar-impressao-contrato-{{contrato.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+						<h3 id="myModalLabel">Configurar Impressão do Contrato {{contrato.id}}</h3>
+					</div>
+					<div class="modal-body">
+						<form class="form" id="form-configura-impressao-contrato-{{contrato.id}}" method="get" action="{% url "comercial:contratos_gerar_impressao" contrato.id %}">
+							{{contrato.form_configurar_impressao_contrato}}
+						</form>
+
+					</div>
+					<div class="modal-footer">
+						<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+						<button class="btn btn-primary" type="submit" form="form-configura-impressao-contrato-{{contrato.id}}"><i class="fa fa-print"></i> imprimir</button>
+					</div>
+				</div>
+					
+					
+			</li>
+			{% else %}
+			<li> 
+				{{contrato}}
+				{% if contrato.status == "emaberto" %}
+					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" classrole="button" class="btn btn-success" data-toggle="modal" ><i class="fa fa-print"></i> Imprimir</a>
+					<!-- Modal -->
+					<div id="modal-configurar-impressao-contrato-{{contrato.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+							<h3 id="myModalLabel">Configurar Impressão do Contrato {{contrato.id}}</h3>
+						</div>
+						<div class="modal-body">
+							<form class="form" id="form-configura-impressao-contrato-{{contrato.id}}" method="get" action="{% url "comercial:contratos_gerar_impressao" contrato.id %}">
+								{{contrato.form_configurar_impressao_contrato}}
+							</form>
+
+						</div>
+						<div class="modal-footer">
+							<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+							<button class="btn btn-primary" type="submit" form="form-configura-impressao-contrato-{{contrato.id}}"><i class="fa fa-print"></i> imprimir</button>
+						</div>
+					</div>
+					
+				{% endif %}
+				
+				
+			</li>
+			{% endif %}
+		{% endif %}
+	{% endfor %}
+	</ul>
+	{% endfor %}
+</div>
+
+{% else %}
+
+{# PARA FUNCIONARIOS GERENTES #}
+
+<div id="gerentes">
+	
+	<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
+	{% regroup meus_contratos by responsavel as meus_contratos_por_responsavel %}
+	{% for lista in meus_contratos_por_responsavel %}
+		<h4>{{lista.grouper}}</h4>
+
+		{% for contrato in lista.list %}
+			<div class="well well-small"> 
+			<div class="row-fluid">
+				<div class="span2">
+					<h4 class="alert alert-info"># {{contrato.id}}</h4>
+					<p>
+					{% if contrato.status == "invalido" %}
+
+						<span class="badge badge-important">{{contrato.get_status_display}}</span>
+					{% else %}
+				
+						{% if contrato.status == "emaberto" %}
+							<span class="badge badge-important">Em Aberto</span>
+							<small>Aguardando Financeiro</small>
+						{% endif %}
+					
+						{% if contrato.status == "emanalise" %}
+							<span class="badge badge-default">Em Análise</span>
+						{% endif %}
+				
+				
+						{% if contrato.status == "assinatura" %}
+							<span class="badge badge-success">Aguardando Assinatura</span>
+						{% endif %}
+					
+						{% if contrato.status == "lancado" %}
+							<span class="badge badge-info">{{contrato.get_status_display}}</span>
+
+							{% if contrato.status_execucao == "naoinciiado" %}
+								<span class="badge badge-info">{{contrato.get_status_execucao_display}}</span> 
+							{% endif %}
+							{% if contrato.status_execucao == "emandamento" %}
+								<span class="badge badge-success">{{contrato.get_status_execucao_display}}</span> 
+							{% endif %}
+						
+							{% if contrato.status_execucao == "pendente" %}
+								<span class="badge badge-default">{{contrato.get_status_execucao_display}}</span> 
+							{% endif %}
+						
+						
+						{% endif %}
+					{% endif %}
+					</p>
+				
+					<div class="btn-group">
+						{% if contrato.status == "invalido" %}
+						<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}" class="btn btn-danger"><i class="fa fa-refresh"></i> Revalidar</a>
+						{% endif %}
+					
+						{% if contrato.status == "assinatura" %}
+						<a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success"><i class="fa fa-check"></i> Assinado!</a>
+					
+						{% if request.user.perfilacessocomercial.gerente %}
+					
+						{% endif %}
+					
+					
+						{% endif %}
+					
+					
+					
+						{% if contrato.status == "assinatura" %}
+					
+					
+						<!-- Button to trigger modal -->
+						<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-print"></i></a>
+
+						{% endif %}
+					
+
+					
+					</div>
+				
+ 
 					<!-- Modal -->
 					<div id="modal-configurar-impressao-contrato-{{contrato.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 					  <div class="modal-header">
@@ -45,164 +187,51 @@
 					    <button class="btn btn-primary" type="submit" form="form-configura-impressao-contrato-{{contrato.id}}"><i class="fa fa-print"></i> imprimir</button>
 					  </div>
 					</div>
-					
-					
-		</li>
-		{% else %}
-		<li> 
-			{{contrato}}
-		</li>
-		{% endif %}
-	{% endif %}
-{% endfor %}
-</ul>
-{% endfor %}
-
-{% else %}
-
-{# PARA FUNCIONARIOS GERENTES #}
-
-<h1><i class="fa fa-th"></i> <i class="fa fa-book"></i> Meus Contratos</h1>
-{% regroup meus_contratos by responsavel as meus_contratos_por_responsavel %}
-{% for lista in meus_contratos_por_responsavel %}
-<h4>{{lista.grouper}}</h4>
-
-{% for contrato in lista.list %}
-	<div class="well well-small"> 
-		<div class="row-fluid">
-			<div class="span2">
-				<h4 class="alert alert-info"># {{contrato.id}}</h4>
-				<p>
-				{% if contrato.status == "invalido" %}
-
-					<span class="badge badge-important">{{contrato.get_status_display}}</span>
-				{% else %}
-				
-					{% if contrato.status == "emaberto" %}
-						<span class="badge badge-important">Em Aberto</span>
-						<small>Aguardando Financeiro</small>
-					{% endif %}
-					
-					{% if contrato.status == "emanalise" %}
-						<span class="badge badge-default">Em Análise</span>
-					{% endif %}
-				
-				
-					{% if contrato.status == "assinatura" %}
-						<span class="badge badge-success">Aguardando Assinatura</span>
-					{% endif %}
-					
-					{% if contrato.status == "lancado" %}
-						<span class="badge badge-info">{{contrato.get_status_display}}</span>
-
-						{% if contrato.status_execucao == "naoinciiado" %}
-							<span class="badge badge-info">{{contrato.get_status_execucao_display}}</span> 
-						{% endif %}
-						{% if contrato.status_execucao == "emandamento" %}
-							<span class="badge badge-success">{{contrato.get_status_execucao_display}}</span> 
-						{% endif %}
-						
-						{% if contrato.status_execucao == "pendente" %}
-							<span class="badge badge-default">{{contrato.get_status_execucao_display}}</span> 
-						{% endif %}
-						
-						
-					{% endif %}
-				{% endif %}
-				</p>
-				
-				<div class="btn-group">
-					{% if contrato.status == "invalido" %}
-					<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}" class="btn btn-danger"><i class="fa fa-refresh"></i> Revalidar</a>
-					{% endif %}
-					
-					{% if contrato.status == "assinatura" %}
-					<a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success"><i class="fa fa-check"></i> Assinado!</a>
-					
-					{% if request.user.perfilacessocomercial.gerente %}
-					
-					{% endif %}
-					
-					
-					{% endif %}
-					
-					
-					
-					{% if contrato.status == "assinatura" %}
-					
-					
-					<!-- Button to trigger modal -->
-					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-print"></i></a>
-
-					{% endif %}
-					
-
-					
 				</div>
+			
+				<div class="span5">
+					<p>
+					{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}  
+					<button class="btn popover-items" data-placement="top" data-trigger="hover" data-title="R$ {{contrato.valor}} em {{contrato.lancamentofinanceiroreceber_set.all.count}} X" data-html="true" data-content="
+					<ul>
+					{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
+					<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> {{lancamento.valor_cobrado}} - {{lancamento.modo_recebido}}</li>
+					{% endfor %}
+					</ul>
+					">
+					<strong>R$ {{contrato.valor}}</strong> em {{contrato.lancamentofinanceiroreceber_set.all.count}} X
+					</button>
+					</p>
 				
- 
-				<!-- Modal -->
-				<div id="modal-configurar-impressao-contrato-{{contrato.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-				  <div class="modal-header">
-				    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-				    <h3 id="myModalLabel">Configurar Impressão do Contrato {{contrato.id}}</h3>
-				  </div>
-				  <div class="modal-body">
-					  <form class="form" id="form-configura-impressao-contrato-{{contrato.id}}" method="get" action="{% url "comercial:contratos_gerar_impressao" contrato.id %}">
-							  {{contrato.form_configurar_impressao_contrato}}
-					</form>
-
-				  </div>
-				  <div class="modal-footer">
-				    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-				    <button class="btn btn-primary" type="submit" form="form-configura-impressao-contrato-{{contrato.id}}"><i class="fa fa-print"></i> imprimir</button>
-				  </div>
+				
+				
 				</div>
-			</div>
 			
-			<div class="span5">
-				<p>
-				{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}  
-				<button class="btn popover-items" data-placement="top" data-trigger="hover" data-title="R$ {{contrato.valor}} em {{contrato.lancamentofinanceiroreceber_set.all.count}} X" data-html="true" data-content="
-				<ul>
-				{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
-				<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> {{lancamento.valor_cobrado}} - {{lancamento.modo_recebido}}</li>
-				{% endfor %}
-				</ul>
-				">
-				<strong>R$ {{contrato.valor}}</strong> em {{contrato.lancamentofinanceiroreceber_set.all.count}} X
-				</button>
-				</p>
+				<div class="span5">
+					{% if contrato.status_execucao == "emandamento"  %}
+					<h1>10%</h1>
+					{% endif %}
 				
-				
-				
-			</div>
+					{% if contrato.followupdecontrato_set.all.count %}
+					<button class="btn btn-info popover-items" data-placement="left" data-trigger="hover" data-title="Follow Ups" data-html="true" data-content="
+					<ul>
+
+					<li><strong>{{contrato.followupdecontrato_set.all.first.data|date:"SHORT_DATETIME_FORMAT"}}</strong> - {{contrato.followupdecontrato_set.all.first.texto}}, {{contrato.followupdecontrato_set.all.first.porcentagem_execucao}}%</li>
+
+					</ul>
+					">{{contrato.followupdecontrato_set.all.count}} Follow Up{{contrato.followupdecontrato_set.all.count|pluralize}}</button>
+					{% endif %}
+
+				</div>
 			
-			<div class="span5">
-				{% if contrato.status_execucao == "emandamento"  %}
-				<h1>10%</h1>
-				{% endif %}
-				
-				{% if contrato.followupdecontrato_set.all.count %}
-				<button class="btn btn-info popover-items" data-placement="left" data-trigger="hover" data-title="Follow Ups" data-html="true" data-content="
-				<ul>
-
-				<li><strong>{{contrato.followupdecontrato_set.all.first.data|date:"SHORT_DATETIME_FORMAT"}}</strong> - {{contrato.followupdecontrato_set.all.first.texto}}, {{contrato.followupdecontrato_set.all.first.porcentagem_execucao}}%</li>
-
-				</ul>
-				">{{contrato.followupdecontrato_set.all.count}} Follow Up{{contrato.followupdecontrato_set.all.count|pluralize}}</button>
-				{% endif %}
-
 			</div>
-			
+
 		</div>
+		{% endfor %}
+		</ul>
+	{% endfor %}
 
-	</div>
-{% endfor %}
-</ul>
-{% endfor %}
-
-
+</div>
 
 {% endif %}
 

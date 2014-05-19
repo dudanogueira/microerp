@@ -44,15 +44,43 @@
 		<strong>Designado:</strong> {{precliente.designado}}<br />
 		<hr />
 		
-		<h3>Vincular a Cliente</h3>
-		<form method="POST">
-		{% csrf_token %}
-		{{form_vincular_a_cliente.as_p}}
-		<button type="submit" class="btn btn-primary">Vincular</button>
-		</form>
+		
+		<div class="row-fluid">
+			
+			<div class="span6">
+				
+				<div class="well well-small">
+					<h3>Vincular a Cliente</h3>
+					<form method="POST">
+					{% csrf_token %}
+					{{form_vincular_a_cliente.as_p}}
+					<button type="submit" class="btn btn-primary"><i class="fa fa-link"></i>  Vincular</button>
+					</form>
+				</div>
+				
+			
+			</div>
+
+
+			<div class="span6">
+				
+				
+				<div class="well well-small">
+					<h3>Vincular a Pré Cliente</h3>
+					<form method="POST">
+					{% csrf_token %}
+					{{form_vincular_a_precliente.as_p}}
+					<button type="submit" class="btn btn-primary"><i class="fa fa-link"></i> Vincular</button>
+					</form>
+				</div>
+			
+			</div>
+	
+		</div>
+		
 		
 	</div>
-	
+		
 	
 	<div class="tab-pane fade in" id="propostas">
 		
@@ -117,9 +145,7 @@
 								{# MENU DO GERENTE#}
 								
 						        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
-								{% if request.user.perfilacessocomercial.gerente %}
-							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
-								{% endif %}
+						        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 									
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 									

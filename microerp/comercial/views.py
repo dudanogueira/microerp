@@ -184,7 +184,7 @@ class AdicionarCliente(forms.ModelForm):
         fields = 'nome', 'tipo', 'fantasia', 'cnpj', 'inscricao_estadual', \
         'cpf', 'rg', 'nascimento', 'ramo', 'observacao', 'origem',\
         'contato', 'email', 'telefone_fixo', 'telefone_celular', 'fax',
-        
+
 class FormAdicionarFollowUp(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -718,13 +718,26 @@ class VincularPreClienteParaClienteForm(forms.Form):
     
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
 
+
+class VincularPreClienteParaPreClienteForm(forms.Form):
+    
+    def __init__(self, *args, **kwargs):
+        self.precliente = kwargs.pop('precliente')
+        super(VincularPreClienteParaPreClienteForm, self).__init__(*args, **kwargs)
+        self.fields['precliente'].widget.attrs['class'] = 'select2'
+        self.fields['precliente'].queryset = PreCliente.objects.all().exclude(id=self.precliente.id)
+    
+    precliente = forms.ModelChoiceField(queryset=None)
+
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def precliente_ver(request, pre_cliente_id):
     precliente = get_object_or_404(PreCliente, pk=pre_cliente_id)
     form_adicionar_follow_up = FormAdicionarFollowUp()
-    
+
     if request.POST:
         form_vincular_a_cliente = VincularPreClienteParaClienteForm(request.POST)
+        form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(request.POST, precliente=precliente)
         if form_vincular_a_cliente.is_valid():
             # passa todas as propostas deste precliente para o cliente selecionado
             cliente_selecionado = form_vincular_a_cliente.cleaned_data.get('cliente')
@@ -741,12 +754,20 @@ def precliente_ver(request, pre_cliente_id):
                 cliente_selecionado.save()
                 messages.info(request, "Proposta %s vinculada ao Cliente %s" % (proposta.id, cliente_selecionado))
             messages.success(request, "Pré Cliente %s Removido" % precliente)
-            precliente.delete()                
+            precliente.delete()
             return redirect(reverse("comercial:cliente_ver", args=[cliente_selecionado.id] ))
-            
+
+        elif form_vincular_a_precliente.is_valid():
+            precliente_selecionado = form_vincular_a_precliente.cleaned_data.get('precliente')
+            for proposta in precliente_selecionado.propostacomercial_set.all():
+                proposta.precliente = precliente
+                proposta.save()
+            precliente_selecionado.delete()
+            messages.success(request, "Pré Cliente %s Removido. Todas as propostas agora estão em %s" % (precliente_selecionado, precliente))
+            return redirect(reverse("comercial:precliente_ver", args=[precliente.id] ))
     else:
         form_vincular_a_cliente = VincularPreClienteParaClienteForm()
-        
+        form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(precliente=precliente)
     return render_to_response('frontend/comercial/comercial-precliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 # Pre Cliente
@@ -1428,11 +1449,8 @@ def adicionar_follow_up(request, proposta_id):
         if form_adicionar_follow_up.is_valid():
             follow_up = form_adicionar_follow_up.save(commit=False)
             follow_up.criado_por = request.user.funcionario
-            if not request.user.perfilacessocomercial.gerente and proposta.expirada():
-                messages.error(request, u"Erro! Proposta Expirada e Usuário Não gerente.")
-            else:
-                follow_up.save()
-                messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
+            follow_up.save()
+            messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
         else:
             if request.POST.get('somente-texto'):
                 proposta.followupdepropostacomercial_set.create(texto=request.POST.get('texto'), criado_por=request.user.funcionario)
@@ -1777,7 +1795,7 @@ def contratos_gerar_impressao(request, contrato_id):
     if request.user.perfilacessocomercial.gerente:
         contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
     else:
-        contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
+        contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status__in=["assinatura", "emaberto"])
     from io import BytesIO
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
