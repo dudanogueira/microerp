@@ -862,8 +862,9 @@ def propostas_comerciais_minhas(request):
             (Q(precliente__designado=None) & Q(cliente__designado=None))
             )
     
-    designados_propostas_validas = set(propostas_abertas_validas.values_list('designado__id', 'designado__nome'))
-    designados_propostas_expiradas = set(propostas_abertas_expiradas.values_list('designado__id', 'designado__nome'))
+    
+    designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
+    designados_propostas_expiradas = propostas_abertas_expiradas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
     
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
@@ -2112,7 +2113,6 @@ def relatorios_comercial_probabilidade(request):
     
     return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
 
-
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_e_followups(request):
     try:
@@ -2127,11 +2127,8 @@ def relatorios_comercial_propostas_e_followups(request):
         propostas = propostas.order_by('tipo')
     elif agrupador == "funcionario":
         propostas = propostas.order_by('designado')
-    
-    
+        
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-followups.html', locals(), context_instance=RequestContext(request),)
-
-
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_declinadas(request):
