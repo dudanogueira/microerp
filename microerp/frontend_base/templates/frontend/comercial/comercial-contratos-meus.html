@@ -17,13 +17,36 @@
 <ul>
 {% for contrato in lista.list %}
 	{% if contrato.status == "invalido" %}
-	<li> 
+		<li> 
 		<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}">{{contrato}}</a>
 	</li>
 	{% else %}
 		{% if contrato.status == "assinatura" %}
 		<li> 
-			{{contrato}} - <a href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" class="btn btn-info">Gerar Contrato para impressão</a> <a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
+			{{contrato}}
+			<div class='btn-group'><!-- Button to trigger modal -->
+					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-print"></i> Imprimir</a><a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
+			</p>
+					
+					<!-- Modal -->
+					<div id="modal-configurar-impressao-contrato-{{contrato.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+					  <div class="modal-header">
+					    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					    <h3 id="myModalLabel">Configurar Impressão do Contrato {{contrato.id}}</h3>
+					  </div>
+					  <div class="modal-body">
+						  <form class="form" id="form-configura-impressao-contrato-{{contrato.id}}" method="get" action="{% url "comercial:contratos_gerar_impressao" contrato.id %}">
+								  {{contrato.form_configurar_impressao_contrato}}
+						</form>
+
+					  </div>
+					  <div class="modal-footer">
+					    <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+					    <button class="btn btn-primary" type="submit" form="form-configura-impressao-contrato-{{contrato.id}}"><i class="fa fa-print"></i> imprimir</button>
+					  </div>
+					</div>
+					
+					
 		</li>
 		{% else %}
 		<li> 

@@ -63,6 +63,8 @@ class ConfigurarImpressaoContrato(forms.Form):
         initial1 = contrato.responsavel_comissionado or None
         self.fields['testemunha1'] = forms.ModelChoiceField(queryset=Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis), initial=initial1, label="Testemunha 1")
         self.fields['testemunha2'] = forms.ModelChoiceField(queryset=Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis), required=False, label="Testemunha 2")
+        self.fields['imprime_logo'] = forms.BooleanField()
+        self.fields['imprime_logo'].initial = True
 
 
 class PreClienteAdicionarForm(forms.ModelForm):
@@ -1513,12 +1515,10 @@ class ContratoPrint:
             # Release the canvas
             canvas.restoreState()
     
-    def print_contrato(self, contrato, testemunha1=None, testemunha2=None):
+    def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False):
             
         
             buffer = self.buffer
-            
-            imprime_logo = getattr(settings, 'IMPRIME_LOGO_CONTRATO', True)
             
             if imprime_logo:
                 margem_topo = 10
@@ -1794,7 +1794,8 @@ def contratos_gerar_impressao(request, contrato_id):
         testemunha2 = Funcionario.objects.get(pk=int(request.GET.get('testemunha2')))
     else:
         testemunha2 = None
-    pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2)
+    imprime_logo = request.GET.get('imprime_logo')
+    pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2, imprime_logo=imprime_logo)
     response.write(pdf)
     return response
     
