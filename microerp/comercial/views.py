@@ -1176,7 +1176,7 @@ class OrcamentoPrint:
                 desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # objeto texto
-                texto = Paragraph(proposta.forma_pagamento_proposto, styles['justify'])
+                texto = Paragraph(proposta.forma_pagamento_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto)
                 
                 # space
