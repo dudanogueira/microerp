@@ -1097,14 +1097,22 @@ class OrcamentoPrint:
                 id_desc_p = Paragraph("PROPOSTA COMERCIAL", styles['centered_h1'])
                 elements.append(id_desc_p)
                 # AC
-                contratante_p = Paragraph(u"<b>A/C</b>: %s<br />\
+                texto = u"<b>A/C</b>: %s<br />\
             	<b>Telefone</b>: %s<br />\
-            	<b>Endereço</b>: %s <br />\
-            	<b>E-mail</b>: %s<br />"% (
+            	<b>Endereço</b>: %s <br />"% (
                         proposta.nome_do_proposto, proposta.telefone_contato_proposto, 
-                        proposta.endereco_obra_proposto, proposta.email_proposto
-                    ), styles['justify'])
+                        proposta.endereco_obra_proposto
+                    )
+                
+                contratante_p = Paragraph(texto, styles['justify'])
                 elements.append(contratante_p)
+                
+                
+                if proposta.email_proposto:
+                    texto = u"<b>E-mail</b>: %s<br />" % proposta.email_proposto
+                    contratante_p = Paragraph(texto, styles['justify'])
+                    elements.append(contratante_p)
+                    
                 
                 # space
                 elements.append(Spacer(1, 12))
