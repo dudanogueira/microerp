@@ -1088,15 +1088,21 @@ class OrcamentoPrint:
             else:
                 data=[('',id_proposta)]
 
-            table = Table(data, colWidths=270, rowHeights=79)
-            table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'MIDDLE')]))
-            elements.append(table)
+            table_logo = Table(data, colWidths=270, rowHeights=79)
+            table_logo.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'MIDDLE')]))
+            elements.append(table_logo)
             
             if tipo == 'servico':
                 # descricao
                 id_desc_p = Paragraph("PROPOSTA COMERCIAL", styles['centered_h1'])
                 elements.append(id_desc_p)
+                
+                # space
+                elements.append(Spacer(1, 24))
+                
+                
                 # AC
+                
                 texto = u"<b>A/C</b>: %s<br />\
             	<b>Telefone</b>: %s<br />\
             	<b>Endereço</b>: %s <br />"% (
@@ -1115,53 +1121,61 @@ class OrcamentoPrint:
                     
                 
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
                 
                 texto_introducao_proposta = getattr(settings, 'TEXTO_INTRODUCAO_PROPOSTA_COMERCIAL', 'TEXTO INTRODUÇÃO PROPOSTA COMERCIAL')
                 texto_introducao_proposta_p = Paragraph(texto_introducao_proposta, styles['justify'])
                 elements.append(texto_introducao_proposta_p)
 
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
                 
                 # 1 - DO OBJETO
                 do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
                 elements.append(do_objeto_titulo)
+                elements.append(Spacer(1, 12))
                 # objeto texto
-                texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
+                texto_objeto_p = Paragraph(proposta.objeto_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_objeto_p)
                 
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
                 
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
+                # space
+                elements.append(Spacer(1, 12))
+                
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
                 
-                
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
                 
                 
                 # 1.2 - Descrição dos Itens Não Inclusos
                 desc_itens_titulo = Paragraph("1.2 - ITENS NÃO INCLUSOS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
+                # space
+                elements.append(Spacer(1, 12))
+                
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.items_nao_incluso.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
                 
+                elements.append(PageBreak())
                 
+                elements.append(table_logo)
                 
-                
-                # space
-                elements.append(Spacer(1, 12))
                 
                 # 2 - Do valor e formas de pagamento
                 titulo = Paragraph("2 - DOS VALORES", styles['left_h2'])
                 elements.append(titulo)
+                # space
+                elements.append(Spacer(1, 12))
+                
                 
                 texto = "O valor global da proposta é de R$ <strong>%s</strong>" % proposta.valor_proposto
                 texto_p = Paragraph(texto, styles['justify'])
@@ -1169,27 +1183,37 @@ class OrcamentoPrint:
                 
 
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
 
 
                 # 2.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
                 elements.append(desc_itens_titulo)
+                
+                # space
+                elements.append(Spacer(1, 12))
+                
                 # objeto texto
                 texto = Paragraph(proposta.forma_pagamento_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto)
                 
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
                 
                 # 3 - VALIDADE
                 titulo = Paragraph("3 - VALIDADE", styles['left_h2'])
                 elements.append(titulo)
                 
+                # space
+                elements.append(Spacer(1, 12))
+                
                 # texto validade
                 validade = "Essa proposta é válida até %s" % proposta.data_expiracao.strftime("%d/%m/%Y")
                 texto = Paragraph(validade, styles['justify'])
                 elements.append(texto)
+                
+                # space
+                elements.append(Spacer(1, 24))
                 
             elif tipo == "projetoeletrico":
                 
