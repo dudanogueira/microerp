@@ -1191,7 +1191,7 @@ class OrcamentoPrint:
                 
                 locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
                 valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
-                texto = "O valor global da proposta é de <strong>R$ %s</strong>" % valor_formatado
+                texto = "O valor global da proposta é de <strong>%s</strong>" % valor_formatado
                 texto_p = Paragraph(texto, styles['justify'])
                 elements.append(texto_p)
                 
@@ -1716,7 +1716,7 @@ class ContratoPrint:
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
             valor_formatado = locale.currency(contrato.valor, grouping=True)
             
-            total_texto = "Total: R$ %s" % valor_formatado
+            total_texto = "Total: %s" % valor_formatado
             total_p = Paragraph(unicode(total_texto).replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
