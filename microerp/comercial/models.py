@@ -19,7 +19,7 @@ __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
-import datetime, os
+import datetime, os, locale
 
 from django.db import models
 from django.conf import settings
@@ -85,7 +85,10 @@ class PropostaComercial(models.Model):
             else:
                 proposto = 'precliente'
                 obj = self.precliente
-            return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, self.valor_proposto, self.probabilidade, self.criado_por)
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            valor_formatado = locale.currency(self.valor_proposto, grouping=True).split(" ")[0]
+            
+            return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, valor_formatado, self.probabilidade, self.criado_por)
     
     def texto_descricao_items(self):
         texto = ''

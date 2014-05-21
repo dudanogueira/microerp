@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime
+import datetime, locale
 import operator
 from collections import OrderedDict
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -1189,14 +1189,15 @@ class OrcamentoPrint:
                 elements.append(Spacer(1, 12))
                 
                 
-                texto = "O valor global da proposta é de R$ <strong>%s</strong>" % proposta.valor_proposto
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
+                texto = "O valor global da proposta é de <strong>R$ %s</strong>" % valor_formatado.split(" ")[0]
                 texto_p = Paragraph(texto, styles['justify'])
                 elements.append(texto_p)
                 
 
                 # space
                 elements.append(Spacer(1, 24))
-
 
                 # 2.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
@@ -1711,7 +1712,11 @@ class ContratoPrint:
                 elements.append(lancamento_p)
                 elements.append(Spacer(1, 12))
             
-            total_texto = "Total: R$ %s" % contrato.valor
+            import locale
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            valor_formatado = locale.currency(contrato.valor, grouping=True)
+            
+            total_texto = "Total: R$ %s" % valor_formatado.split(" ")[0]
             total_p = Paragraph(unicode(total_texto).replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
@@ -1774,8 +1779,6 @@ class ContratoPrint:
             
             ## cidade do contrato
             elements.append(Spacer(1, 12))
-            import locale
-            locale.setlocale(locale.LC_ALL, "pt_BR.UTF-8")
             cidade = getattr(settings, "CIDADE_CONTRATO", "Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
             cidade_texto = "%s, %s" % (cidade, datetime.date.today().strftime("%d de %B de %Y"))
             cidade_p = Paragraph(str(cidade_texto).replace("\n", "<br />"), styles['right'])
