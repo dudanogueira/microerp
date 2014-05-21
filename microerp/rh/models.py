@@ -857,6 +857,7 @@ class RotinaExameMedico(models.Model):
     class Meta:
         verbose_name = "Rotina de Exame Médico"
         verbose_name_plural = "Rotinas de Exames Médicos"
+        ordering = ['data']
     
     
     def __unicode__(self):

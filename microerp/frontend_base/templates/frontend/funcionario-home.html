@@ -58,7 +58,6 @@
         {% for exame in request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
         
         
-        
             <li>{{exame.get_tipo_display}}
                 {% if exame.data %}
                 <i class="fa fa-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>
