@@ -86,7 +86,7 @@ class PropostaComercial(models.Model):
                 proposto = 'precliente'
                 obj = self.precliente
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
-            valor_formatado = locale.currency(self.valor_proposto, grouping=True).split(" ")[0]
+            valor_formatado = locale.currency(self.valor_proposto, grouping=True)
             
             return u"Proposta #%s para %s %s de R$%s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, valor_formatado, self.probabilidade, self.criado_por)
     
