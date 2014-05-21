@@ -796,7 +796,9 @@ def precliente_converter(request, pre_cliente_id):
         form = AdicionarCliente(request.POST, precliente=precliente)
         if form.is_valid():
             # cria novo cliente
-            cliente_novo = form.save()
+            cliente_novo = form.save(commit=False)
+            cliente_novo.designado = precliente.designado
+            cliente_novo.save()
             # vincula pre cliente com cliente novo
             precliente.cliente_convertido = cliente_novo
             precliente.data_convertido = datetime.date.today()
@@ -1100,25 +1102,30 @@ class OrcamentoPrint:
                 # space
                 elements.append(Spacer(1, 24))
                 
-                
                 # AC
-                
+                texto_endereco = u"<strong>Rua</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s" % \
+                    (proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto)
                 texto = u"<b>A/C</b>: %s<br />\
             	<b>Telefone</b>: %s<br />\
-            	<b>Endereço</b>: %s <br />"% (
+            	<b>Endereço do Cliente</b>: %s <br />"% (
                         proposta.nome_do_proposto, proposta.telefone_contato_proposto, 
-                        proposta.endereco_obra_proposto
+                        texto_endereco
                     )
-                
+                    
                 contratante_p = Paragraph(texto, styles['justify'])
                 elements.append(contratante_p)
-                
                 
                 if proposta.email_proposto:
                     texto = u"<b>E-mail</b>: %s<br />" % proposta.email_proposto
                     contratante_p = Paragraph(texto, styles['justify'])
                     elements.append(contratante_p)
-                    
+                
+                if proposta.endereco_obra_proposto:
+                    # space
+                    elements.append(Spacer(1, 12))
+                    texto = u"<b>Endereço da Obra</b>: %s<br />" % proposta.endereco_obra_proposto
+                    endereco_obra_texto = Paragraph(texto, styles['justify'])
+                    elements.append(endereco_obra_texto)                
                 
                 # space
                 elements.append(Spacer(1, 24))
@@ -1148,6 +1155,10 @@ class OrcamentoPrint:
                 elements.append(Spacer(1, 12))
                 
                 # objeto texto
+                # 1.1 - Descrição dos Itens
+                desc_itens_titulo = Paragraph("1.1.1 - MATERIAL INCLUSO", styles['left_h2'])
+                elements.append(desc_itens_titulo)
+                
                 texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
                 
@@ -1156,7 +1167,7 @@ class OrcamentoPrint:
                 
                 
                 # 1.2 - Descrição dos Itens Não Inclusos
-                desc_itens_titulo = Paragraph("1.2 - ITENS NÃO INCLUSOS", styles['left_h2'])
+                desc_itens_titulo = Paragraph("1.1.2 - MATERIAL NÃO INCLUSO", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
@@ -1169,6 +1180,7 @@ class OrcamentoPrint:
                 
                 elements.append(table_logo)
                 
+                elements.append(Spacer(1, 24))
                 
                 # 2 - Do valor e formas de pagamento
                 titulo = Paragraph("2 - DOS VALORES", styles['left_h2'])
@@ -1358,8 +1370,10 @@ class FormEnviarPropostaEmail(forms.Form):
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
-    if proposta.cliente and proposta.cliente.email:
+    if proposta.cliente:
         email_inicial = proposta.cliente.email
+    if proposta.email_proposto:
+        email_inicial = proposta.email_proposto
     else:
         email_inicial = None
     enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
