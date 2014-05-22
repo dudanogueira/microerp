@@ -505,7 +505,7 @@
                                 <i class="fa fa-trash-o"></i>
                             </a>
                             {% else %}
-                            <a href="{% url "producao:editar_linha_subproduto" subproduto.id linha.id %}" class="btn">
+                            <a href="{% url "producao:editar_linha_subproduto" subproduto.id opcao_padrao.linha.id %}" class="btn">
                                 <i class="fa fa-eye-open"></i>
                             </a>                   
                             {% endif %}

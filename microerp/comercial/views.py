@@ -1326,6 +1326,7 @@ class OrcamentoPrint:
             if perfil.telefone_celular and perfil.telefone_fixo:
                 texto_esquerda_final += "%s / %s" % (perfil.telefone_celular, perfil.telefone_fixo)
 
+
             elif perfil.telefone_fixo and not perfil.telefone_celular:
                 texto_esquerda_final += "%s" % perfil.telefone_fixo
             else:
@@ -1335,6 +1336,9 @@ class OrcamentoPrint:
             elements.append(Spacer(1, 12))
 			
             texto_esquerda_final_p = Paragraph(texto_esquerda_final, styles['left'])
+            
+            telefone_empresa = getattr(settings, 'TELEFONE_EMPRESA', None)
+            
             
             # TEXTO DIREITA FINAL
             
@@ -1351,6 +1355,13 @@ class OrcamentoPrint:
             elements.append(texto_esquerda_final_p)
             # space
             elements.append(Spacer(1, 20))
+            if telefone_empresa:
+                texto_telefone_empresa = Paragraph(telefone_empresa, styles['left'])
+                elements.append(texto_telefone_empresa)
+                # space
+                elements.append(Spacer(1, 20))
+                
+            
             
             elements.append(texto_direita_final_p)
                 
@@ -1722,7 +1733,6 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             
                 
-            
             #
             # CLÁUSULA 4ª – DOS PRAZOS
             #
