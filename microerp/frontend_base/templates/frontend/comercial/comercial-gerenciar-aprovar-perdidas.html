@@ -8,6 +8,8 @@
 
 <h1><i class="fa fa-th"></i> <i class="fa fa-thumbs-down"></i> <i class="fa fa-file-alt"></i> Aprovar Fechamento de Propostas</h1>
 {% if propostas_fechadas %}
+<input type="button" class="check btn-primary" data-selector="seleciona_propostas_fechar" value="deselecionar todos" />
+
 <form method="POST">
 {% csrf_token %}
 <table class="table table-stripped table-condensed">
@@ -23,9 +25,9 @@
 		</tr>
 	</thead>
 		{% for proposta in propostas_fechadas %}
-			<tr>
+			<tr class="alert alert-info">
 				<td>
-					<input type="checkbox" name="seleciona_propostas_fechar" value={{proposta.id}} id="check-{{proposta.id}}" checked>
+					<input type="checkbox" name="seleciona_propostas_fechar" class="seleciona_propostas_fechar" value={{proposta.id}} id="check-{{proposta.id}}" checked>
 					<label for="check-{{proposta.id}}">
 					#{{proposta.id}}
 					</label>
@@ -97,9 +99,40 @@
 
 $(document).ready(function() {
 	$("#menu-comercial-aprovar-fechamentos, #top-menu-comercial").addClass("active");
+	
+    $('.check:button').toggle(function(){
+		
+		seletor = "."+$(this).data('selector');
+		items = $(seletor)
+        items.removeAttr('checked');
+        $(this).val('selecionar todos');        
+		items.each(function(i,l){
+					$(l).closest("tr").attr('class', '');    
+		})
+		
+    },function(){
+		$(this).closest("tr").attr('class', 'alert alert-info'); 
+		seletor = "." + $(this).data('selector');
+		items = $(seletor)
+        items.attr('checked','checked');
+        $(this).val('deselecionar todos');
+		items.each(function(i,l){
+			$(l).closest("tr").attr('class', 'alert alert-info');
+		})
+    })
+	
+	
 });
 
 $('.popover-items').popover()
+
+$("input[type='checkbox']").change(function() {
+	if (this.checked){
+		$(this).closest("tr").attr('class', 'alert alert-info'); 
+	}else{
+		$(this).closest("tr").attr('class', ''); 
+	}
+});
 
 
 

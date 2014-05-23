@@ -18,6 +18,7 @@
 				{% endfor %}
 			</select>
 			
+			
 		</div>
 	</div>
 </div>
@@ -75,8 +76,8 @@
 							<hr />
 							{% endfor %}
 							"
-							class="btn popover_item carregar_follow_ups_modal"
-							data-toggle="popover"
+							class="btn popover-items carregar_follow_ups_modal"
+							data-trigger="hover"
 							data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
 							<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
 							">

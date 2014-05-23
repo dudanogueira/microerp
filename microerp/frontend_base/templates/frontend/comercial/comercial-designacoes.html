@@ -261,11 +261,24 @@ $(document).ready(function() {
 		items = $(seletor)
         items.attr('checked','checked');
         $(this).val('deselecionar todos');
+		
+		items.each(function(i,l){
+			$(l).closest("tr").attr('class', 'alert alert-info');
+		})
+		
+		
+		
     },function(){
 		seletor = "."+$(this).data('selector');
 		items = $(seletor)
         items.removeAttr('checked');
-        $(this).val('selecionar todos');        
+        $(this).val('selecionar todos'); 
+		
+		items.each(function(i,l){
+					$(l).closest("tr").attr('class', '');    
+		})
+		
+
     })
 	
 });

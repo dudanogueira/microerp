@@ -101,8 +101,8 @@
 							<hr />
 						{% endfor %}
 						"
-						class="btn popover_item carregar_follow_ups_modal"
-						data-toggle="popover"
+						class="btn popover-items carregar_follow_ups_modal"
+						data-trigger="hover"
 						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
 						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
 						">
@@ -216,8 +216,9 @@
 							<hr />
 						{% endfor %}
 						"
-						class="btn popover_item carregar_follow_ups_modal"
+						class="btn popover-items carregar_follow_ups_modal"
 						data-toggle="popover"
+						data-placement="top"
 						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
 						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
 						">
@@ -365,6 +366,19 @@ $('#id_texto').on("keyup change", function(){
     }
 });
 
+
+$('.tab-content').on("hover", ".popover-items", function (e) {
+	$(this).popover("show");
+});
+
+
+$('.tab-content').on("hover", ".tooltip-items", function (e) {
+	$(this).tooltip("show");
+});
+
+
+
+
 $(document).ready(function() {
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
 	
@@ -377,34 +391,7 @@ $(document).ready(function() {
 			  $('.firstload a').tab('show');
 			});
 		}
-	
-	
-	$('.tab-content').on("hover", ".popover-items", function (e) {
-		$(this).popover("show");
-	});
-	
-	$('.tab-content').on("hover", ".tooltip-items", function (e) {
-		$(this).tooltip("show");
-	});
-	
-	$(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
-		$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
-		$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'));
-	});
-	
-	$(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
-		$("#descricao-modal-add-follow-up").html( $(this).data('title') );
-		$("#id_proposta").val($(this).data('proposta-id'));
-		$("#id_texto").val('');
-		$("#id_probabilidade").val($(this).data('probabilidade'));
-		$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
-		$("#btn-adicionar-follow-up").hide();			
-	    $("#data-expiracao-modal-container").hide();
-		$("#modal-follow-up-add .errorlist").hide();
-		$("#id_reagenda_data_expiracao").attr('checked', false);	
-		$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
-	});
-	
+
 
     {% if form_adicionar_follow_up.errors %}
 		$('#modal-follow-up-add').modal('show');
@@ -413,6 +400,24 @@ $(document).ready(function() {
 });
 
 
+
+$(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
+	$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+	$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'));
+});
+
+$(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
+	$("#descricao-modal-add-follow-up").html( $(this).data('title') );
+	$("#id_proposta").val($(this).data('proposta-id'));
+	$("#id_texto").val('');
+	$("#id_probabilidade").val($(this).data('probabilidade'));
+	$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
+	$("#btn-adicionar-follow-up").hide();			
+    $("#data-expiracao-modal-container").hide();
+	$("#modal-follow-up-add .errorlist").hide();
+	$("#id_reagenda_data_expiracao").attr('checked', false);	
+	$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+});
 
 	
 
@@ -440,7 +445,7 @@ $("#filtro-designado-validas").on("change", function(e){
 	}
 });
 
-$("#filtro-designado-expiradas").on("change", function(e){
+$(".tab-content").on("change", "#filtro-designado-expiradas", function (e){
 	$(".dono-proposta-expirada-group").show();
 	if ($(this).val() == "todos"){
 		$(".propostas-expiradas").show();
@@ -453,7 +458,7 @@ $("#filtro-designado-expiradas").on("change", function(e){
 			}
 		})
 	}
-			
+
 });
 
 // Javascript to enable link to tab

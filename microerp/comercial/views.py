@@ -1888,6 +1888,10 @@ def contratos_gerar_impressao(request, contrato_id):
         testemunha2 = Funcionario.objects.get(pk=int(request.GET.get('testemunha2')))
     else:
         testemunha2 = None
+    if testemunha1 and testemunha2:
+        if testemunha1 == testemunha2:
+            messages.error(request, "Erro! Impossível testemunhas iguais para gerar a impressão do contrato!")
+            return redirect(reverse("comercial:contratos_meus"))
     imprime_logo = request.GET.get('imprime_logo')
     pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2, imprime_logo=imprime_logo)
     response.write(pdf)
