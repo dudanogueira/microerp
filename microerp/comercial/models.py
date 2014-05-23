@@ -242,16 +242,20 @@ class Orcamento(models.Model):
     
     def reajusta_custo(self):
         '''Atualiza o custo de todas as linhas e geral'''
+        reajustou = False
         custo_total = 0
         for linha in self.linharecursomaterial_set.all():
             linha.custo_unitario = linha.produto.preco_venda
-            linha.custo_total = linha.produto.preco_venda * linha.quantidade
+            custo_total = linha.produto.preco_venda * linha.quantidade
+            if custo_total != linha.custo_total:
+                reajustou = True
+            linha.custo_total = custo_total
             linha.save()
             custo_total += linha.custo_total
         #
         self.custo_total = custo_total
         self.save()
-        return self.custo_total
+        return reajustou
 
     def recalcula_custo_total(self, save=True):
         self.custo_material = self.linharecursomaterial_set.aggregate(total=Sum('custo_total'))['total'] or 0

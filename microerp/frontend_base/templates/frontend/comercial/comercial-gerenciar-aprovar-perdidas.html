@@ -17,7 +17,7 @@
 	<thead>
 		<tr>
 			<th>ID</th>
-			<th>Pré/Cliente</th>
+			<th width="30%">Pré/Cliente</th>
 			<th>Valor</th>
 			<th>Follow Ups</th>
 			<th>Motivo</th>
@@ -68,7 +68,7 @@
 
 				
 				</td>
-				<td>{{proposta.definido_perdido_motivo}}</td>
+				<td>{{proposta.definido_perdido_motivo}}. por <i class='fa fa-user'></i>{{proposta.definido_perdido_por}} em <i class="fa fa-clock"></i> {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
 				<td>{{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</td>
 			</tr>
 		{% endfor %}

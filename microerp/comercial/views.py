@@ -399,8 +399,12 @@ def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_reajustar_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
-    orcamento.reajusta_custo()
-    messages.success(request, u"Sucesso! Orçamento Reajustado.")
+    reajustou = orcamento.reajusta_custo()
+    if reajustou:
+        messages.warning(request, u"Atenção! Houve Reajuste de uma das linhas do Orçamento %s!" % orcamento)
+    else:
+        messages.success(request, u"Não houveram reajustes de preço para o Orçamento %s" % orcamento)
+    
     return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -2063,9 +2067,13 @@ def orcamentos_modelo_editar(request, modelo_id):
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_reajustar(request, modelo_id):
-    modelo = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
-    modelo.reajusta_custo()
-    messages.success(request, u"Sucesso! Preço de Modelo %s Reajustado." % modelo)
+    orcamento = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
+    reajustou = orcamento.reajusta_custo()
+    if reajustou:
+        messages.warning(request, u"Atenção! Houve Reajuste de uma das linhas do Modelo %s!" % orcamento)
+    else:
+        messages.success(request, u"Não houveram reajustes de preço para o Modelo %s" % orcamento)
+
     return redirect(reverse("comercial:orcamentos_modelo"))
 
 class SelecionaAnoIndicadorComercial(forms.Form):
