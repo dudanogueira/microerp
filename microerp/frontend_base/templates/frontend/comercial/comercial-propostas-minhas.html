@@ -10,8 +10,8 @@
 
 
 <ul class="nav nav-tabs normargin" id="navtab-propostas-minhas">
-    <li class="active"><a href="#propostas-abertas-validas" class="ajaxtab" data-toggle="tab"><span class="badge badge-success">{{propostas_abertas_validas.count}}</span> Válidas</a></li>
-	<li> <a href="#propostas-abertas-expiradas" data-toggle="tab">Expiradas <span class="badge badge-important">{{propostas_abertas_expiradas.count}}</span></a></li>
+    <li class="active firstload"><a href="#propostas-abertas-validas" data-toggle="tab"><span class="badge badge-success">{{propostas_abertas_validas.count}}</span> Válidas</a></li>
+	<li> <a class="ajaxtab" data-url="{% url "comercial:propostas_comerciais_minhas_expiradas_ajax" %}" href="#propostas-abertas-expiradas" data-toggle="tab">Expiradas <span class="badge badge-important">{{propostas_abertas_expiradas_count}}</span></a></li>
 </ul>
 
 <div id="tab-content-comercial-clientes" class="tab-content">
@@ -334,6 +334,22 @@
 
 <script>
 
+$('.nav-tabs').on("click", '.ajaxtab', function(e){
+	e.preventDefault();
+	var url = $(this).attr("data-url");
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+	// ajax load from data-url
+	$(href).load(url)
+	$(href).html("<i class='fa-spinner fa-spin fa-large fa-3x fa'></i>");
+	pane.tab('show');		
+	
+})
+
+
+
 $( ".datepicker" ).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"
@@ -351,21 +367,32 @@ $('#id_texto').on("keyup change", function(){
 
 $(document).ready(function() {
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
-	$('.popover_item').popover({
-			trigger: "hover",
-			placement: 'top'
+	
+	if (window.location.hash != ""){
+				hash = window.location.hash.replace("tab_", "");
+				$('a[href="' + hash + '"]').click();
+				window.location.hash = "#tab_"+hash.replace("#", "");
+		}else{
+			$('#propostas-abertas-validas').load($('.firstload a').attr("data-url"),function(result){
+			  $('.firstload a').tab('show');
+			});
+		}
+	
+	
+	$('.tab-content').on("hover", ".popover-items", function (e) {
+		$(this).popover("show");
 	});
-
-    {% if form_adicionar_follow_up.errors %}
-		$('#modal-follow-up-add').modal('show');
-    {% endif %}	
-
-	$('.popover-items').popover()
-});
-
-
-$('.btn-modal-add-follow-up').click(function(e){
-		
+	
+	$('.tab-content').on("hover", ".tooltip-items", function (e) {
+		$(this).tooltip("show");
+	});
+	
+	$(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
+		$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+		$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'));
+	});
+	
+	$(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
 		$("#descricao-modal-add-follow-up").html( $(this).data('title') );
 		$("#id_proposta").val($(this).data('proposta-id'));
 		$("#id_texto").val('');
@@ -376,12 +403,18 @@ $('.btn-modal-add-follow-up').click(function(e){
 		$("#modal-follow-up-add .errorlist").hide();
 		$("#id_reagenda_data_expiracao").attr('checked', false);	
 		$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
-});
+	});
 	
-$('.carregar_follow_ups_modal').click(function(e){
-		$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
-		$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
+
+    {% if form_adicionar_follow_up.errors %}
+		$('#modal-follow-up-add').modal('show');
+    {% endif %}	
+
 });
+
+
+
+	
 
 $("#id_reagenda_data_expiracao").on("change", function(e){
 	if($(this).is(':checked'))
@@ -405,7 +438,6 @@ $("#filtro-designado-validas").on("change", function(e){
 		})
 		
 	}
-	
 });
 
 $("#filtro-designado-expiradas").on("change", function(e){
@@ -423,7 +455,6 @@ $("#filtro-designado-expiradas").on("change", function(e){
 	}
 			
 });
-
 
 // Javascript to enable link to tab
 var hash = document.location.hash;

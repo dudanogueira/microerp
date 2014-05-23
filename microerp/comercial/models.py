@@ -21,6 +21,8 @@ __version__ = '0.0.1'
 
 import datetime, os, locale
 
+from utils import extenso_com_centavos
+
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -136,6 +138,9 @@ class PropostaComercial(models.Model):
             return True
         else:
             return False
+
+    def valor_extenso(self):
+        return extenso_com_centavos(str(self.valor_proposto))
 
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)

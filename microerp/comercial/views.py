@@ -873,25 +873,40 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
-    propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente')
-    propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())    
     form_adicionar_follow_up = FormAdicionarFollowUp()
 
     if not request.user.perfilacessocomercial.gerente:
-        propostas_abertas_validas = propostas_abertas_validas.filter(
+        propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente').filter(
             Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
             (Q(precliente__designado=None) & Q(cliente__designado=None))
             )
-        propostas_abertas_expiradas = propostas_abertas_expiradas.filter(
+        propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).filter(
             Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
             (Q(precliente__designado=None) & Q(cliente__designado=None))
-            )
-    
-    
+            ).count()
+    else:
+        propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente')
+        propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).count()
+        
+        
     designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
-    designados_propostas_expiradas = propostas_abertas_expiradas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
     
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def propostas_comerciais_minhas_expiradas_ajax(request):
+
+    
+    if not request.user.perfilacessocomercial.gerente:
+        propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).filter(
+            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
+            (Q(precliente__designado=None) & Q(cliente__designado=None))
+            )
+    else:
+        propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())
+
+    return render_to_response('frontend/comercial/comercial-propostas-minhas-expiradas-ajax.html', locals(), context_instance=RequestContext(request),)
+    
 
 #
 # VIEWS EXTERNAS / MODULOS
@@ -1191,7 +1206,7 @@ class OrcamentoPrint:
                 
                 locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
                 valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
-                texto = "O valor global da proposta é de <strong>%s</strong>" % valor_formatado
+                texto = "O valor global da proposta é de <strong>%s</strong> (<em>%s</em>)" % (valor_formatado, proposta.valor_extenso())
                 texto_p = Paragraph(texto, styles['justify'])
                 elements.append(texto_p)
                 
@@ -1727,7 +1742,7 @@ class ContratoPrint:
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
             valor_formatado = locale.currency(contrato.valor, grouping=True)
             
-            total_texto = "Total: %s" % valor_formatado
+            total_texto = "Total: %s (%s)" % (valor_formatado, proposta.valor_extenso())
             total_p = Paragraph(unicode(total_texto).replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
