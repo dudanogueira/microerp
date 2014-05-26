@@ -20,7 +20,6 @@ COMPONENTE_UNIDADE_MEDIDA = (
 FABRICANTE_FORNECEDOR_TIPO_CHOICES = (
     ('fabricante', 'Fabricante'),
     ('fornecedor', 'Fornecedor'),
-    ('fabricantefornecedor', 'Fabricante e Fornecedor'),
 )
 
 STATUS_NOTA_FISCAL = (
@@ -276,6 +275,12 @@ class Componente(models.Model):
             'componente/', str(instance.part_number), 'imagem', filename
           )
     
+    def ultimo_part_number_fornecedor(self):
+        if self.lancamentocomponente_set.all().last():
+            return self.lancamentocomponente_set.all().last().part_number_fornecedor
+        else:
+            return None
+    
     # geral
     ativo = models.BooleanField(default=True)
     imagem = models.ImageField(upload_to=componente_local_imagem, blank=True, null=True)
@@ -339,6 +344,9 @@ class FabricanteFornecedor(models.Model):
     def nome_curto(self):
         return " ".join(self.nome.split()[0:2])
     
+    
+    class Meta:
+        ordering = [('nome')]
     
     tipo = models.CharField(blank=True, max_length=100, choices=FABRICANTE_FORNECEDOR_TIPO_CHOICES)
     ativo = models.BooleanField(default=True)

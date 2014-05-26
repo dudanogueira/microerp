@@ -26,7 +26,7 @@
 </p>
 
 {% for fab_for in fab_for_encontrados %}
-    <p><a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="fa fa-building"></i> {{fab_for}}</a></p>
+    <p><a href="{% url "producao:ver_fabricantes_fornecedores" fab_for.id %}"><i class="fa fa-building"></i> {{fab_for|upper}}</a></p>
 {% empty %}
 Nenhum Encontrado
 {% endfor %}

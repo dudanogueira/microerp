@@ -593,7 +593,7 @@ def listar_componentes(request):
                 componentes_inativos = Componente.objects.filter(ativo=False).order_by('part_number')
             else:
                 queries = q_componente.split()
-                qset1 =  reduce(operator.__and__, [Q(part_number__icontains=query) | Q(descricao__icontains=query) | Q(tipo__nome__icontains=query)  for query in queries])
+                qset1 =  reduce(operator.__and__, [Q(part_number__icontains=query) | Q(descricao__icontains=query) | Q(tipo__nome__icontains=query) | Q(lancamentocomponente__part_number_fornecedor__icontains=query) | Q(lancamentocomponente__part_number_fabricante__icontains=query)  for query in queries])
                 
                 componentes_encontrados = componentes_encontrados.filter(qset1)
                 componentes_inativos = componentes_inativos.filter(qset1)
@@ -3265,6 +3265,7 @@ def requisicao_de_compra(request):
                 messages.info(request, u"Email enviado para os gerentes. %s" % dest)
             except:
                 messages.error(request, u"Erro! Email não enviado.")
+            return redirect(reverse("producao:requisicao_de_compra"))
             
             
     else:
