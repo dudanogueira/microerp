@@ -20,10 +20,11 @@
 
 		<div class="tab-pane fade in active" id="solicitar-compra-tab">
 			
-			<form method="POST">
+			<form method="POST" id="form-solicitar-compra" name="btn-solicitar-compra">
 				{% csrf_token %}
 				{{form_add_requisicao_de_compra.as_p}}
-				<button type="submit" onclick="this.disabled=true,this.form.submit();" name="solicitar-compra" value="solicitar" class="btn btn-primary"><i class="fa fa-credit-card"></i> Solicitar Compra</button>
+				<input type="hidden" name="btn-solicitar-compra" value="solicitar">
+				<button type="submit" onclick="this.disabled=true,this.form.submit();" class="btn btn-primary"><i class="fa fa-credit-card"></i> Solicitar Compra</button>
 			</form>
 			
 			
@@ -39,12 +40,11 @@
 			<table class="table table-condensed table-rounded table-hover">
 				<thead>
 					<tr>
-						<th>ID</th>
-						<th>Atendido</th>
 						<th>Usuário</th>
 						<th>Solicitante</th>
 						<th>Criado em</th>
 						<th>Data para Atender</th>
+						<th>Início do Atendimento</th>
 						<th>Descrição</th>
 						<th>Criticidade</th>
 						<th>Ação</th>
@@ -53,13 +53,46 @@
 				<tbody>
 					{% for solicitacao in abertos %}
 					<tr>
-						<td>#{{solicitacao.id}}</td>
-						<td>{{solicitacao.atendido|yesno|capfirst}}</td>
 						<td>{{solicitacao.solicitante}}</td>
-						<td>{{solicitacao.solicitado}}</td>
+						<td>
+							{{solicitacao.solicitado}}
+							
+						
+							{% if request.user.perfilacessoproducao.gerente_de_compras %}
+							<!-- Button to trigger modal de nova designacao -->
+							<a href="#modal-novo-designado" data-requisicao-id="{{solicitacao.id}}" data-title="Solicitação ID#{{solicitacao.id}}: {{solicitacao.descricao}}. {{solicitacao.solicitante}}" role="button" class="btn btn-modal-novo-designado" data-toggle="modal"><i class="fa fa-hand-o-right"></i> <i class="fa fa-user"></i></a>
+							{% endif %}
+
+							
+						</td>
 						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
-						<td>{{solicitacao.descricao}}</td>
+						<td>{{solicitacao.inicio_atendimento|date:"SHORT_DATE_FORMAT"}}</td>
+						<td>
+						<a href="#modal-follow-up-exibir"
+						role="button" 
+						data-toggle="modal"
+						data-exibir-modal-title="Follow Ups da Requisição #{{solicitacao.id}}"
+						data-follow-ups="
+						{% if solicitacao.followuprequisicaocompra_set.count %}
+						
+						{% for fup in solicitacao.followuprequisicaocompra_set.all %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<hr />
+						{% endfor %}
+						{% else %}
+							Nenhum Follow Up.
+						{% endif %}"
+						
+						class="btn {% if solicitacao.followuprequisicaocompra_set.all %}popover-items{% endif %} carregar_follow_ups_modal"
+						data-trigger="hover"
+						data-placement="top"
+						data-title="<b>Follow Up <small>(há {{solicitacao.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{solicitacao.ultimo_followup.criado_por.funcionario}}</strong> : {{solicitacao.ultimo_followup.texto}}<br />
+						<p class='alert alert-info'>{{solicitacao.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
+						"
+						>	<i class="fa fa-comment"> {{solicitacao.followuprequisicaocompra_set.count}}</i></a> {{solicitacao.descricao}}
+						</td>
 						
 						<td>
 							{% ifequal solicitacao.criticidade 0 %}
@@ -76,7 +109,15 @@
 						
 						</td>
 						
-						<td><a href="{% url "producao:requisicao_de_compra_atendido" solicitacao.id %}" class="btn btn-success"><i class="fa fa-check"></i></a></td>
+						<td class="btn-group">
+							<a href="{% url "producao:requisicao_de_compra_atendido" solicitacao.id %}" class="btn btn-success"><i class="fa fa-check"></i></a>
+							
+							<!-- Button to trigger modal de follow up -->
+							<a href="#modal-follow-up-add" data-requisicao-id="{{solicitacao.id}}" data-probabilidade="{{solicitacao.probabilidade}}" data-action-url=""  data-title="Solicitação ID#{{solicitacao.id}}: {{solicitacao.descricao}}. {{solicitacao.solicitante}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i> <i class="fa fa-comment"></i></a>
+
+
+							
+						</td>
 					</tr>
 					{% endfor %}
 				</tbody>
@@ -89,7 +130,6 @@
 			<table class="table table-condensed table-rounded table-hover">
 				<thead>
 					<tr>
-						<th>ID</th>
 						<th>Usuário</th>
 						<th>Solicitante</th>
 						<th>Criado em</th>
@@ -102,13 +142,12 @@
 				<tbody>
 					{% for solicitacao in fechados %}
 					<tr>
-						<td>#{{solicitacao.id}}</td>
 						<td>{{solicitacao.solicitante}}</td>
 						<td>{{solicitacao.solicitado}}</td>
 						<td>{{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
 						<td>{{solicitacao.data_solicitado|date:"SHORT_DATE_FORMAT"}}</td>			
 						<td>{{solicitacao.atendido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
-						<td>{{solicitacao.descricao}}</td>
+						<td><i class="fa fa-comment">solicitacao.followupderequisicao_set.count</i> {{solicitacao.descricao}}</td>
 						<td>
 							{% ifequal solicitacao.criticidade 0 %}
 								<span class="badge badge-success">
@@ -132,6 +171,78 @@
 		
 </div>
 
+<!-- Modal Exibe FollowUps -->
+<div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="ModalExibirFollowUpsLabel"></h3>
+  </div>
+  <div class="modal-body" id="ModalExibirFollowUpsBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
+
+
+<!-- Modal Adiciona FollowUp -->
+<div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Adicionar Follow Up</h3>
+  </div>
+  <div class="modal-body">
+		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+		<form method="POST" id="form-adicionar-follow-up" action="">
+			{% csrf_token %}
+			{{form_adicionar_follow_up.requisicao}}
+			<table>
+				<tr>
+					<td>
+						{{form_adicionar_follow_up.texto.label}}
+						{{form_adicionar_follow_up.texto}}
+						{{form_adicionar_follow_up.texto.errors}}
+					</td>
+				</tr>
+			</table>
+		</form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up" name="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
+
+
+<!-- Modal Novo Designado -->
+<div id="modal-novo-designado" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Designar Requisição</h3>
+  </div>
+  <div class="modal-body">
+		<p class="alert alert-info" id="descricao-modal-novo-designado"></p>
+		<form method="POST" id="form-novo-designado" action="">
+			{% csrf_token %}
+			{{form_novo_designado.requisicao}}
+			<table>
+				<tr>
+					<td>
+						{{form_novo_designado.novo_designado.label}}
+						{{form_novo_designado.novo_designado}}
+						{{form_novo_designado.novo_designado.errors}}
+					</td>
+				</tr>
+			</table>
+		</form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-primary" form="form-novo-designado" id="btn-novo-designado" name="btn-novo-designado"><i class="fa fa-hand-o-right"></i> Novo Designado</button>
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
+
+
 {% endblock %}
 
 {% block auxiliar-menu %}
@@ -150,6 +261,48 @@ $(document).ready(function() {
         
 		});
 		
+});
+
+
+$(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
+	$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+	$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'));
+});
+
+$(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
+	$("#descricao-modal-add-follow-up").html( $(this).data('title') );
+	$("#form-adicionar-follow-up #id_requisicao").val($(this).data('requisicao-id'));
+	$("#id_texto").val('');
+	$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+});
+
+
+$(".tab-content").on("click", ".btn-modal-novo-designado", function (e){
+	$("#descricao-modal-novo-designado").html( $(this).data('title') );
+	$("#form-novo-designado #id_requisicao").val($(this).data('requisicao-id'));
+	$("#id_texto").val('');
+	$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+});
+
+
+
+$('#id_texto').on("keyup change", function(){
+    if( $.trim($(this).val()) ){
+		
+    	$("#btn-adicionar-follow-up").show()
+    }else{
+    	$("#btn-adicionar-follow-up").hide()
+    }
+});
+
+
+$('.tab-content').on("hover", ".popover-items", function (e) {
+	$(this).popover("show");
+});
+
+
+$('.tab-content').on("hover", ".tooltip-items", function (e) {
+	$(this).tooltip("show");
 });
 
 
@@ -172,6 +325,11 @@ $('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
 	var pane = $(this);
 	pane.tab('show');		
 })
+
+{% if form_adicionar_follow_up.errors %}
+$('#modal-follow-up-add').modal('show');
+{% endif %}
+
 
 
 </script>

@@ -86,6 +86,7 @@ class PerfilAcessoProducao(models.Model):
         verbose_name_plural = u"Perfis de Acesso à Produção"
     
     gerente = models.BooleanField(default=False)
+    gerente_de_compras = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
@@ -1564,15 +1565,52 @@ class AtividadeDeCompra(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
 
-class RequisicaoDeCompra(models.Model):
+class FollowUpRequisicaoCompra(models.Model):
     
     class Meta:
         ordering = ['-criado']
+        
+        
+    def __unicode__(self):
+        return u"Follow Up da Requisição #%s" % self.requisicao.id
+    
+    def data(self):
+        return self.criado
+        
+    class Meta:
+        ordering = ['-criado']
+    
+    requisicao = models.ForeignKey('RequisicaoDeCompra')
+    texto = models.TextField(blank=False)
+    # registro histórico
+    # metadata
+    criado_por = models.ForeignKey('rh.Funcionario', related_name="followup_requisicao_adicionado_set",  blank=False, null=False)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+        
+class RequisicaoDeCompra(models.Model):
+    
+    def __unicode__(self):
+        return u"Requisição de Compra ID#%s " % self.id
+    
+    class Meta:
+        ordering = ['-criado']
+        
+    def ultimo_followup(self):
+        if self.followuprequisicaocompra_set.count():
+            return self.followuprequisicaocompra_set.all().order_by('-criado')[0]
+        else:
+            return False
+
+    def clean(self):
+        if not self.inicio_atendimento and self.data_solicitado:
+            raise ValidationError(u"Erro! Pelo menos uma das datas (Data Para Atender ou Início do Atendimento) devem ser preenchidas.")
     
     atendido = models.BooleanField(default=False)
     atendido_em = models.DateTimeField(blank=True, default=datetime.datetime.now)
     solicitante = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_solicitada")
     solicitado = models.ForeignKey('rh.Funcionario', related_name="requisicao_de_compra_requerida", verbose_name="Funcionário Solicitante")
+    inicio_atendimento = models.DateTimeField(blank=True, default=datetime.datetime.now)
     data_solicitado = models.DateField(u"Data para Atender", default=datetime.datetime.today)
     descricao = models.TextField(u"Descrição", blank=False)
     criticidade = models.IntegerField(blank=False, choices=ORDEM_DE_COMPRA_CRITICIDADE_CHOICES, default=0, max_length=1)

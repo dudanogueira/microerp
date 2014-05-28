@@ -52,6 +52,7 @@ from producao.models import FalhaDeTeste
 from producao.models import NotaFiscalLancamentosProducao
 from producao.models import LancamentoDeFalhaDeTeste
 from producao.models import LinhaLancamentoFalhaDeTeste
+from producao.models import FollowUpRequisicaoCompra
 
 from rh.models import Funcionario
 
@@ -3228,48 +3229,132 @@ class AddRequisicaoDeCompra(forms.ModelForm):
     
     class Meta:
         model = RequisicaoDeCompra
-        fields = 'solicitante', 'solicitado', 'data_solicitado', 'descricao', 'criticidade'
+        fields = 'solicitante', 'solicitado', 'data_solicitado', 'inicio_atendimento', 'descricao', 'criticidade'
 
+
+class FormAdicionarFollowUp(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(FormAdicionarFollowUp, self).__init__(*args, **kwargs)
+        self.fields['requisicao'].widget = forms.HiddenInput()
+        self.fields['texto'].required = True
+
+    class Meta:
+        model = FollowUpRequisicaoCompra
+        fields = 'requisicao', 'texto',
+    
+class FormNovoDesignadoRequisicao(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        super(FormNovoDesignadoRequisicao, self).__init__(*args, **kwargs)
+        self.fields['requisicao'].widget = forms.HiddenInput()
+    
+    novo_designado = forms.ModelChoiceField(queryset=Funcionario.objects.filter(user__perfilacessoproducao__analista=True), required=True, empty_label=None)
+    requisicao = forms.IntegerField()
+    
 @user_passes_test(possui_perfil_acesso_producao)
 def requisicao_de_compra(request):
     abertos = RequisicaoDeCompra.objects.filter(atendido=False)
     fechados = RequisicaoDeCompra.objects.filter(atendido=True).order_by('-atendido_em')
+    
+    form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
+    form_adicionar_follow_up = FormAdicionarFollowUp()
+    form_novo_designado = FormNovoDesignadoRequisicao()
+    
+    
     if request.GET.get('criticidade', None):
             abertos = abertos.filter(criticidade=request.GET.get('criticidade', None))
     
     if request.POST:
-        form_add_requisicao_de_compra = AddRequisicaoDeCompra(request.POST, solicitante=request.user.funcionario)
-        if form_add_requisicao_de_compra.is_valid():
-            requisicao_compra = form_add_requisicao_de_compra.save()
-            # reinicia formulário
-            form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
-            messages.success(request, u"Sucesso! Requisição de Compra #%s criada." % requisicao_compra.id)
-            # envia email
-            template = loader.get_template('template_de_email/nova-requisicao-de-compra.html')
-            d = locals()
-            c = Context(d)
-            content = template.render(c)
-            gerentes = PerfilAcessoProducao.objects.filter(gerente=True)
-            dest = []
-            for gerente in gerentes:
+        if 'btn-solicitar-compra' in request.POST:
+            form_add_requisicao_de_compra = AddRequisicaoDeCompra(request.POST, solicitante=request.user.funcionario)
+            if form_add_requisicao_de_compra.is_valid():
+                requisicao_compra = form_add_requisicao_de_compra.save()
+                # reinicia formulário
+                form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
+                messages.success(request, u"Sucesso! Requisição de Compra #%s criada." % requisicao_compra.id)
+                # envia email
+                template = loader.get_template('template_de_email/nova-requisicao-de-compra.html')
+                d = locals()
+                c = Context(d)
+                content = template.render(c)
+                gerentes = PerfilAcessoProducao.objects.filter(gerente=True)
+                dest = []
+                for gerente in gerentes:
+                    try:
+                        if gerente.user.email:
+                            dest.append(gerente.user.email)
+                        if gerente.user.funcionario:
+                            dest.append(gerente.user.funcionario.email)
+                    except:
+                        pass
+                email = EmailMessage('Requisição de Compra: #%s' % requisicao_compra.id, content, settings.DEFAULT_FROM_EMAIL, dest,)
                 try:
-                    if gerente.user.email:
-                        dest.append(gerente.user.email)
-                    if gerente.user.funcionario:
-                        dest.append(gerente.user.funcionario.email)
+                    email.send(fail_silently=False)
+                    messages.info(request, u"Email enviado para os gerentes. %s" % dest)
                 except:
-                    pass
-            email = EmailMessage('Requisição de Compra: #%s' % requisicao_compra.id, content, settings.DEFAULT_FROM_EMAIL, dest,)
-            try:
-                email.send(fail_silently=False)
-                messages.info(request, u"Email enviado para os gerentes. %s" % dest)
-            except:
-                messages.error(request, u"Erro! Email não enviado.")
-            return redirect(reverse("producao:requisicao_de_compra"))
-            
-            
-    else:
-        form_add_requisicao_de_compra = AddRequisicaoDeCompra(solicitante=request.user.funcionario)
+                    messages.error(request, u"Erro! Email não enviado.")
+                return redirect(reverse("producao:requisicao_de_compra"))
+        
+        if 'btn-novo-designado' in request.POST:
+            if request.user.perfilacessoproducao.gerente_de_compras:
+                form_novo_designado = FormNovoDesignadoRequisicao(request.POST)
+                if form_novo_designado.is_valid():
+                    requisicao = RequisicaoDeCompra.objects.get(pk=form_novo_designado.cleaned_data['requisicao'])
+                    antigo_solicitado = requisicao.solicitado
+                    novo_solicitado = form_novo_designado.cleaned_data['novo_designado']
+                    requisicao.solicitado = novo_solicitado
+                    requisicao.save()
+                    messages.success(request, u"Successo! Requisição ID#%s com nova designação!" % requisicao.id)
+                    template = loader.get_template('template_de_email/nova-designacao-requisicao-de-compra.html')
+                    d = locals()
+                    c = Context(d)
+                    content = template.render(c)
+                    dest = []
+                    # solicitante
+                    if novo_solicitado.user.email:
+                        dest.append(novo_solicitado.user.email)
+                    else:
+                        dest.append(novo_solicitado.email)
+                    
+                    email = EmailMessage('Follow UP de Requisição de Compra: #%s' % requisicao.id, content, settings.DEFAULT_FROM_EMAIL, dest,)
+                    try:
+                        email.send(fail_silently=False)
+                        messages.info(request, u"Email enviado para os gerentes. %s" % dest)
+                    except:
+                        messages.error(request, u"Erro! Email não enviado.")
+                    
+                    
+            else:
+                messages.warning(request, u"Erro! Precisa ser gerente de Compras!")
+                
+        if 'btn-adicionar-follow-up' in request.POST:
+            form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
+            if form_adicionar_follow_up.is_valid():
+                follow_up = form_adicionar_follow_up.save(commit=False)
+                follow_up.criado_por = request.user.funcionario
+                follow_up.save()
+                messages.success(request, "Follow Up Registrado.")
+                template = loader.get_template('template_de_email/followup-de-requisicao-de-compra.html')
+                d = locals()
+                c = Context(d)
+                content = template.render(c)
+                
+                gerentes = PerfilAcessoProducao.objects.filter(gerente_de_compras=True)
+                dest = []
+                # solicitante
+                if follow_up.requisicao.solicitante.user.email:
+                    dest.append(follow_up.requisicao.solicitante.user.email)
+                elif follow_up.requisicao.solicitante.user.funcionario:
+                    dest.append(follow_up.requisicao.solicitante.user.funcionario.email)
+                
+                email = EmailMessage('Follow UP de Requisição de Compra: #%s' % follow_up.requisicao.id, content, settings.DEFAULT_FROM_EMAIL, dest,)
+                try:
+                    email.send(fail_silently=False)
+                    messages.info(request, u"Email enviado para o solicitante: %s" % dest)
+                except:
+                    messages.error(request, u"Erro! Email não enviado.")
+                
     return render_to_response('frontend/producao/producao-requisicao-de-compra.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -3279,6 +3364,7 @@ def requisicao_de_compra_atendido(request, requisicao_id):
     requisicao.atendido_em = datetime.datetime.now()
     requisicao.save()
     return redirect(reverse('producao:requisicao_de_compra') + "#tab_abertos")
+
 
 
 REGISTROS_CHOICE_FIELD = (

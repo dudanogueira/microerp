@@ -30,6 +30,7 @@ from models import RegistroValorEstoque
 from models import ControleDeCompra
 from models import AtividadeDeCompra
 from models import RequisicaoDeCompra
+from models import FollowUpRequisicaoCompra
 from models import OrdemConversaoSubProduto
 from models import LancamentoProdProduto
 from models import LinhaTesteLancamentoProdProduto
@@ -213,8 +214,8 @@ class LinhaLancamentoFalhaDeTesteAdmin(admin.ModelAdmin):
     list_display = 'quantidade', 'falha', 'lancamento_teste',
 
 class PerfilAcessoProducaoAdmin(admin.ModelAdmin):
-    list_filter = 'user', 'gerente', 'analista'
-    list_display = 'user', 'gerente', 'analista'
+    list_filter = 'user', 'gerente', 'gerente_de_compras', 'analista'
+    list_display = 'user', 'gerente', 'gerente_de_compras', 'analista'
 
 
 class AtividadeDeCompraInline(admin.StackedInline):
@@ -223,6 +224,13 @@ class AtividadeDeCompraInline(admin.StackedInline):
 
 class ControleDeCompraAdmin(admin.ModelAdmin):
     inlines = [AtividadeDeCompraInline]
+
+class FollowUpDePropostaComercialInline(admin.StackedInline):
+    model = FollowUpRequisicaoCompra
+    extra = 0
+
+class RequisicaoDeCompraAdmin(admin.ModelAdmin):
+    inlines = [FollowUpDePropostaComercialInline,]
 
 admin.site.register(OrdemProducaoSubProduto)
 admin.site.register(OrdemProducaoProduto)
@@ -248,7 +256,7 @@ admin.site.register(RegistroSaidaDeTesteSubProduto, RegistroSaidaDeTesteSubProdu
 admin.site.register(RegistroValorEstoque)
 admin.site.register(ControleDeCompra, ControleDeCompraAdmin)
 admin.site.register(AtividadeDeCompra)
-admin.site.register(RequisicaoDeCompra)
+admin.site.register(RequisicaoDeCompra, RequisicaoDeCompraAdmin)
 admin.site.register(OrdemConversaoSubProduto)
 admin.site.register(LancamentoProdProduto, LancamentoProdProdutoAdmin)
 admin.site.register(LinhaTesteLancamentoProdProduto)
