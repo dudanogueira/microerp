@@ -73,7 +73,7 @@
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
 				{% endif %}
 				<Br />
-				{% if form.instance.custo_total %}
+				{% if not forloop.last or forloop.first %}
 				<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-material-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
 				{% endif %}
 			</div>
@@ -132,7 +132,7 @@
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
 				{% endif %}
 				<Br />
-				{% if form.instance.custo_total %}
+				{% if not forloop.last or forloop.first %}
 				<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-humano-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
 				{% endif %}
 			</div>

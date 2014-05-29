@@ -458,7 +458,7 @@ class LinhaRecursoLogisticoForm(forms.ModelForm):
     class Meta:
         model = LinhaRecursoLogistico
         fields = 'tipo', 'custo_total', 'descricao'
-    
+
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
@@ -475,6 +475,7 @@ def editar_proposta(request, proposta_id):
                 # clona o modelo de orcamento pra dentro da proposta
                 for modelo in modelos:
                     linhas_materiais = modelo.linharecursomaterial_set.all()
+                    linhas_humano = modelo.linharecursohumano_set.all()
                     # cria novo orcamento à partir de modelo
                     novo_orcamento = modelo
                     novo_orcamento.pk = None
@@ -485,6 +486,8 @@ def editar_proposta(request, proposta_id):
                         # registra inicio e fim da promocao
                         novo_orcamento.inicio_promocao = modelo.inicio_promocao
                         novo_orcamento.fim_promocao = modelo.fim_promocao
+                    if modelo.promocao or modelo.tabelado:
+                        novo_orcamento.custo_total = modelo.custo_total
                         
                     novo_orcamento.modelo = False
                     novo_orcamento.proposta = proposta
@@ -497,6 +500,13 @@ def editar_proposta(request, proposta_id):
                         linha.pk = None
                         linha.orcamento = novo_orcamento
                         linha.save()
+                    # copia todas as linhas de recursos humanos
+                    # copia todos as linhas de materiais pro modelo
+                    for linha in linhas_humano:
+                        linha.pk = None
+                        linha.orcamento = novo_orcamento
+                        linha.save()
+                    
         if request.POST.get('adicionar-orcamento-btn'):
             adicionar_orcamento_form = OrcamentoForm(request.POST)
             if adicionar_orcamento_form.is_valid():

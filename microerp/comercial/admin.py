@@ -75,8 +75,8 @@ class LinhaRecursoHumanoInLine(admin.TabularInline):
 
 class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
-    list_filter = 'modelo', 'ativo', 'promocao'
-    list_display = 'descricao', 'ativo', 'modelo', 'promocao'
+    list_filter = 'modelo', 'ativo', 'promocao', 'tabelado'
+    list_display = 'descricao', 'ativo', 'modelo', 'promocao', 'tabelado'
     
 class LancamentoFinanceiroReceberInline(admin.TabularInline):
     model = LancamentoFinanceiroReceber

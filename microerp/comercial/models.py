@@ -156,16 +156,15 @@ class PropostaComercial(models.Model):
         + Mínimo do Kit Tabelado
         + x% do Orcamento Avulso
         '''
-        
     
     def custo_logistica(self):
-        valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum']
+        valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum'] or 0
         return float(valor_custo_logistica)
         
     def custo_logistica_com_margem(self):
-        valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum']
+        valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum'] or 0
         total_margem = self.taxa_margem()
-        valor_margem =  (total_margem * float(valor_custo_logistica)) / 100.0
+        valor_margem =  (float(total_margem) * float(valor_custo_logistica)) / 100.0
         novo_valor = float(valor_custo_logistica) + float(valor_margem)
         return float(novo_valor) or 0
     
@@ -195,7 +194,7 @@ class PropostaComercial(models.Model):
         administrativo = self.administrativo
         impostos = self.impostos
         total_margem = float(lucro) + float(administrativo) + float(impostos)
-        return total_margem or 0
+        return float(total_margem) or 0
     
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
@@ -646,6 +645,8 @@ def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
             recalcula = False
         else:
             recalcula = True
+    else:
+        recalcula=False
     if recalcula:
         try:
             obj = LinhaRecursoMaterial.objects.get(pk=instance.pk)
@@ -665,21 +666,31 @@ def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
 def atualiza_preco_linhas_humano(signal, instance, sender, **kwargs):
     '''atualiza o preco das linhas de orcamento'''
     # se for promocao ou modelo o preco pode ser definido
-    
-    try:
-        obj = LinhaRecursoHumano.objects.get(pk=instance.pk)
-        instance.custo_unitario = instance.cargo.fracao_hora_referencia
-    except LinhaRecursoHumano.DoesNotExist:
-        instance.custo_unitario = instance.cargo.fracao_hora_referencia
+    recalcula = True
+    # quando não tem proposta, é modelo (promocao, modelo livre, tabelado)
+    # nesses casos, não pode calcular automático
+    if instance.orcamento.proposta != None:
+        if instance.orcamento.promocao or instance.orcamento.tabelado:
+            recalcula = False
+        else:
+            recalcula = True
     else:
-        if not obj.cargo == instance.cargo: # Field has changed
+        recalcula=False
+    if recalcula:
+        try:
+            obj = LinhaRecursoHumano.objects.get(pk=instance.pk)
             instance.custo_unitario = instance.cargo.fracao_hora_referencia
+        except LinhaRecursoHumano.DoesNotExist:
+            instance.custo_unitario = instance.cargo.fracao_hora_referencia
+        else:
+            if not obj.cargo == instance.cargo: # Field has changed
+                instance.custo_unitario = instance.cargo.fracao_hora_referencia
 
-    if instance.quantidade and instance.cargo.fracao_hora_referencia:
-        resultado = instance.cargo.fracao_hora_referencia * instance.quantidade
-    else:
-        resultado = 0
-    instance.custo_total = resultado
+        if instance.quantidade and instance.cargo.fracao_hora_referencia:
+            resultado = instance.cargo.fracao_hora_referencia * instance.quantidade
+        else:
+            resultado = 0
+        instance.custo_total = resultado
 
 
 def atualiza_custo_total_orcamento(signal, instance, sender, **kwargs):
