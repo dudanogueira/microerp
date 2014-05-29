@@ -13,6 +13,8 @@
 	<div class="span6">
 		{% if request.user.perfilacessocomercial.gerente %}
 		<h4>Como Gerente</h4>
+		<small>
+		Lucro {{proposta.lucro}}%, Impostos: {{proposta.impostos}}%, Administrativo: {{proposta.administrativo}}%</small>
 		{% endif %}
 	</div>
 </div>
@@ -48,18 +50,18 @@
 			</form>
 		
 			<p class="btn-group">
-				<button type="submit" class="btn btn-danger btn-large" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-pencil"></i></button>
+				<button data-toggle="tooltip" title="Alterar" data-placement="top" type="submit" class="btn btn-danger btn-large tooltip-items" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-save"></i></button>
 				{% if proposta.orcamentos_ativos %}
-				<a href="{% url "comercial:editar_proposta_imprimir_orcamentos_da_proposta" proposta.id %}" class="btn btn-info btn-large"><i class="fa fa-print"></i></a>
+				<a data-toggle="tooltip" title="Imprimir" data-placement="top" href="{% url "comercial:editar_proposta_imprimir_orcamentos_da_proposta" proposta.id %}" class="btn btn-info btn-large tooltip-items"><i class="fa fa-print"></i></a>
 				{% endif %}
+				<a data-toggle="modal" data-target="#ModalMemoriaDeCalculo" title="Memória de Cálculo" data-placement="top" href="" class="tooltip-items btn btn-warning btn-large"><i class="fa fa-dollar"></i></a>
 			</p>
 		</div>
-		
+
 		
 	</div>
 </div>
 		<a href="" class="btn btn-primary" data-toggle="modal" data-target="#ModalAdicionaNovoOrcamento"><i class="fa fa-plus"></i> Adicionar Orçamento</a>
-
 
 {% if proposta.orcamentos_ativos %}
 
@@ -68,13 +70,50 @@
 {% for orcamento_ativo in proposta.orcamentos_ativos %}
 <div class="row-fluid">
 	<div class="span8">
-		<div class="alert alert-success">
-			{{orcamento_ativo}}
+
+		<div class="row-fluid">
+			<div class="span10">
+				<div class="alert alert-success">
+					{{orcamento_ativo}}<br />
+					{% if orcamento_ativo.promocao %}
+					<small class="label label-info"><i class="fa fa-clock-o"></i> <strong>De</strong> {{orcamento_ativo.inicio_promocao|date:"SHORT_DATE_FORMAT"}} <strong>a</strong> {{orcamento_ativo.fim_promocao|date:"SHORT_DATE_FORMAT"}} </small>
+					{% endif %}
+					
+				</div>
+				
+			</div>
+			
+			<div class="span2">
+				{% if orcamento_ativo.promocao %}
+				<i class="fa fa-asterisk fa-2x"></i>
+				<small>promoção</small>
+				
+				{% else %}
+
+					{% if orcamento_ativo.tabelado %}
+					<i class="fa fa-table fa-2x"></i>
+					<small>tabelado</small>
+					{% else %}
+					<i class="fa fa-clipboard fa-2x"></i>
+					<small>avulso</small>
+					{% endif %}
+
+				{% endif %}
+			</div>
+				
 		</div>
+		
+		
 	</div>
 	<div class="span4">
 		<p class="btn-group">
+			{% if orcamento_ativo.promocao or orcamento_ativo.tabelado %}
+			
+				<a data-toggle="tooltip" title="Ver" data-placement="top" href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-primary tooltip-items"><i class="fa fa-eye"></i></a>
+				
+			{% else %}
 			<a data-toggle="tooltip" title="Editar" data-placement="top" href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning tooltip-items"><i class="fa fa-pencil"></i></a>
+			{% endif %}
 			<a data-toggle="tooltip" title="Inativar" data-placement="top" href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger tooltip-items"><i class="fa fa-thumbs-down"></i></a>
 			<a data-toggle="tooltip" title="Reajustar" data-placement="top" href="{% url "comercial:editar_proposta_reajustar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-success tooltip-items"><i class="fa fa-refresh"></i></a>
 			<a data-toggle="tooltip" title="Imprimir" data-placement="top"  href="{% url "comercial:editar_proposta_imprimir_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-info tooltip-items"><i class="fa fa-print"></i></a>
@@ -101,10 +140,41 @@
 		</p>
 	</div>
 </div>
-
-
 {% endfor %}
 {% endif %}
+
+
+<h3>Custos de Logística</h3>
+	<form class="form form-inline well well-small" method="POST">
+		{% csrf_token %}
+		{{form_editar_linhas_logistica.management_form}}
+	{% for form in form_editar_linhas_logistica %}
+		{{form.errors}}
+		<div class="row-fluid">
+			<div class="span1">
+				{{form.DELETE}} <i class="fa fa-trash-o"></i>
+			</div>
+			<div class="span3">
+				<b>Tipo</b><br />
+				{{form.tipo}}
+			</div>
+			
+			<div class="span4">
+				<b>Custo</b><br />
+				{{form.custo_total}}
+			</div>
+			
+			<div class="span4">
+				<b>Descrição</b><br />
+				{{form.descricao}}
+				{{form.id}}
+			</div>
+			
+		</div>
+		<hr />
+	{% endfor %}
+	<button type="submit" class="btn btn-danger" name="salva-recursos-logisticos" value="salvar"><i class="fa fa-truck"></i> Salvar Custos de Logística</button>
+	</form>
 
 
 
@@ -129,6 +199,69 @@
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+
+
+<!-- Modal Memória de Calculo-->
+<div class="modal fade" id="ModalMemoriaDeCalculo" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Memória de Cálculo</h4>
+      </div>
+	  
+	  <table class="table table-bordered">
+	        <thead>
+	          <tr>
+	            <th>Natureza</th>
+	            <th>Valor Líquido</th>
+				<th>Valor Bruto	</th>
+	          </tr>
+	        </thead>
+	        <tbody>
+	          <tr>
+	            <td>Custo de Logística</td>
+				<td>{{proposta.custo_logistica}}</td>
+				<td>{{proposta.custo_logistica_com_margem}}</td>
+	          </tr>
+	          <tr>
+	            <td>Orçamentos</td>
+				<td>{{proposta.custo_orcamentos}}</td>
+				<td>{{proposta.custo_orcamentos_com_margem}}</td>
+	          </tr>
+	          <tr>
+	            <td>Promoções</td>
+				<td>{{proposta.custo_promocional}}</td>
+				<td>{{proposta.custo_promocional}}</td>
+	          </tr>
+	          <tr>
+	            <td>Kits Tabelados</td>
+				<td>{{proposta.custo_tabelados}}</td>
+				<td>{{proposta.custo_tabelados}}</td>
+	          </tr>
+			  
+			  <tr class="alert-info">
+				  <td>Consolidado</td>
+				  <td>{{proposta.consolidado_bruto}}</td>
+				  <td><strong>{{proposta.consolidado}}</strong></td>
+					  
+			  </tr>
+			  
+			  
+			  
+	        </tbody>
+	      </table>
+			
+	  	
+	  
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 
 {% endblock %}
 

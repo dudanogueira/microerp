@@ -390,6 +390,15 @@ class Funcionario(models.Model):
     def atribuicao_responsabilidade_nao_treinado_atualizar(self):
         return self.periodo_trabalhado_corrente.atribuicaoderesponsabilidade_set.filter(treinamento_realizado=False, tipo_de_treinamento="atualizar")
     
+    # REQUISICAO DE COMPRAS
+    
+    def requisicao_de_compra_solicitada_aberta(self):
+        return self.requisicao_de_compra_solicitada.filter(atendido=False)
+
+    def requisicao_de_compra_requerida_aberta(self):
+        return self.requisicao_de_compra_requerida.filter(atendido=False)
+
+    
     
     uuid = UUIDField()
     foto = ImageField(upload_to=funcionario_avatar_img_path, blank=True, null=True)
@@ -531,6 +540,7 @@ class Cargo(models.Model):
     nome = models.CharField(blank=False, null=False, max_length=100, verbose_name=u"Nome do Cargo")
     descricao = models.TextField(u"Descrição", blank=True)
     salario_referencia = models.DecimalField(u"Salário Referência", max_digits=10, decimal_places=2)
+    fracao_hora_referencia = models.DecimalField(u"Referência de Fração de Hora", max_digits=10, decimal_places=2, help_text=u"Valor usado para calcular a participacão de funcionário deste cargo em orçamento.")
     departamento = models.ForeignKey('Departamento')
     periculosidade = models.DecimalField(u"Periculosidade", max_digits=10, decimal_places=2)
     gratificacao = models.DecimalField(u"Gratificação", max_digits=10, decimal_places=2)

@@ -377,8 +377,6 @@ $('.tab-content').on("hover", ".tooltip-items", function (e) {
 });
 
 
-
-
 $(document).ready(function() {
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
 	
@@ -392,14 +390,11 @@ $(document).ready(function() {
 			});
 		}
 
-
     {% if form_adicionar_follow_up.errors %}
 		$('#modal-follow-up-add').modal('show');
     {% endif %}	
 
 });
-
-
 
 $(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
 	$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));

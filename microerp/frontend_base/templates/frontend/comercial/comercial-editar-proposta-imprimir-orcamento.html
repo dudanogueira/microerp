@@ -6,13 +6,15 @@
 <div class="row-fluid">
 	<div class="span4">
 		<img src="{{logo_empresa}}">
-		<h1>Proposta ID#{{orcamento.proposta.id}}</h1>
+		<h1>Proposta #{{orcamento.proposta.id}}</h1>
 	</div>
 	<div class="span8">
 		<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}}</h2>
 		<h3>{% if orcamento.proposta.precliente %}{{orcamento.proposta.precliente}}{% else %}{{orcamento.proposta.cliente}}{% endif %}</h3>
 	</div>
+</div>
 	
+	<h4>Recurso Material</h4>
 	<table class="table table-condensed table-bordered table-rounded">
 		<thead>
 			<tr>
@@ -32,6 +34,36 @@
 				<td>{{linha.produto.unidade}}</td>
 				<td>{{linha.quantidade}}</td>
 				<td>R$ {{linha.custo_unitario}}</td>
+				<td>R$ {{linha.custo_total}}</td>
+			</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td><strong>R$ {{orcamento.custo_total}}</strong></td>
+		</tr>
+		</tbody>
+	</table>
+
+	<h4>Recurso Humano</h4>
+	<table class="table table-condensed table-bordered table-rounded">
+		<thead>
+			<tr>
+				<th>Cargo</th>
+				<th>Valor/H</th>
+				<th>Quantidade</th>
+				<th>Total</th>
+			</tr>
+		</thead>
+		</tbody>
+		{% for linha in orcamento.linharecursohumano_set.all %}
+			<tr>
+				<td>{{linha.cargo.nome}}</td>
+				<td>{{linha.cargo.fracao_hora_referencia}}</td>
+				<td>{{linha.quantidade}}</td>
 				<td>R$ {{linha.custo_total}}</td>
 			</tr>
 		{% endfor %}

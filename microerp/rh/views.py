@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-import datetime
+import datetime, operator
 from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
+from django.http import HttpResponse
 from django.core.urlresolvers import reverse
 
 from django.core.exceptions import ValidationError
-from django.contrib.auth.decorators import user_passes_test
+from django.contrib.auth.decorators import user_passes_test, login_required
 
 from django.db.models import Q, Sum
 
@@ -1310,3 +1311,37 @@ def indicadores_do_rh(request):
         
 
     return render_to_response('frontend/rh/rh-indicadores.html', locals(), context_instance=RequestContext(request),)
+
+
+from django.views.decorators.csrf import csrf_exempt    
+from django.utils import simplejson
+
+@csrf_exempt
+@login_required
+def ajax_consulta_cargo(request):
+    q = request.GET.get('q', None)
+    mostra_preco = request.GET.get('mostra_preco', None)
+    id_cargo = request.GET.get('id', None)
+    if q:
+        queries = q.split()
+        qset1 =  reduce(operator.__and__, [Q(descricao__icontains=query) | Q(nome__icontains=query)  for query in queries])
+        cargos = Cargo.objects.filter(qset1)
+    if id_cargo:
+        cargo = Cargo.objects.get(
+            pk=id_cargo
+        )
+        if mostra_preco:
+            nome_cargo = "%s - (R$ %s/h)" % (cargo.nome, cargo.fracao_hora_referencia)
+        else:
+            nome_cargo = "%s - %s" % cargo.nome
+        result={"text":nome_cargo, "id": str(cargo.id), "preco": float(cargo.fracao_hora_referencia)}
+        return HttpResponse(simplejson.dumps(result), mimetype='application/json')
+    result = []
+    for cargo in cargos:
+        if mostra_preco:
+            nome_cargo = "%s - (R$ %s/h)" % (cargo.nome, cargo.fracao_hora_referencia)
+        else:
+            nome_cargo = "%s - %s" % cargo.nome
+        
+        result.append({"text":nome_cargo, "id": str(cargo.id), "preco": float(cargo.fracao_hora_referencia)})
+    return HttpResponse(simplejson.dumps(result), mimetype='application/json')

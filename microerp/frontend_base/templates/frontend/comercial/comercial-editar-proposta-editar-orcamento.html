@@ -6,66 +6,155 @@
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Editar Modelos de Orçamento</h1>
+
 <h2>Orçamento: {{orcamento.descricao}} - Valor Atual R$ {{orcamento.custo_total}}</h2>
+
 <form method="POST" class="form-inline" name="form-altera-modelo">
 	{% csrf_token %}
-	{{form_editar_linhas.management_form}}
-	{{form_orcamento.as_p}}
-	{{form.errors}}
-		<hr/>
-
-		<div class="btn-group">
-		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
-		
-		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-pencil"></i> Atualizar Orçamento</button>
-		
-	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> 
-		
-		</div>
-
-
-	{% for form in form_editar_linhas %}
-	<div class="row-fluid">
+	{{form_editar_linhas_material.management_form}}
+	{{form_editar_linhas_humano.management_form}}
+	
+<div class="row-fluid">
+	<div  class="span8">
+		{{form_orcamento.as_p}}
 		{{form.errors}}
+	</div>
 		
-		<div class="span6">
-			{{form.produto.label}}
-			{{form.produto}}
-			{{form.produto.errors}}
-		</div>
+	<div  class="span4">
 		
-		<div class="span3">
-			{{form.quantidade.label}}
-			{{form.quantidade}}
-			{{form.quantidade.errors}}
-			{{form.id}}
-		</div>
+      	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar</a> 
+		 {% if not orcamento.promocao and not orcamento.tabelado %}
+ 		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button>
+		{% endif %}
 		
-		<div class="span3">
-			{{form.DELETE}} Apagar
-			<Br />
-			<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
-		</div>
+		 
 		
 	</div>
-	<hr />
-	{% endfor %}
-		<div class="btn-group">
-		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+</div>
+
+
+<ul class="nav nav-tabs normargin" id="navtab-orcamento-linhas">
+    <li class="active"><a href="#orcamento-linhas-material" data-toggle="tab"><span class="badge badge-success">{{orcamento.linharecursomaterial_set.count}}</span> Material</a></li>
+	<li> <a href="#orcamento-linhas-mao-de-obra" data-toggle="tab"><span class="badge badge-important">{{orcamento.linharecursohumano_set.count}}</span> Mão de Obra </a></li>
+</ul>
+
+<div id="tab-content-orcamento-linhas" class="tab-content">
+
+	<div class="tab-pane fade in active" id="orcamento-linhas-material">
 		
-		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-pencil"></i> Atualizar Orçamento</button>
+
+		{% for form in form_editar_linhas_material %}
+		<div class="row-fluid">
+			{{form.errors}}
 		
-	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar à Proposta #{{orcamento.proposta.id}}</a> 
+			<div class="span6">
+				{% if orcamento.promocao or orcamento.tabelado %}
+					{{form.instance.produto}}
+				{% else %}
+				{{form.produto.label}} <small><em><strong>Custo Unitário Registrado: R$ {{form.instance.custo_unitario}}</strong></em></small>
+				{{form.produto}}
+				{{form.produto.errors}}
+				{% endif %}
+			</div>
+		
+			<div class="span3">
+				{% if orcamento.promocao or orcamento.tabelado %}
+						{% if form.instance.quantidade %}{{form.instance.quantidade}}{% endif %}
+				{% else %}
+				{{form.quantidade.label}}
+				{{form.quantidade}}
+				{{form.quantidade.errors}}
+				{{form.id}}
+				{% endif %}
+			</div>
+		
+			<div class="span3">
+				{% if not orcamento.promocao and not orcamento.tabelado %}
+				{{form.DELETE}} <i class="fa fa-trash-o"></i>
+				{% endif %}
+				<Br />
+				{% if form.instance.custo_total %}
+				<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-material-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
+				{% endif %}
+			</div>
 		
 		</div>
+		{% if orcamento.promocao or orcamento.tabelado %}
+		{% if not forloop.last %}
+			<hr />
+		{% endif %}
+		{% endif %}
+		{% endfor %}
 		
-	
-	<hr />
+		{% if not orcamento.promocao and not orcamento.tabelado %}
+		<p><br />
+		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
+		</p>
+		{% endif %}
 		
-	<p class="alert alert-info">
-		Total Geral: <span class="total-geral">R$ {{orcamento.custo_total}}</span><br />
-	</p>
+	</div>
 	
+	
+	<div class="tab-pane fade in" id="orcamento-linhas-mao-de-obra">
+		{% for form in form_editar_linhas_humano %}
+		<div class="row-fluid">
+			{{form.errors}}
+
+			<div class="span6">
+				{% if orcamento.promocao or orcamento.tabelado %}
+				{{form.instance.cargo}}
+				{% else %}
+				{{form.cargo.label}}
+				{{form.cargo}}
+				{{form.cargo.errors}}
+				
+				{% endif %}
+			</div>
+		
+			<div class="span3">
+				{% if orcamento.promocao or orcamento.tabelado %}
+				{% if form.instance.quantidade %}
+					{{form.instance.quantidade}}
+				{% endif %}
+				{% else %}
+				
+				{{form.quantidade.label}}
+				{{form.quantidade}}
+				{{form.quantidade.errors}}
+				{{form.id}}
+				
+				
+				{% endif %}
+			</div>
+		
+			<div class="span3">
+				{% if not orcamento.promocao and not orcamento.tabelado %}
+				{{form.DELETE}} <i class="fa fa-trash-o"></i>
+				{% endif %}
+				<Br />
+				{% if form.instance.custo_total %}
+				<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-humano-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
+				{% endif %}
+			</div>
+		
+		</div>
+		{% if not forloop.last %}
+			<hr />
+		{% endif %}
+		
+		{% endfor %}
+		
+		{% if not orcamento.promocao and not orcamento.tabelado %}
+		<p><br />
+		<button class="btn btn-primary" name="adicionar_linha_humano" value="adicionar"><i class="fa fa-plus"></i> Adicionar Mão de Obra</button>
+		</p>
+		{% endif %}
+		
+	</div>
+	
+</div>
+
+
 </form>
 
 {% endblock %}
@@ -77,7 +166,39 @@
 
 <script>
 
-$(".select2-ajax").select2({
+$(".select2-ajax-humano").select2({
+	placeholder: "",
+	minimumInputLength: 3,
+	ajax: { 
+		url: "{% url "ajax_consulta_cargo" %}?mostra_preco=sim",
+		type: 'GET',
+		dataType: 'json',
+		data: function(term, page) {
+			return {
+				q: term,
+				page_limit: 10,
+			};
+		},
+		results: function (data) {
+			return {results: data};
+		},
+	},
+	initSelection: function(element, callback) {
+	    var id=$(element).val();
+	    if (id!=="") {
+	       $.ajax("{% url "ajax_consulta_cargo" %}?mostra_preco=sim&id="+id, {
+	       dataType: "json"
+	       }).done(function(data) { 
+					 callback(data);
+					 $(".recalcula_quantidade_quando_muda").trigger("change");
+				 });
+	    }
+	},
+});
+
+
+
+$(".select2-ajax-material").select2({
 	placeholder: "",
 	minimumInputLength: 3,
 	ajax: { 
@@ -108,12 +229,38 @@ $(".select2-ajax").select2({
 });
 
 
-function calcula_linha(id){
+function calcula_linha_material(id){
 	id2 = parseInt(id) + 1;
-	var container = "#total-da-linha-"+id2;
-	quantidade_id = "#id_orcamento-"+id+"-quantidade"
+	var container = "#total-da-linha-material-"+id2;
+	quantidade_id = "#id_orcamento-material-"+id+"-quantidade"
 	quantidade = $(quantidade_id).val()
-	produto_id = "#id_orcamento-"+id+"-produto"
+	produto_id = "#id_orcamento-material-"+id+"-produto"
+	if ($(produto_id).select2('data')){
+		
+		valor_produto = $(produto_id).select2('data')['preco']
+		preco_final = parseFloat(valor_produto) * parseFloat(quantidade)
+		if (!preco_final){
+			preco_final = 0
+		}
+		preco_final_formatado = parseFloat(preco_final).toFixed(2)
+		$(container).html(preco_final_formatado);
+		var valor_total = 0;
+		$(".valor_linhas").each(function(){
+			valor = Number($(this).html())
+			if(valor){
+				valor_total += Number($(this).html());
+			}
+		})
+		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));	
+	}
+}
+
+function calcula_linha_humano(id){
+	id2 = parseInt(id) + 1;
+	var container = "#total-da-linha-humano-"+id2;
+	quantidade_id = "#id_orcamento-humano-"+id+"-quantidade"
+	quantidade = $(quantidade_id).val()
+	produto_id = "#id_orcamento-humano-"+id+"-cargo"
 	if ($(produto_id).select2('data')){
 		
 		valor_produto = $(produto_id).select2('data')['preco']
@@ -135,19 +282,56 @@ function calcula_linha(id){
 
 }
 
-$(".select2-ajax, .recalcula_quantidade_quando_muda").on('change', function(e) {
+$(".select2-ajax-material, .recalcula_quantidade_quando_muda").on('change', function(e) {
     // Access to full data
-	id = $(this).attr('id').split("-")[1];
-	calcula_linha(id);
+	id = $(this).attr('id').split("-")[2];
+	calcula_linha_material(id);
+
+});
+
+$(".select2-ajax-humano, .recalcula_quantidade_quando_muda").on('change', function(e) {
+    // Access to full data
+	id = $(this).attr('id').split("-")[2];
+	calcula_linha_humano(id);
+
 });
 
 $(document).ready(function() {
     $("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
-	total = $(".select2-ajax").length - 1;
-	$("#s2id_id_orcamento-"+total+"-produto").select2('focus').select2('open');
-	$( ":checkbox" ).attr('tabindex', -1);
 
 });
+
+
+
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+
+	//total = $(".select2-ajax-material").length - 1;
+	//$("#s2id_id_orcamento-material-"+total+"-produto").select2('focus').select2('open');
+	//$( ":checkbox" ).attr('tabindex', -1);
+	
+	
+})
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-orcamento-linhas').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
 
 </script>
 {% endaddtoblock %}

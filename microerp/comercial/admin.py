@@ -25,6 +25,8 @@ from comercial.models import PropostaComercial
 from comercial.models import Orcamento
 from comercial.models import LinhaRecursoMaterial
 from comercial.models import LinhaRecursoHumano
+from comercial.models import TipoRecursoLogistico
+from comercial.models import LinhaRecursoLogistico
 from comercial.models import PerfilAcessoComercial
 from comercial.models import ContratoFechado
 from comercial.models import TipodeContratoFechado
@@ -39,8 +41,6 @@ from comercial.models import TabelaDeComissao
 from comercial.models import TipoDeProposta
 from financeiro.models import LancamentoFinanceiroReceber
 
-
-
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
     for contrato in queryset:
@@ -54,11 +54,15 @@ class FollowUpPropostaInlineAdmin(admin.StackedInline):
     model = FollowUpDePropostaComercial
     extra = 0
 
+class LinhaRecursoLogisticoInlineAdmin(admin.StackedInline):
+    model = LinhaRecursoLogistico
+    extra = 0
+
 class PropostaComercialAdmin(admin.ModelAdmin):
     list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada', 'contrato_id'
     list_filter = 'probabilidade', 'data_expiracao', 'status'
     list_display_links = list_display
-    inlines = [FollowUpPropostaInlineAdmin]
+    inlines = [FollowUpPropostaInlineAdmin, LinhaRecursoLogisticoInlineAdmin]
 
 class LinhaRecursoMaterialInLine(admin.TabularInline):
     raw_id_fields = ("produto",)
@@ -71,8 +75,8 @@ class LinhaRecursoHumanoInLine(admin.TabularInline):
 
 class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
-    list_filter = 'modelo', 'ativo'
-
+    list_filter = 'modelo', 'ativo', 'promocao'
+    list_display = 'descricao', 'ativo', 'modelo', 'promocao'
     
 class LancamentoFinanceiroReceberInline(admin.TabularInline):
     model = LancamentoFinanceiroReceber
@@ -114,3 +118,6 @@ admin.site.register(FechamentoDeComissao, FechamentoDeComissaoAdmin)
 admin.site.register(LancamentoDeFechamentoComissao, LancamentoDeFechamentoComissaoAdmin)
 admin.site.register(TabelaDeComissao, TabelaDeComissaoAdmin)
 admin.site.register(TipoDeProposta)
+admin.site.register(TipoRecursoLogistico)
+admin.site.register(LinhaRecursoLogistico)
+admin.site.register(LinhaRecursoHumano)

@@ -222,6 +222,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils import simplejson
 
 @csrf_exempt
+@login_required
 def ajax_consulta_produto(request):
     q = request.GET.get('q', None)
     mostra_preco = request.GET.get('mostra_preco', None)
@@ -235,10 +236,10 @@ def ajax_consulta_produto(request):
             pk=id_produto
         )
         if mostra_preco:
-            nome_produto = "%s - %s (R$ %s)" % (produto.codigo,produto.nome, produto.preco_venda)
+            nome_produto = "%s - %s (R$ %s)" % (produto.codigo,produto.nome, produto.preco_custo)
         else:
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
-        result={"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_venda)}
+        result={"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_custo)}
         return HttpResponse(simplejson.dumps(result), mimetype='application/json')
     result = []
     for produto in produtos:

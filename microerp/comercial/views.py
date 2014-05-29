@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import datetime, locale
-import operator
+import datetime, locale, operator
 from collections import OrderedDict
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -30,7 +29,7 @@ from cadastro.models import Cliente, PreCliente
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao
-from comercial.models import LinhaRecursoMaterial, Orcamento, GrupoIndicadorDeProdutoProposto
+from comercial.models import LinhaRecursoMaterial, LinhaRecursoHumano, LinhaRecursoLogistico, Orcamento, GrupoIndicadorDeProdutoProposto
 from financeiro.models import LancamentoFinanceiroReceber
 from estoque.models import Produto
 
@@ -371,28 +370,41 @@ class FormSelecionaOrcamentoModelo(forms.Form):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
-    OrcamentoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoForm)
+    OrcamentoMaterialFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoMaterialForm)
+    OrcamentoRecursoHumanoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoHumano, extra=1, can_delete=True, form=LinhaOrcamentoHumanoForm)
     if request.POST:
         if 'adicionar_linha_material' in request.POST:
-            messages.info(request, u"Nova Linha de Materiais adicionados")
+            messages.info(request, u"Nova Linha de Materiais adicionada")
             cp = request.POST.copy()
-            cp['orcamento-TOTAL_FORMS'] = int(cp['orcamento-TOTAL_FORMS'])+ 1
-            form_editar_linhas = OrcamentoFormSet(cp, instance=orcamento, prefix='orcamento')
+            form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
+            cp['orcamento-material-TOTAL_FORMS'] = int(cp['orcamento-material-TOTAL_FORMS'])+ 1
+            form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
             form_orcamento = OrcamentoForm(cp, instance=orcamento)
-        else:
-            form_editar_linhas = OrcamentoFormSet(request.POST, instance=orcamento, prefix="orcamento")
+        if 'adicionar_linha_humano' in request.POST:
+            messages.info(request, u"Nova Linha de Mão de Obra adicionada")
+            cp = request.POST.copy()
+            form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
+            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ 1            
+            form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
+            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+        elif 'alterar-orcamento' in request.POST:
+            form_editar_linhas_material = OrcamentoMaterialFormSet(request.POST, instance=orcamento, prefix="orcamento-material")
+            form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(request.POST, instance=orcamento, prefix="orcamento-humano")
             form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
-            if form_editar_linhas.is_valid() and form_orcamento.is_valid():
-                modelo_linhas = form_editar_linhas.save()
+            if form_editar_linhas_material.is_valid() and form_editar_linhas_humano.is_valid() and form_orcamento.is_valid():
+                linhas_material = form_editar_linhas_material.save()
+                linhas_humano = form_editar_linhas_humano.save()
                 orcamento = form_orcamento.save()
                 messages.success(request, u"Sucesso! Orçamento (%s) Alterado da Proposta #%s" % (orcamento.descricao, orcamento.proposta.id))
                 # se cliente, mostra ficha
                 return redirect(reverse('comercial:editar_proposta', args=[orcamento.proposta.id]))
             else:
                 form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+        
                 
     else:
-        form_editar_linhas = OrcamentoFormSet(instance=orcamento, prefix="orcamento")
+        form_editar_linhas_material = OrcamentoMaterialFormSet(instance=orcamento, prefix="orcamento-material")
+        form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
         form_orcamento = OrcamentoForm(instance=orcamento)
     return render_to_response('frontend/comercial/comercial-editar-proposta-editar-orcamento.html', locals(), context_instance=RequestContext(request),)
 
@@ -428,7 +440,6 @@ def editar_proposta_inativar_orcamento(request, proposta_id, orcamento_id):
     messages.success(request, u"Sucesso! Orçamento Inativado.")
     return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
 
-
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_ativar_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
@@ -438,12 +449,24 @@ def editar_proposta_ativar_orcamento(request, proposta_id, orcamento_id):
     return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
 
 
+class LinhaRecursoLogisticoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaRecursoLogisticoForm, self).__init__(*args, **kwargs)
+        self.fields['tipo'].required = True
+    
+    class Meta:
+        model = LinhaRecursoLogistico
+        fields = 'tipo', 'custo_total', 'descricao'
+    
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
     seleciona_modelos_proposta = FormSelecionaOrcamentoModelo()
     form_editar_proposta = FormEditarProposta(instance=proposta)
+    LinhaRecursoLogisticoFormSet = forms.models.inlineformset_factory(PropostaComercial, LinhaRecursoLogistico, extra=1, can_delete=True, form=LinhaRecursoLogisticoForm)
     adicionar_orcamento_form = OrcamentoForm(initial={'proposta': proposta.id })
+    form_editar_linhas_logistica = LinhaRecursoLogisticoFormSet(instance=proposta, prefix="proposta-logistica")
     if request.POST:
         if 'adicionar-modelos' in request.POST:
             seleciona_modelos_proposta = FormSelecionaOrcamentoModelo(request.POST)
@@ -453,11 +476,22 @@ def editar_proposta(request, proposta_id):
                 for modelo in modelos:
                     linhas_materiais = modelo.linharecursomaterial_set.all()
                     # cria novo orcamento à partir de modelo
-                    modelo.pk = None
                     novo_orcamento = modelo
+                    novo_orcamento.pk = None
+                    if modelo.promocao:
+                        novo_orcamento.promocao = modelo.promocao # se for promocao, passa pra frente
+                        # registra promocao originaria
+                        novo_orcamento.promocao_originaria = modelo
+                        # registra inicio e fim da promocao
+                        novo_orcamento.inicio_promocao = modelo.inicio_promocao
+                        novo_orcamento.fim_promocao = modelo.fim_promocao
+                        
                     novo_orcamento.modelo = False
                     novo_orcamento.proposta = proposta
                     novo_orcamento.save()
+                    if novo_orcamento.promocao:
+                        novo_orcamento.promocao_originaria = modelo
+                        novo_orcamento.save()
                     # copia todos as linhas de materiais pro modelo
                     for linha in linhas_materiais:
                         linha.pk = None
@@ -478,6 +512,11 @@ def editar_proposta(request, proposta_id):
                 messages.success(request, u"Sucesso! Proposta #%s alterada!" % proposta.id)
                 # se cliente, mostra ficha
                 return redirect(reverse('comercial:editar_proposta', args=[proposta_alterada.id]))
+        if 'salva-recursos-logisticos' in request.POST:
+            form_editar_linhas_logistica = LinhaRecursoLogisticoFormSet(request.POST, instance=proposta, prefix="proposta-logistica")
+            if form_editar_linhas_logistica.is_valid():
+                form_editar_linhas_logistica = form_editar_linhas_logistica.save()
+                return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
 
         if request.POST.get('adicionar-modelos'):
             seleciona_modelos_proposta = FormSelecionaOrcamentoModelo(request.POST)
@@ -838,6 +877,11 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
             proposta.cliente = cliente
             proposta.criador_por = request.user.funcionario
             proposta.designado = cliente.designado
+            # puxa configuracoes padrao de lucro, administrativo e impostos
+            proposta.lucro = getattr(settings, "LUCRO", 0)
+            proposta.administrativo = getattr(settings, "ADMINISTRATIVO", 0)
+            proposta.impostos = getattr(settings, "IMPOSTOS", 0)
+            # salva ae
             proposta.save()
             # vincula proposta com a requisicao de origem
             if request.GET.get('requisicao_origem', None):
@@ -868,6 +912,11 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
             proposta.precliente = precliente
             proposta.criado_por = request.user.funcionario
             proposta.designado = precliente.designado
+            # puxa configuracoes padrao de lucro, administrativo e impostos
+            proposta.lucro = getattr(settings, "LUCRO", 0)
+            proposta.administrativo = getattr(settings, "ADMINISTRATIVO", 0)
+            proposta.impostos = getattr(settings, "IMPOSTOS", 0)
+            # salva
             proposta.save()
             messages.success(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
             return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
@@ -2027,41 +2076,71 @@ class OrcamentoForm(forms.ModelForm):
         model = Orcamento
         fields = 'descricao', 'proposta'
 
-class LinhaOrcamentoForm(forms.ModelForm):
+class LinhaOrcamentoMaterialForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
-        super(LinhaOrcamentoForm, self).__init__(*args, **kwargs)
+        super(LinhaOrcamentoMaterialForm, self).__init__(*args, **kwargs)
         self.fields['produto'].widget = forms.HiddenInput()
-        self.fields['produto'].widget.attrs['class'] = 'select2-ajax'
+        self.fields['produto'].widget.attrs['class'] = 'select2-ajax-material'
         self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
 
     class Meta:
         model = LinhaRecursoMaterial
         fields = 'quantidade', 'produto'
 
+class LinhaOrcamentoHumanoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaOrcamentoHumanoForm, self).__init__(*args, **kwargs)
+        self.fields['cargo'].widget = forms.HiddenInput()
+        self.fields['cargo'].widget.attrs['class'] = 'select2-ajax-humano'
+        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
+
+    class Meta:
+        model = LinhaRecursoHumano
+        fields = 'quantidade', 'cargo'
+
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_editar(request, modelo_id):
-    modelo = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
-    OrcamentoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=0, can_delete=True, form=LinhaOrcamentoForm)
+    
+    orcamento = get_object_or_404(Orcamento, pk=modelo_id)
+    OrcamentoMaterialFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoMaterialForm)
+    OrcamentoRecursoHumanoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoHumano, extra=1, can_delete=True, form=LinhaOrcamentoHumanoForm)
     if request.POST:
         if 'adicionar_linha_material' in request.POST:
-            messages.info(request, u"Nova Linha de Materiais adicionados")
+            messages.info(request, u"Nova Linha de Materiais adicionada")
             cp = request.POST.copy()
-            cp['modelo-TOTAL_FORMS'] = int(cp['modelo-TOTAL_FORMS'])+ 1
-            form_editar_linhas = OrcamentoFormSet(cp, instance=modelo, prefix='modelo')
-            form_modelo = OrcamentoForm(cp, instance=modelo)
-        else:
-            form_editar_linhas = OrcamentoFormSet(request.POST, instance=modelo, prefix="modelo")
-            form_modelo = OrcamentoForm(request.POST, instance=modelo)
-            if form_editar_linhas.is_valid() and form_modelo.is_valid():
-                modelo_linhas = form_editar_linhas.save()
-                modelo = form_modelo.save()
-                messages.success(request, u"Sucesso! Modelo Alterado")
-                # volta pra lista de modelos
-                return redirect(reverse('comercial:orcamentos_modelo'))
+            form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
+            cp['orcamento-material-TOTAL_FORMS'] = int(cp['orcamento-material-TOTAL_FORMS'])+ 1
+            form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
+            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+        if 'adicionar_linha_humano' in request.POST:
+            messages.info(request, u"Nova Linha de Mão de Obra adicionada")
+            cp = request.POST.copy()
+            form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
+            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ 1            
+            form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
+            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+        elif 'alterar-orcamento' in request.POST:
+            form_editar_linhas_material = OrcamentoMaterialFormSet(request.POST, instance=orcamento, prefix="orcamento-material")
+            form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(request.POST, instance=orcamento, prefix="orcamento-humano")
+            form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+            if form_editar_linhas_material.is_valid() and form_editar_linhas_humano.is_valid() and form_orcamento.is_valid():
+                linhas_material = form_editar_linhas_material.save()
+                linhas_humano = form_editar_linhas_humano.save()
+                orcamento = form_orcamento.save()
+                messages.success(request, u"Sucesso! Orçamento (%s) Alterado da Proposta #%s" % (orcamento.descricao, orcamento.proposta.id))
+                # se cliente, mostra ficha
+                return redirect(reverse('comercial:editar_proposta', args=[orcamento.proposta.id]))
+            else:
+                form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+        
+                
     else:
-        form_editar_linhas = OrcamentoFormSet(instance=modelo, prefix="modelo")
-        form_modelo = OrcamentoForm(instance=modelo)
+        form_editar_linhas_material = OrcamentoMaterialFormSet(instance=orcamento, prefix="orcamento-material")
+        form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
+        form_orcamento = OrcamentoForm(instance=orcamento)
+
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
 
 

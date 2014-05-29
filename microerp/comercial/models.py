@@ -124,8 +124,15 @@ class PropostaComercial(models.Model):
     
     def consolidado(self):
         '''soma todos os valores de orcamentos ativos presentes'''
-        return self.orcamento_set.filter(ativo=True).aggregate(Sum("custo_total"))['custo_total__sum']
-
+        soma = self.custo_logistica_com_margem() + self.custo_orcamentos_com_margem() + self.custo_tabelados() + self.custo_promocional()
+        return soma or 0
+    
+    def consolidado_bruto(self):
+        '''soma todos os valores de orcamentos ativos presentes'''
+        soma = self.custo_logistica() + self.custo_orcamentos() + self.custo_tabelados() + self.custo_promocional()
+        return soma or 0
+    
+         
     def contrato_id(self):
         return self.pk
 
@@ -142,6 +149,54 @@ class PropostaComercial(models.Model):
     def valor_extenso(self):
         return extenso_com_centavos(str(self.valor_proposto))
 
+    def valor_minimo(self):
+        '''Valor mínimo da proposta deve ser:
+          Custo Extra
+        + Custos Intactos de Orcamento Promocional
+        + Mínimo do Kit Tabelado
+        + x% do Orcamento Avulso
+        '''
+        
+    
+    def custo_logistica(self):
+        valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum']
+        return float(valor_custo_logistica)
+        
+    def custo_logistica_com_margem(self):
+        valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum']
+        total_margem = self.taxa_margem()
+        valor_margem =  (total_margem * float(valor_custo_logistica)) / 100.0
+        novo_valor = float(valor_custo_logistica) + float(valor_margem)
+        return float(novo_valor) or 0
+    
+    def custo_orcamentos(self):
+        '''valor calculado'''
+        valor_custo_orcamentos = self.orcamento_set.filter(ativo=True, tabelado=False, promocao=False).aggregate(Sum("custo_total"))['custo_total__sum'] or 0
+        return float(valor_custo_orcamentos) or 0
+
+    def custo_tabelados(self):
+        valor_custo_tabelados = self.orcamento_set.filter(ativo=True, tabelado=True, promocao=False).aggregate(Sum("custo_total"))['custo_total__sum'] or 0
+        return float(valor_custo_tabelados) or 0
+
+    def custo_promocional(self):
+        valor_custo_promocionais = self.orcamento_set.filter(ativo=True, tabelado=False, promocao=True).aggregate(Sum("custo_total"))['custo_total__sum'] or 0
+        return float(valor_custo_promocionais) or 0
+    
+    def custo_orcamentos_com_margem(self):
+        valor_custo_orcamentos = self.custo_orcamentos()
+        # aplica margem
+        total_margem = self.taxa_margem()
+        valor_margem =  (total_margem * float(valor_custo_orcamentos)) / 100.0
+        novo_valor = float(valor_custo_orcamentos) + float(valor_margem)
+        return float(novo_valor) or 0
+    
+    def taxa_margem(self):
+        lucro = self.lucro
+        administrativo = self.administrativo
+        impostos = self.impostos
+        total_margem = float(lucro) + float(administrativo) + float(impostos)
+        return total_margem or 0
+    
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -152,6 +207,10 @@ class PropostaComercial(models.Model):
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
     designado = models.ForeignKey("rh.Funcionario", blank=True, null=True)
+    # porcentagens de margem
+    lucro = models.IntegerField("Lucro (%)", blank=False, null=False, default=0)
+    administrativo = models.IntegerField("Taxa Administrativa (%)", blank=False, null=False, default=0)
+    impostos = models.IntegerField("Impostos (%)", blank=False, null=False, default=0)
     # dados para impressao
     nome_do_proposto = models.CharField(blank=True, max_length=100)
     documento_do_proposto = models.CharField(blank=True, max_length=100)
@@ -238,7 +297,12 @@ class Orcamento(models.Model):
     '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
     
     def __unicode__(self):
-        return "%s - R$ %s" % (self.descricao, self.custo_total)
+        if self.promocao:
+            return u"Promoção: %s - R$ %s" % (self.descricao, self.custo_total)
+        elif self.tabelado:
+            return u"Tabelado: %s - R$ %s" % (self.descricao, self.custo_total)
+        else:
+            return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
     
     def reajusta_custo(self):
         '''Atualiza o custo de todas as linhas e geral'''
@@ -252,7 +316,7 @@ class Orcamento(models.Model):
             linha.custo_total = custo_total
             linha.save()
             custo_total += linha.custo_total
-        #
+        
         self.custo_total = custo_total
         self.save()
         return reajustou
@@ -263,12 +327,22 @@ class Orcamento(models.Model):
         self.custo_total = self.custo_material + self.custo_humano
         if save:
             self.save()
+    
 
     descricao = models.CharField(u"Descrição", blank=True, max_length=100)
     proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
     selecionado = models.BooleanField(default=True)
     modelo = models.BooleanField(default=False)
+    # tabelado
+    tabelado = models.BooleanField(default=False)
+    # promocao
+    promocao = models.BooleanField(default=False)
+    inicio_promocao = models.DateField(default=datetime.datetime.today, blank=True, null=True)
+    fim_promocao = models.DateField(default=datetime.datetime.today, blank=True, null=True)
+    promocao_originaria = models.ForeignKey("self", limit_choices_to={'promocao': True}, blank=True, null=True)
+    #
     ativo = models.BooleanField(default=True)
+    
     # custos
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     custo_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -280,7 +354,7 @@ class Orcamento(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class LinhaRecursoMaterial(models.Model):
-    
+
     orcamento = models.ForeignKey('Orcamento')
     produto = models.ForeignKey('estoque.Produto')
     custo_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
@@ -295,7 +369,23 @@ class LinhaRecursoHumano(models.Model):
     cargo = models.ForeignKey('rh.Cargo')
     custo_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
-    quantidade = models.IntegerField(blank=True, null=True, verbose_name="Quantidade de Horas")
+    quantidade = models.IntegerField(blank=False, null=False, verbose_name="Quantidade de Horas")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class TipoRecursoLogistico(models.Model):
+
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
+
+class LinhaRecursoLogistico(models.Model):
+    proposta = models.ForeignKey('PropostaComercial')
+    tipo = models.ForeignKey(TipoRecursoLogistico)
+    custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
+    descricao = models.TextField(blank=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
@@ -548,19 +638,49 @@ def follow_up_post_save(signal, instance, sender, **kwargs):
 
 def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
     '''atualiza o preco das linhas de orcamento'''
-    try:
-        obj = LinhaRecursoMaterial.objects.get(pk=instance.pk)
-    except LinhaRecursoMaterial.DoesNotExist:
-        instance.custo_unitario = instance.produto.preco_venda
-    else:
-        if not obj.produto == instance.produto: # Field has changed
+    recalcula = True
+    # quando não tem proposta, é modelo (promocao, modelo livre, tabelado)
+    # nesses casos, não pode calcular automático
+    if instance.orcamento.proposta != None:
+        if instance.orcamento.promocao or instance.orcamento.tabelado:
+            recalcula = False
+        else:
+            recalcula = True
+    if recalcula:
+        try:
+            obj = LinhaRecursoMaterial.objects.get(pk=instance.pk)
+        except LinhaRecursoMaterial.DoesNotExist:
             instance.custo_unitario = instance.produto.preco_venda
+        else:
+            if not obj.produto == instance.produto: # Field has changed
+                instance.custo_unitario = instance.produto.preco_venda
+
+        if instance.quantidade and instance.custo_unitario:
+            resultado = instance.custo_unitario * instance.quantidade
+        else:
+            resultado = 0
+        instance.custo_total = resultado
+
+
+def atualiza_preco_linhas_humano(signal, instance, sender, **kwargs):
+    '''atualiza o preco das linhas de orcamento'''
+    # se for promocao ou modelo o preco pode ser definido
     
-    if instance.quantidade and instance.custo_unitario:
-        resultado = instance.custo_unitario * instance.quantidade
+    try:
+        obj = LinhaRecursoHumano.objects.get(pk=instance.pk)
+        instance.custo_unitario = instance.cargo.fracao_hora_referencia
+    except LinhaRecursoHumano.DoesNotExist:
+        instance.custo_unitario = instance.cargo.fracao_hora_referencia
+    else:
+        if not obj.cargo == instance.cargo: # Field has changed
+            instance.custo_unitario = instance.cargo.fracao_hora_referencia
+
+    if instance.quantidade and instance.cargo.fracao_hora_referencia:
+        resultado = instance.cargo.fracao_hora_referencia * instance.quantidade
     else:
         resultado = 0
     instance.custo_total = resultado
+
 
 def atualiza_custo_total_orcamento(signal, instance, sender, **kwargs):
     instance.recalcula_custo_total(save=False)
@@ -574,7 +694,14 @@ def atualiza_preco_orcamento_pela_linha(signal, instance, sender, **kwargs):
 # SIGNALS CONNECTION
 signals.post_save.connect(proposta_comercial_post_save, sender=PropostaComercial)
 signals.post_save.connect(follow_up_post_save, sender=FollowUpDePropostaComercial)
+# RECURSO MATERIAL
 signals.pre_save.connect(atualiza_preco_linhas_material, sender=LinhaRecursoMaterial)
 signals.post_save.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoMaterial)
 signals.post_delete.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoMaterial)
+# RECURSO HUMANO
+signals.pre_save.connect(atualiza_preco_linhas_humano, sender=LinhaRecursoHumano)
+signals.post_save.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoHumano)
+signals.post_delete.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoHumano)
+
+
 signals.pre_save.connect(atualiza_custo_total_orcamento, sender=Orcamento)

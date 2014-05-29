@@ -130,6 +130,10 @@ class Command(BaseCommand):
                                         if row[18].value:
                                             produto.preco_consumo = row[18].value
                                             produto.preco_venda = row[18].value
+
+                                        if row[17].value:
+                                            print "PRECO_CUSTO",row[17].value
+                                            produto.preco_custo = row[17].value
                                         
                                         print "ATIVO",row[23].value
                                         if row[23].value == "Sim":

@@ -75,6 +75,7 @@ urlpatterns += patterns('',
     url(r'^financeiro/', include('financeiro.urls', namespace="financeiro")),
     # ajax helpers
     url(r'^ajax/consulta/produtos.json$', 'estoque.views.ajax_consulta_produto', name='ajax_consulta_produto'),
+    url(r'^ajax/consulta/cargos.json$', 'rh.views.ajax_consulta_cargo', name='ajax_consulta_cargo'),
 )
 
 # DEBUGG
