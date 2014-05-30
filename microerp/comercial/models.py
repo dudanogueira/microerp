@@ -194,7 +194,7 @@ class PropostaComercial(models.Model):
         administrativo = self.administrativo
         impostos = self.impostos
         total_margem = float(lucro) + float(administrativo) + float(impostos)
-        return float(total_margem) or 0
+        return float(total_margem) or 0    
     
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
@@ -302,22 +302,37 @@ class Orcamento(models.Model):
             return u"Tabelado: %s - R$ %s" % (self.descricao, self.custo_total)
         else:
             return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
+
+    def clean(self):
+        if self.promocao and not self.inicio_promocao and not self.fim_promocao:
+            raise ValidationError("Quando o Orçamento for promoção o início e fim da promoção é obrigatório.")
     
     def reajusta_custo(self):
         '''Atualiza o custo de todas as linhas e geral'''
         reajustou = False
         custo_total = 0
-        for linha in self.linharecursomaterial_set.all():
-            linha.custo_unitario = linha.produto.preco_venda
-            custo_total = linha.produto.preco_venda * linha.quantidade
-            if custo_total != linha.custo_total:
-                reajustou = True
-            linha.custo_total = custo_total
-            linha.save()
-            custo_total += linha.custo_total
-        
-        self.custo_total = custo_total
-        self.save()
+        if not self.promocao and not self.tabelado:
+            # material
+            for linha in self.linharecursomaterial_set.all():
+                linha.custo_unitario = linha.produto.preco_venda
+                custo_total = linha.produto.preco_venda * linha.quantidade
+                if custo_total != linha.custo_total:
+                    reajustou = True
+                linha.custo_total = custo_total
+                linha.save()
+                custo_total += linha.custo_total
+            # humano
+            for linha in self.linharecursohumano_set.all():
+                linha.custo_unitario = linha.cargo.fracao_hora_referencia
+                custo_total = linha.cargo.fracao_hora_referencia * linha.quantidade
+                if custo_total != linha.custo_total:
+                    reajustou = True
+                linha.custo_total = custo_total
+                linha.save()
+                custo_total += linha.custo_total
+            
+            self.custo_total = custo_total
+            self.save()
         return reajustou
 
     def recalcula_custo_total(self, save=True):
@@ -334,11 +349,12 @@ class Orcamento(models.Model):
     modelo = models.BooleanField(default=False)
     # tabelado
     tabelado = models.BooleanField(default=False)
+    tabelado_originario = models.ForeignKey("self", limit_choices_to={'tabelado': True}, blank=True, null=True, related_name="tabelados_originados")
     # promocao
     promocao = models.BooleanField(default=False)
     inicio_promocao = models.DateField(default=datetime.datetime.today, blank=True, null=True)
     fim_promocao = models.DateField(default=datetime.datetime.today, blank=True, null=True)
-    promocao_originaria = models.ForeignKey("self", limit_choices_to={'promocao': True}, blank=True, null=True)
+    promocao_originaria = models.ForeignKey("self", limit_choices_to={'promocao': True}, blank=True, null=True, related_name="promocoes_originadas")
     #
     ativo = models.BooleanField(default=True)
     
@@ -481,6 +497,10 @@ class ContratoFechado(models.Model):
         from views import ConfigurarImpressaoContrato
         form = ConfigurarImpressaoContrato(contrato=self)
         return form
+    
+    def valor_extenso(self):
+        return extenso_com_centavos(str(self.valor))
+    
     
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)
@@ -661,7 +681,6 @@ def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
         else:
             resultado = 0
         instance.custo_total = resultado
-
 
 def atualiza_preco_linhas_humano(signal, instance, sender, **kwargs):
     '''atualiza o preco das linhas de orcamento'''

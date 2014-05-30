@@ -52,4 +52,9 @@ def extenso_com_centavos(n):
     centavos = str(n).split(".")[1]
     texto_milhares = extenso(milhares, joinner=', ')
     texto_centavos = extenso(centavos)
-    return "%s reais e %s centavos" % (texto_milhares, texto_centavos)
+    if centavos == '00':
+        return "%s reais" % texto_milhares
+    else:
+        return "%s reais e %s centavos" % (texto_milhares, texto_centavos)
+        
+    

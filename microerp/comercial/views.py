@@ -479,6 +479,7 @@ def editar_proposta(request, proposta_id):
                     # cria novo orcamento à partir de modelo
                     novo_orcamento = modelo
                     novo_orcamento.pk = None
+                    novo_orcamento.save()
                     if modelo.promocao:
                         novo_orcamento.promocao = modelo.promocao # se for promocao, passa pra frente
                         # registra promocao originaria
@@ -486,6 +487,9 @@ def editar_proposta(request, proposta_id):
                         # registra inicio e fim da promocao
                         novo_orcamento.inicio_promocao = modelo.inicio_promocao
                         novo_orcamento.fim_promocao = modelo.fim_promocao
+                    if modelo.tabelado:
+                        novo_orcamento.tabelado_originario = modelo
+
                     if modelo.promocao or modelo.tabelado:
                         novo_orcamento.custo_total = modelo.custo_total
                         
@@ -1807,7 +1811,7 @@ class ContratoPrint:
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
             valor_formatado = locale.currency(contrato.valor, grouping=True)
             
-            total_texto = "Total: %s (%s)" % (valor_formatado, proposta.valor_extenso())
+            total_texto = "Total: %s (%s)" % (valor_formatado, contrato.valor_extenso())
             total_p = Paragraph(unicode(total_texto).replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
