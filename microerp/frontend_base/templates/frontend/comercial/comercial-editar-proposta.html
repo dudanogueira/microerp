@@ -13,7 +13,7 @@
 	<div class="span6">
 		{% if request.user.perfilacessocomercial.gerente %}
 		<h4>Como Gerente</h4>
-		<small>
+		<span class="label label-info">Valor Mínimo: R$ {{proposta.consolidado|floatformat:2}}</span><br />
 		Lucro {{proposta.lucro}}%, Impostos: {{proposta.impostos}}%, Administrativo: {{proposta.administrativo}}%</small>
 		{% endif %}
 	</div>
@@ -38,16 +38,25 @@
 			<button type="submit" class="btn btn-info" name="adicionar-modelos" value="adicionar"><i class="fa fa-plus"></i> Modelos</button>
 		</p>
 		</form>
-		
 	</div>
 	
 	<div class="span6">
 		<div class="well well-small">
 			<form method="POST" class="form form-inline " id="form-editar-proposta">
 			{% csrf_token %}
-			<h2>Valor Consolidado: R$ {{proposta.consolidado|floatformat:2}}</h2>
 			{{form_editar_proposta.as_p}}
+			{% if proposta.parcelamentos_possiveis.all %}
+			<h6>Parcelamentos Configurados</h6>
+			<ul>
+			{% for parcelamento in proposta.parcelamentos_aplicados %}
+					<li>{{parcelamento.0}} = R$ {{parcelamento.1|floatformat:2}}</li>
+			{% endfor %}
+			</ul>
+			{% endif %}
 			</form>
+			
+			
+			
 		
 			<p class="btn-group">
 				<button data-toggle="tooltip" title="Alterar" data-placement="top" type="submit" class="btn btn-danger btn-large tooltip-items" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-save"></i></button>
@@ -114,8 +123,11 @@
 			{% else %}
 			<a data-toggle="tooltip" title="Editar" data-placement="top" href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning tooltip-items"><i class="fa fa-pencil"></i></a>
 			{% endif %}
+			
 			<a data-toggle="tooltip" title="Inativar" data-placement="top" href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger tooltip-items"><i class="fa fa-thumbs-down"></i></a>
+			{% if not orcamento_ativo.promocao  %}
 			<a data-toggle="tooltip" title="Reajustar" data-placement="top" href="{% url "comercial:editar_proposta_reajustar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-success tooltip-items"><i class="fa fa-refresh"></i></a>
+			{% endif %}
 			<a data-toggle="tooltip" title="Imprimir" data-placement="top"  href="{% url "comercial:editar_proposta_imprimir_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-info tooltip-items"><i class="fa fa-print"></i></a>
 			
 		</p>
@@ -243,9 +255,8 @@
 			  
 			  <tr class="alert-info">
 				  <td>Consolidado</td>
-				  <td>R$ {{proposta.consolidado_bruto}}</td>
+				  <td>R$ {{proposta.consolidado_liquido}}</td>
 				  <td><strong>R$  {{proposta.consolidado}}</strong></td>
-					  
 			  </tr>
 			  
 			  
@@ -271,6 +282,7 @@
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
 
 <script>
 $(document).ready(function() {

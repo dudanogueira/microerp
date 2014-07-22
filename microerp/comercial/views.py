@@ -279,7 +279,6 @@ class FiltrarPreClientesERequisicoesForm(forms.Form):
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['funcionario'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
-        
 
     funcionario = forms.ModelChoiceField(queryset=None, label="Funcionário", required=False, empty_label="Todos do Comercial")
 
@@ -353,10 +352,19 @@ class FormEditarProposta(forms.ModelForm):
         
         self.fields['valor_proposto'].localize = True
         self.fields['valor_proposto'].widget.is_localized = True
+        self.fields['parcelamentos_possiveis'].widget.attrs['class'] = 'select2'
+        self.fields['parcelamentos_possiveis'].help_text = ""
+    
+    def clean_valor_proposto(self):
+        data = self.cleaned_data['valor_proposto']
+        minimo = self.instance.consolidado()
+        if data < minimo:
+            raise ValidationError(u"Erro! Valor abaixo do mínimo %s" % minimo)
+        return data
     
     class Meta:
         model = PropostaComercial
-        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo'
+        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo', 'parcelamentos_possiveis'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
@@ -364,8 +372,9 @@ class FormSelecionaOrcamentoModelo(forms.Form):
     def __init__(self, *args, **kwargs):
         super(FormSelecionaOrcamentoModelo, self).__init__(*args, **kwargs)
         self.fields['modelo'].widget.attrs['class'] = 'select2'
+        self.fields['modelo'].queryset = Orcamento.objects.filter(Q(modelo=True, ativo=True, promocao=False) | Q(modelo=True, ativo=True, promocao=True, inicio_promocao__lte=datetime.date.today(), fim_promocao__gte=datetime.date.today()))
     
-    modelo = forms.ModelMultipleChoiceField(queryset=Orcamento.objects.filter(modelo=True, ativo=True), required=True)
+    modelo = forms.ModelMultipleChoiceField(queryset=None, required=True)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
@@ -1812,7 +1821,7 @@ class ContratoPrint:
             valor_formatado = locale.currency(contrato.valor, grouping=True)
             
             total_texto = "Total: %s (%s)" % (valor_formatado, contrato.valor_extenso())
-            total_p = Paragraph(unicode(total_texto).replace("\n", "<br />"), styles['left_h2'])
+            total_p = Paragraph(total_texto.replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
             

@@ -1,6 +1,7 @@
 {% extends "frontend/base.html" %}
 {% load sekizai_tags %}
 {% block content %}
+<link href="{{STATIC_URL}}frontend/css/font-awesome.min.css" rel="stylesheet"/>
 <title>{%block title %}{{block.super}} - Comercial -> Imprimir Orçamento{% endblock %}</title>
 <div class="container">
 <div class="row-fluid">
@@ -9,8 +10,24 @@
 		<h1>Proposta #{{orcamento.proposta.id}}</h1>
 	</div>
 	<div class="span8">
-		<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}}</h2>
-		<h3>{% if orcamento.proposta.precliente %}{{orcamento.proposta.precliente}}{% else %}{{orcamento.proposta.cliente}}{% endif %}</h3>
+		<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}} 		{% if orcamento.promocao %}
+				<i class="fa fa-asterisk "></i>
+				<small>promoção</small>
+				
+				{% else %}
+
+					{% if orcamento.tabelado %}
+					<i class="fa fa-table "></i>
+					<small>tabelado</small>
+					{% else %}
+					<i class="fa fa-clipboard "></i>
+					<small>avulso</small>
+					{% endif %}
+
+		{% endif %}</h2>
+		<h3>{% if orcamento.proposta.precliente %}{{orcamento.proposta.precliente}}{% else %}{{orcamento.proposta.cliente}}{% endif %}
+		
+		</h3>
 	</div>
 </div>
 	
@@ -43,7 +60,11 @@
 			<td></td>
 			<td></td>
 			<td></td>
-			<td><strong>R$ {{orcamento.custo_total}}</strong></td>
+			{% if not orcamento.promocao and not orcamento.tabelado %}
+				<td><strong>R$ {{orcamento.custo_material|floatformat:2}} + {{orcamento.proposta.taxa_margem}}% = R$ {{orcamento.custo_material_com_margem|floatformat:2}}</strong></td>
+			{% else %}
+				<td><strong> R$ {{orcamento.custo_material}}</strong></td>
+			{% endif %}
 		</tr>
 		</tbody>
 	</table>
@@ -71,13 +92,29 @@
 			<td></td>
 			<td></td>
 			<td></td>
-			<td></td>
-			<td></td>
-			<td><strong>R$ {{orcamento.custo_total}}</strong></td>
+			{% if not orcamento.promocao and not orcamento.tabelado %}
+				<td><strong>R$ {{orcamento.custo_humano|floatformat:2}} + {{orcamento.proposta.taxa_margem}}% = R$ {{orcamento.custo_humano_com_margem|floatformat:2}}</strong></td>
+			{% else %}
+				<td><strong> R$ {{orcamento.custo_humano}}</strong></td>
+			{% endif %}
+			
 		</tr>
 		</tbody>
 	</table>
 	
+</div>
+
+<div class="row-fluid">
+	<div class="span8">
+	</div>
+	
+	<div class="span4">
+		{% if not orcamento.promocao and not orcamento.tabelado %}
+			<h3><strong>Total Geral: R$ {{orcamento.custo_total_com_margem}}</strong></h3>
+		{% else %}
+			<h3><strong>Total Geral: R$ {{orcamento.custo_total}}</strong></h3>
+		{% endif %}
+	</div>
 </div>
 
 	

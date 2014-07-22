@@ -56,5 +56,3 @@ def extenso_com_centavos(n):
         return "%s reais" % texto_milhares
     else:
         return "%s reais e %s centavos" % (texto_milhares, texto_centavos)
-        
-    

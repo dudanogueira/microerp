@@ -127,11 +127,10 @@ class PropostaComercial(models.Model):
         soma = self.custo_logistica_com_margem() + self.custo_orcamentos_com_margem() + self.custo_tabelados() + self.custo_promocional()
         return soma or 0
     
-    def consolidado_bruto(self):
+    def consolidado_liquido(self):
         '''soma todos os valores de orcamentos ativos presentes'''
         soma = self.custo_logistica() + self.custo_orcamentos() + self.custo_tabelados() + self.custo_promocional()
         return soma or 0
-    
          
     def contrato_id(self):
         return self.pk
@@ -148,14 +147,6 @@ class PropostaComercial(models.Model):
 
     def valor_extenso(self):
         return extenso_com_centavos(str(self.valor_proposto))
-
-    def valor_minimo(self):
-        '''Valor mínimo da proposta deve ser:
-          Custo Extra
-        + Custos Intactos de Orcamento Promocional
-        + Mínimo do Kit Tabelado
-        + x% do Orcamento Avulso
-        '''
     
     def custo_logistica(self):
         valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum'] or 0
@@ -196,6 +187,13 @@ class PropostaComercial(models.Model):
         total_margem = float(lucro) + float(administrativo) + float(impostos)
         return float(total_margem) or 0    
     
+    def parcelamentos_aplicados(self):
+        retorno = []
+        for parcelamento in self.parcelamentos_possiveis.all():
+            retorno.append((parcelamento, parcelamento.aplica_no_valor( self.consolidado() ) ) )
+        return retorno
+    
+    
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -210,6 +208,8 @@ class PropostaComercial(models.Model):
     lucro = models.IntegerField("Lucro (%)", blank=False, null=False, default=0)
     administrativo = models.IntegerField("Taxa Administrativa (%)", blank=False, null=False, default=0)
     impostos = models.IntegerField("Impostos (%)", blank=False, null=False, default=0)
+    # parcelamentos selecionados
+    parcelamentos_possiveis = models.ManyToManyField('TabelaDeParcelamento', verbose_name=u"Parcelamenos Possíveis", blank=True, null=True)
     # dados para impressao
     nome_do_proposto = models.CharField(blank=True, max_length=100)
     documento_do_proposto = models.CharField(blank=True, max_length=100)
@@ -342,6 +342,30 @@ class Orcamento(models.Model):
         if save:
             self.save()
     
+    def custo_material_com_margem(self):
+        valor_custo_total = self.custo_material
+        # aplica margem
+        total_margem = self.proposta.taxa_margem()
+        valor_margem =  (total_margem * float(valor_custo_total)) / 100.0
+        novo_valor = float(valor_custo_total) + float(valor_margem)
+        return float(novo_valor) or 0
+    
+    def custo_humano_com_margem(self):
+        valor_custo_total = self.custo_humano
+        # aplica margem
+        total_margem = self.proposta.taxa_margem()
+        valor_margem =  (total_margem * float(valor_custo_total)) / 100.0
+        novo_valor = float(valor_custo_total) + float(valor_margem)
+        return float(novo_valor) or 0
+        
+    def custo_total_com_margem(self):
+        valor_custo_total = self.custo_total
+        # aplica margem
+        total_margem = self.proposta.taxa_margem()
+        valor_margem =  (total_margem * float(valor_custo_total)) / 100.0
+        novo_valor = float(valor_custo_total) + float(valor_margem)
+        return float(novo_valor) or 0
+    
 
     descricao = models.CharField(u"Descrição", blank=True, max_length=100)
     proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
@@ -352,8 +376,8 @@ class Orcamento(models.Model):
     tabelado_originario = models.ForeignKey("self", limit_choices_to={'tabelado': True}, blank=True, null=True, related_name="tabelados_originados")
     # promocao
     promocao = models.BooleanField(default=False)
-    inicio_promocao = models.DateField(default=datetime.datetime.today, blank=True, null=True)
-    fim_promocao = models.DateField(default=datetime.datetime.today, blank=True, null=True)
+    inicio_promocao = models.DateField(blank=True, null=True)
+    fim_promocao = models.DateField(blank=True, null=True)
     promocao_originaria = models.ForeignKey("self", limit_choices_to={'promocao': True}, blank=True, null=True, related_name="promocoes_originadas")
     #
     ativo = models.BooleanField(default=True)
@@ -361,7 +385,7 @@ class Orcamento(models.Model):
     # custos
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     custo_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    custo_mao_de_obra = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    custo_humano = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # metadata
     #orcamento_modelo = models.ForeignKey(self)
     criado_por = models.ForeignKey('rh.Funcionario', related_name="orcamento_criado_set",  blank=True, null=True)
@@ -404,6 +428,34 @@ class LinhaRecursoLogistico(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class TabelaDeParcelamento(models.Model):
+    
+    def __unicode__(self):
+        if self.parcelas == 1:
+            return u"À vista"
+        elif self.entrada == 0:
+            return "%sX" % (self.parcelas)
+        else:
+            return "Entrada de %s%% + %sX" % (self.entrada, self.parcelas)
+    
+    class Meta:
+        ordering = (['parcelas',])
+        
+    def clean(self):
+        if self.parcelas == 1 and self.entrada != 0:
+            raise ValidationError(u"Erro! Quando for 1 parcela somente, não poderá ter entrada.")
+    
+    def aplica_no_valor(self, valor):
+        # a vista
+        retorno = valor
+        margem_inversa = 1 - float(self.juros) / 100
+        retorno = float(valor) / float(margem_inversa)
+        return "%.2f" % retorno
+    
+    parcelas = models.IntegerField(blank=False, null=False, unique=True)
+    juros = models.DecimalField(max_digits=3, decimal_places=2, blank=False, null=False, default=0)
+    entrada = models.IntegerField(blank=False, null=False, default=0, verbose_name=u"Entrada (%)")
 
 class CategoriaContratoFechado(models.Model):
     

@@ -39,6 +39,7 @@ from comercial.models import FechamentoDeComissao
 from comercial.models import LancamentoDeFechamentoComissao
 from comercial.models import TabelaDeComissao
 from comercial.models import TipoDeProposta
+from comercial.models import TabelaDeParcelamento
 from financeiro.models import LancamentoFinanceiroReceber
 
 # ADMIN ACTIONS
@@ -121,3 +122,4 @@ admin.site.register(TipoDeProposta)
 admin.site.register(TipoRecursoLogistico)
 admin.site.register(LinhaRecursoLogistico)
 admin.site.register(LinhaRecursoHumano)
+admin.site.register(TabelaDeParcelamento)
