@@ -1106,6 +1106,18 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         modelos = kwargs.pop('modelos')
         super(ConfigurarPropostaComercialParaImpressao, self).__init__(*args, **kwargs)
         self.fields['modelo'] = forms.ChoiceField(choices=modelos, label="Tipo de Proposta")
+        # 
+        self.fields['nome_do_proposto'].required = True
+        self.fields['rua_do_proposto'].required = True
+        self.fields['bairro_do_proposto'].required = True
+        self.fields['cidade_do_proposto'].required = True
+        self.fields['endereco_obra_proposto'].required = True
+        self.fields['representante_legal_proposto'].required = True
+        self.fields['telefone_contato_proposto'].required = True
+        self.fields['objeto_proposto'].required = True
+        self.fields['descricao_items_proposto'].required = True
+        self.fields['items_nao_incluso'].required = True
+        
     
     def clean(self):
         cleaned_data = super(ConfigurarPropostaComercialParaImpressao, self).clean()
@@ -1572,9 +1584,11 @@ def proposta_comercial_imprimir(request, proposta_id):
                         dest.append(email_valido)
                     except:
                         pass
+                if request.user.funcionario.email:
+                    dest.append(request.user.funcionario.email)
                 messages.info(request, "%s" % dest)
                 assunto = "[%s] - Proposta Comercial" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA")
-                conteudo = "Segue anexo a Proposta Comercial"
+                conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em ")
                 email = EmailMessage(
                         assunto,
                         conteudo,
