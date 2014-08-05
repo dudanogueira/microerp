@@ -1588,7 +1588,13 @@ def proposta_comercial_imprimir(request, proposta_id):
                     dest.append(request.user.funcionario.email)
                 messages.info(request, "%s" % dest)
                 assunto = "[%s] - Proposta Comercial" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA")
-                conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em ")
+                conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em anexo a proposta. ")
+                try:
+                    nome_do_proposto = form_configura.cleaned_data['nome_do_proposto']
+                    nome_do_funcionario = request.user.funcionario.nome
+                    conteudo = conteudo % {'nome_do_proposto': nome_do_proposto, 'nome_do_funcionario': nome_do_funcionario}
+                except:
+                    raise
                 email = EmailMessage(
                         assunto,
                         conteudo,
