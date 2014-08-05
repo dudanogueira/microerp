@@ -1415,6 +1415,9 @@ class OrcamentoPrint:
                 texto_esquerda_final += "<br />Consultor de Vendas<br />"
             else:
                 texto_esquerda_final += "<br />Consultora de Vendas<br />"
+                
+            if perfil.user.funcionario.email or perfil.user.email:
+                texto_esquerda_final += "Email: %s<br />" % perfil.user.funcionario.email or perfil.user.email
             
             if perfil.telefone_celular and perfil.telefone_fixo:
                 texto_esquerda_final += "%s / %s" % (perfil.telefone_celular, perfil.telefone_fixo)
