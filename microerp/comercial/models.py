@@ -453,7 +453,7 @@ class TabelaDeParcelamento(models.Model):
         retorno = float(valor) / float(margem_inversa)
         return "%.2f" % retorno
     
-    parcelas = models.IntegerField(blank=False, null=False, unique=True)
+    parcelas = models.IntegerField(blank=False, null=False)
     juros = models.DecimalField(max_digits=3, decimal_places=2, blank=False, null=False, default=0)
     entrada = models.IntegerField(blank=False, null=False, default=0, verbose_name=u"Entrada (%)")
 

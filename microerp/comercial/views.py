@@ -1221,7 +1221,7 @@ class OrcamentoPrint:
                 elements.append(contratante_p)
                 
                 if proposta.email_proposto:
-                    texto = u"<b>E-mail</b>: %s<br />" % proposta.email_proposto
+                    texto = u"%s<br />" % proposta.email_proposto
                     contratante_p = Paragraph(texto, styles['justify'])
                     elements.append(contratante_p)
                 
