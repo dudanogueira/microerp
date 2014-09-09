@@ -883,12 +883,19 @@ def precliente_converter(request, pre_cliente_id):
         form = AdicionarCliente(precliente=precliente)
     return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
 
+
 # propostas comerciais
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_cliente(request, cliente_id):
     cliente = Cliente.objects.get(pk=cliente_id)
     propostas_abertas = PropostaComercial.objects.filter(cliente=cliente, status='aberta')
     return render_to_response('frontend/comercial/comercial-propostas-cliente.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def propostas_comerciais_ver(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    return render_to_response('frontend/comercial/comercial-propostas-ver.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_cliente_adicionar(request, cliente_id):
@@ -1485,6 +1492,18 @@ class OrcamentoPrint:
 class FormEnviarPropostaEmail(forms.Form):
     
     email = forms.CharField(help_text="Para mais emails: email1, email2, email3")
+
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def proposta_comercial_reabrir(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    proposta.status = "aberta"
+    proposta.save()    
+    if request.GET['next']:
+        return redirect(request.GET['next'])
+    else: 
+        return redirect(reverse('comercial:home'))
+        
 
 
 @user_passes_test(possui_perfil_acesso_comercial)

@@ -20,6 +20,7 @@
 			<th width="30%">Pré/Cliente</th>
 			<th>Valor</th>
 			<th>Follow Ups</th>
+			<th>Ver Resumo</th>
 			<th>Motivo</th>
 			<th>Expiração</th>
 		</tr>
@@ -68,6 +69,7 @@
 
 				
 				</td>
+				<td><a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}"><i class="fa fa-arrow-right"></a></td>
 				<td>{{proposta.definido_perdido_motivo}}. por <i class='fa fa-user'></i>{{proposta.definido_perdido_por}} em <i class="fa fa-clock"></i> {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
 				<td>{{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</td>
 			</tr>

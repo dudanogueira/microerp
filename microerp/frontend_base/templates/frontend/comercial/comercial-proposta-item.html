@@ -13,9 +13,8 @@
         <div class="alert-info">
         <h6 class="pagination-centered">#{{proposta.id}}</h6>
         </div>
-        <span class="label label-important">Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span>
+        <span class="label {% if proposta.expirada %}label-important{% else %}label-success{% endif %}">Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span>
         <small>em: {{proposta.data_expiracao|timeuntil}}</small>
-        
     </div>
 
     <div class="span7">

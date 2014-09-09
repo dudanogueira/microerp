@@ -77,7 +77,7 @@ class PreCliente(models.Model):
         return self.propostacomercial_set.filter(status="convertida")
     
     def propostas_perdidas(self):
-        return self.propostacomercial_set.filter(status="perdida")
+        return self.propostacomercial_set.filter(status__in=("perdida", "perdida_aguardando"))
     
     
     

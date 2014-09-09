@@ -1,0 +1,232 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Ver Proposta #{{proposta.id}} - {{proposta.get_status_display}}</h1>
+
+{% if request.user.perfilacessocomercial.gerente %}
+<h4>Como Gerente</h4>
+{% endif %}
+
+{% if proposta.contrato_vinculado %}
+	{% if proposta.contrato_vinculado.status == "emanalise" %}
+		<h2>Em Análise: Conversão para Contrato #{{proposta.contrato_vinculado.id}} <a href="{% url "comercial:analise_de_contratos_analisar" proposta.contrato_vinculado.id %}" class="btn btn-primary"><i class="fa fa-search"></i></a></h2>
+	{% else %}
+	<h2>{{proposta.contrato_vinculado.get_status_display}}: #{{proposta.contrato_vinculado.id}}</h2>
+	{% endif %}
+
+{% endif %}
+
+
+{% if proposta.orcamento_set.all %}
+<h2>Orçamentos</h2>
+{% endif %}
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" role="tablist" id="menu-orcamentos">
+		  <li class="active"><a href="#orcamento-resumo" role="tab" data-toggle="tab"><strong>Total</strong>: R${{proposta.consolidado}}</a>
+		</li>
+	{% for orcamento in proposta.orcamento_set.all  %}
+		
+	  <li class=""><a href="#orcamento-{{orcamento.id}}" role="tab" data-toggle="tab">
+		{% if orcamento.promocao %}
+		<i class="fa fa-asterisk"></i>
+		{% else %}
+
+			{% if orcamento.tabelado %}
+			<i class="fa fa-table"></i>
+			{% else %}
+			<i class="fa fa-clipboard"></i>
+			{% endif %}
+
+		{% endif %}
+		
+		  #{{orcamento.id}} - R${{orcamento.custo_total}}</a></li>
+  {% endfor %}
+  <li class=""><a href="#orcamento-logistica" role="tab" data-toggle="tab"><i class="fa fa-truck"></i> R${{proposta.custo_logistica}}</a>
+</li>
+</ul>
+
+<!-- Tab panes -->
+<div class="tab-content">
+	
+	<div class="tab-pane active" id="orcamento-resumo">
+  	  <table class="table table-bordered">
+  	        <thead>
+  	          <tr>
+  	            <th>Natureza</th>
+  	            <th>Valor Líquido</th>
+  				<th>Valor Bruto	</th>
+  	          </tr>
+  	        </thead>
+  	        <tbody>
+  	          <tr>
+  	            <td><i class="fa fa-truck"</i> Custo de Logística</td>
+  				<td>R$ {{proposta.custo_logistica}}</td>
+  				<td>R$ {{proposta.custo_logistica_com_margem}}</td>
+  	          </tr>
+  	          <tr>
+  	            <td><i class="fa fa-clipboard"</i> Orçamentos Avulsos</td>
+  				<td>R$ {{proposta.custo_orcamentos}}</td>
+  				<td>R$ {{proposta.custo_orcamentos_com_margem}}</td>
+  	          </tr>
+  	          <tr>
+  	            <td><i class="fa fa-asterisk"</i> Promocionais</td>
+  				<td>R$ {{proposta.custo_promocional}}</td>
+  				<td>R$ {{proposta.custo_promocional}}</td>
+  	          </tr>
+  	          <tr>
+  	            <td><i class="fa fa-table"</i> Tabelados</td>
+  				<td>R$ {{proposta.custo_tabelados}}</td>
+  				<td>R$ {{proposta.custo_tabelados}}</td>
+  	          </tr>
+			  
+  			  <tr class="alert-info">
+  				  <td>Consolidado</td>
+  				  <td>R$ {{proposta.consolidado_liquido}}</td>
+  				  <td><strong>R$  {{proposta.consolidado}}</strong></td>
+  			  </tr>
+			  
+			  
+			  
+  	        </tbody>
+  	      </table>
+	</div>
+	
+	{% for orcamento in proposta.orcamento_set.all  %}
+	<div class="tab-pane " id="orcamento-{{orcamento.id}}">
+  		
+		<h4 class="text-right">
+		{% if orcamento.promocao %}
+		<i class="fa fa-asterisk"></i> Promoção <small>Início: {{orcamento.inicio_promocao|date:"SHORT_DATE_FORMAT"}}, Fim: {{orcamento.fim_promocao|date:"SHORT_DATE_FORMAT"}}</small>
+		{% else %}
+
+			{% if orcamento.tabelado %}
+			<i class="fa fa-table"></i> Tabelado
+			{% else %}
+			<i class="fa fa-clipboard"></i> Avulso
+			{% endif %}
+
+		{% endif %}
+		</h4>
+		<h3>Material</h3>
+		  <table class="table table-bordered">
+			  <thead>
+				  <tr>
+					  <th>Quantidade</th>
+					  <th>Produto</th>
+					  <th>Custo</th>
+				  </tr>
+			  </thead>
+			  <tbody>
+			  {% for linha in orcamento.linharecursomaterial_set.all %}
+			  <tr>
+				  <td>{{linha.quantidade}}</td>
+				  <td>{{linha.produto}}</td>
+				  <td>R$ {{linha.custo_total}}</td>
+			  </tr>
+			  {% endfor %}
+			  </tbody>
+		  </table>
+		
+		<h3>Mão de Obra</h3>
+	  	<table class="table table-condensed table-bordered table-rounded">
+	  		<thead>
+	  			<tr>
+	  				<th>Cargo</th>
+	  				<th>Valor/H</th>
+	  				<th>Quantidade</th>
+	  				<th>Total</th>
+	  			</tr>
+	  		</thead>
+	  		</tbody>
+	  		{% for linha in orcamento.linharecursohumano_set.all %}
+	  			<tr>
+	  				<td>{{linha.cargo.nome}}</td>
+	  				<td>{{linha.cargo.fracao_hora_referencia}}</td>
+	  				<td>{{linha.quantidade}}</td>
+	  				<td>R$ {{linha.custo_total}}</td>
+	  			</tr>
+	  		{% endfor %}
+	  		<tr>
+	  			<td></td>
+	  			<td></td>
+	  			<td></td>
+	  			{% if not orcamento.promocao and not orcamento.tabelado %}
+	  				<td><strong>R$ {{orcamento.custo_humano|floatformat:2}} + {{orcamento.proposta.taxa_margem}}% = R$ {{orcamento.custo_humano_com_margem|floatformat:2}}</strong></td>
+	  			{% else %}
+	  				<td><strong> R$ {{orcamento.custo_humano}}</strong></td>
+	  			{% endif %}
+			
+	  		</tr>
+	  		</tbody>
+	  	</table>
+		
+	</div>
+	{% endfor %}
+	  
+ 	<div class="tab-pane" id="orcamento-logistica">
+		<h2>Recurso Logístico</h2>
+		<table class="table table-condensed table-bordered table-rounded">
+			<thead>
+				<tr>
+					<th>Tipo de Recurso</th>
+					<th>Descrição</th>
+					<th>Valor</th>				
+				</tr>
+			</thead>
+			</tbody>
+			{% for linha in proposta.linharecursologistico_set.all %}
+				<tr>
+					<td>{{linha.tipo}}</td>
+					<td>{{linha.descricao}}</td>
+					<td>{{linha.custo_total}}</td>				
+				</tr>
+			{% endfor %}
+			<tr>
+				<td></td>
+				<td></td>
+				<td>Total: R$ {{proposta.custo_logistica|floatformat:2}} + {{proposta.taxa_margem}}% = <strong>R$ {{proposta.custo_logistica_com_margem|floatformat:2}}</strong></td>
+			</tr>
+			</tbody>
+		</table>
+ 	</div>
+	  
+</div>
+
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+$('#menu-orcamentos a:first').tab('show');
+$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+});
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+
+</script>
+
+
+
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}
