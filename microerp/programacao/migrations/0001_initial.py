@@ -1,76 +1,85 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models, migrations
 import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from django.conf import settings
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'PerfilAcessoProgramacao'
-        db.create_table(u'programacao_perfilacessoprogramacao', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('gerente', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('analista', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'programacao', ['PerfilAcessoProgramacao'])
+    dependencies = [
+        ('comercial', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('rh', '0001_initial'),
+        ('cadastro', '0002_auto_20140916_0927'),
+    ]
 
-
-    def backwards(self, orm):
-        # Deleting model 'PerfilAcessoProgramacao'
-        db.delete_table(u'programacao_perfilacessoprogramacao')
-
-
-    models = {
-        u'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        u'auth.permission': {
-            'Meta': {'ordering': "(u'content_type__app_label', u'content_type__model', u'codename')", 'unique_together': "((u'content_type', u'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        u'auth.user': {
-            'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Group']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "u'user_set'", 'blank': 'True', 'to': u"orm['auth.Permission']"}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'programacao.perfilacessoprogramacao': {
-            'Meta': {'object_name': 'PerfilAcessoProgramacao'},
-            'analista': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'gerente': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
-        }
-    }
-
-    complete_apps = ['programacao']
+    operations = [
+        migrations.CreateModel(
+            name='FollowUpDeContrato',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('texto', models.TextField()),
+                ('porcentagem_execucao', models.DecimalField(max_digits=3, decimal_places=0)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'ordering': ['-criado'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PerfilAcessoProgramacao',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('gerente', models.BooleanField(default=False)),
+                ('analista', models.BooleanField(default=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Perfil de Acesso \xe0 Programa\xe7\xe3o',
+                'verbose_name_plural': 'Perfis de Acesso \xe0 Programa\xe7\xe3o',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='TarefaDeProgramacao',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('status_execucao', models.CharField(default=b'naoiniciado', max_length=100, verbose_name='Status da Execu\xe7\xe3o da Tarefa de Programa\xe7\xe3o', choices=[(b'naoiniciado', 'N\xe3o Iniciado'), (b'emandamento', 'Em Andamento'), (b'pendente', 'Pendente'), (b'finalizado', 'Finalizado')])),
+                ('porcentagem_execucao', models.DecimalField(default=0, max_digits=3, decimal_places=0)),
+                ('aguardando_cliente', models.BooleanField(default=False)),
+                ('data_aguardando_cliente', models.DateTimeField(null=True, blank=True)),
+                ('data_marcado_emandamento', models.DateTimeField(null=True, blank=True)),
+                ('data_marcado_pendente', models.DateTimeField(null=True, blank=True)),
+                ('data_marcado_retorno_cliente', models.DateTimeField(null=True, blank=True)),
+                ('data_marcado_finalizado', models.DateTimeField(null=True, blank=True)),
+                ('data_programada', models.DateTimeField(default=datetime.datetime.now, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('cliente', models.ForeignKey(blank=True, to='cadastro.Cliente', null=True)),
+                ('contrato', models.ForeignKey(blank=True, to='comercial.ContratoFechado', null=True)),
+                ('criado_por', models.ForeignKey(related_name=b'tarefa_de_programacao_adicionado_set', to='rh.Funcionario')),
+                ('funcionarios_participantes', models.ManyToManyField(related_name=b'contratos_participantes_programacao', null=True, to='rh.Funcionario', blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='followupdecontrato',
+            name='contrato',
+            field=models.ForeignKey(to='programacao.TarefaDeProgramacao'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='followupdecontrato',
+            name='criado_por',
+            field=models.ForeignKey(related_name=b'followup_contrato_adicionado_set', to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+    ]

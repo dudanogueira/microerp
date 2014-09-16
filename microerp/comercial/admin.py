@@ -68,11 +68,11 @@ class PropostaComercialAdmin(admin.ModelAdmin):
 class LinhaRecursoMaterialInLine(admin.TabularInline):
     raw_id_fields = ("produto",)
     model = LinhaRecursoMaterial
-    extra = 0
+    extra = 1
 
 class LinhaRecursoHumanoInLine(admin.TabularInline):
     model = LinhaRecursoHumano
-    extra = 0
+    extra = 1
 
 class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]

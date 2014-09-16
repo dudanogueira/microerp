@@ -1,608 +1,703 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models, migrations
+import sorl.thumbnail.fields
 import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+import rh.models
+from django.conf import settings
+import django_extensions.db.fields
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Funcionario'
-        db.create_table(u'rh_funcionario', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('uuid', self.gf('django.db.models.fields.CharField')(max_length=36, blank=True)),
-            ('foto', self.gf('sorl.thumbnail.fields.ImageField')(max_length=100, null=True, blank=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['account.User'], unique=True, null=True, blank=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=300)),
-            ('residencia', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('valor_aluguel', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('nascimento', self.gf('django.db.models.fields.DateField')()),
-            ('observacao', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('sexo', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('naturalidade', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('nacionalidade', self.gf('django.db.models.fields.CharField')(default='Brasil', max_length=100, null=True, blank=True)),
-            ('estado_civil', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('nome_companheiro', self.gf('django.db.models.fields.CharField')(max_length=300, null=True, blank=True)),
-            ('nome_pai', self.gf('django.db.models.fields.CharField')(max_length=300, null=True, blank=True)),
-            ('nome_mae', self.gf('django.db.models.fields.CharField')(max_length=300, null=True, blank=True)),
-            ('rg', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('rg_data', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('rg_expeditor', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('cpf', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('carteira_profissional_numero', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('carteira_profissional_serie', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('carteira_profissional_emissao', self.gf('django.db.models.fields.DateField')(blank=True)),
-            ('titulo_eleitor', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('pis', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('certificado_reservista', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('carteira_habilitacao_numero', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('carteira_habilitacao_categoria', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('carteira_habilitacao_vencimento', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('carteira_habilitacao_expedicao', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('escolaridade_nivel', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('escolaridade_cursos', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('escolaridade_serie_inconclusa', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('escolaridade_conclusao', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True, blank=True)),
-            ('telefone_fixo', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('telefone_celular', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('telefone_recado', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('bairro', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Bairro'])),
-            ('cep', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('rua', self.gf('django.db.models.fields.CharField')(max_length=500, null=True, blank=True)),
-            ('numero', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('complemento', self.gf('django.db.models.fields.CharField')(max_length=200, null=True, blank=True)),
-            ('salario_inicial', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('salario_atual', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=10, decimal_places=2, blank=True)),
-            ('valor_hora', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('forma_de_pagamento', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('gratificacao', self.gf('django.db.models.fields.DecimalField')(null=True, max_digits=10, decimal_places=2, blank=True)),
-            ('numero_lre', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('cargo_inicial', self.gf('django.db.models.fields.related.ForeignKey')(related_name='cargo_inicial', to=orm['rh.Cargo'])),
-            ('cargo_atual', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='cargo_promovido', null=True, to=orm['rh.Cargo'])),
-            ('funcionario_superior', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'], null=True, blank=True)),
-            ('local_de_trabalho', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('membro_cipa', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['Funcionario'])
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('cadastro', '0001_initial'),
+    ]
 
-        # Adding model 'IdiomaFuncionario'
-        db.create_table(u'rh_idiomafuncionario', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-            ('idioma', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('nivel', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('instituicao', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['IdiomaFuncionario'])
-
-        # Adding model 'CursoFuncionario'
-        db.create_table(u'rh_cursofuncionario', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('data', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('carga_horaria', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['CursoFuncionario'])
-
-        # Adding model 'ExperienciasProfissionaisFuncionario'
-        db.create_table(u'rh_experienciasprofissionaisfuncionario', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-            ('emprego_atual', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('nome_da_empresa', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('telefone_fixo', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('endereco_completo', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('data_admissao', self.gf('django.db.models.fields.DateField')()),
-            ('data_demissao', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('cargo_inicial', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('cargo_final', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('ultimo_salario', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('motivo_saida', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['ExperienciasProfissionaisFuncionario'])
-
-        # Adding model 'Cargo'
-        db.create_table(u'rh_cargo', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('descricao', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('salario_referencia', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('departmento', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Departamento'])),
-            ('periculosidade', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('gratificacao', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('dias_renovacao_exames', self.gf('django.db.models.fields.IntegerField')()),
-        ))
-        db.send_create_signal(u'rh', ['Cargo'])
-
-        # Adding M2M table for field exame_medico_padrao on 'Cargo'
-        db.create_table(u'rh_cargo_exame_medico_padrao', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('cargo', models.ForeignKey(orm[u'rh.cargo'], null=False)),
-            ('tipodeexamemedico', models.ForeignKey(orm[u'rh.tipodeexamemedico'], null=False))
-        ))
-        db.create_unique(u'rh_cargo_exame_medico_padrao', ['cargo_id', 'tipodeexamemedico_id'])
-
-        # Adding model 'Departamento'
-        db.create_table(u'rh_departamento', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['Departamento'])
-
-        # Adding model 'PeriodoTrabalhado'
-        db.create_table(u'rh_periodotrabalhado', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-            ('inicio', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('fim', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['PeriodoTrabalhado'])
-
-        # Adding model 'PromocaoSalario'
-        db.create_table(u'rh_promocaosalario', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('aprovado', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('avaliado', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('descricao', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('data_solicitacao', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('data_resolucao', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('beneficiario', self.gf('django.db.models.fields.related.ForeignKey')(related_name='promocao_salarial_set', to=orm['rh.Funcionario'])),
-            ('solicitante', self.gf('django.db.models.fields.related.ForeignKey')(related_name='solicitacao_promocao_salarial_set', to=orm['rh.Funcionario'])),
-            ('autorizador', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='autorizacao_promocao_salarial_set', null=True, to=orm['rh.Funcionario'])),
-            ('valor', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-            ('periodo_trabalhado', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.PeriodoTrabalhado'])),
-            ('observacao', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['PromocaoSalario'])
-
-        # Adding model 'PromocaoCargo'
-        db.create_table(u'rh_promocaocargo', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('avaliado', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('aprovado', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('descricao', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('data_solicitacao', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('data_resolucao', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('beneficiario', self.gf('django.db.models.fields.related.ForeignKey')(related_name='promocao_cargo_set', to=orm['rh.Funcionario'])),
-            ('solicitante', self.gf('django.db.models.fields.related.ForeignKey')(related_name='solicitacao_promocao_cargo_set', to=orm['rh.Funcionario'])),
-            ('autorizador', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='autorizacao_promocao_cargo_set', null=True, to=orm['rh.Funcionario'])),
-            ('cargo_antigo', self.gf('django.db.models.fields.related.ForeignKey')(related_name='cargo_antigo', to=orm['rh.Cargo'])),
-            ('cargo_novo', self.gf('django.db.models.fields.related.ForeignKey')(related_name='cargo_novo', to=orm['rh.Cargo'])),
-            ('periodo_trabalhado', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.PeriodoTrabalhado'])),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['PromocaoCargo'])
-
-        # Adding model 'SolicitacaoDeLicenca'
-        db.create_table(u'rh_solicitacaodelicenca', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-            ('motivo', self.gf('django.db.models.fields.TextField')()),
-            ('inicio', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('fim', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('status', self.gf('django.db.models.fields.CharField')(default='aberta', max_length=100)),
-            ('tipo', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('data_criado', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('data_autorizado', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('processado_por', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='autorizado_por', null=True, to=orm['rh.Funcionario'])),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['SolicitacaoDeLicenca'])
-
-        # Adding model 'FolhaDePonto'
-        db.create_table(u'rh_folhadeponto', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-            ('data_referencia', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('encerrado', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('autorizado', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('funcionario_autorizador', self.gf('django.db.models.fields.related.ForeignKey')(blank=True, related_name='folhadeponto_autorizado_set', null=True, to=orm['rh.Funcionario'])),
-            ('arquivo', self.gf('django.db.models.fields.files.FileField')(max_length=100, null=True, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['FolhaDePonto'])
-
-        # Adding model 'EntradaFolhaDePonto'
-        db.create_table(u'rh_entradafolhadeponto', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('folha', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.FolhaDePonto'])),
-            ('hora', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('tipo', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'rh', ['EntradaFolhaDePonto'])
-
-        # Adding model 'DependenteDeFuncionario'
-        db.create_table(u'rh_dependentedefuncionario', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('relacao', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('nascimento', self.gf('django.db.models.fields.DateField')(default=datetime.datetime(2013, 3, 18, 0, 0))),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-        ))
-        db.send_create_signal(u'rh', ['DependenteDeFuncionario'])
-
-        # Adding model 'TipoDeExameMedico'
-        db.create_table(u'rh_tipodeexamemedico', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('descricao', self.gf('django.db.models.fields.TextField')(blank=True)),
-            ('valor', self.gf('django.db.models.fields.DecimalField')(max_digits=10, decimal_places=2)),
-        ))
-        db.send_create_signal(u'rh', ['TipoDeExameMedico'])
-
-        # Adding model 'RotinaExameMedico'
-        db.create_table(u'rh_rotinaexamemedico', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('data', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, blank=True)),
-            ('tipo', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('funcionario', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'])),
-        ))
-        db.send_create_signal(u'rh', ['RotinaExameMedico'])
-
-        # Adding M2M table for field exames on 'RotinaExameMedico'
-        db.create_table(u'rh_rotinaexamemedico_exames', (
-            ('id', models.AutoField(verbose_name='ID', primary_key=True, auto_created=True)),
-            ('rotinaexamemedico', models.ForeignKey(orm[u'rh.rotinaexamemedico'], null=False)),
-            ('tipodeexamemedico', models.ForeignKey(orm[u'rh.tipodeexamemedico'], null=False))
-        ))
-        db.create_unique(u'rh_rotinaexamemedico_exames', ['rotinaexamemedico_id', 'tipodeexamemedico_id'])
-
-        # Adding model 'PerfilAcessoRH'
-        db.create_table(u'rh_perfilacessorh', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('gerente', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('analista', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['account.User'], unique=True)),
-        ))
-        db.send_create_signal(u'rh', ['PerfilAcessoRH'])
-
-
-    def backwards(self, orm):
-        # Deleting model 'Funcionario'
-        db.delete_table(u'rh_funcionario')
-
-        # Deleting model 'IdiomaFuncionario'
-        db.delete_table(u'rh_idiomafuncionario')
-
-        # Deleting model 'CursoFuncionario'
-        db.delete_table(u'rh_cursofuncionario')
-
-        # Deleting model 'ExperienciasProfissionaisFuncionario'
-        db.delete_table(u'rh_experienciasprofissionaisfuncionario')
-
-        # Deleting model 'Cargo'
-        db.delete_table(u'rh_cargo')
-
-        # Removing M2M table for field exame_medico_padrao on 'Cargo'
-        db.delete_table('rh_cargo_exame_medico_padrao')
-
-        # Deleting model 'Departamento'
-        db.delete_table(u'rh_departamento')
-
-        # Deleting model 'PeriodoTrabalhado'
-        db.delete_table(u'rh_periodotrabalhado')
-
-        # Deleting model 'PromocaoSalario'
-        db.delete_table(u'rh_promocaosalario')
-
-        # Deleting model 'PromocaoCargo'
-        db.delete_table(u'rh_promocaocargo')
-
-        # Deleting model 'SolicitacaoDeLicenca'
-        db.delete_table(u'rh_solicitacaodelicenca')
-
-        # Deleting model 'FolhaDePonto'
-        db.delete_table(u'rh_folhadeponto')
-
-        # Deleting model 'EntradaFolhaDePonto'
-        db.delete_table(u'rh_entradafolhadeponto')
-
-        # Deleting model 'DependenteDeFuncionario'
-        db.delete_table(u'rh_dependentedefuncionario')
-
-        # Deleting model 'TipoDeExameMedico'
-        db.delete_table(u'rh_tipodeexamemedico')
-
-        # Deleting model 'RotinaExameMedico'
-        db.delete_table(u'rh_rotinaexamemedico')
-
-        # Removing M2M table for field exames on 'RotinaExameMedico'
-        db.delete_table('rh_rotinaexamemedico_exames')
-
-        # Deleting model 'PerfilAcessoRH'
-        db.delete_table(u'rh_perfilacessorh')
-
-
-    models = {
-        u'account.user': {
-            'Meta': {'object_name': 'User'},
-            'email': ('django.db.models.fields.EmailField', [], {'unique': 'True', 'max_length': '255'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_admin': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '100', 'blank': 'True'})
-        },
-        u'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        u'auth.permission': {
-            'Meta': {'ordering': "(u'content_type__app_label', u'content_type__model', u'codename')", 'unique_together': "((u'content_type', u'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        u'cadastro.bairro': {
-            'Meta': {'object_name': 'Bairro'},
-            'cidade': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Cidade']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'cadastro.cidade': {
-            'Meta': {'object_name': 'Cidade'},
-            'estado': ('django.db.models.fields.CharField', [], {'max_length': '2'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'rh.cargo': {
-            'Meta': {'object_name': 'Cargo'},
-            'departmento': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Departamento']"}),
-            'descricao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'dias_renovacao_exames': ('django.db.models.fields.IntegerField', [], {}),
-            'exame_medico_padrao': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rh.TipoDeExameMedico']", 'symmetrical': 'False'}),
-            'gratificacao': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'periculosidade': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            'salario_referencia': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        },
-        u'rh.cursofuncionario': {
-            'Meta': {'object_name': 'CursoFuncionario'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'carga_horaria': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'rh.departamento': {
-            'Meta': {'object_name': 'Departamento'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'rh.dependentedefuncionario': {
-            'Meta': {'object_name': 'DependenteDeFuncionario'},
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nascimento': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'relacao': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'rh.entradafolhadeponto': {
-            'Meta': {'object_name': 'EntradaFolhaDePonto'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'folha': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.FolhaDePonto']"}),
-            'hora': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'tipo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'})
-        },
-        u'rh.experienciasprofissionaisfuncionario': {
-            'Meta': {'object_name': 'ExperienciasProfissionaisFuncionario'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'cargo_final': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'cargo_inicial': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data_admissao': ('django.db.models.fields.DateField', [], {}),
-            'data_demissao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'emprego_atual': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'endereco_completo': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'motivo_saida': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'nome_da_empresa': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'telefone_fixo': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'ultimo_salario': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        },
-        u'rh.folhadeponto': {
-            'Meta': {'object_name': 'FolhaDePonto'},
-            'arquivo': ('django.db.models.fields.files.FileField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'autorizado': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data_referencia': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'encerrado': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            'funcionario_autorizador': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'folhadeponto_autorizado_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'})
-        },
-        u'rh.funcionario': {
-            'Meta': {'ordering': "['nome']", 'object_name': 'Funcionario'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'bairro': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Bairro']"}),
-            'cargo_atual': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'cargo_promovido'", 'null': 'True', 'to': u"orm['rh.Cargo']"}),
-            'cargo_inicial': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cargo_inicial'", 'to': u"orm['rh.Cargo']"}),
-            'carteira_habilitacao_categoria': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'carteira_habilitacao_expedicao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'carteira_habilitacao_numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'carteira_habilitacao_vencimento': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'carteira_profissional_emissao': ('django.db.models.fields.DateField', [], {'blank': 'True'}),
-            'carteira_profissional_numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'carteira_profissional_serie': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'cep': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'certificado_reservista': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'complemento': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
-            'cpf': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
-            'escolaridade_conclusao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'escolaridade_cursos': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'escolaridade_nivel': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'escolaridade_serie_inconclusa': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'estado_civil': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'forma_de_pagamento': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'foto': ('sorl.thumbnail.fields.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'funcionario_superior': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']", 'null': 'True', 'blank': 'True'}),
-            'gratificacao': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'local_de_trabalho': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'membro_cipa': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'nacionalidade': ('django.db.models.fields.CharField', [], {'default': "'Brasil'", 'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'nascimento': ('django.db.models.fields.DateField', [], {}),
-            'naturalidade': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
-            'nome_companheiro': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
-            'nome_mae': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
-            'nome_pai': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
-            'numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'numero_lre': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'observacao': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'pis': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'residencia': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rg': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rg_data': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'rg_expeditor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rua': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'}),
-            'salario_atual': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
-            'salario_inicial': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            'sexo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_celular': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_fixo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_recado': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'titulo_eleitor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['account.User']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'}),
-            'valor_aluguel': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            'valor_hora': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        },
-        u'rh.idiomafuncionario': {
-            'Meta': {'object_name': 'IdiomaFuncionario'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'idioma': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'instituicao': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'nivel': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'rh.perfilacessorh': {
-            'Meta': {'object_name': 'PerfilAcessoRH'},
-            'analista': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'gerente': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['account.User']", 'unique': 'True'})
-        },
-        u'rh.periodotrabalhado': {
-            'Meta': {'object_name': 'PeriodoTrabalhado'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'fim': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inicio': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'})
-        },
-        u'rh.promocaocargo': {
-            'Meta': {'ordering': "['-criado']", 'object_name': 'PromocaoCargo'},
-            'aprovado': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'autorizador': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'autorizacao_promocao_cargo_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            'avaliado': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'beneficiario': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'promocao_cargo_set'", 'to': u"orm['rh.Funcionario']"}),
-            'cargo_antigo': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cargo_antigo'", 'to': u"orm['rh.Cargo']"}),
-            'cargo_novo': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'cargo_novo'", 'to': u"orm['rh.Cargo']"}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data_resolucao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'data_solicitacao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'descricao': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'periodo_trabalhado': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.PeriodoTrabalhado']"}),
-            'solicitante': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'solicitacao_promocao_cargo_set'", 'to': u"orm['rh.Funcionario']"})
-        },
-        u'rh.promocaosalario': {
-            'Meta': {'ordering': "['data_solicitacao']", 'object_name': 'PromocaoSalario'},
-            'aprovado': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'autorizador': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'autorizacao_promocao_salarial_set'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            'avaliado': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'beneficiario': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'promocao_salarial_set'", 'to': u"orm['rh.Funcionario']"}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data_resolucao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'data_solicitacao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'descricao': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'observacao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'periodo_trabalhado': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.PeriodoTrabalhado']"}),
-            'solicitante': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'solicitacao_promocao_salarial_set'", 'to': u"orm['rh.Funcionario']"}),
-            'valor': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        },
-        u'rh.rotinaexamemedico': {
-            'Meta': {'object_name': 'RotinaExameMedico'},
-            'data': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'blank': 'True'}),
-            'exames': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rh.TipoDeExameMedico']", 'symmetrical': 'False'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'tipo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'rh.solicitacaodelicenca': {
-            'Meta': {'object_name': 'SolicitacaoDeLicenca'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'data_autorizado': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'data_criado': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'fim': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inicio': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 3, 18, 0, 0)'}),
-            'motivo': ('django.db.models.fields.TextField', [], {}),
-            'processado_por': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'autorizado_por'", 'null': 'True', 'to': u"orm['rh.Funcionario']"}),
-            'status': ('django.db.models.fields.CharField', [], {'default': "'aberta'", 'max_length': '100'}),
-            'tipo': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'rh.tipodeexamemedico': {
-            'Meta': {'object_name': 'TipoDeExameMedico'},
-            'descricao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'valor': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        }
-    }
-
-    complete_apps = ['rh']
+    operations = [
+        migrations.CreateModel(
+            name='AtribuicaoDeCargo',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('inicio', models.DateField(default=datetime.datetime.today)),
+                ('fim', models.DateField(null=True, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='AtribuicaoDeResponsabilidade',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('treinamento_realizado', models.BooleanField(default=False)),
+                ('tipo_de_treinamento', models.CharField(blank=True, max_length=100, choices=[(b'adicionar', 'Adi\xe7\xe3o de Compet\xeancia'), (b'atualizar', 'Atualiza\xe7\xe3o de Compet\xeancia')])),
+                ('horas_treinadas', models.IntegerField(null=True, blank=True)),
+                ('data_treinado', models.DateField(null=True, blank=True)),
+                ('confirmado_data', models.DateTimeField(null=True, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='AutorizacaoHoraExtra',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('quantidade', models.IntegerField()),
+                ('valor_total', models.DecimalField(null=True, verbose_name='Valor Total das Horas Extra', max_digits=10, decimal_places=2, blank=True)),
+                ('data_execucao', models.DateField(default=datetime.datetime.today)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+            ],
+            options={
+                'ordering': ['-data_execucao'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CapacitacaoDeSubProcedimento',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('versao_treinada', models.IntegerField(default=0, null=True, verbose_name='Vers\xe3o Treinada', blank=True)),
+                ('ultima_atualizacao', models.DateField(default=datetime.datetime.today, verbose_name=b'\xc3\x9altima Atualiza\xc3\xa7\xc3\xa3o')),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Cargo',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, verbose_name='Nome do Cargo')),
+                ('descricao', models.TextField(verbose_name='Descri\xe7\xe3o', blank=True)),
+                ('salario_referencia', models.DecimalField(verbose_name='Sal\xe1rio Refer\xeancia', max_digits=10, decimal_places=2)),
+                ('fracao_hora_referencia', models.DecimalField(help_text='Valor usado para calcular a participac\xe3o de funcion\xe1rio deste cargo em or\xe7amento.', verbose_name='Refer\xeancia de Fra\xe7\xe3o de Hora', max_digits=10, decimal_places=2)),
+                ('periculosidade', models.DecimalField(verbose_name='Periculosidade', max_digits=10, decimal_places=2)),
+                ('gratificacao', models.DecimalField(verbose_name='Gratifica\xe7\xe3o', max_digits=10, decimal_places=2)),
+                ('tipo', models.CharField(default=b'escritorio', max_length=100, blank=True, choices=[(b'campo', b'Campo'), (b'escritorio', b'Escrit\xc3\xb3rio')])),
+                ('dias_renovacao_exames', models.IntegerField(default=365)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'ordering': ['nome'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Competencia',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='CursoFuncionario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('data', models.DateField(default=datetime.datetime.today, verbose_name='Data de Conclus\xe3o')),
+                ('carga_horaria', models.IntegerField(null=True, verbose_name=b'Carga Hor\xc3\xa1ria', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Curso Extra do Funcion\xe1rio',
+                'verbose_name_plural': 'Cursos Extra dos Funcion\xe1rio',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Demissao',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('data', models.DateField(default=datetime.datetime.today)),
+                ('status', models.CharField(default=b'andamento', max_length=100, blank=True, choices=[(b'andamento', b'Em Andamento'), (b'finalizado', b'Finalizado')])),
+                ('termo_recisorio', models.FileField(max_length=500, null=True, upload_to=rh.models.funcionario_termo_recisorio_path, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Processo de Demiss\xe3o',
+                'verbose_name_plural': 'Processos de Demiss\xe3o',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Departamento',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, verbose_name=b'Nome do Departamento', blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='DependenteDeFuncionario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('relacao', models.CharField(blank=True, max_length=100, choices=[(b'f', b'Filho / Filha'), (b'p', b'Parceiro / Esposo / Esposa')])),
+                ('nascimento', models.DateField(default=datetime.datetime.today)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Dependente de Funcion\xe1rio',
+                'verbose_name_plural': 'Dependentes de Funcion\xe1rios',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='EntradaFolhaDePonto',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('inicio', models.DateField(default=datetime.datetime.today)),
+                ('fim', models.DateField(default=datetime.date(2014, 9, 23))),
+                ('total', models.DecimalField(max_digits=5, decimal_places=1)),
+                ('arquivo', models.FileField(help_text=b'Arquivo a ser anexado a cada entrada', max_length=300, null=True, upload_to=rh.models.funcionario_entrada_folha_ponto_assinada, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Entrada de Folha de Ponto',
+                'verbose_name_plural': 'Entradas de Folha de Ponto',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ExperienciasProfissionaisFuncionario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('emprego_atual', models.BooleanField(default=False)),
+                ('nome_da_empresa', models.CharField(max_length=100, blank=True)),
+                ('telefone_fixo', models.CharField(help_text=b'Formato: XX-XXXX-XXXX', max_length=100)),
+                ('endereco_completo', models.TextField(blank=True)),
+                ('data_admissao', models.DateField()),
+                ('data_demissao', models.DateField(null=True, blank=True)),
+                ('cargo_inicial', models.CharField(max_length=100, blank=True)),
+                ('cargo_final', models.CharField(max_length=100, blank=True)),
+                ('ultimo_salario', models.DecimalField(verbose_name='\xdaltimo Sal\xe1rio', max_digits=10, decimal_places=2)),
+                ('motivo_saida', models.CharField(max_length=100, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Experi\xeancia Profissional do Funcion\xe1rio',
+                'verbose_name_plural': 'Experi\xeancias Profissionais do Funcion\xe1rio',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Feriado',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('ativo', models.BooleanField(default=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('data', models.DateField()),
+                ('importado_por_sync', models.BooleanField(default=False)),
+                ('uid', models.CharField(max_length=100, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+            ],
+            options={
+                'ordering': ['data'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='FolhaDePonto',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('data_referencia', models.DateField(default=datetime.datetime.today, verbose_name='M\xeas e Ano de Refer\xeancia')),
+                ('encerrado', models.BooleanField(default=False)),
+                ('autorizado', models.BooleanField(default=False)),
+                ('arquivo', models.FileField(help_text=b'Arquivo a ser anexado no fechamento do m\xc3\xaas da data de refer\xc3\xaancia', max_length=300, null=True, upload_to=rh.models.funcionario_entrada_folha_ponto_assinada, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'ordering': ['data_referencia'],
+                'verbose_name': 'Folha de Ponto',
+                'verbose_name_plural': 'Folhas de Ponto',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Funcionario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('uuid', django_extensions.db.fields.UUIDField(max_length=36, editable=False, blank=True)),
+                ('foto', sorl.thumbnail.fields.ImageField(null=True, upload_to=rh.models.funcionario_avatar_img_path, blank=True)),
+                ('nome', models.CharField(max_length=300, verbose_name='Nome do Funcion\xe1rio')),
+                ('residencia', models.CharField(blank=True, max_length=100, null=True, choices=[(b'propria', b'Resid\xc3\xaancia Pr\xc3\xb3pria'), (b'aluguel', b'Resid\xc3\xaancia por Aluguel'), (b'outro', b'Outro: Casa de Parentes/Amigos')])),
+                ('valor_aluguel', models.DecimalField(null=True, verbose_name='Valor do Aluguel', max_digits=10, decimal_places=2, blank=True)),
+                ('nascimento', models.DateField()),
+                ('observacao', models.TextField(null=True, blank=True)),
+                ('sexo', models.CharField(blank=True, max_length=100, null=True, choices=[(b'm', b'Masculino'), (b'f', b'Feminino')])),
+                ('naturalidade', models.CharField(max_length=100, null=True, blank=True)),
+                ('nacionalidade', models.CharField(default=b'Brasil', max_length=100, null=True, blank=True)),
+                ('estado_civil', models.CharField(blank=True, max_length=100, null=True, choices=[(b'casado', b'Casado'), (b'solteiro', b'Solteiro'), (b'divorciado', b'Divorciado'), (b'viuvo', b'Vi\xc3\xbavo'), (b'outros', b'Outros')])),
+                ('nome_companheiro', models.CharField(max_length=300, null=True, blank=True)),
+                ('nome_pai', models.CharField(max_length=300, null=True, verbose_name='Nome do Pai', blank=True)),
+                ('nome_mae', models.CharField(max_length=300, null=True, verbose_name='Nome da M\xe3e', blank=True)),
+                ('rg', models.CharField(max_length=100, null=True, blank=True)),
+                ('rg_data', models.DateField(null=True, verbose_name='Data de Emiss\xe3o do RG', blank=True)),
+                ('rg_expeditor', models.CharField(max_length=100, null=True, verbose_name='\xd3rg\xe3o Emissor do RG', blank=True)),
+                ('cpf', models.CharField(max_length=255, null=True, verbose_name='CPF - Cadastro de Pessoa F\xedsica', blank=True)),
+                ('carteira_profissional_numero', models.CharField(max_length=100, null=True, blank=True)),
+                ('carteira_profissional_serie', models.CharField(max_length=100, null=True, blank=True)),
+                ('carteira_profissional_emissao', models.DateField(null=True, blank=True)),
+                ('titulo_eleitor', models.CharField(max_length=100, null=True, blank=True)),
+                ('pis', models.CharField(max_length=100, null=True, blank=True)),
+                ('certificado_reservista', models.CharField(max_length=100, null=True, blank=True)),
+                ('carteira_habilitacao_numero', models.CharField(max_length=100, null=True, blank=True)),
+                ('carteira_habilitacao_categoria', models.CharField(max_length=100, null=True, blank=True)),
+                ('carteira_habilitacao_vencimento', models.DateField(null=True, blank=True)),
+                ('carteira_habilitacao_expedicao', models.DateField(null=True, blank=True)),
+                ('escolaridade_nivel', models.CharField(blank=True, max_length=100, null=True, choices=[(b'0', b'2\xc2\xba Grau Incompleto'), (b'1', b'2\xc2\xba Grau Completo'), (b'2', b'Ensino Superior Incompleto'), (b'3', b'Ensino Superior Completo'), (b'4', b'Ensino Superior Completo + P\xc3\xb3s Gradua\xc3\xa7\xc3\xa3o'), (b'5', b'Ensino Superior Completo + Mestrado'), (b'6', b'Ensino Superior Completo + Doutorado')])),
+                ('escolaridade_cursos', models.TextField(null=True, verbose_name=b'Cursos e Institui\xc3\xa7\xc3\xb5es', blank=True)),
+                ('escolaridade_serie_inconclusa', models.CharField(max_length=100, null=True, verbose_name=b'S\xc3\xa9rie m\xc3\xa1xima estudada', blank=True)),
+                ('escolaridade_conclusao', models.DateField(default=datetime.datetime.today, null=True, verbose_name=b'Ano de Conclus\xc3\xa3o dos estudos', blank=True)),
+                ('email', models.EmailField(max_length=75, null=True, blank=True)),
+                ('telefone_fixo', models.CharField(help_text=b'Formato: XX-XXXX-XXXX', max_length=100, null=True, blank=True)),
+                ('telefone_celular', models.CharField(max_length=100, null=True, blank=True)),
+                ('telefone_recado', models.TextField(help_text=b'N\xc3\xbamero do telefone e contato para recados.', null=True, blank=True)),
+                ('cep', models.CharField(max_length=100, null=True, verbose_name='CEP', blank=True)),
+                ('rua', models.CharField(max_length=500, null=True, verbose_name='Rua', blank=True)),
+                ('numero', models.CharField(max_length=100, null=True, verbose_name='N\xfamero', blank=True)),
+                ('complemento', models.CharField(max_length=200, null=True, verbose_name='Complemento', blank=True)),
+                ('ultima_checagem_endereco', models.DateField(default=datetime.datetime.today)),
+                ('salario_inicial', models.DecimalField(null=True, verbose_name='Sal\xe1rio Inicial', max_digits=10, decimal_places=2, blank=True)),
+                ('salario_atual', models.DecimalField(null=True, verbose_name='Sal\xe1rio Atual', max_digits=10, decimal_places=2, blank=True)),
+                ('valor_hora', models.DecimalField(null=True, verbose_name='Valor Hora', max_digits=10, decimal_places=2, blank=True)),
+                ('forma_de_pagamento', models.CharField(blank=True, max_length=100, choices=[(b'mensal', 'Pagamento Mensal')])),
+                ('gratificacao', models.DecimalField(null=True, verbose_name='Gratifica\xe7\xe3o', max_digits=10, decimal_places=2, blank=True)),
+                ('numero_lre', models.CharField(max_length=100, verbose_name=b'N\xc3\xbamero LRE', blank=True)),
+                ('local_de_trabalho', models.TextField(blank=True)),
+                ('membro_cipa', models.BooleanField(default=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('bairro', models.ForeignKey(verbose_name=b'Bairro, Cidade e Estado', to='cadastro.Bairro')),
+                ('cargo_atual', models.ForeignKey(related_name=b'funcionario_cargo_atual_set', blank=True, to='rh.Cargo', null=True)),
+                ('cargo_inicial', models.ForeignKey(related_name=b'funcionario_cargo_inicial_set', to='rh.Cargo')),
+                ('competencias', models.ManyToManyField(to='rh.Competencia', null=True, blank=True)),
+                ('endereco_empresa_designado', models.ForeignKey(default=1, verbose_name='Local de Trabalho Designado', to='cadastro.EnderecoEmpresa')),
+                ('funcionario_superior', models.ForeignKey(blank=True, to='rh.Funcionario', help_text='Funcion\xe1rio a quem se reportar. Se deixado em branco, ser\xe1 usado o Grupo Respons\xe1vel pelo Departamento', null=True, verbose_name='Funcion\xe1rio Superior')),
+            ],
+            options={
+                'ordering': ['nome'],
+                'verbose_name': 'Funcion\xe1rio',
+                'verbose_name_plural': 'Funcion\xe1rios',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='GrupoDeCompetencia',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='IdiomaFuncionario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('idioma', models.CharField(blank=True, max_length=100, choices=[(b'af', b'Afrikaans'), (b'ar', b'Arabic'), (b'ast', b'Asturian'), (b'az', b'Azerbaijani'), (b'bg', b'Bulgarian'), (b'be', b'Belarusian'), (b'bn', b'Bengali'), (b'br', b'Breton'), (b'bs', b'Bosnian'), (b'ca', b'Catalan'), (b'cs', b'Czech'), (b'cy', b'Welsh'), (b'da', b'Danish'), (b'de', b'German'), (b'el', b'Greek'), (b'en', b'English'), (b'en-au', b'Australian English'), (b'en-gb', b'British English'), (b'eo', b'Esperanto'), (b'es', b'Spanish'), (b'es-ar', b'Argentinian Spanish'), (b'es-mx', b'Mexican Spanish'), (b'es-ni', b'Nicaraguan Spanish'), (b'es-ve', b'Venezuelan Spanish'), (b'et', b'Estonian'), (b'eu', b'Basque'), (b'fa', b'Persian'), (b'fi', b'Finnish'), (b'fr', b'French'), (b'fy', b'Frisian'), (b'ga', b'Irish'), (b'gl', b'Galician'), (b'he', b'Hebrew'), (b'hi', b'Hindi'), (b'hr', b'Croatian'), (b'hu', b'Hungarian'), (b'ia', b'Interlingua'), (b'id', b'Indonesian'), (b'io', b'Ido'), (b'is', b'Icelandic'), (b'it', b'Italian'), (b'ja', b'Japanese'), (b'ka', b'Georgian'), (b'kk', b'Kazakh'), (b'km', b'Khmer'), (b'kn', b'Kannada'), (b'ko', b'Korean'), (b'lb', b'Luxembourgish'), (b'lt', b'Lithuanian'), (b'lv', b'Latvian'), (b'mk', b'Macedonian'), (b'ml', b'Malayalam'), (b'mn', b'Mongolian'), (b'mr', b'Marathi'), (b'my', b'Burmese'), (b'nb', b'Norwegian Bokmal'), (b'ne', b'Nepali'), (b'nl', b'Dutch'), (b'nn', b'Norwegian Nynorsk'), (b'os', b'Ossetic'), (b'pa', b'Punjabi'), (b'pl', b'Polish'), (b'pt', b'Portuguese'), (b'pt-br', b'Brazilian Portuguese'), (b'ro', b'Romanian'), (b'ru', b'Russian'), (b'sk', b'Slovak'), (b'sl', b'Slovenian'), (b'sq', b'Albanian'), (b'sr', b'Serbian'), (b'sr-latn', b'Serbian Latin'), (b'sv', b'Swedish'), (b'sw', b'Swahili'), (b'ta', b'Tamil'), (b'te', b'Telugu'), (b'th', b'Thai'), (b'tr', b'Turkish'), (b'tt', b'Tatar'), (b'udm', b'Udmurt'), (b'uk', b'Ukrainian'), (b'ur', b'Urdu'), (b'vi', b'Vietnamese'), (b'zh-cn', b'Simplified Chinese'), (b'zh-hans', b'Simplified Chinese'), (b'zh-hant', b'Traditional Chinese'), (b'zh-tw', b'Traditional Chinese')])),
+                ('nivel', models.CharField(blank=True, max_length=100, choices=[(b'0', b'B\xc3\xa1sico'), (b'1', b'Intermedi\xc3\xa1rio'), (b'2', b'Avan\xc3\xa7ado'), (b'3', b'Fluente')])),
+                ('instituicao', models.CharField(max_length=100, verbose_name=b'Institui\xc3\xa7\xc3\xa3o de Ensino do Idioma', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('funcionario', models.ForeignKey(to='rh.Funcionario')),
+            ],
+            options={
+                'verbose_name': 'Idioma falado pelo Funcion\xe1rio',
+                'verbose_name_plural': 'Idiomas falado pelo Funcion\xe1rio',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PerfilAcessoRH',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('gerente', models.BooleanField(default=False)),
+                ('analista', models.BooleanField(default=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Perfil de Acesso ao RH',
+                'verbose_name_plural': 'Perfis de Acesso ao RH',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PeriodoTrabalhado',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('inicio', models.DateField(default=datetime.datetime.today)),
+                ('fim', models.DateField(null=True, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('funcionario', models.ForeignKey(to='rh.Funcionario')),
+            ],
+            options={
+                'ordering': ['-criado'],
+                'verbose_name': 'Per\xedodo Trabalhado',
+                'verbose_name_plural': 'Per\xedodos Trabalhados',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Procedimento',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('codigo', models.CharField(max_length=20, verbose_name='C\xf3digo')),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('descricao', models.TextField(verbose_name='Descri\xe7\xe3o', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+                ('departamento', models.ForeignKey(to='rh.Departamento')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PromocaoCargo',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('avaliado', models.BooleanField(default=False)),
+                ('aprovado', models.BooleanField(default=False)),
+                ('observacao', models.CharField(max_length=100, verbose_name='Observa\xe7\xe3o')),
+                ('data_solicitacao', models.DateField(default=datetime.datetime.today, verbose_name='Data da Solicita\xe7\xe3o de Promo\xe7\xe3o de Cargo')),
+                ('data_resolucao', models.DateField(null=True, verbose_name='Data de Resolu\xe7\xe3o', blank=True)),
+                ('data_promocao', models.DateField(default=datetime.datetime.today, verbose_name='Data da Efetiva\xe7\xe3o de Promo\xe7\xe3o de Cargo')),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('atribuicao_de_destino', models.OneToOneField(related_name=b'promocao_de_destino', verbose_name=b'Atribui\xc3\xa7\xc3\xa3o de Destino', to='rh.AtribuicaoDeCargo')),
+                ('atribuicao_de_origem', models.OneToOneField(related_name=b'promocao_de_origem', verbose_name=b'Atribui\xc3\xa7\xc3\xa3o de Origem', to='rh.AtribuicaoDeCargo')),
+                ('autorizador', models.ForeignKey(related_name=b'autorizacao_promocao_cargo_set', verbose_name='Funcion\xe1rio que Autorizou a Promo\xe7\xe3o de Cargo', blank=True, to='rh.Funcionario', null=True)),
+                ('beneficiario', models.ForeignKey(related_name=b'promocao_cargo_set', verbose_name='Funcion\xe1rio Beneficiado pela Promo\xe7\xe3o de Cargo', to='rh.Funcionario')),
+                ('criado_por', models.ForeignKey(related_name=b'promocaocargo_criado_set', blank=True, to='rh.Funcionario', null=True)),
+                ('periodo_trabalhado', models.ForeignKey(to='rh.PeriodoTrabalhado')),
+                ('solicitante', models.ForeignKey(related_name=b'solicitacao_promocao_cargo_set', verbose_name='Funcion\xe1rio Solicitante da Promo\xe7\xe3o de Cargo', to='rh.Funcionario')),
+            ],
+            options={
+                'ordering': ['-criado'],
+                'verbose_name': 'Promo\xe7\xe3o de Cargo',
+                'verbose_name_plural': 'Promo\xe7\xf5es de Cargos',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PromocaoSalario',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('aprovado', models.BooleanField(default=False)),
+                ('avaliado', models.BooleanField(default=False)),
+                ('descricao', models.CharField(max_length=100, verbose_name='Descri\xe7\xe3o')),
+                ('data_solicitacao', models.DateField(default=datetime.datetime.today, verbose_name='Data da Solicita\xe7\xe3o')),
+                ('data_resolucao', models.DateField(null=True, verbose_name='Data de Resolu\xe7\xe3o', blank=True)),
+                ('data_promocao', models.DateField(default=datetime.datetime.today, verbose_name='Data da Efetiva\xe7\xe3o de Promo\xe7\xe3o de Sal\xe1rio')),
+                ('valor_origem', models.DecimalField(verbose_name='Valor de Origem', max_digits=10, decimal_places=2)),
+                ('valor_destino', models.DecimalField(verbose_name='Valor de Destino', max_digits=10, decimal_places=2)),
+                ('observacao', models.TextField(verbose_name='Observa\xe7\xf5es Internas', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('atribuicao_de_cargo', models.ForeignKey(to='rh.AtribuicaoDeCargo')),
+                ('autorizador', models.ForeignKey(related_name=b'autorizacao_promocao_salarial_set', verbose_name='Funcion\xe1rio que Autorizou a Promo\xe7\xe3o', blank=True, to='rh.Funcionario', null=True)),
+                ('beneficiario', models.ForeignKey(related_name=b'promocao_salarial_set', verbose_name='Funcion\xe1rio Beneficiado', to='rh.Funcionario')),
+                ('criado_por', models.ForeignKey(related_name=b'promocao_salarial_criada_set', blank=True, to='rh.Funcionario', null=True)),
+                ('periodo_trabalhado', models.ForeignKey(to='rh.PeriodoTrabalhado')),
+                ('solicitante', models.ForeignKey(related_name=b'solicitacao_promocao_salarial_set', verbose_name='Funcion\xe1rio Solicitante', to='rh.Funcionario')),
+            ],
+            options={
+                'ordering': ['data_promocao'],
+                'verbose_name': 'Promo\xe7\xe3o Salarial',
+                'verbose_name_plural': 'Promo\xe7\xf5es Salariais',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='RotinaExameMedico',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('data', models.DateTimeField(default=datetime.datetime.now, help_text=b'Formato: dd/mm/yy hh:mm', null=True, blank=True)),
+                ('tipo', models.CharField(blank=True, max_length=100, choices=[(b'a', 'Admissonal'), (b'd', 'Demissonal'), (b'u', 'Peri\xf3dico'), (b'p', 'Mudan\xe7a de Fun\xe7\xe3o'), (b'r', 'Retorno ao Trabalho')])),
+                ('realizado', models.BooleanField(default=False)),
+                ('arquivo', models.FileField(max_length=300, null=True, upload_to=rh.models.funcionario_rotina_exame_medico, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'ordering': ['data'],
+                'verbose_name': 'Rotina de Exame M\xe9dico',
+                'verbose_name_plural': 'Rotinas de Exames M\xe9dicos',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='SolicitacaoDeLicenca',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('motivo', models.TextField()),
+                ('realizada', models.BooleanField(default=False)),
+                ('inicio', models.DateField(default=datetime.datetime.today, verbose_name='In\xedcio da Licen\xe7a')),
+                ('fim', models.DateField(default=datetime.datetime(2014, 9, 20, 9, 27, 27, 46608), verbose_name='T\xe9rmino da Licen\xe7a')),
+                ('status', models.CharField(default=b'aberta', max_length=100, verbose_name='Situa\xe7\xe3o da Solicita\xe7\xe3o', choices=[(b'aberta', 'Aberta'), (b'autorizada', 'Autorizada'), (b'declinada', 'Declinada')])),
+                ('tipo', models.CharField(max_length=100, verbose_name='Tipo da Solicita\xe7\xe3o', choices=[(b'ferias', 'F\xe9rias'), (b'medica', 'M\xe9dica')])),
+                ('data_criado', models.DateField(default=datetime.datetime.today, verbose_name='Data da Solicita\xe7\xe3o')),
+                ('data_autorizado', models.DateField(null=True, verbose_name='Data da Autoriza\xe7\xe3o', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('periodo_trabalhado', models.ForeignKey(to='rh.PeriodoTrabalhado')),
+                ('processado_por', models.ForeignKey(related_name=b'autorizado_por', blank=True, to='rh.Funcionario', null=True)),
+            ],
+            options={
+                'ordering': ['inicio'],
+                'verbose_name': 'Solicita\xe7\xe3o de Licen\xe7a',
+                'verbose_name_plural': 'Solicita\xe7\xf5es de Licen\xe7as',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='SubProcedimento',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('versao', models.IntegerField(default=0, verbose_name='Vers\xe3o')),
+                ('nome', models.CharField(max_length=100)),
+                ('descricao', models.TextField(verbose_name='Descri\xe7\xe3o')),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Cria\xc3\xa7\xc3\xa3o', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualiza\xc3\xa7\xc3\xa3o', auto_now=True)),
+                ('procedimento', models.ForeignKey(to='rh.Procedimento')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='TipoDeExameMedico',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('descricao', models.TextField(blank=True)),
+                ('valor', models.DecimalField(max_digits=10, decimal_places=2)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Tipo de Exame M\xe9dico',
+                'verbose_name_plural': 'Tipos de Exames M\xe9dicos',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AddField(
+            model_name='rotinaexamemedico',
+            name='exames',
+            field=models.ManyToManyField(to='rh.TipoDeExameMedico', null=True, blank=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='rotinaexamemedico',
+            name='periodo_trabalhado',
+            field=models.ForeignKey(to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='funcionario',
+            name='periodo_trabalhado_corrente',
+            field=models.OneToOneField(related_name=b'periodo_trabalhado_corrente', null=True, blank=True, to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='funcionario',
+            name='user',
+            field=models.OneToOneField(null=True, blank=True, to=settings.AUTH_USER_MODEL, verbose_name=b'Usu\xc3\xa1rio do Sistema'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='folhadeponto',
+            name='funcionario_autorizador',
+            field=models.ForeignKey(related_name=b'folhadeponto_autorizado_set', blank=True, to='rh.Funcionario', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='folhadeponto',
+            name='periodo_trabalhado',
+            field=models.ForeignKey(to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='experienciasprofissionaisfuncionario',
+            name='funcionario',
+            field=models.ForeignKey(to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='entradafolhadeponto',
+            name='adicionado_por',
+            field=models.ForeignKey(related_name=b'entradas_folha_lancada_set', to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='entradafolhadeponto',
+            name='folha',
+            field=models.ForeignKey(to='rh.FolhaDePonto'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='dependentedefuncionario',
+            name='funcionario',
+            field=models.ForeignKey(to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='demissao',
+            name='demissor',
+            field=models.ForeignKey(related_name=b'demissor_set', to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='demissao',
+            name='demitido',
+            field=models.ForeignKey(related_name=b'demissao_set', to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='demissao',
+            name='periodo_trabalhado_finalizado',
+            field=models.ForeignKey(to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='cursofuncionario',
+            name='funcionario',
+            field=models.ForeignKey(to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='competencia',
+            name='grupo',
+            field=models.ForeignKey(to='rh.GrupoDeCompetencia'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='cargo',
+            name='competencias',
+            field=models.ManyToManyField(to='rh.Competencia'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='cargo',
+            name='departamento',
+            field=models.ForeignKey(to='rh.Departamento'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='cargo',
+            name='exame_medico_padrao',
+            field=models.ManyToManyField(to='rh.TipoDeExameMedico'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='cargo',
+            name='subprocedimentos',
+            field=models.ManyToManyField(to='rh.SubProcedimento'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='capacitacaodesubprocedimento',
+            name='periodo_trabalhado',
+            field=models.ForeignKey(verbose_name=b'Per\xc3\xadodo Trabalhado', to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='capacitacaodesubprocedimento',
+            name='subprocedimento',
+            field=models.ForeignKey(to='rh.SubProcedimento'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='autorizacaohoraextra',
+            name='periodo_trabalhado',
+            field=models.ForeignKey(to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='autorizacaohoraextra',
+            name='solicitante',
+            field=models.ForeignKey(related_name=b'solicitante_horaextra_set', to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaoderesponsabilidade',
+            name='confirmado_por',
+            field=models.ForeignKey(related_name=b'atribuicaoderesponsabilidade_confirmado_set', blank=True, to='rh.Funcionario', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaoderesponsabilidade',
+            name='criado_por',
+            field=models.ForeignKey(related_name=b'atribuicaoderesponsabilidade_criado_set', to='rh.Funcionario'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaoderesponsabilidade',
+            name='periodo_trabalhado',
+            field=models.ForeignKey(to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaoderesponsabilidade',
+            name='subprocedimentos',
+            field=models.ManyToManyField(to='rh.SubProcedimento'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaodecargo',
+            name='cargo',
+            field=models.ForeignKey(to='rh.Cargo'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaodecargo',
+            name='criado_por',
+            field=models.ForeignKey(related_name=b'atribuicaodecargo_criado_set', blank=True, to='rh.Funcionario', null=True),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaodecargo',
+            name='local_empresa',
+            field=models.ForeignKey(default=1, verbose_name='Local designado', to='cadastro.EnderecoEmpresa'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='atribuicaodecargo',
+            name='periodo_trabalhado',
+            field=models.ForeignKey(to='rh.PeriodoTrabalhado'),
+            preserve_default=True,
+        ),
+    ]

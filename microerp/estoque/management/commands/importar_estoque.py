@@ -18,7 +18,7 @@ from django.utils.encoding import smart_unicode, smart_str
 class Command(BaseCommand):
     help = '''
         Sincroniza para a base de estoque uma planilha conforme:
-        
+        --format csv,xls
         CODIGO,NOME,FANTASIA,CONTATO,TELEFONE,CELULAR,CNPJ,CPF,IE,RG,ENDERECO,COMPLEMENTO,BAIRRO,NUMERO,CEP,CIDADE,UF,EMAIL,FIS_JUR,TIPO,COD_CONVENIO,CONVENIO,ULTIMA_VENDA,NASCIMENTO,DATA_CADASTRO,A_RECEBER,ATRASADO,RECEBIDO,LIMITE_CREDITO,CONCEDER_CREDITO
         
         '''

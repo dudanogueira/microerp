@@ -19,6 +19,8 @@ __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
+from django.utils.deconstruct import deconstructible
+
 import datetime, os, locale
 
 from utils import extenso_com_centavos
@@ -269,17 +271,24 @@ class FollowUpDePropostaComercial(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
+
+@deconstructible
+class AssinaturaDir(object):
+
+    def __call__(self, instance, filename):
+        return os.path.join(
+            'funcionarios/', str(instance.user.funcionario.uuid), 'assinaturas/', filename
+          )
+
+assinatura_local_imagem = AssinaturaDir()
+
+
 class PerfilAcessoComercial(models.Model):
     '''Perfil de Acesso ao Comercial'''
     class Meta:
         verbose_name = u"Perfil de Acesso ao Comercial"
         verbose_name_plural = u"Perfis de Acesso ao Comercial"
         
-        
-    def assinatura_local_imagem(instance, filename):
-        return os.path.join(
-            'funcionarios/', str(instance.user.funcionario.uuid), 'assinaturas/', filename
-          )
     
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)

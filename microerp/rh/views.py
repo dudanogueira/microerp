@@ -1314,7 +1314,10 @@ def indicadores_do_rh(request):
 
 
 from django.views.decorators.csrf import csrf_exempt    
-from django.utils import simplejson
+try:
+    from django.utils import simplejson
+except:
+    import json as simplejson
 
 @csrf_exempt
 @login_required

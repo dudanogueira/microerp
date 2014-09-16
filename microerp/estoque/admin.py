@@ -27,6 +27,7 @@ from estoque.models import TabelaDePreco
 from estoque.models import PerfilAcessoEstoque
 
 class ProdutoAdmin(admin.ModelAdmin):
+    
     list_display = 'codigo', 'nome', 'preco_custo', 'preco_venda',
     list_display_link = list_display
     list_filter = 'tipo', 'tabela', 'unidade_de_compra', 'unidade_de_venda'

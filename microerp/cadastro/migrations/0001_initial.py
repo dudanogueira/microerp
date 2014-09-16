@@ -1,340 +1,231 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models, migrations
 import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+import django_extensions.db.fields
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Cliente'
-        db.create_table(u'cadastro_cliente', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('uuid', self.gf('django.db.models.fields.CharField')(max_length=36, blank=True)),
-            ('id_referencia', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=300)),
-            ('fantasia', self.gf('django.db.models.fields.CharField')(max_length=500, null=True, blank=True)),
-            ('tipo', self.gf('django.db.models.fields.CharField')(max_length=10)),
-            ('cnpj', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('inscricao_estadual', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('cpf', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
-            ('rg', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('nascimento', self.gf('django.db.models.fields.DateField')(null=True, blank=True)),
-            ('ramo', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Ramo'], null=True, blank=True)),
-            ('observacao', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('origem', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.ClienteOrigem'], null=True, blank=True)),
-            ('contato', self.gf('django.db.models.fields.CharField')(max_length=300, blank=True)),
-            ('email', self.gf('django.db.models.fields.EmailField')(max_length=75, null=True, blank=True)),
-            ('telefone_fixo', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('telefone_celular', self.gf('django.db.models.fields.CharField')(max_length=100, null=True, blank=True)),
-            ('fax', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('cidade', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Cidade'])),
-            ('bairro', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Bairro'])),
-            ('cep', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('rua', self.gf('django.db.models.fields.CharField')(max_length=500, blank=True)),
-            ('numero', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('complemento', self.gf('django.db.models.fields.CharField')(max_length=200, blank=True)),
-            ('funcionario_responsavel', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['rh.Funcionario'], null=True, blank=True)),
-            ('solicitar_consulta_credito', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'cadastro', ['Cliente'])
+    dependencies = [
+    ]
 
-        # Adding model 'Ramo'
-        db.create_table(u'cadastro_ramo', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('tipo', self.gf('django.db.models.fields.CharField')(max_length=10)),
-        ))
-        db.send_create_signal(u'cadastro', ['Ramo'])
-
-        # Adding model 'Cidade'
-        db.create_table(u'cadastro_cidade', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('estado', self.gf('django.db.models.fields.CharField')(max_length=2)),
-        ))
-        db.send_create_signal(u'cadastro', ['Cidade'])
-
-        # Adding model 'Bairro'
-        db.create_table(u'cadastro_bairro', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('cidade', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Cidade'])),
-        ))
-        db.send_create_signal(u'cadastro', ['Bairro'])
-
-        # Adding model 'ClienteOrigem'
-        db.create_table(u'cadastro_clienteorigem', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('observacao', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-        ))
-        db.send_create_signal(u'cadastro', ['ClienteOrigem'])
-
-        # Adding model 'TipoDeConsultaDeCredito'
-        db.create_table(u'cadastro_tipodeconsultadecredito', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('nome', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('codigo', self.gf('django.db.models.fields.CharField')(max_length=100)),
-        ))
-        db.send_create_signal(u'cadastro', ['TipoDeConsultaDeCredito'])
-
-        # Adding model 'ConsultaDeCredito'
-        db.create_table(u'cadastro_consultadecredito', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('realizada', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('cliente', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.Cliente'])),
-            ('funcionario_solicitante', self.gf('django.db.models.fields.related.ForeignKey')(related_name='solicitacoes_consulta_credito_set', to=orm['rh.Funcionario'])),
-            ('funcionario_executor', self.gf('django.db.models.fields.related.ForeignKey')(related_name='realizacoes_consulta_credito_set', to=orm['rh.Funcionario'])),
-            ('data_solicitacao', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now)),
-            ('data_realizacao', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True)),
-            ('tipo', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['cadastro.TipoDeConsultaDeCredito'])),
-            ('regular', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('requisicao', self.gf('django.db.models.fields.CharField')(max_length=400)),
-            ('observacoes', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('dados_originais', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'cadastro', ['ConsultaDeCredito'])
-
-
-    def backwards(self, orm):
-        # Deleting model 'Cliente'
-        db.delete_table(u'cadastro_cliente')
-
-        # Deleting model 'Ramo'
-        db.delete_table(u'cadastro_ramo')
-
-        # Deleting model 'Cidade'
-        db.delete_table(u'cadastro_cidade')
-
-        # Deleting model 'Bairro'
-        db.delete_table(u'cadastro_bairro')
-
-        # Deleting model 'ClienteOrigem'
-        db.delete_table(u'cadastro_clienteorigem')
-
-        # Deleting model 'TipoDeConsultaDeCredito'
-        db.delete_table(u'cadastro_tipodeconsultadecredito')
-
-        # Deleting model 'ConsultaDeCredito'
-        db.delete_table(u'cadastro_consultadecredito')
-
-
-    models = {
-        u'account.user': {
-            'Meta': {'object_name': 'User'},
-            'email': ('django.db.models.fields.EmailField', [], {'unique': 'True', 'max_length': '255'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_admin': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'unique': 'True', 'max_length': '100', 'blank': 'True'})
-        },
-        u'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        u'auth.permission': {
-            'Meta': {'ordering': "(u'content_type__app_label', u'content_type__model', u'codename')", 'unique_together': "((u'content_type', u'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        u'cadastro.bairro': {
-            'Meta': {'object_name': 'Bairro'},
-            'cidade': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Cidade']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'cadastro.cidade': {
-            'Meta': {'object_name': 'Cidade'},
-            'estado': ('django.db.models.fields.CharField', [], {'max_length': '2'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'cadastro.cliente': {
-            'Meta': {'object_name': 'Cliente'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'bairro': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Bairro']"}),
-            'cep': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'cidade': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Cidade']"}),
-            'cnpj': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'complemento': ('django.db.models.fields.CharField', [], {'max_length': '200', 'blank': 'True'}),
-            'contato': ('django.db.models.fields.CharField', [], {'max_length': '300', 'blank': 'True'}),
-            'cpf': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
-            'fantasia': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'}),
-            'fax': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'funcionario_responsavel': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']", 'null': 'True', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'id_referencia': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'inscricao_estadual': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'nascimento': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
-            'numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'observacao': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'origem': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.ClienteOrigem']", 'null': 'True', 'blank': 'True'}),
-            'ramo': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Ramo']", 'null': 'True', 'blank': 'True'}),
-            'rg': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rua': ('django.db.models.fields.CharField', [], {'max_length': '500', 'blank': 'True'}),
-            'solicitar_consulta_credito': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'telefone_celular': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_fixo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'tipo': ('django.db.models.fields.CharField', [], {'max_length': '10'}),
-            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'})
-        },
-        u'cadastro.clienteorigem': {
-            'Meta': {'object_name': 'ClienteOrigem'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'observacao': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'})
-        },
-        u'cadastro.consultadecredito': {
-            'Meta': {'object_name': 'ConsultaDeCredito'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'cliente': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Cliente']"}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'dados_originais': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'data_realizacao': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
-            'data_solicitacao': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'funcionario_executor': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'realizacoes_consulta_credito_set'", 'to': u"orm['rh.Funcionario']"}),
-            'funcionario_solicitante': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'solicitacoes_consulta_credito_set'", 'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'observacoes': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'realizada': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'regular': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'requisicao': ('django.db.models.fields.CharField', [], {'max_length': '400'}),
-            'tipo': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.TipoDeConsultaDeCredito']"})
-        },
-        u'cadastro.ramo': {
-            'Meta': {'object_name': 'Ramo'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'tipo': ('django.db.models.fields.CharField', [], {'max_length': '10'})
-        },
-        u'cadastro.tipodeconsultadecredito': {
-            'Meta': {'object_name': 'TipoDeConsultaDeCredito'},
-            'codigo': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'rh.cargo': {
-            'Meta': {'object_name': 'Cargo'},
-            'departamento': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Departamento']"}),
-            'descricao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'dias_renovacao_exames': ('django.db.models.fields.IntegerField', [], {}),
-            'exame_medico_padrao': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['rh.TipoDeExameMedico']", 'symmetrical': 'False'}),
-            'gratificacao': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'periculosidade': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            'salario_referencia': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        },
-        u'rh.departamento': {
-            'Meta': {'object_name': 'Departamento'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        },
-        u'rh.funcionario': {
-            'Meta': {'ordering': "['nome']", 'object_name': 'Funcionario'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'bairro': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['cadastro.Bairro']"}),
-            'cargo_atual': ('django.db.models.fields.related.ForeignKey', [], {'blank': 'True', 'related_name': "'funcionario_cargo_atual_set'", 'null': 'True', 'to': u"orm['rh.Cargo']"}),
-            'cargo_inicial': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'funcionario_cargo_inicial_set'", 'to': u"orm['rh.Cargo']"}),
-            'carteira_habilitacao_categoria': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'carteira_habilitacao_expedicao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'carteira_habilitacao_numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'carteira_habilitacao_vencimento': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'carteira_profissional_emissao': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'carteira_profissional_numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'carteira_profissional_serie': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'cep': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'certificado_reservista': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'complemento': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True', 'blank': 'True'}),
-            'cpf': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'null': 'True', 'blank': 'True'}),
-            'escolaridade_conclusao': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 4, 5, 0, 0)'}),
-            'escolaridade_cursos': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'escolaridade_nivel': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'escolaridade_serie_inconclusa': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'estado_civil': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'forma_de_pagamento': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'foto': ('sorl.thumbnail.fields.ImageField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'funcionario_superior': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']", 'null': 'True', 'blank': 'True'}),
-            'gratificacao': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'local_de_trabalho': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            'membro_cipa': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'nacionalidade': ('django.db.models.fields.CharField', [], {'default': "'Brasil'", 'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'nascimento': ('django.db.models.fields.DateField', [], {}),
-            'naturalidade': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
-            'nome_companheiro': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
-            'nome_mae': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
-            'nome_pai': ('django.db.models.fields.CharField', [], {'max_length': '300', 'null': 'True', 'blank': 'True'}),
-            'numero': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'numero_lre': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'observacao': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'periodo_trabalhado_corrente': ('django.db.models.fields.related.OneToOneField', [], {'blank': 'True', 'related_name': "'periodo_trabalhado_corrente'", 'unique': 'True', 'null': 'True', 'to': u"orm['rh.PeriodoTrabalhado']"}),
-            'pis': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'residencia': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rg': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rg_data': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'rg_expeditor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'rua': ('django.db.models.fields.CharField', [], {'max_length': '500', 'null': 'True', 'blank': 'True'}),
-            'salario_atual': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
-            'salario_inicial': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'}),
-            'sexo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_celular': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_fixo': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'telefone_recado': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
-            'titulo_eleitor': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True', 'blank': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['account.User']", 'unique': 'True', 'null': 'True', 'blank': 'True'}),
-            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '36', 'blank': 'True'}),
-            'valor_aluguel': ('django.db.models.fields.DecimalField', [], {'null': 'True', 'max_digits': '10', 'decimal_places': '2', 'blank': 'True'}),
-            'valor_hora': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        },
-        u'rh.periodotrabalhado': {
-            'Meta': {'ordering': "['-criado']", 'object_name': 'PeriodoTrabalhado'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'fim': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
-            'funcionario': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['rh.Funcionario']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'inicio': ('django.db.models.fields.DateField', [], {'default': 'datetime.datetime(2013, 4, 5, 0, 0)'})
-        },
-        u'rh.tipodeexamemedico': {
-            'Meta': {'object_name': 'TipoDeExameMedico'},
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'descricao': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'nome': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'}),
-            'valor': ('django.db.models.fields.DecimalField', [], {'max_digits': '10', 'decimal_places': '2'})
-        }
-    }
-
-    complete_apps = ['cadastro']
+    operations = [
+        migrations.CreateModel(
+            name='Bairro',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, verbose_name=b'Nome do Bairro')),
+            ],
+            options={
+                'ordering': ['nome'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Cidade',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, verbose_name=b'Nome da Cidade')),
+                ('estado', models.CharField(max_length=2, choices=[('AC', 'Acre'), ('AL', 'Alagoas'), ('AP', 'Amap\xe1'), ('AM', 'Amazonas'), ('BA', 'Bahia'), ('CE', 'Cear\xe1'), ('DF', 'Distrito Federal'), ('ES', 'Esp\xedrito Santo'), ('GO', 'Goi\xe1s'), ('MA', 'Maranh\xe3o'), ('MT', 'Mato Grosso'), ('MS', 'Mato Grosso do Sul'), ('MG', 'Minas Gerais'), ('PA', 'Par\xe1'), ('PB', 'Para\xedba'), ('PR', 'Paran\xe1'), ('PE', 'Pernambuco'), ('PI', 'Piau\xed'), ('RJ', 'Rio de Janeiro'), ('RN', 'Rio Grande do Norte'), ('RS', 'Rio Grande do Sul'), ('RO', 'Rond\xf4nia'), ('RR', 'Roraima'), ('SC', 'Santa Catarina'), ('SP', 'S\xe3o Paulo'), ('SE', 'Sergipe'), ('TO', 'Tocantins')])),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Cliente',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('uuid', django_extensions.db.fields.UUIDField(max_length=36, editable=False, blank=True)),
+                ('id_referencia', models.IntegerField(null=True, blank=True)),
+                ('nome', models.CharField(max_length=300, verbose_name='Nome do Cliente')),
+                ('fantasia', models.CharField(max_length=500, null=True, verbose_name='Nome de Fantasia', blank=True)),
+                ('tipo', models.CharField(max_length=10, verbose_name='Tipo de Cliente', choices=[(b'pf', 'Pessoa F\xedsica'), (b'pj', 'Pessoa Jur\xeddica')])),
+                ('cnpj', models.CharField(max_length=255, null=True, verbose_name='CNPJ', blank=True)),
+                ('inscricao_estadual', models.CharField(max_length=100, null=True, blank=True)),
+                ('cpf', models.CharField(max_length=255, null=True, verbose_name='CPF', blank=True)),
+                ('rg', models.CharField(max_length=100, null=True, blank=True)),
+                ('nascimento', models.DateField(null=True, verbose_name='Data de Nascimento/Cria\xe7\xe3o', blank=True)),
+                ('observacao', models.TextField(null=True, verbose_name='Observa\xe7\xf5es Gerais', blank=True)),
+                ('contato', models.CharField(max_length=300, verbose_name=b'Nome do Contato', blank=True)),
+                ('email', models.EmailField(max_length=75, null=True, blank=True)),
+                ('telefone_fixo', models.CharField(help_text=b'Formato: XX-XXXX-XXXX', max_length=100, null=True, blank=True)),
+                ('telefone_celular', models.CharField(max_length=100, null=True, blank=True)),
+                ('fax', models.CharField(max_length=100, blank=True)),
+                ('solicitar_consulta_credito', models.BooleanField(default=False, help_text=b'Marque esta op\xc3\xa7\xc3\xa3o para solicitar uma consulta de cr\xc3\xa9dito', verbose_name=b'Solicitar Consulta de Cr\xc3\xa9dito')),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ClienteOrigem',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100)),
+                ('observacao', models.TextField(null=True, verbose_name='Observa\xe7\xf5es Gerais', blank=True)),
+            ],
+            options={
+                'verbose_name': 'Origem do Cliente',
+                'verbose_name_plural': 'Origens dos Clientes',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ConsultaDeCredito',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('realizada', models.BooleanField(default=False)),
+                ('data_solicitacao', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Data de Solicita\xc3\xa7\xc3\xa3o')),
+                ('data_realizacao', models.DateTimeField(null=True, verbose_name=b'Data de Realiza\xc3\xa7\xc3\xa3o', blank=True)),
+                ('regular', models.BooleanField(default=True, verbose_name=b'Situa\xc3\xa7\xc3\xa3o Regular')),
+                ('requisicao', models.CharField(max_length=400, verbose_name=b'Requisi\xc3\xa7\xc3\xa3o')),
+                ('observacoes', models.TextField(null=True, verbose_name='Observa\xe7\xf5es', blank=True)),
+                ('dados_originais', models.TextField(help_text=b'Este campo deve ser usado para armazenar o retorno de um webservice em seu formato original', null=True, verbose_name=b'Dados Originais', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Consulta de Cr\xe9dito',
+                'verbose_name_plural': 'Consultas de Cr\xe9dito',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='EnderecoCliente',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('principal', models.NullBooleanField(default=None, help_text=b'Endere\xc3\xa7o Principal')),
+                ('telefone', models.CharField(help_text=b'Formato: XX-XXXX-XXXX', max_length=100, null=True, verbose_name=b'Telefone Associado', blank=True)),
+                ('cep', models.CharField(max_length=100, verbose_name='CEP', blank=True)),
+                ('rua', models.CharField(max_length=500, verbose_name='Rua', blank=True)),
+                ('numero', models.CharField(max_length=100, verbose_name='N\xfamero', blank=True)),
+                ('complemento', models.CharField(max_length=200, verbose_name='Complemento', blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'ordering': ('-principal',),
+                'verbose_name': 'Endere\xe7o de Cliente',
+                'verbose_name_plural': 'Endere\xe7os de Clientes',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='EnderecoEmpresa',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('cnpj_vinculado', models.CharField(max_length=100, blank=True)),
+                ('nome', models.CharField(max_length=100)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PerfilAcessoRecepcao',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('gerente', models.BooleanField(default=False)),
+                ('analista', models.BooleanField(default=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Perfil de Acesso \xe0 Recep\xe7\xe3o',
+                'verbose_name_plural': 'Perfis de Acesso \xe0 Recep\xe7\xe3o',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PerfilClienteLogin',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PreCliente',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=300)),
+                ('contato', models.CharField(max_length=100)),
+                ('dados', models.TextField(blank=True)),
+                ('sem_interesse', models.BooleanField(default=False)),
+                ('sem_interesse_motivo', models.TextField(verbose_name=b'Motivo do Desinteresse', blank=True)),
+                ('sem_interesse_data', models.DateTimeField(default=datetime.datetime.now, blank=True)),
+                ('data_convertido', models.DateField(null=True, blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'Pr\xe9 Cliente',
+                'verbose_name_plural': 'Pr\xe9 Clientes',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PreClienteSemInteresseOpcao',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Ramo',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100)),
+                ('tipo', models.CharField(max_length=10, verbose_name='Tipo de Cliente', choices=[(b'pf', 'Pessoa F\xedsica'), (b'pj', 'Pessoa Jur\xeddica')])),
+            ],
+            options={
+                'verbose_name': 'Ramo de Atua\xe7\xe3o',
+                'verbose_name_plural': 'Ramos de Atua\xe7\xe3o',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='Recado',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('texto', models.TextField(verbose_name=b'Texto do Recado')),
+                ('tipo', models.CharField(default=b'comercial', max_length=100, verbose_name=b'Tipo de Recado', choices=[(b'compra', b'Solicita\xc3\xa7\xc3\xa3o de Compra'), (b'ocorrencia', b'Registro de Ocorr\xc3\xaancia'), (b'comercial', b'Solicita\xc3\xa7\xc3\xa3o Comercial'), (b'informacao_geral', 'Solicita\xe7\xe3o de Informa\xe7\xe3o'), (b'ofertar_produto', 'Oferta de Produto'), (b'agendamento_reuniao', 'Agendamento de Reuni\xe3o'), (b'informacao_projeto', 'Informa\xe7\xe3o sobre Projeto')])),
+                ('tipo_outros', models.TextField(blank=True)),
+                ('lido', models.BooleanField(default=False)),
+                ('lido_em', models.DateTimeField(null=True, blank=True)),
+                ('email_enviado', models.BooleanField(default=False)),
+                ('encaminhado', models.BooleanField(default=False)),
+                ('encaminhado_data', models.DateTimeField(default=datetime.datetime.now)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+            ],
+            options={
+                'ordering': ['-criado'],
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='TipoDeConsultaDeCredito',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+                ('codigo', models.CharField(help_text=b'C\xc3\xb3digo de Identifica\xc3\xa7\xc3\xa3o: cpf, cnpj, cheque, etc', max_length=100)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+    ]

@@ -176,7 +176,14 @@ class LinhaFornecedorFabricanteComponente(models.Model):
     fornecedor = models.ForeignKey('FabricanteFornecedor', related_name="fornecedor_componente_set")
     part_number_fabricante = models.CharField(blank=True, null=True, max_length=100, )
     fabricante = models.ForeignKey('FabricanteFornecedor', related_name="fabricante_componente_set", blank=True, null=True)
-    
+
+
+def componente_local_imagem(instance, filename):
+    return os.path.join(
+        'componente/', str(instance.part_number), 'imagem', filename
+      )
+
+
 class Componente(models.Model):
     '''Componente de SubProdutos e Produtos
     part_number deve ser formado por:
@@ -271,10 +278,6 @@ class Componente(models.Model):
             total_em_estoques += self.posicao_no_estoque(estoque)
         return total_em_estoques
     
-    def componente_local_imagem(instance, filename):
-        return os.path.join(
-            'componente/', str(instance.part_number), 'imagem', filename
-          )
     
     def ultimo_part_number_fornecedor(self):
         if self.lancamentocomponente_set.all().last():
@@ -310,16 +313,15 @@ class Componente(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
 
+def anexo_componente_local(instance, filename):
+    return os.path.join(
+        'componente/', str(instance.componente.part_number), 'anexos', filename
+      )
+
 class ArquivoAnexoComponente(models.Model):
     
     def __unicode__(self):
         return u"Arquivo %s anexo do Componente %s" % (self.arquivo, self.componente)
-    
-    def anexo_componente_local(instance, filename):
-        return os.path.join(
-            'componente/', str(instance.componente.part_number), 'anexos', filename
-          )
-    
     
     componente = models.ForeignKey('Componente')
     arquivo = models.FileField(upload_to=anexo_componente_local)
@@ -1431,8 +1433,8 @@ class LancamentoProdProduto(models.Model):
 class LinhaTesteLancamentoProdProduto(models.Model):
     
     class Meta:
-        verbose_name = u"Linha de Teste do Lançamento de Produto Produzido"
-        verbose_name_plural = u"Linhas de Teste do Lançamento de Produto Produzido"
+        verbose_name = u"Teste de Lançamento de Produto Produzido"
+        verbose_name_plural = u"Testes do Lançamento de Produto Produzido"
         ordering = ['-criado']
     
     lancamento_de_producao = models.ForeignKey(LancamentoProdProduto, verbose_name=u"Lançamento de Produção do Produto")

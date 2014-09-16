@@ -4,9 +4,9 @@
 {% block title %}{{ title }} | {% trans 'MicroERP admin' %}{% endblock %}
 
 {% block branding %}
-<a class="brand" href="{% url 'admin:index' %}">{% trans 'MicroERP: Administração' %}</a>
+<a class="navbar-brand" href="{% url 'admin:index' %}">MicroERP: Administração</a>
 {% endblock %}
 
 {% block nav-global %}
- <li><a href="{% url "home" %}"><i class="icon icon-arrow-left icon-white"></i> Acessar o Sistema</a></li>
+ <li><a href="{% url "home" %}"><i class="glyphicon glyphicon-arrow-left"></i> Acessar o Sistema</a></li>
 {% endblock %}

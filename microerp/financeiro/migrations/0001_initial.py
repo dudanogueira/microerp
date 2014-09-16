@@ -1,76 +1,110 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+from django.db import models, migrations
 import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from django.conf import settings
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'PerfilAcessoFinanceiro'
-        db.create_table(u'financeiro_perfilacessofinanceiro', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('gerente', self.gf('django.db.models.fields.BooleanField')(default=False)),
-            ('analista', self.gf('django.db.models.fields.BooleanField')(default=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
-            ('criado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now_add=True, blank=True)),
-            ('atualizado', self.gf('django.db.models.fields.DateTimeField')(default=datetime.datetime.now, auto_now=True, blank=True)),
-        ))
-        db.send_create_signal(u'financeiro', ['PerfilAcessoFinanceiro'])
+    dependencies = [
+        ('rh', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('comercial', '0001_initial'),
+    ]
 
-
-    def backwards(self, orm):
-        # Deleting model 'PerfilAcessoFinanceiro'
-        db.delete_table(u'financeiro_perfilacessofinanceiro')
-
-
-    models = {
-        u'auth.group': {
-            'Meta': {'object_name': 'Group'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '80'}),
-            'permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'})
-        },
-        u'auth.permission': {
-            'Meta': {'ordering': "(u'content_type__app_label', u'content_type__model', u'codename')", 'unique_together': "((u'content_type', u'codename'),)", 'object_name': 'Permission'},
-            'codename': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'content_type': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['contenttypes.ContentType']"}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
-        u'auth.user': {
-            'Meta': {'object_name': 'User'},
-            'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
-            'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
-            'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
-        },
-        u'contenttypes.contenttype': {
-            'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
-            'app_label': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
-        },
-        u'financeiro.perfilacessofinanceiro': {
-            'Meta': {'object_name': 'PerfilAcessoFinanceiro'},
-            'analista': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'atualizado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now': 'True', 'blank': 'True'}),
-            'criado': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now', 'auto_now_add': 'True', 'blank': 'True'}),
-            'gerente': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': u"orm['auth.User']", 'unique': 'True'})
-        }
-    }
-
-    complete_apps = ['financeiro']
+    operations = [
+        migrations.CreateModel(
+            name='ContaBancaria',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('nome', models.CharField(max_length=100, blank=True)),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='LancamentoFinanceiroReceber',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('peso', models.IntegerField(default=1)),
+                ('situacao', models.CharField(default=b'a', max_length=1, choices=[(b'a', b'Aberto'), (b'r', b'Recebido'), (b'p', b'Pendente'), (b't', b'Antecipado')])),
+                ('informacoes_pagamento', models.TextField(verbose_name='Informa\xe7\xf5es sobre o Pagamento', blank=True)),
+                ('data_cobranca', models.DateField(default=datetime.datetime.today)),
+                ('valor_cobrado', models.DecimalField(verbose_name=b'Valor Cobrado', max_digits=10, decimal_places=2)),
+                ('valor_recebido', models.DecimalField(null=True, verbose_name=b'Valor Recebido', max_digits=10, decimal_places=2, blank=True)),
+                ('modo_recebido', models.CharField(max_length=100, choices=[(b'boleto', b'Boleto'), (b'credito', 'Cart\xe3o de Cr\xe9dito'), (b'debito', 'Cart\xe3o de D\xe9bito'), (b'dinheiro', b'Dinheiro'), (b'cheque', b'Cheque'), (b'permuta', b'Permuta')])),
+                ('data_recebido', models.DateField(null=True, blank=True)),
+                ('data_recebido_em_conta', models.DateField(null=True, blank=True)),
+                ('data_antecipado', models.DateField(null=True, verbose_name='Data da Antecipa\xe7\xe3o', blank=True)),
+                ('antecipado', models.BooleanField(default=False)),
+                ('valor_mao_de_obra', models.DecimalField(null=True, verbose_name=b'Valor da M\xc3\xa3o de Obra', max_digits=10, decimal_places=2, blank=True)),
+                ('valor_materiais', models.DecimalField(null=True, verbose_name=b'Valor de Materiais', max_digits=10, decimal_places=2, blank=True)),
+                ('notas_fiscais', models.TextField(blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('antecipado_por', models.ForeignKey(related_name=b'lancamento_antecipado_set', blank=True, to='rh.Funcionario', null=True)),
+                ('conciliado_por', models.ForeignKey(related_name=b'lancamento_conciliado_set', blank=True, to='rh.Funcionario', null=True)),
+                ('conta', models.ForeignKey(blank=True, to='financeiro.ContaBancaria', null=True)),
+                ('contrato', models.ForeignKey(blank=True, to='comercial.ContratoFechado', null=True)),
+                ('recebido_por', models.ForeignKey(related_name=b'lancamento_recebido_set', blank=True, to='rh.Funcionario', null=True)),
+            ],
+            options={
+                'ordering': ('data_cobranca',),
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ObservacaoLancamento',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('texto', models.TextField(blank=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('criado_por', models.ForeignKey(related_name=b'observacaolancamento_criado_set', to='rh.Funcionario')),
+                ('lancamento', models.ForeignKey(to='financeiro.LancamentoFinanceiroReceber')),
+            ],
+            options={
+                'ordering': ('-criado',),
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='PerfilAcessoFinanceiro',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('gerente', models.BooleanField(default=False)),
+                ('analista', models.BooleanField(default=True)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('user', models.OneToOneField(to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'Perfil de Acesso ao Financeiro',
+                'verbose_name_plural': 'Perfis de Acesso ao Financeiro',
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='ProcessoAntecipacao',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('valor_inicial', models.DecimalField(verbose_name='Valor Inicial dos Lan\xe7amentos Antecipados', max_digits=10, decimal_places=2)),
+                ('percentual_abatido', models.DecimalField(verbose_name='Percentual Abatido do Valor', max_digits=10, decimal_places=2)),
+                ('valor_abatido', models.DecimalField(verbose_name='Valor Abatido dos Lan\xe7amentos Antecipados', max_digits=10, decimal_places=2)),
+                ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
+                ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
+                ('antecipado_por', models.ForeignKey(related_name=b'processoantecipacao_criado_set', to='rh.Funcionario')),
+                ('lancamentos_receber', models.ManyToManyField(to='financeiro.LancamentoFinanceiroReceber')),
+            ],
+            options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.AlterUniqueTogether(
+            name='lancamentofinanceiroreceber',
+            unique_together=set([('contrato', 'peso')]),
+        ),
+    ]

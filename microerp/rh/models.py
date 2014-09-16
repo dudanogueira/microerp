@@ -155,6 +155,7 @@ TIPO_TREINAMENTO_CHOICES = (
     ('atualizar', u'Atualização de Competência'),
 )
 
+
 class Funcionario(models.Model):
     
     def __unicode__(self):

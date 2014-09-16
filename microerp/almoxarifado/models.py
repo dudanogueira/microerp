@@ -27,6 +27,8 @@ from django.db.models import signals
 
 from django.conf import settings
 
+from django.utils.deconstruct import deconstructible
+
 CONTROLE_DE_EQUIPAMENTO_STATUS_CHOICES = (
     ("pendente","Controle Pendente"),
     ("fechado","Controle Fechado"),
@@ -43,6 +45,16 @@ CONTROLE_TIPO_CHOICES = (
     ('epi', 'Controle de EPI'),
     ('ferramenta', 'Controle de Ferramentas'),
 )
+
+@deconstructible
+class AnexoControleDir(object):
+
+    def __call__(self, instance, filename):
+        return os.path.join(
+             'controle-de-equipamento/', str(instance.tipo), str(instance.id), filename
+             )
+
+anexo_controle_de_equipamento_local = AnexoControleDir()
 
 # Controle de Equipamentos
 class ControleDeEquipamento(models.Model):
