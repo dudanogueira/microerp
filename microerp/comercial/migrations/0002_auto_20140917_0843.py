@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('rh', '0001_initial'),
         ('comercial', '0001_initial'),
-        ('cadastro', '0002_auto_20140916_0927'),
+        ('cadastro', '0002_auto_20140917_0843'),
         ('estoque', '0001_initial'),
     ]
 

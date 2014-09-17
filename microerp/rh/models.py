@@ -34,7 +34,7 @@ from django_extensions.db.fields import UUIDField
 
 from django.conf.global_settings import LANGUAGES
 
-from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
+from localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 from django.conf import settings
 
 from workdays import networkdays
@@ -765,7 +765,7 @@ class SolicitacaoDeLicenca(models.Model):
     motivo = models.TextField(blank=False)
     realizada = models.BooleanField(default=False)
     inicio = models.DateField(u"Início da Licença", default=datetime.datetime.today)
-    fim = models.DateField(u"Término da Licença", default=datetime.datetime.today()+datetime.timedelta(days=4))
+    fim = models.DateField(u"Término da Licença", default=datetime.datetime.today)
     status = models.CharField(u"Situação da Solicitação", blank=False, null=False, max_length=100, choices=SOLICITACAO_LICENCA_STATUS_CHOICES, default="aberta")
     tipo = models.CharField(u"Tipo da Solicitação", blank=False, null=False, max_length=100, choices=SOLICITACAO_LICENCA_TIPO_CHOICES)
     data_criado = models.DateField(u"Data da Solicitação",default=datetime.datetime.today, blank=False, null=False)
@@ -819,7 +819,7 @@ class EntradaFolhaDePonto(models.Model):
     
     folha = models.ForeignKey(FolhaDePonto)
     inicio = models.DateField(default=datetime.datetime.today)
-    fim = models.DateField(default=datetime.date.today()+datetime.timedelta(days=7))
+    fim = models.DateField(default=datetime.date.today)
     total = models.DecimalField(max_digits=5, decimal_places=1)
     # arquivo impresso e digitalizado
     arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, max_length=300, help_text="Arquivo a ser anexado a cada entrada")

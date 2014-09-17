@@ -204,7 +204,7 @@ class PropostaComercial(models.Model):
     probabilidade_inicial = models.IntegerField("Probabilidade Inicial (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
+    data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today)
     designado = models.ForeignKey("rh.Funcionario", blank=True, null=True)
     # porcentagens de margem
     lucro = models.IntegerField("Lucro (%)", blank=False, null=False, default=0)
@@ -263,7 +263,7 @@ class FollowUpDePropostaComercial(models.Model):
     proposta = models.ForeignKey('PropostaComercial')
     texto = models.TextField(blank=False)
     reagenda_data_expiracao = models.BooleanField("Reagenda Nova Data de Expiração", default=False)
-    data_expiracao = models.DateField("Data de Expiração", blank=False, default=datetime.datetime.today()+datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7)))
+    data_expiracao = models.DateField("Data de Expiração", blank=False, default=datetime.datetime.today)
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True)
     # registro histórico
     # metadata

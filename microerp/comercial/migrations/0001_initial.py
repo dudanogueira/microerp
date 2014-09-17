@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('rh', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('cadastro', '0002_auto_20140916_0927'),
+        ('cadastro', '0002_auto_20140917_0843'),
     ]
 
     operations = [
@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('texto', models.TextField()),
                 ('reagenda_data_expiracao', models.BooleanField(default=False, verbose_name=b'Reagenda Nova Data de Expira\xc3\xa7\xc3\xa3o')),
-                ('data_expiracao', models.DateField(default=datetime.datetime(2014, 9, 23, 9, 27, 27, 101673), verbose_name=b'Data de Expira\xc3\xa7\xc3\xa3o')),
+                ('data_expiracao', models.DateField(default=datetime.datetime.today, verbose_name=b'Data de Expira\xc3\xa7\xc3\xa3o')),
                 ('probabilidade', models.IntegerField(null=True, verbose_name=b'Probabilidade (%)', blank=True)),
                 ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
                 ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),
@@ -210,7 +210,7 @@ class Migration(migrations.Migration):
                 ('probabilidade_inicial', models.IntegerField(default=50, null=True, verbose_name=b'Probabilidade Inicial (%)', blank=True)),
                 ('valor_proposto', models.DecimalField(max_digits=10, decimal_places=2)),
                 ('valor_fechado', models.DecimalField(null=True, max_digits=10, decimal_places=2, blank=True)),
-                ('data_expiracao', models.DateField(default=datetime.date(2014, 9, 23), verbose_name=b'Data de Expira\xc3\xa7\xc3\xa3o desta Proposta')),
+                ('data_expiracao', models.DateField(default=datetime.date.today, verbose_name=b'Data de Expira\xc3\xa7\xc3\xa3o desta Proposta')),
                 ('lucro', models.IntegerField(default=0, verbose_name=b'Lucro (%)')),
                 ('administrativo', models.IntegerField(default=0, verbose_name=b'Taxa Administrativa (%)')),
                 ('impostos', models.IntegerField(default=0, verbose_name=b'Impostos (%)')),

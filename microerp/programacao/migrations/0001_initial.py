@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
         ('comercial', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('rh', '0001_initial'),
-        ('cadastro', '0002_auto_20140916_0927'),
+        ('cadastro', '0002_auto_20140917_0843'),
     ]
 
     operations = [

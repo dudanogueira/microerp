@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
                 ('status', models.CharField(default=b'pendente', max_length=100, choices=[(b'pendente', b'Controle Pendente'), (b'fechado', b'Controle Fechado')])),
                 ('observacao', models.TextField(verbose_name='Observa\xe7\xe3o', blank=True)),
                 ('tipo', models.CharField(blank=True, max_length=100, choices=[(b'epi', b'Controle de EPI'), (b'ferramenta', b'Controle de Ferramentas')])),
-                ('arquivo_impresso_assinado', models.FileField(null=True, upload_to=almoxarifado.models.anexo_controle_de_equipamento_local, blank=True)),
+                ('arquivo_impresso_assinado', models.FileField(null=True, upload_to=almoxarifado.models.AnexoControleDir(), blank=True)),
                 ('data_arquivo_impresso_assinado_recebido', models.DateField(default=datetime.datetime.today)),
                 ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
                 ('atualizado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Atualizado', auto_now=True)),

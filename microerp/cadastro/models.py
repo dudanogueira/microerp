@@ -21,7 +21,7 @@ __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
 
 import datetime
-from django_localflavor_br.br_states import STATE_CHOICES
+from localflavor.br.br_states import STATE_CHOICES
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -31,7 +31,7 @@ from south.modelsinspector import add_introspection_rules
 
 from django_extensions.db.fields import UUIDField
 
-from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
+from localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
 
 TIPO_CLIENTE_CHOICES = (

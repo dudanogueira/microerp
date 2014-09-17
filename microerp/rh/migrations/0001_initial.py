@@ -169,7 +169,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('inicio', models.DateField(default=datetime.datetime.today)),
-                ('fim', models.DateField(default=datetime.date(2014, 9, 23))),
+                ('fim', models.DateField(default=datetime.date.today)),
                 ('total', models.DecimalField(max_digits=5, decimal_places=1)),
                 ('arquivo', models.FileField(help_text=b'Arquivo a ser anexado a cada entrada', max_length=300, null=True, upload_to=rh.models.funcionario_entrada_folha_ponto_assinada, blank=True)),
                 ('criado', models.DateTimeField(default=datetime.datetime.now, verbose_name=b'Criado', auto_now_add=True)),
@@ -466,7 +466,7 @@ class Migration(migrations.Migration):
                 ('motivo', models.TextField()),
                 ('realizada', models.BooleanField(default=False)),
                 ('inicio', models.DateField(default=datetime.datetime.today, verbose_name='In\xedcio da Licen\xe7a')),
-                ('fim', models.DateField(default=datetime.datetime(2014, 9, 20, 9, 27, 27, 46608), verbose_name='T\xe9rmino da Licen\xe7a')),
+                ('fim', models.DateField(default=datetime.datetime.today, verbose_name='T\xe9rmino da Licen\xe7a')),
                 ('status', models.CharField(default=b'aberta', max_length=100, verbose_name='Situa\xe7\xe3o da Solicita\xe7\xe3o', choices=[(b'aberta', 'Aberta'), (b'autorizada', 'Autorizada'), (b'declinada', 'Declinada')])),
                 ('tipo', models.CharField(max_length=100, verbose_name='Tipo da Solicita\xe7\xe3o', choices=[(b'ferias', 'F\xe9rias'), (b'medica', 'M\xe9dica')])),
                 ('data_criado', models.DateField(default=datetime.datetime.today, verbose_name='Data da Solicita\xe7\xe3o')),

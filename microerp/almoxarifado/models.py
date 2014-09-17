@@ -46,6 +46,8 @@ CONTROLE_TIPO_CHOICES = (
     ('ferramenta', 'Controle de Ferramentas'),
 )
 
+
+
 @deconstructible
 class AnexoControleDir(object):
 
@@ -65,12 +67,7 @@ class ControleDeEquipamento(models.Model):
     class Meta:
         verbose_name = u"Controle de Equipamento"
         verbose_name_plural = u"Controles de Equipamento"
-    
-    def anexo_controle_de_equipamento_local(instance, filename):
-        return os.path.join(
-            'controle-de-equipamento/', str(instance.tipo), str(instance.id), filename
-          )
-         
+             
     funcionario = models.ForeignKey('rh.Funcionario', verbose_name="Funcionário Solicitante", help_text="Funcionário responsável pela retirada do equipamento.")
     status = models.CharField(blank=False, max_length=100, default="pendente", choices=CONTROLE_DE_EQUIPAMENTO_STATUS_CHOICES)
     observacao = models.TextField(u"Observação", blank=True)

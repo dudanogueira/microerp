@@ -12,7 +12,7 @@ from django.core.mail import EmailMessage
 from django.contrib.sites.models import Site
 
 from django.core.exceptions import ValidationError
-from django_localflavor_br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
+from localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
 from django import forms
 
@@ -22,6 +22,7 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
 from django.db.models import Count
+
 
 # APPS MODELS
 from rh.models import Departamento, Funcionario
@@ -904,6 +905,8 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
         form = AdicionarPropostaForm(request.POST)
         if form.is_valid():
             proposta = form.save(commit=False)
+            # primeira expiracao, pega sugestão padrao
+            proposta.data_expiracao = proposta.sugere_data_reagendamento_expiracao()
             proposta.cliente = cliente
             proposta.criador_por = request.user.funcionario
             proposta.designado = cliente.designado
@@ -939,6 +942,8 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
         form = AdicionarPropostaForm(request.POST)
         if form.is_valid():
             proposta = form.save(commit=False)
+            # primeira expiracao, pega sugestão padrao
+            proposta.data_expiracao = proposta.sugere_data_reagendamento_expiracao()
             proposta.precliente = precliente
             proposta.criado_por = request.user.funcionario
             proposta.designado = precliente.designado
