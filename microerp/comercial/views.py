@@ -289,6 +289,7 @@ def clientes(request):
     form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()  
     cliente_q = request.GET.get('cliente', False)
     if cliente_q:
+        busca_feita = True
         cliente_q = cliente_q.strip()
         clientes = Cliente.objects.filter(
             Q(nome__icontains=cliente_q) | \
@@ -299,8 +300,10 @@ def clientes(request):
         #puxa todos os pre clientes, menos os já convertidos)
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     else:
-        clientes = Cliente.objects.all()
-        preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
+        if request.GET.get('cliente') == '':
+            busca_feita = True
+            clientes = Cliente.objects.all()
+            preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
 
     preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, sem_interesse=False, designado=request.user.funcionario).order_by('nome')
     requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
@@ -319,7 +322,6 @@ def clientes(request):
                     preclientes = preclientes.filter(designado=funcionario_escolhido)
                     preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
                     requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=funcionario_escolhido)
-    
     return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -2351,6 +2353,40 @@ def indicadores_do_comercial(request):
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial(request):
     return render_to_response('frontend/comercial/comercial-relatorios.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def relatorios_comercial_propostas_por_por_periodo_e_vendedor(request):
+    erro = False
+    try:
+        de = request.GET.get('de', None)
+        if de:
+            de = datetime.datetime.strptime(de, '%d/%m/%Y')
+        ate = request.GET.get('ate', None)
+        if ate:
+            ate = datetime.datetime.strptime(ate, '%d/%m/%Y')
+            ate = datetime.datetime(ate.year, ate.month, ate.day, 23, 59, 59)
+        if de and ate and ate < de:
+            raise
+    except:
+        messages.error(request, "Intervalo de datas errado")
+        erro = True
+    if not erro:
+        if de and ate:
+            propostas = PropostaComercial.objects.filter(criado__range=(de,ate))
+        elif de and not ate:
+            de = datetime.datetime.combine(de, datetime.time(00, 00))
+            propostas = PropostaComercial.objects.filter(criado__gte=de)
+        elif not de and ate:
+            ate = datetime.datetime.combine(ate, datetime.time(23, 59))
+            propostas = PropostaComercial.objects.filter(criado__lte=ate)
+    try:
+        propostas = propostas.order_by('designado')
+    except:
+        pass
+        
+    return render_to_response('frontend/comercial/comercial-relatorios-propostas-por-dia.html', locals(), context_instance=RequestContext(request),)
+
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)

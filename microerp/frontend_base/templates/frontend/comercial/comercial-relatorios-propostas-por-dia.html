@@ -9,7 +9,7 @@
 <div class="row-fluid">
 	<div class="span8">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-tachometer"></i> Relatórios</h1>
-		<h3>Propostas Declinadas</h3>
+		<h3>Propostas Por Dia</h3>
 		
 		{% if de and ate %}
 			Entre <strong>{{de|date:"SHORT_DATE_FORMAT"}}</strong> e <strong>{{ate|date:"SHORT_DATE_FORMAT"}}</strong>
@@ -30,21 +30,12 @@
 			
 		De <input type="text" name="de" value="{{de|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br /> a <br /><input type="text" name="ate" value="{{ate|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br />
 
-		
-		
-		Agrupar por:
-		 <input type="radio" name="agrupador" value="tipo" id="agrupador" {% if agrupador == "tipo" %}checked{% endif %}> <label for="agrupador">Tipo</label>
-		 <input type="radio" name="agrupador" value="funcionario" id="funcionario" {% if agrupador == "funcionario" %}checked{% endif %}> <label for="funcionario">Funcionário</label><br />
 		<button type="submit" value="70">Filtrar</button>
 		</form>
 	</div>
 </div>
 
-{% if agrupador == "funcionario" %}
 	{% regroup propostas by designado as propostas_agrupadas %}
-{% else %}
-	{% regroup propostas by tipo as propostas_agrupadas %}
-{% endif %}
 
 {% for lista in propostas_agrupadas %}
 	<h2>{% if lista.grouper == None %}Não Definido{% else %}{{lista.grouper}}{% endif %} - Total: R$ {{lista.list|total_propostas}}</h2>
@@ -62,10 +53,18 @@
 		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalFollowUps-{{proposta.id}}">
 		  Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
 		</button>
-		
+		{% if proposta.definido_perdido_em %}
 		<div class="alert alert-danger">
 			<strong>Motivo</strong>: {{proposta.definido_perdido_motivo}}, <strong>Data</strong>: {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}, <strong>Por</strong>: {{proposta.definido_perdido_por}}. <span class="badge badge-important">{{proposta.get_status_display}}</span>
 		</div>
+		{% endif %}
+		
+		{% if proposta.definido_convertido_em %}
+		<div class="alert alert-success">
+			<strong>Convertido por</strong>: {{proposta.definido_convertido_por}}, <strong>Data</strong>: {{proposta.definido_convertido_em|date:"SHORT_DATETIME_FORMAT"}},  <span class="badge badge-success">{{proposta.get_status_display}}</span>
+		</div>
+		{% endif %}
+		
 		
 
 		<!-- Modal -->
