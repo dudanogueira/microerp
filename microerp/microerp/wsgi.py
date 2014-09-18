@@ -14,6 +14,10 @@ framework.
 
 """
 import os
+import site
+
+# Add the site-packages of the chosen virtualenv to work with
+#site.addsitedir('~/.virtualenvs/myprojectenv/local/lib/python2.7/site-packages')
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "microerp.settings")
 
