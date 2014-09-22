@@ -204,6 +204,7 @@ class Cliente(models.Model):
         return self.requisicaodeproposta_set.filter(atendido=True)
     
     uuid = UUIDField()
+    ativo = models.BooleanField(default=True)
     id_referencia = models.IntegerField(blank=True, null=True)
     nome = models.CharField(u"Nome do Cliente", blank=False, null=False, max_length=300)
     fantasia = models.CharField(u"Nome de Fantasia", blank=True, null=True, max_length=500)

@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = '''
         Sincroniza para a base de clientes uma planilha conforme:
         
-        CODIGO,NOME,FANTASIA,CONTATO,TELEFONE,CELULAR,CNPJ,CPF,IE,RG,ENDERECO,COMPLEMENTO,BAIRRO,NUMERO,CEP,CIDADE,UF,EMAIL,FIS_JUR,TIPO,COD_CONVENIO,CONVENIO,ULTIMA_VENDA,NASCIMENTO,DATA_CADASTRO,A_RECEBER,ATRASADO,RECEBIDO,LIMITE_CREDITO,CONCEDER_CREDITO
+        CODIGO,NOME,FANTASIA,CONTATO,TELEFONE,CELULAR,CNPJ,CPF,IE,RG,ENDERECO,COMPLEMENTO,BAIRRO,NUMERO,CEP,CIDADE,UF,EMAIL,FIS_JUR,TIPO,COD_CONVENIO,CONVENIO,ULTIMA_VENDA,NASCIMENTO,DATA_CADASTRO,A_RECEBER,ATRASADO,RECEBIDO,LIMITE_CREDITO,CONCEDER_CREDITO,ATIVO
         
         '''
     args = "--file arquivo.csv,"
@@ -59,6 +59,10 @@ class Command(BaseCommand):
                         celular = str(row['CELULAR']) or None
                         ie = str(row['IE']) or None
                         rg = str(row['RG']) or None
+                        try:
+                            ativo = str(row['ATIVO'])
+                        except:
+                            ativo = "Sim"
                         print "ID LEGADO:",id_referencia
                         print "NOME CLIENTE:",nome_cliente
                         # DEFINE CIDADE
@@ -71,13 +75,16 @@ class Command(BaseCommand):
                         else:
                             print "CIDADE:",cidade_nome
                         # DEFINE BAIRRO
-                        bairro,created = Bairro.objects.get_or_create(
+                        bairro = Bairro.objects.filter(
                             cidade=cidade, nome=nome_bairro
-                        )
-                        if created:
-                            print "BAIRRO *CRIADO*:",nome_bairro
-                        else:
+                        ).first()
+                        if bairro:
                             print "BAIRRO:",nome_bairro
+                        else:
+                            print "BAIRRO *CRIADO*:",nome_bairro
+                            bairro = Bairro.objects.create(
+                                cidade=cidade, nome=nome_bairro
+                            )
                         # DEFINE TIPO DE CLIENTE
                         print "TIPO:",tipo_cliente
                         if tipo_cliente[0] == u"F":
@@ -88,6 +95,12 @@ class Command(BaseCommand):
                             tipo = 'pj'
                             cnpj = str(row['CNPJ'])
                             print "CNPJ",cnpj
+                        # DEFINO ATIVO OU NAO
+                        if ativo.lower() == "sim":
+                            cliente_ativo = True
+                        else:
+                            cliente_ativo = False
+                        print "ATIVO", ativo
                         # DEFINE CLIENTE
                         try:
                             cliente = Cliente.objects.get(
@@ -106,6 +119,7 @@ class Command(BaseCommand):
                         cliente.email = email
                         cliente.contato = contato
                         cliente.criado = data_cadastro
+                        cliente.ativo = cliente_ativo
                         if cliente.tipo == 'pj':
                             cliente.cnpj = cnpj
                         else:
@@ -119,7 +133,7 @@ class Command(BaseCommand):
                         cliente.telefone_celular = celular
                         # CRIAR ENDEREÇO
                         telelefone_associado = telefone or celular
-                        endereco,created = cliente.enderecocliente_set.get_or_create(cidade=cidade, bairro=bairro, rua=rua, numero=numero, telefone=telelefone_associado, cep=cep, complemento=complemento)
+                        endereco,created = cliente.enderecocliente_set.get_or_create(bairro=bairro, rua=rua, numero=numero, telefone=telelefone_associado, cep=cep, complemento=complemento)
                         if created:
                             print "ENDERECO CRIADO"
                         #cliente.clean()

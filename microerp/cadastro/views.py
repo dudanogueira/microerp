@@ -31,16 +31,20 @@ from django import forms
 class AdicionarEnderecoClienteForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
-        self.cliente = kwargs.pop('cliente', None)    
+        self.cliente = kwargs.pop('cliente', None)
+        self.precliente = kwargs.pop('precliente', None)
         super(AdicionarEnderecoClienteForm, self).__init__(*args, **kwargs)
         if self.cliente:
             self.fields['cliente'].initial = self.cliente
-            #self.fields['cliente'].widget = forms.HiddenInput()
+            self.fields['cliente'].widget = forms.HiddenInput()
+        if self.precliente:
+            self.fields['cliente'].widget = forms.HiddenInput()
         self.fields['principal'].widget = forms.HiddenInput()
         self.fields['bairro'].widget.attrs['class'] = 'select2'
         
     class Meta:
         model = EnderecoCliente
+        fields = 'principal', 'cliente', 'telefone', 'bairro', 'cep', 'rua', 'numero', 'complemento'
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
     

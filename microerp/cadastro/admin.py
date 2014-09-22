@@ -44,9 +44,9 @@ class EnderecoClienteInline(admin.StackedInline):
 
 class ClienteAdmin(admin.ModelAdmin):
     save_on_top = True
-    list_filter = ('tipo',)
+    list_filter = ('tipo', 'ativo')
     search_fields = ('nome', 'cpf', 'cnpj',)
-    list_display = ('nome', 'documento')
+    list_display = ('nome', 'documento', 'ativo')
     list_display_links = list_display
     date_hierarchy = "criado"
     readonly_fields = ['criado', 'atualizado', 'uuid']

@@ -26,7 +26,7 @@ from django.db.models import Count
 
 # APPS MODELS
 from rh.models import Departamento, Funcionario
-from cadastro.models import Cliente, PreCliente
+from cadastro.models import Cliente, PreCliente, Bairro
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao
@@ -172,12 +172,22 @@ class AdicionarCliente(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         precliente = kwargs.pop('precliente')
         gerente = kwargs.pop('gerente', False)
+        com_endereco = kwargs.pop('com_endereco', False)
         super(AdicionarCliente, self).__init__(*args, **kwargs)
         self.fields['tipo'].required = True
         self.fields['nascimento'].widget.attrs['class'] = 'datepicker'
         if precliente:
             self.fields['nome'].initial = precliente.nome
             self.fields['observacao'].initial = precliente.dados
+        if com_endereco:
+            self.fields['bairro'] = forms.ModelChoiceField(queryset=Bairro.objects.all())
+            self.fields['bairro'].widget.attrs['class'] = 'select2'
+            self.fields['cep'] = forms.CharField()
+            self.fields['rua'] = forms.CharField()
+            self.fields['numero'] = forms.CharField()
+            self.fields['complemento'] = forms.CharField(required=False)
+            
+            
     
     class Meta:
         model = Cliente
@@ -292,6 +302,7 @@ def clientes(request):
         busca_feita = True
         cliente_q = cliente_q.strip()
         clientes = Cliente.objects.filter(
+            Q(ativo=True) & \
             Q(nome__icontains=cliente_q) | \
             Q(fantasia__icontains=cliente_q) | \
             Q(cnpj__icontains=cliente_q) | \
@@ -300,9 +311,9 @@ def clientes(request):
         #puxa todos os pre clientes, menos os já convertidos)
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     else:
-        if request.GET.get('cliente') == '':
+        if request.GET.get('cliente') == '' or request.POST.get('btn-aplicar-filtro', None):
             busca_feita = True
-            clientes = Cliente.objects.all()
+            clientes = Cliente.objects.filter(ativo=True)
             preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
 
     preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, sem_interesse=False, designado=request.user.funcionario).order_by('nome')
@@ -314,19 +325,19 @@ def clientes(request):
         requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=request.user.funcionario)
         
     if request.POST.get('btn-aplicar-filtro', None):
-            form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(request.POST)
-            if form_filtrar_precliente.is_valid():
-                funcionario_escolhido = form_filtrar_precliente.cleaned_data['funcionario']
-                if funcionario_escolhido:
-                    clientes = clientes.filter(designado=funcionario_escolhido)
-                    preclientes = preclientes.filter(designado=funcionario_escolhido)
-                    preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
-                    requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=funcionario_escolhido)
+        form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(request.POST)
+        if form_filtrar_precliente.is_valid():
+            funcionario_escolhido = form_filtrar_precliente.cleaned_data['funcionario']
+            if funcionario_escolhido:
+                clientes = clientes.filter(designado=funcionario_escolhido)
+                preclientes = preclientes.filter(designado=funcionario_escolhido)
+                preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
+                requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=funcionario_escolhido)
     return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_ver(request, cliente_id):
-    cliente = get_object_or_404(Cliente, pk=cliente_id)
+    cliente = get_object_or_404(Cliente, pk=cliente_id, ativo=True)
     if request.POST.get('form-adicionar-endereco', None):
         form_adicionar_endereco = AdicionarEnderecoClienteForm(request.POST, cliente=cliente)
         if form_adicionar_endereco.is_valid():
@@ -785,7 +796,7 @@ class VincularPreClienteParaClienteForm(forms.Form):
         super(VincularPreClienteParaClienteForm, self).__init__(*args, **kwargs)
         self.fields['cliente'].widget.attrs['class'] = 'select2'
     
-    cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
+    cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True))
 
 
 class VincularPreClienteParaPreClienteForm(forms.Form):
@@ -862,7 +873,7 @@ def precliente_adicionar(request):
 def precliente_converter(request, pre_cliente_id):
     precliente = get_object_or_404(PreCliente, id=pre_cliente_id)
     if request.POST:
-        form = AdicionarCliente(request.POST, precliente=precliente)
+        form = AdicionarCliente(request.POST, precliente=precliente, com_endereco=True)
         if form.is_valid():
             # cria novo cliente
             cliente_novo = form.save(commit=False)
@@ -876,6 +887,14 @@ def precliente_converter(request, pre_cliente_id):
             # altera todas as propostas do precliente para o cliente_novo
             propostas_precliente = PropostaComercial.objects.filter(precliente=precliente)
             propostas_precliente.update(precliente=None, cliente=cliente_novo)
+            # salva o endereco
+            cliente_novo.enderecocliente_set.create(
+                bairro=form.cleaned_data['bairro'],
+                cep=form.cleaned_data['cep'],
+                rua=form.cleaned_data['rua'],
+                numero=form.cleaned_data['numero'],
+                complemento=form.cleaned_data['complemento'],
+            )
             # retorna para a proposta de referencia
             if request.GET.get('proposta_referencia'):
                 return redirect(reverse('comercial:editar_proposta_converter', args=[request.GET.get('proposta_referencia')]))
@@ -883,18 +902,11 @@ def precliente_converter(request, pre_cliente_id):
             else:
                 return redirect(reverse('comercial:cliente_ver', args=[cliente_novo.id]))
     else:
-        form = AdicionarCliente(precliente=precliente)
+        form = AdicionarCliente(precliente=precliente, com_endereco=True)
     return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
 
 
 # propostas comerciais
-@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
-def propostas_comerciais_cliente(request, cliente_id):
-    cliente = Cliente.objects.get(pk=cliente_id)
-    propostas_abertas = PropostaComercial.objects.filter(cliente=cliente, status='aberta')
-    return render_to_response('frontend/comercial/comercial-propostas-cliente.html', locals(), context_instance=RequestContext(request),)
-
-
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_ver(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
@@ -902,7 +914,7 @@ def propostas_comerciais_ver(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_cliente_adicionar(request, cliente_id):
-    cliente = Cliente.objects.get(pk=cliente_id)
+    cliente = Cliente.objects.get(pk=cliente_id, ativo=True)
     if request.POST:
         form = AdicionarPropostaForm(request.POST)
         if form.is_valid():
@@ -1050,15 +1062,15 @@ class FormEscolherClientesEPreClientes(forms.Form):
         self.fields['preclientes'].widget.attrs['class'] = 'select2'
     
     
-    clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.all())
+    clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.filter(ativo=True))
     preclientes = forms.ModelMultipleChoiceField(required=False, queryset=PreCliente.objects.filter(cliente_convertido=None))
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def designacoes(request):
     escolher_clientes_form = FormEscolherClientesEPreClientes()
-    cliente_sem_designacao = Cliente.objects.filter(designado=None)
+    cliente_sem_designacao = Cliente.objects.filter(designado=None, ativo=True)
     precliente_sem_designacao = PreCliente.objects.filter(designado=None, cliente_convertido=None)
-    cliente_designacao_invalida = Cliente.objects.exclude(designado=None).filter(designado__periodo_trabalhado_corrente=None)
+    cliente_designacao_invalida = Cliente.objects.exclude(designado=None).filter(designado__periodo_trabalhado_corrente=None, ativo=True)
     precliente_designacao_invalida = PreCliente.objects.exclude(designado=None).filter(designado__periodo_trabalhado_corrente=None, cliente_convertido=None)
     return render_to_response('frontend/comercial/comercial-designacoes.html', locals(), context_instance=RequestContext(request),)
 
@@ -1074,7 +1086,7 @@ class ConfirmarDesignacao(forms.Form):
         self.fields['preclientes'].widget = forms.MultipleHiddenInput()
         self.fields['clientes'].widget = forms.MultipleHiddenInput()
         if clientes:
-            self.fields['clientes'].queryset = Cliente.objects.all()
+            self.fields['clientes'].queryset = Cliente.objects.filter(ativo=True)
             self.fields['clientes'].initial = clientes
         # pre
         if preclientes:
@@ -1083,7 +1095,7 @@ class ConfirmarDesignacao(forms.Form):
             
         
     designado = forms.ModelChoiceField(required=True, queryset=None, label="Novo Designado", empty_label=None)
-    clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.all())
+    clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.filter(ativo=True))
     preclientes = forms.ModelMultipleChoiceField(required=False, queryset=PreCliente.objects.filter(cliente_convertido=None))
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -1091,7 +1103,7 @@ def designacoes_confirmar(request):
     if request.POST:
         if request.POST.get('analisar-desginacoes-btn'):
             clientes_id = request.POST.getlist('clientes')
-            clientes = Cliente.objects.filter(id__in=clientes_id).all()
+            clientes = Cliente.objects.filter(id__in=clientes_id, ativo=True)
             # preclients
             preclientes_id = request.POST.getlist('preclientes')
             preclientes = PreCliente.objects.filter(id__in=preclientes_id).all()

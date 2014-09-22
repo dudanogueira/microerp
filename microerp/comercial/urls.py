@@ -15,8 +15,6 @@ urlpatterns = patterns('',
     # solicitações
     url(r'^solicitacao/adicionar/$', 'comercial.views.solicitacao_adicionar', name='solicitacao_adicionar'),
     # propostas  cliente
-    url(r'^orcamento/novo/$', 'comercial.views.propostas_comerciais_cliente', name='propostas_comerciais_cliente'),
-    url(r'^propostas/cliente/(?P<cliente_id>[0-9]+)/$', 'comercial.views.propostas_comerciais_cliente', name='propostas_comerciais_cliente'),
     url(r'^propostas/cliente/(?P<cliente_id>[0-9]+)/adicionar/$', 'comercial.views.propostas_comerciais_cliente_adicionar', name='propostas_comerciais_cliente_adicionar'),    
     url(r'^propostas/(?P<proposta_id>[0-9]+)/ver/$', 'comercial.views.propostas_comerciais_ver', name='propostas_comerciais_ver'),
     url(r'^propostas/(?P<proposta_id>[0-9]+)/adicionar-follow-up/$', 'comercial.views.adicionar_follow_up', name='adicionar_follow_up'),
