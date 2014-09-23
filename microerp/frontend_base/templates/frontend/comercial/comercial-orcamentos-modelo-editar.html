@@ -13,7 +13,8 @@
 	{% csrf_token %}
 	{{form_editar_linhas_material.management_form}}
 	{{form_editar_linhas_humano.management_form}}
-
+	
+	{{form_orcamento.as_p}}
 
 <div class="row-fluid">
 	<div  class="span8">
@@ -116,6 +117,10 @@
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
 
 <script>
 
@@ -253,6 +258,11 @@ $(document).ready(function() {
 	$("#s2id_id_orcamento-"+total+"-produto").select2('focus').select2('open');
 	$( ":checkbox" ).attr('tabindex', -1);
 	
+});
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
 });
 
 </script>

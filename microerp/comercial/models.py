@@ -42,6 +42,8 @@ from django.contrib import messages
 
 from icalendar import Calendar, Event
 
+from estoque.models import Produto
+
 PROPOSTA_COMERCIAL_STATUS_CHOICES = (
     ('aberta', 'Aberta'),
     ('convertida', 'Convertida'),
@@ -347,7 +349,8 @@ class Orcamento(models.Model):
     def recalcula_custo_total(self, save=True):
         self.custo_material = self.linharecursomaterial_set.aggregate(total=Sum('custo_total'))['total'] or 0
         self.custo_humano = self.linharecursohumano_set.aggregate(total=Sum('custo_total'))['total'] or 0
-        self.custo_total = self.custo_material + self.custo_humano
+        if not self.tabelado or self.promocao:
+            self.custo_total = self.custo_material + self.custo_humano
         if save:
             self.save()
     
@@ -375,6 +378,19 @@ class Orcamento(models.Model):
         novo_valor = float(valor_custo_total) + float(valor_margem)
         return float(novo_valor) or 0
     
+    def interpreta_notacao(self, notacao):
+        notacao = notacao.replace(' ', '')
+        notacao_split = notacao.split(',')
+        for item in notacao_split:
+            codigo,quantidade = item.split('-')
+            try:
+                codigo = int(codigo)
+                quantidade = int(quantidade)
+                produto = Produto.objects.get(codigo=codigo)
+                self.linharecursomaterial_set.create(produto=produto, quantidade=quantidade)
+            except:
+                raise
+                pass
 
     descricao = models.CharField(u"Descrição", blank=True, max_length=100)
     proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
@@ -385,8 +401,8 @@ class Orcamento(models.Model):
     tabelado_originario = models.ForeignKey("self", limit_choices_to={'tabelado': True}, blank=True, null=True, related_name="tabelados_originados")
     # promocao
     promocao = models.BooleanField(default=False)
-    inicio_promocao = models.DateField(blank=True, null=True)
-    fim_promocao = models.DateField(blank=True, null=True)
+    inicio_promocao = models.DateField(u"Início da Promoção", blank=True, null=True)
+    fim_promocao = models.DateField(u"Fim da Promoção", blank=True, null=True)
     promocao_originaria = models.ForeignKey("self", limit_choices_to={'promocao': True}, blank=True, null=True, related_name="promocoes_originadas")
     #
     ativo = models.BooleanField(default=True)

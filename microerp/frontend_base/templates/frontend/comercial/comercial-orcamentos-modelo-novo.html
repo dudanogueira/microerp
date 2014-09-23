@@ -9,6 +9,10 @@
 <form method="POST">
 	{% csrf_token %}
 	{{form_adicionar_modelo.as_p}}
+	<p class="well well-small">
+		Notação: <input type="text" name="notacao">
+		<small>ex: 1122-1, 2754-8, 3093-8, CODIGO-QUANTIDADE, CODIGO-QUANTIDADE, ...</small>
+	</p>
 	<button type="submit" class="btn btn-primary"><i class=" fa fa-plus"></i> Adicionar Modelo</button>
 </form>
 

@@ -1338,7 +1338,7 @@ def ajax_consulta_cargo(request):
         else:
             nome_cargo = "%s - %s" % cargo.nome
         result={"text":nome_cargo, "id": str(cargo.id), "preco": float(cargo.fracao_hora_referencia)}
-        return HttpResponse(simplejson.dumps(result), mimetype='application/json')
+        return HttpResponse(simplejson.dumps(result), content_type='application/json')
     result = []
     for cargo in cargos:
         if mostra_preco:
@@ -1347,4 +1347,4 @@ def ajax_consulta_cargo(request):
             nome_cargo = "%s - %s" % cargo.nome
         
         result.append({"text":nome_cargo, "id": str(cargo.id), "preco": float(cargo.fracao_hora_referencia)})
-    return HttpResponse(simplejson.dumps(result), mimetype='application/json')
+    return HttpResponse(simplejson.dumps(result), content_type='application/json')

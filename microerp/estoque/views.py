@@ -244,7 +244,7 @@ def ajax_consulta_produto(request):
         else:
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
         result={"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_custo)}
-        return HttpResponse(simplejson.dumps(result), mimetype='application/json')
+        return HttpResponse(simplejson.dumps(result), content_type='application/json')
     result = []
     for produto in produtos:
         if mostra_preco:
@@ -253,5 +253,5 @@ def ajax_consulta_produto(request):
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
         
         result.append({"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_venda)})
-    return HttpResponse(simplejson.dumps(result), mimetype='application/json')
+    return HttpResponse(simplejson.dumps(result), content_type='application/json')
 

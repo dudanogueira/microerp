@@ -2137,6 +2137,9 @@ def orcamentos_modelo_novo(request):
             novo_modelo.modelo = True
             novo_modelo.criado_por = request.user.funcionario
             novo_modelo.save()
+            if request.POST.get('notacao'):
+                novo_modelo.interpreta_notacao(request.POST.get('notacao'))
+                novo_modelo.reajusta_custo()
             return redirect(reverse("comercial:orcamentos_modelo_editar", args=[novo_modelo.id]))
     else:
         form_adicionar_modelo = FormAdicionaModelo()
@@ -2159,6 +2162,23 @@ class OrcamentoForm(forms.ModelForm):
     class Meta:
         model = Orcamento
         fields = 'descricao', 'proposta'
+
+
+class ModeloOrcamentoForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(ModeloOrcamentoForm, self).__init__(*args, **kwargs)
+        self.fields['descricao'].widget.attrs['class'] = "input-xxlarge"
+        self.fields['descricao'].required = True
+        self.fields['inicio_promocao'].widget.attrs['class'] = 'datepicker'
+        self.fields['fim_promocao'].widget.attrs['class'] = 'datepicker'
+
+
+    class Meta:
+        model = Orcamento
+        fields = 'ativo', 'descricao', 'tabelado', 'promocao', 'inicio_promocao', 'fim_promocao', 'custo_total', 'custo_material', 'custo_humano'
+
+
 
 class LinhaOrcamentoMaterialForm(forms.ModelForm):
     
@@ -2197,33 +2217,37 @@ def orcamentos_modelo_editar(request, modelo_id):
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
             cp['orcamento-material-TOTAL_FORMS'] = int(cp['orcamento-material-TOTAL_FORMS'])+ 1
             form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
-            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+            form_orcamento = ModeloOrcamentoForm(cp, instance=orcamento)
         if 'adicionar_linha_humano' in request.POST:
             messages.info(request, u"Nova Linha de Mão de Obra adicionada")
             cp = request.POST.copy()
             form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
             cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ 1            
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
-            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+            form_orcamento = ModeloOrcamentoForm(cp, instance=orcamento)
         elif 'alterar-orcamento' in request.POST:
             form_editar_linhas_material = OrcamentoMaterialFormSet(request.POST, instance=orcamento, prefix="orcamento-material")
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(request.POST, instance=orcamento, prefix="orcamento-humano")
-            form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+            form_orcamento = ModeloOrcamentoForm(request.POST, instance=orcamento)
             if form_editar_linhas_material.is_valid() and form_editar_linhas_humano.is_valid() and form_orcamento.is_valid():
                 linhas_material = form_editar_linhas_material.save()
                 linhas_humano = form_editar_linhas_humano.save()
                 orcamento = form_orcamento.save()
-                messages.success(request, u"Sucesso! Orçamento (%s) Alterado da Proposta #%s" % (orcamento.descricao, orcamento.proposta.id))
-                # se cliente, mostra ficha
-                return redirect(reverse('comercial:editar_proposta', args=[orcamento.proposta.id]))
+                if orcamento.proposta:
+                    messages.success(request, u"Sucesso! Orçamento (%s) Alterado da Proposta #%s" % (orcamento.descricao, orcamento.proposta.id))
+                    # se cliente, mostra ficha
+                    return redirect(reverse('comercial:editar_proposta', args=[orcamento.proposta.id]))
+                else:
+                    messages.success(request, u"Sucesso! Orçamento (%s) Alterado" % (orcamento.descricao))
+                    return redirect(reverse('comercial:orcamentos_modelo_editar', args=[orcamento.id]))
             else:
-                form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
+                form_orcamento = ModeloOrcamentoForm(request.POST, instance=orcamento)
         
                 
     else:
         form_editar_linhas_material = OrcamentoMaterialFormSet(instance=orcamento, prefix="orcamento-material")
         form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
-        form_orcamento = OrcamentoForm(instance=orcamento)
+        form_orcamento = ModeloOrcamentoForm(instance=orcamento)
 
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
 
