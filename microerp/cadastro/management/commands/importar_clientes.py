@@ -57,6 +57,8 @@ class Command(BaseCommand):
                         tipo_cliente = str(row['FIS_JUR'])
                         telefone = str(row['TELEFONE']) or None
                         celular = str(row['CELULAR']) or None
+                        conceder_credito = str(row['CONCEDER_CREDITO']) or None
+                        limite_credito = str(row['LIMITE_CREDITO']) or 0
                         ie = str(row['IE']) or None
                         rg = str(row['RG']) or None
                         try:
@@ -101,6 +103,13 @@ class Command(BaseCommand):
                         else:
                             cliente_ativo = False
                         print "ATIVO", ativo
+                        # DEFINE CREDITO
+                        if conceder_credito.lower() == "sim":
+                            conceder_credito = True
+                        else:
+                            conceder_credito = False
+                        print "CONCEDER CREDITO", conceder_credito
+                        print "LIMITE DE CREDITO", limite_credito
                         # DEFINE CLIENTE
                         try:
                             cliente = Cliente.objects.get(
@@ -120,6 +129,8 @@ class Command(BaseCommand):
                         cliente.contato = contato
                         cliente.criado = data_cadastro
                         cliente.ativo = cliente_ativo
+                        cliente.conceder_credito = conceder_credito
+                        cliente.limite_credito = limite_credito
                         if cliente.tipo == 'pj':
                             cliente.cnpj = cnpj
                         else:

@@ -203,6 +203,27 @@ class Cliente(models.Model):
     def requisicao_proposta_atendidas(self):
         return self.requisicaodeproposta_set.filter(atendido=True)
     
+    def endereco_principal(self):
+        if self.enderecocliente_set.filter(principal=True):
+            endereco = self.enderecocliente_set.filter(principal=True).first()
+        elif self.enderecocliente_set.first():
+            endereco = self.enderecocliente_set.first()
+        else:
+            endereco = None
+        return endereco
+    
+    def qualquer_telefone(self):
+        if self.telefone_fixo:
+            return self.telefone_fixo
+        elif self.telefone_celular:
+            return self.telefone_celular
+        else:
+            telefones = self.enderecocliente_set.exclude(telefone=None)
+            if telefones:
+                return self.enderecocliente_set.exclude(telefone=None).first().telefone
+            else:
+                return None
+    
     uuid = UUIDField()
     ativo = models.BooleanField(default=True)
     id_referencia = models.IntegerField(blank=True, null=True)
@@ -225,6 +246,8 @@ class Cliente(models.Model):
     fax = models.CharField(blank=True, max_length=100)
     # financeiro
     solicitar_consulta_credito = models.BooleanField("Solicitar Consulta de Crédito", default=False, help_text="Marque esta opção para solicitar uma consulta de crédito")
+    conceder_credito = models.BooleanField(default=True)
+    limite_credito = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # comercial - designacao
     designado = models.ForeignKey('rh.Funcionario', verbose_name="Funcionário Designado", related_name="cliente_designado_set", blank=True, null=True)
     # metadata

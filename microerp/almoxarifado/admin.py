@@ -32,7 +32,7 @@ class LinhaControleEquipamentoInLineFormset(BaseInlineFormSet):
     model = LinhaControleEquipamento
 
 class LinhaControleEquipamentoInLine(admin.TabularInline):
-    #raw_id_fields = ("equipamento",)
+    raw_id_fields = ("produto",)
     model = LinhaControleEquipamento
     extra = 0
     #formset = LinhaControleEquipamentoInLineFormset
