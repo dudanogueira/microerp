@@ -23,8 +23,7 @@
 		
 	<div  class="span4">
 		
- 		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button>
-		
+ 		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button> 			<a href="{% url "comercial:orcamentos_modelo_reajustar" orcamento.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> Reajustar</a>
 		 
 		
 	</div>
@@ -46,7 +45,7 @@
 		<div class="row-fluid">
 			{{form.errors}}
 		
-			<div class="span6">
+			<div class="span5">
 				{{form.produto.label}}
 				{{form.produto}}
 				{{form.produto.errors}}
@@ -60,9 +59,12 @@
 			</div>
 		
 			<div class="span3">
+				{{form.custo_total.label}}
+				{{form.custo_total}}
+				{{form.custo_total.errors}}
+			</div>
+			<div class="span1">
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
-				<Br />
-				<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-material-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
 			</div>
 		
 		</div>

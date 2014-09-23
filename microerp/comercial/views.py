@@ -2192,6 +2192,20 @@ class LinhaOrcamentoMaterialForm(forms.ModelForm):
         model = LinhaRecursoMaterial
         fields = 'quantidade', 'produto'
 
+class LinhaOrcamentoMaterialModeloForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaOrcamentoMaterialModeloForm, self).__init__(*args, **kwargs)
+        self.fields['produto'].widget = forms.HiddenInput()
+        self.fields['produto'].widget.attrs['class'] = 'select2-ajax-material'
+        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
+
+    class Meta:
+        model = LinhaRecursoMaterial
+        fields = 'quantidade', 'produto', 'custo_total'
+
+
+
 class LinhaOrcamentoHumanoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -2204,12 +2218,27 @@ class LinhaOrcamentoHumanoForm(forms.ModelForm):
         model = LinhaRecursoHumano
         fields = 'quantidade', 'cargo'
 
+
+class LinhaOrcamentoHumanoModeloForm(forms.ModelForm):
+    
+    def __init__(self, *args, **kwargs):
+        super(LinhaOrcamentoHumanoModeloForm, self).__init__(*args, **kwargs)
+        self.fields['cargo'].widget = forms.HiddenInput()
+        self.fields['cargo'].widget.attrs['class'] = 'select2-ajax-humano'
+        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
+
+    class Meta:
+        model = LinhaRecursoHumano
+        fields = 'quantidade', 'cargo', 'custo_total'
+
+
+
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_editar(request, modelo_id):
     
     orcamento = get_object_or_404(Orcamento, pk=modelo_id)
-    OrcamentoMaterialFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoMaterialForm)
-    OrcamentoRecursoHumanoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoHumano, extra=1, can_delete=True, form=LinhaOrcamentoHumanoForm)
+    OrcamentoMaterialFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoMaterialModeloForm)
+    OrcamentoRecursoHumanoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoHumano, extra=1, can_delete=True, form=LinhaOrcamentoHumanoModeloForm)
     if request.POST:
         if 'adicionar_linha_material' in request.POST:
             messages.info(request, u"Nova Linha de Materiais adicionada")
