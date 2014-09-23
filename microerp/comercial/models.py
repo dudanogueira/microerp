@@ -385,7 +385,7 @@ class Orcamento(models.Model):
             codigo,quantidade = item.split('-')
             try:
                 codigo = int(codigo)
-                quantidade = int(quantidade)
+                quantidade = float(quantidade)
                 produto = Produto.objects.get(codigo=codigo)
                 self.linharecursomaterial_set.create(produto=produto, quantidade=quantidade)
             except:
