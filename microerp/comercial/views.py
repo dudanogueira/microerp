@@ -298,6 +298,8 @@ class FiltrarPreClientesERequisicoesForm(forms.Form):
 def clientes(request):
     form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()  
     cliente_q = request.GET.get('cliente', False)
+    preclientes = PreCliente.objects.filter(cliente_convertido=None)
+    clientes = Cliente.objects.filter(ativo=True)
     if cliente_q:
         busca_feita = True
         cliente_q = cliente_q.strip()
@@ -309,7 +311,7 @@ def clientes(request):
             Q(cpf__icontains=cliente_q)
         )
         #puxa todos os pre clientes, menos os já convertidos)
-        preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
+        preclientes = preclientes.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     else:
         if request.GET.get('cliente') == '' or request.POST.get('btn-aplicar-filtro', None):
             busca_feita = True
