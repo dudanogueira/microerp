@@ -53,7 +53,8 @@ urlpatterns = patterns('',
     url(r'^relatorios/probabilidade/$', 'comercial.views.relatorios_comercial_probabilidade', name='relatorios_comercial_probabilidade'),
     url(r'^relatorios/propostas/declinadas/$', 'comercial.views.relatorios_comercial_propostas_declinadas', name='relatorios_comercial_propostas_declinadas'),
     url(r'^relatorios/propostas/followups/$', 'comercial.views.relatorios_comercial_propostas_e_followups', name='relatorios_comercial_propostas_e_followups'),
-    url(r'^relatorios/propostas/periodo/$', 'comercial.views.relatorios_comercial_propostas_por_por_periodo_e_vendedor', name='relatorios_comercial_propostas_por_por_periodo_e_vendedor'),
+    url(r'^relatorios/propostas/periodo/$', 'comercial.views.relatorios_comercial_propostas_por_periodo_e_vendedor', name='relatorios_comercial_propostas_por_periodo_e_vendedor'),
+    url(r'^relatorios/propostas/visitas/$', 'comercial.views.relatorios_comercial_propostas_visitas', name='relatorios_comercial_propostas_visitas'),
     
     # contratos
     url(r'^contrato/analises/$', 'comercial.views.analise_de_contratos', name='analise_de_contratos'),

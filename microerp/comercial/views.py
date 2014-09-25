@@ -204,18 +204,26 @@ class FormAdicionarFollowUp(forms.ModelForm):
         self.fields['probabilidade'].required = True
         self.fields['data_expiracao'].required = False
         self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
+        self.fields['visita_por'].queryset = Funcionario.objects.exclude(user__perfilacessocomercial=None, user__funcionario__periodo_trabalhado_corrente=None)
+        self.fields['visita_por'].widget.attrs['class'] = 'select2'
 
     class Meta:
         model = FollowUpDePropostaComercial
-        fields = 'proposta', 'texto', 'probabilidade', 'reagenda_data_expiracao', 'data_expiracao'
+        fields = 'proposta', 'texto', 'probabilidade', 'reagenda_data_expiracao', 'data_expiracao', 'visita', 'visita_por'
     
     def clean_data_expiracao(self):
-            data = self.cleaned_data['data_expiracao']
-            reagenda_data_expiracao = self.cleaned_data['reagenda_data_expiracao']
-            if reagenda_data_expiracao and not data:
-                    raise forms.ValidationError("É preciso informar uma data!")
-            return data
+        data = self.cleaned_data['data_expiracao']
+        reagenda_data_expiracao = self.cleaned_data['reagenda_data_expiracao']
+        if reagenda_data_expiracao and not data:
+            raise forms.ValidationError(u"É preciso informar uma data!")
+        return data
 
+    def clean_visita_por(self):
+        visita_por = self.cleaned_data['visita_por']
+        visita = self.cleaned_data['visita']
+        if visita and not visita_por:
+            raise forms.ValidationError(u"É preciso indicar o Funcionário que realizou a visita")
+        return visita_por
 #
 # DECORADORES
 #
@@ -1672,6 +1680,7 @@ def adicionar_follow_up(request, proposta_id):
                 
             else:
                 messages.error(request, u"Erro! Formulário inválido! Follow Up Não Adicionado.")
+                a
     # retorna para referrer ou view do cliente
     try:
         url = request.META['HTTP_REFERER']
@@ -2423,7 +2432,7 @@ def relatorios_comercial(request):
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
-def relatorios_comercial_propostas_por_por_periodo_e_vendedor(request):
+def relatorios_comercial_propostas_por_periodo_e_vendedor(request):
     erro = False
     try:
         de = request.GET.get('de', None)
@@ -2454,6 +2463,33 @@ def relatorios_comercial_propostas_por_por_periodo_e_vendedor(request):
         
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-por-dia.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def relatorios_comercial_propostas_visitas(request):
+    erro = False
+    try:
+        de = request.GET.get('de', None)
+        if de:
+            de = datetime.datetime.strptime(de, '%d/%m/%Y')
+        ate = request.GET.get('ate', None)
+        if ate:
+            ate = datetime.datetime.strptime(ate, '%d/%m/%Y')
+            ate = datetime.datetime(ate.year, ate.month, ate.day, 23, 59, 59)
+        if de and ate and ate < de:
+            raise
+    except:
+        messages.error(request, "Intervalo de datas errado")
+        erro = True
+    if not erro:
+        if de and ate:
+            fups = FollowUpDePropostaComercial.objects.filter(criado__range=(de,ate), visita=True)
+        elif de and not ate:
+            de = datetime.datetime.combine(de, datetime.time(00, 00))
+            fups = FollowUpDePropostaComercial.objects.filter(criado__gte=de, visita=True)
+        elif not de and ate:
+            ate = datetime.datetime.combine(ate, datetime.time(23, 59))
+            fups = FollowUpDePropostaComercial.objects.filter(criado__lte=ate, visita=True)
+
+    return render_to_response('frontend/comercial/comercial-relatorios-followups-visita.html', locals(), context_instance=RequestContext(request),)
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)

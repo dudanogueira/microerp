@@ -227,6 +227,7 @@ class Cliente(models.Model):
     uuid = UUIDField()
     ativo = models.BooleanField(default=True)
     id_referencia = models.IntegerField(blank=True, null=True)
+    id_referencia_criado = models.BooleanField(default=False, help_text="Indica se o id de referencia foi criado pelo sistema")
     nome = models.CharField(u"Nome do Cliente", blank=False, null=False, max_length=300)
     fantasia = models.CharField(u"Nome de Fantasia", blank=True, null=True, max_length=500)
     tipo = models.CharField(u"Tipo de Cliente", blank=False, null=False, max_length=10, choices=TIPO_CLIENTE_CHOICES)

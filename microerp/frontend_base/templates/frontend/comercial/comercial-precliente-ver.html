@@ -120,8 +120,8 @@
 						data-follow-ups="
 						
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -135,7 +135,7 @@
 					{%endif %}
 					
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
 				</td>
 						<td>
@@ -202,8 +202,8 @@
 						data-follow-ups="
 						
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -218,7 +218,7 @@
 					
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
 				</td>
 						<td>
@@ -287,8 +287,8 @@
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}}
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small>
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -354,7 +354,6 @@
 						{{form_adicionar_follow_up.probabilidade.label}}
 						{{form_adicionar_follow_up.probabilidade}}
 						{{form_adicionar_follow_up.probabilidade.errors}}
-
 						<br />
 						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
 						{{form_adicionar_follow_up.reagenda_data_expiracao}}
@@ -364,7 +363,18 @@
 						{{form_adicionar_follow_up.data_expiracao.label}}
 						{{form_adicionar_follow_up.data_expiracao}}
 						{{form_adicionar_follow_up.data_expiracao.errors}}						
-						
+						</div>
+						<br />
+						{{form_adicionar_follow_up.visita.label}}
+						{{form_adicionar_follow_up.visita}}
+						{{form_adicionar_follow_up.visita.errors}}
+						<div id="visita-por-modal-container">
+						<br />
+						{{form_adicionar_follow_up.visita_por.label}}
+						{{form_adicionar_follow_up.visita_por}}
+						{{form_adicionar_follow_up.visita_por.errors}}
+						</div>
+
 						{% else %}
 						<input type="hidden" name="somente-texto" value="sim">
 						
@@ -446,8 +456,10 @@ $('.btn-modal-add-follow-up').click(function(e){
 		$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
 		$("#btn-adicionar-follow-up").hide();			
 	    $("#data-expiracao-modal-container").hide();
+		$("#visita-por-modal-container").hide();
 		$("#modal-follow-up-add .errorlist").hide();
-		$("#id_reagenda_data_expiracao").attr('checked', false);	
+		$("#id_reagenda_data_expiracao").attr('checked', false);
+		$("#id_visita").attr('checked', false);
 		$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
 });
 
@@ -491,6 +503,13 @@ $("#id_reagenda_data_expiracao").on("change", function(e){
 	    $("#data-expiracao-modal-container").show();  // checked
 	else
 	    $("#data-expiracao-modal-container").hide();
+})
+
+$("#id_visita").on("change", function(e){
+	if($(this).is(':checked'))
+	    $("#visita-por-modal-container").show();  // checked
+	else
+	    $("#visita-por-modal-container").hide();
 })
 
 

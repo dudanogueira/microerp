@@ -267,6 +267,9 @@ class FollowUpDePropostaComercial(models.Model):
     reagenda_data_expiracao = models.BooleanField("Reagenda Nova Data de Expiração", default=False)
     data_expiracao = models.DateField("Data de Expiração", blank=False, default=datetime.datetime.today)
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True)
+    # registro de visita com followup
+    visita = models.BooleanField(u"Registra Visita Comercial", default=False, help_text=u"Indica se houve visita física neste FollowUp")
+    visita_por = models.ForeignKey('rh.Funcionario', related_name="followup_com_visita_set",  blank=True, null=True)
     # registro histórico
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="followup_adicionado_set",  blank=False, null=False)
