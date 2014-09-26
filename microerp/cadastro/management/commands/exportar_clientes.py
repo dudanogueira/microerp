@@ -43,6 +43,7 @@ class Command(BaseCommand):
         for cliente in clientes_sem_id_referencia:
             novo_id = Cliente.objects.exclude(id_referencia=None).order_by('-id_referencia').first().id_referencia + 1
             cliente.id_referencia = novo_id
+            cliente.id_referencia_criado = True
             cliente.save()
         
         print u"EXPORTANDO para formato: %s no Diretorio: %s" % (args[0], args[1])

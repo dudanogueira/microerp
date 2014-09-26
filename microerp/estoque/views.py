@@ -240,18 +240,18 @@ def ajax_consulta_produto(request):
             pk=id_produto
         )
         if mostra_preco:
-            nome_produto = "%s - %s (R$ %s)" % (produto.codigo,produto.nome, produto.preco_custo)
+            nome_produto = "%s - %s (V: R$ %s / C: R$ %s)" % (produto.codigo,produto.nome, produto.preco_venda, produto.preco_custo)
         else:
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
-        result={"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_custo)}
+        result={"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_venda)}
         return HttpResponse(simplejson.dumps(result), content_type='application/json')
     result = []
     for produto in produtos:
         if mostra_preco:
-            nome_produto = "%s - %s (R$ %s)" % (produto.codigo,produto.nome, produto.preco_venda)
+            nome_produto = "%s - %s (V: R$ %s / C: R$ %s)" % (produto.codigo,produto.nome, produto.preco_venda, produto.preco_custo)
         else:
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
         
-        result.append({"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_venda)})
+        result.append({"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_venda), "preco_custo": float(produto.preco_custo)})
     return HttpResponse(simplejson.dumps(result), content_type='application/json')
 

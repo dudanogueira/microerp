@@ -2209,7 +2209,8 @@ class LinhaOrcamentoMaterialModeloForm(forms.ModelForm):
         super(LinhaOrcamentoMaterialModeloForm, self).__init__(*args, **kwargs)
         self.fields['produto'].widget = forms.HiddenInput()
         self.fields['produto'].widget.attrs['class'] = 'select2-ajax-material'
-        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
+        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
+        self.fields['custo_total'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
 
     class Meta:
         model = LinhaRecursoMaterial
@@ -2236,7 +2237,10 @@ class LinhaOrcamentoHumanoModeloForm(forms.ModelForm):
         super(LinhaOrcamentoHumanoModeloForm, self).__init__(*args, **kwargs)
         self.fields['cargo'].widget = forms.HiddenInput()
         self.fields['cargo'].widget.attrs['class'] = 'select2-ajax-humano'
-        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda'
+        self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
+        self.fields['custo_total'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
+
+        
 
     class Meta:
         model = LinhaRecursoHumano

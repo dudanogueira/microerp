@@ -197,7 +197,6 @@ class PropostaComercial(models.Model):
             retorno.append((parcelamento, parcelamento.aplica_no_valor( self.consolidado() ) ) )
         return retorno
     
-    
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -740,13 +739,13 @@ def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
     recalcula = True
     # quando não tem proposta, é modelo (promocao, modelo livre, tabelado)
     # nesses casos, não pode calcular automático
-    if instance.orcamento.proposta != None:
+    if instance.orcamento.proposta == None:
         if instance.orcamento.promocao or instance.orcamento.tabelado:
             recalcula = False
         else:
             recalcula = True
     else:
-        recalcula=False
+        recalcula=True
     if recalcula:
         try:
             obj = LinhaRecursoMaterial.objects.get(pk=instance.pk)
@@ -768,13 +767,13 @@ def atualiza_preco_linhas_humano(signal, instance, sender, **kwargs):
     recalcula = True
     # quando não tem proposta, é modelo (promocao, modelo livre, tabelado)
     # nesses casos, não pode calcular automático
-    if instance.orcamento.proposta != None:
+    if instance.orcamento.proposta == None:
         if instance.orcamento.promocao or instance.orcamento.tabelado:
             recalcula = False
         else:
             recalcula = True
     else:
-        recalcula=False
+        recalcula=True
     if recalcula:
         try:
             obj = LinhaRecursoHumano.objects.get(pk=instance.pk)
@@ -801,7 +800,23 @@ def atualiza_preco_orcamento_pela_linha(signal, instance, sender, **kwargs):
     except:
         pass
 
+def proposta_comercial_pre_save(signal, instance, sender, **kwargs):
+    '''puxa a configuracao de margem da proposta baseando no settings'''
+    instance.lucro = getattr(settings, 'LUCRO', 0)
+    instance.administrativo = getattr(settings, 'ADMINISTRATIVO', 0)
+    instance.impostos = getattr(settings, 'IMPOSTOS', 0)
+
+def orcamento_post_save(signal, instance, sender, **kwargs):
+    '''confere se, apos salvar o orcamento, o preco minimo da proposta é menor que o preço proposta
+        caso seja, definir automaticamente o valor proposto para o mínimo
+    '''
+    if float(instance.proposta.consolidado()) > float(instance.proposta.valor_proposto):
+        instance.proposta.valor_proposto = float(instance.proposta.consolidado())
+        instance.proposta.save()
+    
+
 # SIGNALS CONNECTION
+signals.pre_save.connect(proposta_comercial_pre_save, sender=PropostaComercial)
 signals.post_save.connect(proposta_comercial_post_save, sender=PropostaComercial)
 signals.post_save.connect(follow_up_post_save, sender=FollowUpDePropostaComercial)
 # RECURSO MATERIAL
@@ -812,6 +827,8 @@ signals.post_delete.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRec
 signals.pre_save.connect(atualiza_preco_linhas_humano, sender=LinhaRecursoHumano)
 signals.post_save.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoHumano)
 signals.post_delete.connect(atualiza_preco_orcamento_pela_linha, sender=LinhaRecursoHumano)
-
-
+# RECURSO LOGISTICO
+signals.post_save.connect(orcamento_post_save, sender=LinhaRecursoLogistico)
+# OUTROS
 signals.pre_save.connect(atualiza_custo_total_orcamento, sender=Orcamento)
+signals.post_save.connect(orcamento_post_save, sender=Orcamento)

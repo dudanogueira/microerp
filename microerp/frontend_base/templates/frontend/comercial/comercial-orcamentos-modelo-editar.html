@@ -45,25 +45,24 @@
 		<div class="row-fluid">
 			{{form.errors}}
 		
-			<div class="span5">
+			<div class="span8">
 				{{form.produto.label}}
 				{{form.produto}}
 				{{form.produto.errors}}
 			</div>
 		
-			<div class="span3">
+			<div class="span2">
 				{{form.quantidade.label}}
 				{{form.quantidade}}
 				{{form.quantidade.errors}}
 				{{form.id}}
+				=
 			</div>
 		
-			<div class="span3">
+			<div class="span2">
 				{{form.custo_total.label}}
 				{{form.custo_total}}
 				{{form.custo_total.errors}}
-			</div>
-			<div class="span1">
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
 			</div>
 		
@@ -82,24 +81,27 @@
 		<div class="row-fluid">
 			{{form.errors}}
 
-			<div class="span6">
+			<div class="span8">
 				{{form.cargo.label}}
 				{{form.cargo}}
 				{{form.cargo.errors}}
 			</div>
 		
-			<div class="span3">
+			<div class="span2">
 				{{form.quantidade.label}}
 				{{form.quantidade}}
 				{{form.quantidade.errors}}
 				{{form.id}}
 			</div>
 		
-			<div class="span3">
-				{{form.DELETE}} <i class="fa fa-trash-o"></i>
-				<Br />
-				<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-humano-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
-			</div>
+		
+		<div class="span2">
+			{{form.custo_total.label}}
+			{{form.custo_total}}
+			{{form.custo_total.errors}}
+			{{form.DELETE}} <i class="fa fa-trash-o"></i>
+		</div>
+		
 		
 		</div>
 		{% endfor %}
