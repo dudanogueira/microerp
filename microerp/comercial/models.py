@@ -21,7 +21,7 @@ __version__ = '0.0.1'
 
 from django.utils.deconstruct import deconstructible
 
-import datetime, os, locale
+import datetime, os, locale, decimal
 
 from utils import extenso_com_centavos
 
@@ -333,7 +333,7 @@ class Orcamento(models.Model):
                     reajustou = True
                 linha.custo_total = custo_total
                 linha.save()
-                custo_total += linha.custo_total
+                custo_total += decimal.Decimal(linha.custo_total)
             # humano
             for linha in self.linharecursohumano_set.all():
                 linha.custo_unitario = linha.cargo.fracao_hora_referencia
@@ -342,7 +342,7 @@ class Orcamento(models.Model):
                     reajustou = True
                 linha.custo_total = custo_total
                 linha.save()
-                custo_total += linha.custo_total
+                custo_total += decimal.Decimal(linha.custo_total)
             
             self.custo_total = custo_total
             self.save()
