@@ -810,9 +810,10 @@ def orcamento_post_save(signal, instance, sender, **kwargs):
     '''confere se, apos salvar o orcamento, o preco minimo da proposta é menor que o preço proposta
         caso seja, definir automaticamente o valor proposto para o mínimo
     '''
-    if float(instance.proposta.consolidado()) > float(instance.proposta.valor_proposto):
-        instance.proposta.valor_proposto = float(instance.proposta.consolidado())
-        instance.proposta.save()
+    if instance.proposta:
+        if float(instance.proposta.consolidado()) > float(instance.proposta.valor_proposto):
+            instance.proposta.valor_proposto = float(instance.proposta.consolidado())
+            instance.proposta.save()
     
 
 # SIGNALS CONNECTION
