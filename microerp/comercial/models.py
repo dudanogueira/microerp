@@ -756,7 +756,7 @@ def atualiza_preco_linhas_material(signal, instance, sender, **kwargs):
                 instance.custo_unitario = instance.produto.preco_venda
 
         if instance.quantidade and instance.custo_unitario:
-            resultado = instance.custo_unitario * instance.quantidade
+            resultado = float(instance.custo_unitario) * float(instance.quantidade)
         else:
             resultado = 0
         instance.custo_total = resultado
