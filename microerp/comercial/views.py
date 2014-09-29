@@ -1517,7 +1517,6 @@ class OrcamentoPrint:
             buffer.close()
             return pdf
 
-
 class FormEnviarPropostaEmail(forms.Form):
     
     email = forms.CharField(help_text="Para mais emails: email1, email2, email3")
@@ -1526,8 +1525,20 @@ class FormEnviarPropostaEmail(forms.Form):
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def proposta_comercial_reabrir(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    id_original = proposta.id
+    orcamentos = proposta.orcamento_set.all()
+    # clona a proposta atual para uma nova, aberta
+    proposta.id = None
+    proposta.save()
     proposta.status = "aberta"
-    proposta.save()    
+    # marca como reaberta
+    proposta.reaberta = True
+    # nova data de expiracao
+    proposta.data_expiracao = proposta.sugere_data_reagendamento_expiracao()
+    proposta.valor_proposto = 0
+    proposta.save()
+    # registra followup falando que foi reaberto
+    proposta.followupdepropostacomercial_set.create(texto="Reaberto de Proposta #%s" % id_original, criado_por=request.user.funcionario)
     if request.GET['next']:
         return redirect(request.GET['next'])
     else: 
@@ -1634,13 +1645,13 @@ def proposta_comercial_imprimir(request, proposta_id):
                         pass
                 if request.user.funcionario.email:
                     dest.append(request.user.funcionario.email)
-                messages.info(request, "%s" % dest)
                 assunto = "[%s] - Proposta Comercial" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA")
                 conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em anexo a proposta. ")
                 try:
                     nome_do_proposto = form_configura.cleaned_data['nome_do_proposto']
                     nome_do_funcionario = request.user.funcionario.nome
                     conteudo = conteudo % {'nome_do_proposto': nome_do_proposto, 'nome_do_funcionario': nome_do_funcionario}
+                    bbc = [i[0] for i in PerfilAcessoComercial.objects.filter(gerente=True).values_list('user__funcionario__email')]
                 except:
                     raise
                 email = EmailMessage(
@@ -1648,11 +1659,14 @@ def proposta_comercial_imprimir(request, proposta_id):
                         conteudo,
                         settings.DEFAULT_FROM_EMAIL,
                         dest,
+                        bbc,
                     )
                 email.attach(nome_arquivo_gerado, pdf, 'application/pdf')
                 try:
                     email.send(fail_silently=False)
-                    messages.success(request, u'Sucesso! Proposta enviada com sucesso.')
+                    messages.success(request, u'Sucesso! Proposta enviada para %s com sucesso.' % dest)
+                    if bbc:
+                        messages.info(request, u"Cópia Oculta enviada para: %s" % bbc)
                 except:
                     messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para os Gerentes!')
                 

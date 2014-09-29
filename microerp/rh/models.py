@@ -159,7 +159,7 @@ TIPO_TREINAMENTO_CHOICES = (
 class Funcionario(models.Model):
     
     def __unicode__(self):
-        return self.nome
+        return u"%s" % self.nome
 
     def funcionario(self):
         return self

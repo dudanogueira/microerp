@@ -6,7 +6,14 @@
 
 {% block content %}
 
-<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Ver Proposta #{{proposta.id}} - {{proposta.get_status_display}}</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Ver Proposta #{{proposta.id}} - <small>{{proposta.get_status_display}}</small>
+</h1>
+			{% if proposta.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
+			{% endif %}
 
 {% if request.user.perfilacessocomercial.gerente %}
 <h4>Como Gerente</h4>
@@ -27,11 +34,11 @@
 {% endif %}
 <!-- Nav tabs -->
 <ul class="nav nav-tabs" role="tablist" id="menu-orcamentos">
-		  <li class="active"><a href="#orcamento-resumo" role="tab" data-toggle="tab"><strong>Total</strong>: R${{proposta.consolidado}}</a>
+		  <li class="active"><a href="#orcamento_resumo" role="tab" data-toggle="tab"><strong>Total</strong>: R${{proposta.consolidado}}</a>
 		</li>
 	{% for orcamento in proposta.orcamento_set.all  %}
 		
-	  <li class=""><a href="#orcamento-{{orcamento.id}}" role="tab" data-toggle="tab">
+	  <li class=""><a href="#orcamento_{{orcamento.id}}" role="tab" data-toggle="tab">
 		{% if orcamento.promocao %}
 		<i class="fa fa-asterisk"></i>
 		{% else %}
@@ -46,14 +53,16 @@
 		
 		  #{{orcamento.id}} - R${{orcamento.custo_total}}</a></li>
   {% endfor %}
-  <li class=""><a href="#orcamento-logistica" role="tab" data-toggle="tab"><i class="fa fa-truck"></i> R${{proposta.custo_logistica}}</a>
+  {% if proposta.linharecursologistico_set.all %}
+  <li class=""><a href="#orcamento_logistica" role="tab" data-toggle="tab"><i class="fa fa-truck"></i> R${{proposta.custo_logistica}}</a>
+  {% endif %}
 </li>
 </ul>
 
 <!-- Tab panes -->
 <div class="tab-content">
 	
-	<div class="tab-pane active" id="orcamento-resumo">
+	<div class="tab-pane active" id="orcamento_resumo">
   	  <table class="table table-bordered">
   	        <thead>
   	          <tr>
@@ -90,14 +99,12 @@
   				  <td><strong>R$  {{proposta.consolidado}}</strong></td>
   			  </tr>
 			  
-			  
-			  
   	        </tbody>
   	      </table>
 	</div>
 	
 	{% for orcamento in proposta.orcamento_set.all  %}
-	<div class="tab-pane " id="orcamento-{{orcamento.id}}">
+	<div class="tab-pane " id="orcamento_{{orcamento.id}}">
   		
 		<h4 class="text-right">
 		{% if orcamento.promocao %}
@@ -107,7 +114,7 @@
 			{% if orcamento.tabelado %}
 			<i class="fa fa-table"></i> Tabelado
 			{% else %}
-			<i class="fa fa-clipboard"></i> Avulso
+			<i class="fa fa-clipboard"></i> Avulso - {{orcamento.descricao}}
 			{% endif %}
 
 		{% endif %}
@@ -146,8 +153,8 @@
 	  		{% for linha in orcamento.linharecursohumano_set.all %}
 	  			<tr>
 	  				<td>{{linha.cargo.nome}}</td>
-	  				<td>{{linha.cargo.fracao_hora_referencia}}</td>
-	  				<td>{{linha.quantidade}}</td>
+	  				<td>R$ {{linha.cargo.fracao_hora_referencia}}</td>
+	  				<td>{{linha.quantidade}} hora{{linha.quantidade|pluralize}}</td>
 	  				<td>R$ {{linha.custo_total}}</td>
 	  			</tr>
 	  		{% endfor %}
@@ -167,8 +174,8 @@
 		
 	</div>
 	{% endfor %}
-	  
- 	<div class="tab-pane" id="orcamento-logistica">
+	{% if proposta.linharecursologistico_set.all %}
+ 	<div class="tab-pane" id="orcamento_logistica">
 		<h2>Recurso Logístico</h2>
 		<table class="table table-condensed table-bordered table-rounded">
 			<thead>
@@ -194,7 +201,7 @@
 			</tbody>
 		</table>
  	</div>
-	  
+	{% endif %}
 </div>
 
 
@@ -206,22 +213,37 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
-$('#menu-orcamentos a:first').tab('show');
-$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+	$('#menu-orcamentos a:first').tab('show');
+	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+	
+	// Javascript to enable link to tab
+	var hash = document.location.hash;
+	var prefix = "tab_";
+	if (hash) {
+	    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+	}
+	
 });
 
-// Javascript to enable link to tab
-var hash = document.location.hash;
-var prefix = "tab_";
-if (hash) {
-    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
     window.location.hash = e.target.hash.replace("#", "#" + prefix);
 });
 
+$('#menu-orcamentos').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+$('.popover-items').popover({
+		trigger: "hover",
+		placement: 'bottom'
+});
 
 </script>
 

@@ -118,7 +118,10 @@ class PropostaComercial(models.Model):
         return self.cliente or "Pré Cliente: %s" % self.precliente
     
     def sugere_data_reagendamento_expiracao(self):
-        return self.data_expiracao + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
+        if self.data_expiracao > datetime.date.today():
+            return self.data_expiracao + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
+        else:
+            return datetime.date.today() + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
     
     def orcamentos_ativos(self):
         return self.orcamento_set.filter(ativo=True)
@@ -207,6 +210,7 @@ class PropostaComercial(models.Model):
     valor_fechado = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     data_expiracao = models.DateField("Data de Expiração desta Proposta", blank=False, null=False, default=datetime.date.today)
     designado = models.ForeignKey("rh.Funcionario", blank=True, null=True)
+    reaberta = models.BooleanField(default=False)
     # porcentagens de margem
     lucro = models.IntegerField("Lucro (%)", blank=False, null=False, default=0)
     administrativo = models.IntegerField("Taxa Administrativa (%)", blank=False, null=False, default=0)
