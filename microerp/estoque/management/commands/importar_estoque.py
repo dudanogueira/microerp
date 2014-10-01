@@ -44,7 +44,6 @@ class Command(BaseCommand):
             dest='rename_after',
             help=u'Renomear após importar',
         ),    
-        
     )
 
     def handle(self, *args, **options):

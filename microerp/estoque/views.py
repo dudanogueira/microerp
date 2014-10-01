@@ -26,6 +26,8 @@ from reportlab.lib.units import mm, cm
 
 from django.http import HttpResponse
 
+from django.core import management
+
 import datetime
 import operator
 from django import forms
@@ -40,7 +42,7 @@ from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count, Q
 
-from estoque.models import Produto
+from estoque.models import Produto, ArquivoImportacaoProdutos
 
 #
 # DECORADORES
@@ -146,6 +148,44 @@ def chunks(l, n):
     """
     for i in xrange(0, len(l), n):
         yield l[i:i+n]
+
+
+class EnviarArquivoImportacao(forms.ModelForm):
+    class Meta:
+        model = ArquivoImportacaoProdutos
+        fields = 'tipo', 'arquivo'
+
+@user_passes_test(possui_perfil_acesso_estoque, login_url='/')
+def importacao_ver(request):
+    if request.POST:
+        form = EnviarArquivoImportacao(request.POST, request.FILES)
+        if form.is_valid():
+            novo_arquivo = form.save(commit=False)
+            novo_arquivo.enviado_por = request.user.funcionario
+            novo_arquivo.save()
+            return redirect(reverse("estoque:importacao_ver"))
+    else:
+        form = EnviarArquivoImportacao()
+    disponiveis = ArquivoImportacaoProdutos.objects.filter(importado=False)
+    importados = ArquivoImportacaoProdutos.objects.filter(importado=True)
+    
+    return render_to_response('frontend/estoque/estoque-importacao.html', locals(), context_instance=RequestContext(request),) 
+
+@user_passes_test(possui_perfil_acesso_estoque, login_url='/')
+def importacao_apagar_arquivo(request, arquivo_id):
+    arquivo = get_object_or_404(ArquivoImportacaoProdutos, pk=arquivo_id)
+    arquivo.delete()
+    return redirect(reverse("estoque:importacao_ver"))
+
+@user_passes_test(possui_perfil_acesso_estoque, login_url='/')
+def importacao_importar(request):
+    try:
+        management.call_command('importar_estoque_do_bd')
+        messages.success(request, u"Sucesso! Importação de Estoque realizada")
+    except:
+        messages.error(request, u"Erro! Importação de Estoque FALHOU!")
+        
+    return redirect(reverse("estoque:importacao_ver"))
 
 
 @user_passes_test(possui_perfil_acesso_estoque, login_url='/')

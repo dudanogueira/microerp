@@ -25,6 +25,8 @@ from estoque.models import Produto
 from estoque.models import TipoDeProduto
 from estoque.models import TabelaDePreco
 from estoque.models import PerfilAcessoEstoque
+from estoque.models import PerfilAcessoEstoque
+from estoque.models import ArquivoImportacaoProdutos
 
 class ProdutoAdmin(admin.ModelAdmin):
     
@@ -33,7 +35,11 @@ class ProdutoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'tabela', 'unidade_de_compra', 'unidade_de_venda'
     search_fields = 'codigo', 'descricao', 'nome', 'ncm', 'preco_venda', 'preco_custo'
 
+class ArquivoImportacaoProdutosAdmin(admin.ModelAdmin):
+    list_display = 'tipo', 'importado', 'importado_em', 'enviado_por'
+
 admin.site.register(Produto, ProdutoAdmin)
 admin.site.register(TipoDeProduto)
 admin.site.register(TabelaDePreco)
 admin.site.register(PerfilAcessoEstoque)
+admin.site.register(ArquivoImportacaoProdutos, ArquivoImportacaoProdutosAdmin)

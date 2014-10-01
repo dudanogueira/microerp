@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-import datetime
+import datetime, os
 from django.conf import settings
 
 from django.db.models import signals
+
+from django.utils.deconstruct import deconstructible
+
+TIPO_ARQUIVO_IMPORTACAO = (
+    ('digisat', 'Arquivo de Estoque do Digisat'),
+)
 
 PRODUTO_PADRAO_CODIGO_BARRAS_CHOICES = (
     ('ean13', 'EAN13 - European Article Number'),
@@ -111,6 +117,32 @@ class TabelaDePreco(models.Model):
     # meta
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+
+
+@deconstructible
+class ArquivoImportacaoDir(object):
+
+    def __call__(self, instance, filename):
+        return os.path.join(
+             'arquivo-importacao-produtos/', str(instance.tipo), datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S"), filename
+             )
+
+arquivo_importacao_dir = ArquivoImportacaoDir()
+
+class ArquivoImportacaoProdutos(models.Model):
+    
+    class Meta:
+        ordering = ('criado',)
+    
+    importado = models.BooleanField(default=False)
+    importado_em = models.DateTimeField(blank=True, null=True)
+    tipo = models.CharField(blank=False, max_length=100, choices=TIPO_ARQUIVO_IMPORTACAO)
+    arquivo = models.FileField(upload_to=arquivo_importacao_dir)
+    # meta
+    enviado_por = models.ForeignKey('rh.Funcionario')
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    
 
 # SIGNALS
 def atualiza_preco_produto_pela_tabela(signal, instance, sender, **kwargs):
