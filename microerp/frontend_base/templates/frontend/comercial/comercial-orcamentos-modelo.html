@@ -10,14 +10,17 @@
 <a href="{% url "comercial:orcamentos_modelo_novo" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Novo Modelo</a>
 </p>
 
-<ul>
+	<hr />
 	{% for modelo in modelos %}
-		<li>{{modelo.descricao}} - R${{modelo.custo_total}}
-			<a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-info"><i class="fa fa-pencil"></i> editar</a>
+		<h4>{{modelo.descricao}} - R${{modelo.custo_total}}</h4>
+			<a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-success"><i class="fa fa-pencil"></i> editar</a>
 			<a href="{% url "comercial:orcamentos_modelo_reajustar" modelo.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> reajustar</a>
-		</li>
+			<a href="{% url "comercial:orcamentos_modelo_gerenciar" modelo.id %}" class="btn btn-primary"><i class="fa fa-gear"></i> gerenciar</a>
+			<a href="{% url "comercial:orcamentos_modelo_apagar" modelo.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> apagar</a>
+			
+		<hr />
 	{% endfor %}
-</ul>
+
 {% endblock %}
 
 {% block auxiliar-menu %}

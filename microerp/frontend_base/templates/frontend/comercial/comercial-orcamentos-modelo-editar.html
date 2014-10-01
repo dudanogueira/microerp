@@ -114,6 +114,9 @@
 	
 </div>
 </form>
+<div class="well well-small">
+Notação: {{orcamento.gera_notacao}}
+</div>
 
 {% endblock %}
 
@@ -213,6 +216,8 @@ function calcula_linha_material(id){
 		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));	
 	}
 }
+
+
 
 function calcula_linha_humano(id){
 	id2 = parseInt(id) + 1;

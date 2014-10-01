@@ -313,12 +313,18 @@ class Orcamento(models.Model):
     '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
     
     def __unicode__(self):
-        if self.promocao:
-            return u"Promoção: %s - R$ %s" % (self.descricao, self.custo_total)
-        elif self.tabelado:
-            return u"Tabelado: %s - R$ %s" % (self.descricao, self.custo_total)
+        if self.modelo:
+            if self.promocao:
+                return u"Promoção Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
+            elif self.tabelado:
+                return u"Tabelado Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
         else:
-            return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
+            if self.promocao:
+                return u"Promoção: %s - R$ %s" % (self.descricao, self.custo_total)
+            elif self.tabelado:
+                return u"Tabelado: %s - R$ %s" % (self.descricao, self.custo_total)
+            else:
+                return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
 
     def clean(self):
         if self.promocao and not self.inicio_promocao and not self.fim_promocao:
@@ -397,6 +403,14 @@ class Orcamento(models.Model):
             except:
                 raise
                 pass
+    
+    def gera_notacao(self):
+        retorno = []
+        for linha in self.linharecursomaterial_set.all().order_by('produto__codigo'):
+            node = "%s-%s" % (linha.produto.codigo, linha.quantidade)
+            retorno.append(node)
+        return ",".join(retorno)
+        
 
     descricao = models.CharField(u"Descrição", blank=True, max_length=100)
     proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
@@ -424,6 +438,10 @@ class Orcamento(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
 
 class LinhaRecursoMaterial(models.Model):
+    
+    class Meta:
+        ordering = (('produto__codigo'),)
+    
 
     orcamento = models.ForeignKey('Orcamento')
     produto = models.ForeignKey('estoque.Produto')

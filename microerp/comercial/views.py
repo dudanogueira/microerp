@@ -511,17 +511,18 @@ def editar_proposta(request, proposta_id):
                     linhas_humano = modelo.linharecursohumano_set.all()
                     # cria novo orcamento à partir de modelo
                     novo_orcamento = modelo
+                    orcamento_id_originario = modelo.id
                     novo_orcamento.pk = None
                     novo_orcamento.save()
                     if modelo.promocao:
                         novo_orcamento.promocao = modelo.promocao # se for promocao, passa pra frente
                         # registra promocao originaria
-                        novo_orcamento.promocao_originaria = modelo
+                        novo_orcamento.promocao_originaria_id = orcamento_id_originario
                         # registra inicio e fim da promocao
                         novo_orcamento.inicio_promocao = modelo.inicio_promocao
                         novo_orcamento.fim_promocao = modelo.fim_promocao
                     if modelo.tabelado:
-                        novo_orcamento.tabelado_originario = modelo
+                        novo_orcamento.tabelado_originario_id = orcamento_id_originario
 
                     if modelo.promocao or modelo.tabelado:
                         novo_orcamento.custo_total = modelo.custo_total
@@ -543,6 +544,8 @@ def editar_proposta(request, proposta_id):
                         linha.pk = None
                         linha.orcamento = novo_orcamento
                         linha.save()
+                # retorna
+                return redirect(reverse("comercial:editar_proposta", args=[proposta.id,]))
                     
         if request.POST.get('adicionar-orcamento-btn'):
             adicionar_orcamento_form = OrcamentoForm(request.POST)
@@ -2311,6 +2314,12 @@ def orcamentos_modelo_editar(request, modelo_id):
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
+def orcamentos_modelo_gerenciar(request, modelo_id):
+    modelo = get_object_or_404(Orcamento, pk=modelo_id)
+    return render_to_response('frontend/comercial/comercial-orcamentos-modelo-gerenciar.html', locals(), context_instance=RequestContext(request),)
+
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_reajustar(request, modelo_id):
     orcamento = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
     reajustou = orcamento.reajusta_custo()
@@ -2319,6 +2328,13 @@ def orcamentos_modelo_reajustar(request, modelo_id):
     else:
         messages.success(request, u"Não houveram reajustes de preço para o Modelo %s" % orcamento)
 
+    return redirect(reverse("comercial:orcamentos_modelo"))
+
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def orcamentos_modelo_apagar(request, modelo_id):
+    orcamento = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
+    orcamento.delete()
     return redirect(reverse("comercial:orcamentos_modelo"))
 
 class SelecionaAnoIndicadorComercial(forms.Form):

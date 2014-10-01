@@ -45,7 +45,9 @@ urlpatterns = patterns('',
     url(r'^orcamento/modelos/$', 'comercial.views.orcamentos_modelo', name='orcamentos_modelo'),
     url(r'^orcamento/modelos/novo/$', 'comercial.views.orcamentos_modelo_novo', name='orcamentos_modelo_novo'),
     url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/editar/$', 'comercial.views.orcamentos_modelo_editar', name='orcamentos_modelo_editar'),
-    url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/ajustar/$', 'comercial.views.orcamentos_modelo_reajustar', name='orcamentos_modelo_reajustar'),
+    url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/reajustar/$', 'comercial.views.orcamentos_modelo_reajustar', name='orcamentos_modelo_reajustar'),
+    url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/gerenciar/$', 'comercial.views.orcamentos_modelo_gerenciar', name='orcamentos_modelo_gerenciar'),
+    url(r'^orcamento/modelos/(?P<modelo_id>[0-9]+)/apagar/$', 'comercial.views.orcamentos_modelo_apagar', name='orcamentos_modelo_apagar'),
     # indicadores
     url(r'^indicadores/$', 'comercial.views.indicadores_do_comercial', name='indicadores_do_comercial'),
     # relatorios
