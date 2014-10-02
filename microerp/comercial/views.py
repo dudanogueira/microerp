@@ -2457,6 +2457,70 @@ def indicadores_do_comercial(request):
     # SubGrupo de Indicador com Propostas ABertas Expiradas
     sub_grupos_indicadores_produtos_orcamento_aberto_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__lt=datetime.date.today()).exclude(produto__sub_grupo_indicador=None).values('produto__sub_grupo_indicador__nome', 'produto__sub_grupo_indicador__grupo__nome').annotate(Sum('quantidade'))
     
+    # Modelo de Orcamento com Propostas Abertas
+    modelos = Orcamento.objects.filter(modelo=True)
+    
+    # Modelo de Orcamento Tabelado em Propostas Abertas
+    total_propostas_gerados_tabelado_abertas = {}
+    for modelo in Orcamento.objects.filter(modelo=True, tabelado=True).all():
+        grupo_month_set = []
+        for month in range(1,13):
+            quantidades = Orcamento.objects.filter(
+                ativo=True,
+                proposta__status="aberta",
+                proposta__criado__year=ano,
+                proposta__criado__month=month,
+            ).exclude(Q(tabelado_originario=None)).count()
+            grupo_month_set.append(quantidades)
+        total_propostas_gerados_tabelado_abertas[modelo.descricao] = grupo_month_set
+    total_propostas_gerados_tabelado_abertas = OrderedDict(sorted(total_propostas_gerados_tabelado_abertas.items(), key=lambda t: t[0]))
+    
+    # Modelo de Orcamento Tabelado em Propostas Fechada
+    total_propostas_gerados_tabelado_fechadas = {}
+    for modelo in Orcamento.objects.filter(modelo=True, tabelado=True).all():
+        grupo_month_set = []
+        for month in range(1,13):
+            quantidades = Orcamento.objects.filter(
+                ativo=True,
+                proposta__status__in=['perdida', 'perdida_aguardando'],
+                proposta__criado__year=ano,
+                proposta__criado__month=month,
+            ).exclude(Q(tabelado_originario=None)).count()
+            grupo_month_set.append(quantidades)
+        total_propostas_gerados_tabelado_fechadas[modelo.descricao] = grupo_month_set
+    total_propostas_gerados_tabelado_fechadas = OrderedDict(sorted(total_propostas_gerados_tabelado_fechadas.items(), key=lambda t: t[0]))
+    
+    
+    # Modelo de Orcamento Promocional em Proposta Aberta
+    total_propostas_gerados_promocionais_abertas = {}
+    for modelo in Orcamento.objects.filter(modelo=True, promocao=True).all():
+        grupo_month_set = []
+        for month in range(1,13):
+            quantidades = Orcamento.objects.filter(
+                ativo=True,
+                proposta__status="aberta",
+                proposta__criado__year=ano,
+                proposta__criado__month=month,
+            ).exclude(Q(promocao_originaria=None)).count()
+            grupo_month_set.append(quantidades)
+        total_propostas_gerados_promocionais_abertas[modelo.descricao] = grupo_month_set
+    total_propostas_gerados_promocionais_abertas = OrderedDict(sorted(total_propostas_gerados_promocionais_abertas.items(), key=lambda t: t[0]))
+    
+    # Modelo de Orcamento Promocional em Proposta Fechada
+    total_propostas_gerados_promocionais_fechadas = {}
+    for modelo in Orcamento.objects.filter(modelo=True, promocao=True).all():
+        grupo_month_set = []
+        for month in range(1,13):
+            quantidades = Orcamento.objects.filter(
+                ativo=True,
+                proposta__status__in=['perdida', 'perdida_aguardando'],
+                proposta__criado__year=ano,
+                proposta__criado__month=month,
+            ).exclude(Q(promocao_originaria=None)).count()
+            grupo_month_set.append(quantidades)
+        total_propostas_gerados_promocionais_fechadas[modelo.descricao] = grupo_month_set
+    total_propostas_gerados_promocionais_fechadas = OrderedDict(sorted(total_propostas_gerados_promocionais_fechadas.items(), key=lambda t: t[0]))
+    
     
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
 

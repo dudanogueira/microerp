@@ -12,7 +12,7 @@
 
 	<hr />
 	{% for modelo in modelos %}
-		<h4>{{modelo.descricao}} - R${{modelo.custo_total}}</h4>
+		<h4>{{modelo.descricao}} - R${{modelo.custo_total}} <small>{% if modelo.tabelado%}tabelado{%else%}promoção{% endif%}</small></h4>
 			<a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-success"><i class="fa fa-pencil"></i> editar</a>
 			<a href="{% url "comercial:orcamentos_modelo_reajustar" modelo.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> reajustar</a>
 			<a href="{% url "comercial:orcamentos_modelo_gerenciar" modelo.id %}" class="btn btn-primary"><i class="fa fa-gear"></i> gerenciar</a>

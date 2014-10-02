@@ -407,6 +407,158 @@
 {% endif %}
 
 
+<h1>Modelos de Orçamentos Tabelados</h1>
+
+<h2>Indicadores de Orçamentos Tabelados Originados em Propostas Abertas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_tabelado_abertas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+<h2>Indicadores de Orçamentos Tabelados Originados em Propostas Fechadas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_tabelado_fechadas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+<h1>Modelos de Orçamento Promocionais</h1>
+
+
+<h2>Indicadores de Orçamentos Promocionais Originados em Propostas Abertas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_promocionais_abertas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+
+<h2>Indicadores de Orçamentos Promocionais Originados em Propostas Fechadas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_promocionais_fechadas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+
+
+
+
+
+
 {% endif %}
 
 {% endblock %}

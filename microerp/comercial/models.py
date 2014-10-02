@@ -327,8 +327,10 @@ class Orcamento(models.Model):
                 return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
 
     def clean(self):
-        if self.promocao and not self.inicio_promocao and not self.fim_promocao:
-            raise ValidationError("Quando o Orçamento for promoção o início e fim da promoção é obrigatório.")
+        if self.promocao != None:
+            if self.fim_promocao == None or self.inicio_promocao == None:
+                raise ValidationError("Quando o Orçamento for promoção o início e fim da promoção é obrigatório.")
+            
     
     def reajusta_custo(self):
         '''Atualiza o custo de todas as linhas e geral'''
