@@ -2367,8 +2367,14 @@ def indicadores_do_comercial(request):
     total_propostas_criadas = []
     # propostas convertidas
     total_propostas_convertidas = []
+    # propostas 
     # propostas fechadas
     total_propostas_perdidas = []
+    
+    # contratos
+    contratos_em_analise = ContratoFechado.objects.filter(status='emanalise')
+    contratos_aguardando_assinatura = ContratoFechado.objects.filter(status='assinatura')
+
     
     for month in range(1,13):
         # preclientes criados

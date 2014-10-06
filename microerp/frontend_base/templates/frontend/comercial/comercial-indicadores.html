@@ -23,7 +23,19 @@
 	</div>
 </div>
 
+<h1>Contratos</h1>
+<div class="row-fluid">
+	<div class="span4"><h3 class="alert alert-success">Assinatura: {{contratos_aguardando_assinatura.count}}<br /><small>Aguardando Assinatura do Cliente</small></h3></div>
+	<div class="span4"><h3 class="alert alert-info">Em Análise: {{contratos_em_analise.count}}<br /><small>Aguardando a Validação do Gerente</small></h3></div>
+	
+</div>
+
+
+
 {% if resultados %}
+
+<h1>Base de Clientes</h1>
+
 
 <h2>Pré Clientes Criados em {{ano}}</h2>
 
@@ -86,6 +98,7 @@
 	</tbody>
 </table>
 
+<h1>Propostas Comerciais</h1>
 <h2>Propostas Abertas Válidas Atuais <small><em>(estratificação por responsabilidade de proposta)</em></small></h2>
 <table class="table table-condensed table-hover table-rounded table-bordered">
 	<thead>
