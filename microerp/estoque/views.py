@@ -30,6 +30,7 @@ from django.core import management
 
 import datetime
 import operator
+import decimal
 from django import forms
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -43,6 +44,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Count, Q
 
 from estoque.models import Produto, ArquivoImportacaoProdutos
+from almoxarifado.models import ListaMaterialDoContrato, LinhaListaMaterial
 
 #
 # DECORADORES
@@ -264,6 +266,39 @@ try:
 except:
     import json as simplejson
 
+@user_passes_test(possui_perfil_acesso_estoque, login_url='/')
+def listas_materiais_ver(request):
+    listas = ListaMaterialDoContrato.objects.filter(ativa=True)
+    return render_to_response('frontend/estoque/estoque-listas-materiais-ver.html', locals(), context_instance=RequestContext(request),) 
+
+class FormLinhaMaterial(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(FormLinhaMaterial, self).__init__(*args, **kwargs)
+        if self.instance.quantidade_requisitada == self.instance.quantidade_ja_atendida:
+            sugerido = 0
+        else:
+            sugerido = self.instance.quantidade_requisitada - self.instance.quantidade_ja_atendida
+        self.fields['modificador'] = forms.FloatField(initial=sugerido)
+        self.fields['modificador'].widget.attrs['class'] = 'input-mini'
+        self.fields['comprador'] = forms.FloatField(initial=0)
+        self.fields['comprador'].widget.attrs['class'] = 'input-mini'
+        self.fields['produto'].widget = forms.HiddenInput()
+
+@user_passes_test(possui_perfil_acesso_estoque, login_url='/')
+def listas_materiais_alterar(request, lista_id):
+    lista = get_object_or_404(ListaMaterialDoContrato, pk=lista_id)
+    ListaMaterialDoContratoFormSet = forms.models.inlineformset_factory(ListaMaterialDoContrato, LinhaListaMaterial, extra=0, can_delete=False, form=FormLinhaMaterial)
+    if request.POST:
+        form_editar_linhas_materiais = ListaMaterialDoContratoFormSet(request.POST, instance=lista, prefix="lista-material")
+        entregues = {}
+        for i in range(form_editar_linhas_materiais.total_form_count()):
+            if form_editar_linhas_materiais[i].data['lista-material-%s-modificador' % i]:
+                entregues[form_editar_linhas_materiais[i].data['lista-material-%s-produto' % i]] = form_editar_linhas_materiais[i].data['lista-material-%s-modificador' % i]
+                form_editar_linhas_materiais[i].instance.quantidade_ja_atendida += decimal.Decimal(form_editar_linhas_materiais[i].data['lista-material-%s-modificador' % i])
+                form_editar_linhas_materiais[i].instance.save()
+    else:
+        form_editar_linhas_materiais = ListaMaterialDoContratoFormSet(instance=lista, prefix="lista-material")
+    return render_to_response('frontend/estoque/estoque-listas-materiais-alterar.html', locals(), context_instance=RequestContext(request),)
 
 @csrf_exempt
 @login_required

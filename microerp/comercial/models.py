@@ -14,7 +14,6 @@ more details.
 You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
-
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '0.0.1'
@@ -200,6 +199,19 @@ class PropostaComercial(models.Model):
             retorno.append((parcelamento, parcelamento.aplica_no_valor( self.consolidado() ) ) )
         return retorno
     
+    def gera_notacao_lista_materiais(self):
+        valores = self.orcamento_set.filter(ativo=True).values('linharecursomaterial__quantidade', 'linharecursomaterial__produto__id')
+        valores_dict = {}
+        for item in valores:
+            if item['linharecursomaterial__quantidade']:                
+                try:
+                    total = valores_dict[item['linharecursomaterial__produto__id']] + item['linharecursomaterial__quantidade']
+                    valores_dict[item['linharecursomaterial__produto__id']] = total
+                except KeyError:
+                    valores_dict[item['linharecursomaterial__produto__id']] = item['linharecursomaterial__quantidade']            
+        return valores_dict
+            
+    
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
@@ -327,10 +339,9 @@ class Orcamento(models.Model):
                 return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
 
     def clean(self):
-        if self.promocao != None:
+        if self.promocao:
             if self.fim_promocao == None or self.inicio_promocao == None:
                 raise ValidationError("Quando o Orçamento for promoção o início e fim da promoção é obrigatório.")
-            
     
     def reajusta_custo(self):
         '''Atualiza o custo de todas as linhas e geral'''
@@ -516,12 +527,8 @@ class CategoriaContratoFechado(models.Model):
 
 class ContratoFechado(models.Model):
     
-    
     def ultimo_followup(self):
-        if self.followupdecontrato_set.count():
-            return self.followupdecontrato_set.all().order_by('-criado')[0]
-        else:
-            return False
+        return self.followupdecontrato_set.last()
     
     def proposta_id(self):
         return self.propostacomercial.id
@@ -603,7 +610,6 @@ class ContratoFechado(models.Model):
     
     def valor_extenso(self):
         return extenso_com_centavos(str(self.valor))
-    
     
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)

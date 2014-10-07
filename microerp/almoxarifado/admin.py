@@ -23,6 +23,8 @@ from django.contrib import admin
 
 from models import ControleDeEquipamento
 from models import LinhaControleEquipamento
+from models import ListaMaterialDoContrato
+from models import LinhaListaMaterial
 
 from django.forms.models import BaseInlineFormSet
 
@@ -47,5 +49,15 @@ class ControleDeEquipamentoAdmin(admin.ModelAdmin):
     search_fields = 'id', 'funcionario__nome', 'linhacontroleequipamento__produto__nome'
     inlines = [LinhaControleEquipamentoInLine]
 
+class LinhaListaMaterialDoContratoInLine(admin.TabularInline):
+    raw_id_fields = ("produto",)
+    model = LinhaListaMaterial
+    extra = 0
+
+class ListaMaterialDoContratoAdmin(admin.ModelAdmin):
+    inlines = [LinhaListaMaterialDoContratoInLine]
+
+
 admin.site.register(ControleDeEquipamento, ControleDeEquipamentoAdmin)
 admin.site.register(LinhaControleEquipamento, LinhaControleEquipamentoAdmin)
+admin.site.register(ListaMaterialDoContrato, ListaMaterialDoContratoAdmin)

@@ -8,9 +8,7 @@ class FollowUpDeContratoInline(admin.StackedInline):
     model = FollowUpDeContrato
     extra= 0
 
-class TarefaDeProgramacaoAdmin(admin.ModelAdmin):
-    inlines = [FollowUpDeContratoInline,]
 
 admin.site.register(PerfilAcessoProgramacao)
 admin.site.register(FollowUpDeContrato)
-admin.site.register(TarefaDeProgramacao,TarefaDeProgramacaoAdmin)
+admin.site.register(TarefaDeProgramacao)

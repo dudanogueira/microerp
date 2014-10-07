@@ -23,11 +23,13 @@ import datetime, os
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from django.db.models import signals
+from django.db.models import signals, Sum
 
 from django.conf import settings
 
 from django.utils.deconstruct import deconstructible
+
+from estoque.models import Produto
 
 CONTROLE_DE_EQUIPAMENTO_STATUS_CHOICES = (
     ("pendente","Controle Pendente"),
@@ -55,7 +57,6 @@ class AnexoControleDir(object):
         return os.path.join(
              'controle-de-equipamento/', str(instance.tipo), str(instance.id), filename
              )
-
 anexo_controle_de_equipamento_local = AnexoControleDir()
 
 # Controle de Equipamentos
@@ -105,5 +106,90 @@ class LinhaControleEquipamento(models.Model):
     data_devolvido = models.DateField(blank=True, null=True)
     # metadata
     funcionario_receptor = models.ForeignKey('rh.Funcionario', related_name="recepcao_linha_controle_equipamento_set", verbose_name=u"Funcionário que Autorizou o Controle", help_text="Funcionário responsável pela entrega do equipamento.", blank=True, null=True)
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+
+# 
+# LINHA DE MATERIAIS DO CONTRATO
+
+class ListaMaterialDoContrato(models.Model):
+    '''Lista Consolidada que gerencia a quantidade de Material que compoe um contrato
+    É com base nessa lista que serão gerados outros dois documentos
+    
+     - Registro de Material Entregue
+     - Solicitação de Compras
+    '''
+    
+    def atualiza_lista(self):
+        '''atualiza essa lista conforme os orcamentos da proposta vinculada a este contrato'''
+        for k,v in self.contrato.propostacomercial.gera_notacao_lista_materiais().items():
+            produto = Produto.objects.get(pk=k)
+            linha,created = self.linhalistamaterial_set.get_or_create(produto=produto)
+            linha.quantidade_requisitada = v
+            linha.save()
+    
+    def total_materiais_requisitados(self):
+        return self.linhalistamaterial_set.aggregate(Sum('quantidade_requisitada'))['quantidade_requisitada__sum']
+    
+    def total_materiais_atendidos(self):
+        return self.linhalistamaterial_set.aggregate(Sum('quantidade_ja_atendida'))['quantidade_ja_atendida__sum']
+        
+    contrato = models.OneToOneField('comercial.ContratoFechado', blank=True, null=True)
+    ativa = models.BooleanField(default=True)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class LinhaListaMaterial(models.Model):
+    lista  = models.ForeignKey(ListaMaterialDoContrato)
+    produto = models.ForeignKey('estoque.Produto', null=True, blank=True)
+    quantidade_requisitada = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    quantidade_ja_atendida = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+
+#
+# MATERIAL LIBERADO PARA ENTREGA
+#
+class ListaMaterialEntregue(models.Model):
+    '''Lista Consolidada De materiais Entregues
+    '''
+    entregue = models.BooleanField(default=False)
+    contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
+    entregue_por = models.ForeignKey("rh.Funcionario", blank=False, null=False, related_name="entregue_por_set")
+    entregue_para = models.ForeignKey("rh.Funcionario", blank=False, null=False, related_name="entregue_para_set")
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class LinhaListaMaterialEntregue(models.Model):
+    lista  = models.ForeignKey(ListaMaterialEntregue)
+    produto = models.ForeignKey('estoque.Produto')
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+#
+# MATERIAL PARA COMPRA
+#
+
+class ListaMaterialCompra(models.Model):
+    '''Lista Consolidada de Materiais para Compra
+    '''
+    contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
+    ativa = models.BooleanField(default=True)
+    # metadata
+    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+
+class LinhaListaMaterialCompra(models.Model):
+    lista  = models.ForeignKey(ListaMaterialCompra)
+    produto = models.ForeignKey('estoque.Produto')
+    quantidade = models.DecimalField(max_digits=10, decimal_places=2)
+    # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")

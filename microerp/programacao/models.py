@@ -5,7 +5,6 @@ import datetime
 
 from django.core.exceptions import ValidationError
 
-
 TAREFA_STATUS_DE_EXECUCAO_CHOICES = (
     ('naoiniciado', u'Não Iniciado'),
     ('emandamento', u'Em Andamento'),
@@ -32,6 +31,7 @@ class PerfilAcessoProgramacao(models.Model):
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
 class TarefaDeProgramacao(models.Model):
+    '''Model Objeto que pode dividir o contrato em diversas partes, com diferentes status de execuções, etc'''
     
     def __unicode__(self):
         if self.contrato:
@@ -42,6 +42,9 @@ class TarefaDeProgramacao(models.Model):
     def clean(self):
         if not self.contrato and not self.cliente:
             raise ValidationError(u"Erro. a Tarefa deve ser vinculada ao menos a Contrato ou Cliente.")
+    
+    class Meta:
+        ordering = (('criado',))
     
     contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
@@ -54,12 +57,14 @@ class TarefaDeProgramacao(models.Model):
     data_marcado_retorno_cliente = models.DateTimeField(blank=True, null=True)
     data_marcado_finalizado = models.DateTimeField(blank=True, null=True)
     data_programada = models.DateTimeField(blank=True, default=datetime.datetime.now)
+    # inicio, fim e participantes
+    data_inicio = models.DateTimeField(blank=False)
+    data_fim = models.DateTimeField(blank=False)
     funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participantes_programacao", blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="tarefa_de_programacao_adicionado_set",  blank=False, null=False)
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
-    
 
 class FollowUpDeContrato(models.Model):
     
@@ -72,7 +77,7 @@ class FollowUpDeContrato(models.Model):
     class Meta:
         ordering = ['-criado']
     
-    contrato = models.ForeignKey('TarefaDeProgramacao')
+    contrato = models.ForeignKey('comercial.ContratoFechado')
     texto = models.TextField(blank=False)
     porcentagem_execucao = models.DecimalField(max_digits=3, decimal_places=0)
     # registro histórico

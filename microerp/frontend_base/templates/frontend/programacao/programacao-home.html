@@ -15,6 +15,17 @@
 {% regroup contratos by status_execucao as contratos_por_status %}
 
 
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#nao-iniciado" data-toggle="tab"><i class="fa fa-star"></i> Não Iniciado</a></li>
+
+    <li class=""><a href="#em-execucao" data-toggle="tab"><i class="fa fa-play"></i> Em Execução <span class="badge badge-success">X</span>
+	</a></li>
+	
+	    <li class=""><a href="#em-pendencia" data-toggle="tab"><i class="fa fa-pause"></i> Pendente <span class="badge badge-important">X</span>
+		</a></li>
+	
+
+</ul>
 
 {% for contrato_grupo in contratos_por_status %}
 

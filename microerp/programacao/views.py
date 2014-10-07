@@ -28,7 +28,6 @@ def possui_perfil_acesso_programacao_gerente(user, login_url="/"):
     except:
         return False
 
-
 #
 # FORMS
 #
@@ -54,8 +53,6 @@ class FormEditarProgramacaoDeContrato(forms.ModelForm):
 #
 # VIEWS
 #
-
-
 
 @user_passes_test(possui_perfil_acesso_programacao, login_url='/')
 def home(request):
@@ -107,9 +104,6 @@ def marcar_contrato_retorno_cliente(request, contrato_id):
     # cria um follow up
     contrato.followupdecontrato_set.create(criado_por=request.user.funcionario, texto="Execução Retornada: Retorno do Cliente", porcentagem_execucao=contrato.porcentagem_execucao)
     return redirect(reverse("programacao:home"))
-
-
-
 
 @user_passes_test(possui_perfil_acesso_programacao, login_url='/')
 def editar_programacao_contrato(request, contrato_id):
