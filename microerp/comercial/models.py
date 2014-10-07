@@ -330,6 +330,8 @@ class Orcamento(models.Model):
                 return u"Promoção Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
             elif self.tabelado:
                 return u"Tabelado Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
+            else:
+                return u"Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
         else:
             if self.promocao:
                 return u"Promoção: %s - R$ %s" % (self.descricao, self.custo_total)
