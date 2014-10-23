@@ -120,7 +120,6 @@ class Cliente(models.Model):
     def __unicode__(self):
         return u"%s: %s" % (self.get_tipo_display(), self.nome)
         
-    
     def clean(self):
         '''Define as regras de preenchimento e validação da Entidade Cliente.        
         e as regras de validação de CPF ou CNPJ
@@ -129,6 +128,8 @@ class Cliente(models.Model):
             BRPhoneNumberField().clean(self.telefone_fixo)
         if self.telefone_celular:
             BRPhoneNumberField().clean(self.telefone_celular)
+        if self.cnpj and self.cnpj == '0'*14:
+            raise ValidationError({'cnpj': [u'Embora Válido, não é aceito um CNPJ com %s ;' % '000000000000000',]})
         
     def documento(self):
         if self.tipo == "pj":

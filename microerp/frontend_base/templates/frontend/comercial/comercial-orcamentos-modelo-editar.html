@@ -42,7 +42,7 @@
 		
 
 		{% for form in form_editar_linhas_material %}
-		<div class="row-fluid">
+		<div class="row-fluid well well-small">
 			{{form.errors}}
 		
 			<div class="span8">
@@ -69,16 +69,14 @@
 		</div>
 		{% endfor %}
 		
-		<p><br />
-		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
-		</p>
+ 		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button> 			<a href="{% url "comercial:orcamentos_modelo_reajustar" orcamento.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> Reajustar</a>
 		
 	</div>
 	
 	
 	<div class="tab-pane fade in" id="orcamento-linhas-mao-de-obra">
 		{% for form in form_editar_linhas_humano %}
-		<div class="row-fluid">
+		<div class="row-fluid ">
 			{{form.errors}}
 
 			<div class="span8">

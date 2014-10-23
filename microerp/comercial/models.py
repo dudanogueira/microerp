@@ -591,7 +591,7 @@ class ContratoFechado(models.Model):
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cnpj or "CNPJ: "+("_" * 30) ),
                 unicode(self.nome_proposto_legal or "Representante Legal: "+("_" * 30) ),
-                unicode(self.documento_proposto_legal or "Documento Representante Legal: "+("_" * 30) ),
+                unicode(self.documento_proposto_legal or "Documento Representante Legal (CPF): "+("_" * 30) ),
                 unicode(self.cliente.logradouro_completo() or u"ENDEREÇO: "+("_" * 30)),
             )
         else:
@@ -618,7 +618,7 @@ class ContratoFechado(models.Model):
     categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
     objeto = models.TextField(blank=False)
     nome_proposto_legal = models.CharField(blank=True, max_length=100)
-    documento_proposto_legal = models.CharField(blank=True, max_length=100)
+    documento_proposto_legal = models.CharField("Documento Legal do Proposto (CPF)", blank=True, max_length=100)
     garantia = models.TextField(blank=True)
     items_incluso = models.TextField("Itens Incluso", blank=True)
     items_nao_incluso = models.TextField("Itens Não Incluso", blank=True)

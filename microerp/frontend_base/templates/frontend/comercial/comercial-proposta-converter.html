@@ -29,9 +29,15 @@
 	
 	{% csrf_token %}
 	
-	<div class="well well-small">
+	<div class="well well-small" id="configurar-contrato">
 		<h4>Configurações do Contrato</h4>
-		{{configurar_contrato_form.as_p}}
+		{% for item in configurar_contrato_form %}
+			<hr />
+			{{item.errors}}
+			{{item.label}}
+			{{item}}
+		{% endfor %}
+
 	</div>
 	
 	
@@ -71,7 +77,7 @@
 	<hr />
 	<div class="btn-group">
 		<button type="submit" class="btn btn-primary" name="adicionar-parcela" value="adicionar"><i class="fa fa-plus"></i> Adicionar Parcela</button>
-		<a type="submit" class="btn btn-info" name="Usar Cartão de Crédito" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Cartão de Crédito</a>
+		<a type="submit" class="btn btn-info" name="Usar Parcelamento" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Usar Parcelamento</a>
 		<button type="submit" class="btn btn-success" name="converter-contrato" value="converter"><i class="fa fa-arrow-right"></i> Converter em Contrato</button> 
 	</div>
 	
@@ -82,7 +88,7 @@
 	    <div class="modal-content">
 	      <div class="modal-header">
 	        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	        <h4 class="modal-title" id="myModalLabel">Usar Cartão de Crédito</h4>
+	        <h4 class="modal-title" id="myModalLabel">Usar Parcelamento</h4>
 	      </div>
 	      <div class="modal-body">
 				  {% csrf_token %}
@@ -90,7 +96,7 @@
 	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-			<button form="form-converter" type="submit" class="btn btn-primary" name="usar-cartao" value="usar_cartao">Usar Cartão</button>
+			<button form="form-converter" type="submit" class="btn btn-primary" name="usar-cartao" value="usar_cartao">Parcelar</button>
 	        
 	      </div>
 	    </div><!-- /.modal-content -->
@@ -99,7 +105,6 @@
 
 
 </form>
-
 
 {% endblock %}
 
@@ -110,13 +115,38 @@
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
-
 <script>
 
 
 $(document).ready(function() {
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	{% if modelo_objeto.items %}
+	$("#id_objeto").after('<div style="float:right"><select id="opcao_modelo_objeto">{% for k,v in modelo_objeto.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_objeto" data-target="id_objeto">Substituir</button> <button class="modelo_objeto" data-target="id_objeto" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+	
+	{% if modelo_garantia.items %}
+	$("#id_garantia").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia">Substituir</button> <button class="modelo_garantia" data-target="id_garantia" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
+	
 });
+
+$( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_objeto").val());
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_modelo_objeto").val());
+	}
+});
+
+$( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val());
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val());
+	}	
+});
+
 
 $( ".datepicker" ).datepicker({
 	inline: true,

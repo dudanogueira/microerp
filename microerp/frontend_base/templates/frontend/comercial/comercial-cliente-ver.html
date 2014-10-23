@@ -300,7 +300,8 @@
 									
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 									
-									<a href="" class="btn "><i class="fa fa-print"></i></a>
+									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
+									
 								</div>
 								{% else %}
 								<small><i>solicite ao gerente</i></small>

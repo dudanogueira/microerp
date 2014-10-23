@@ -8,6 +8,12 @@
 
 <h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-o"></i> Adicionar Proposta Comercial</h1>
 
+{% if cliente.propostas_abertas %}
+	<div class="alert alert-warning">
+		<h2>Atenção! Já existem propostas abertas para este Cliente!</h2>
+	</div>
+{% endif %}
+
 {% if request.user.perfilacessocomercial.gerente %}
 <h4>Como Gerente</h4>
 {% endif %}

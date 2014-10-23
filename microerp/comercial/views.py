@@ -23,13 +23,12 @@ from django.template import RequestContext, loader, Context
 
 from django.db.models import Count
 
-
 # APPS MODELS
 from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente, Bairro
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
-from comercial.models import PerfilAcessoComercial, FechamentoDeComissao
+from comercial.models import PerfilAcessoComercial, FechamentoDeComissao, CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 from comercial.models import LinhaRecursoMaterial, LinhaRecursoHumano, LinhaRecursoLogistico, Orcamento, GrupoIndicadorDeProdutoProposto
 from financeiro.models import LancamentoFinanceiroReceber
 from estoque.models import Produto
@@ -149,7 +148,12 @@ class AdicionarCliente(forms.ModelForm):
             if cliente:
                 raise ValidationError(u"Já existe um cliente com este CPF!")
         return cpf
-            
+    
+    def clean_inscricao_estadual(self):
+        tipo = self.cleaned_data.get('tipo', None)
+        inscricao_estadual = self.cleaned_data.get('inscricao_estadual', None)
+        if tipo == 'pj' and not inscricao_estadual:
+            raise ValidationError(u'Embora Válido, não é aceito um CNPJ com %s' % '000000000000000')
         
     def clean_cnpj(self):
         tipo = self.cleaned_data.get('tipo', None)
@@ -159,6 +163,8 @@ class AdicionarCliente(forms.ModelForm):
         elif tipo == 'pj' and cnpj:
             try:
                 cnpj = BRCNPJField().clean(cnpj)
+                if cnpj == '00000000000000':
+                    raise ValidationError(u"Número do CNPJ Inválido!")
             except:
                 raise ValidationError(u"Número do CNPJ Inválido!")
             
@@ -664,7 +670,7 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
     observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
-    documento_do_proposto_legal = forms.CharField()
+    documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
     apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
 
 
@@ -676,11 +682,15 @@ class UsarCartaoCredito(forms.Form):
         self.fields['data'].widget.attrs['class'] = 'datepicker'
     
     data = forms.DateField(initial=datetime.date.today())
+    tipo = forms.ChoiceField(choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = forms.IntegerField()
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
+    # modelos de texto
+    modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
+    modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=1, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
     usar_cartao_credito = UsarCartaoCredito()
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
@@ -702,6 +712,7 @@ def editar_proposta_converter(request, proposta_id):
                 form_cartao = UsarCartaoCredito(request.POST)
                 if form_cartao.is_valid():
                     data = form_cartao.cleaned_data['data']
+                    tipo = form_cartao.cleaned_data['tipo']
                     parcelas = form_cartao.cleaned_data['parcelas']
                     form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
                     total_lancamentos = 0
@@ -724,7 +735,7 @@ def editar_proposta_converter(request, proposta_id):
                         for p in range_parcelas:
                             data = data+datetime.timedelta(days=30)
                             cp['configurar_contrato-%s-data_cobranca' % p] = data
-                            cp['configurar_contrato-%s-modo_recebido' % p] = 'credito'
+                            cp['configurar_contrato-%s-modo_recebido' % p] = tipo
                             cp['configurar_contrato-%s-valor_cobrado' % p] = cada_parcela
                         form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
                         configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
@@ -1193,7 +1204,7 @@ class OrcamentoPrint:
             # Footer
             footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-001', styles['Normal'])
             footer.wrap(doc.width, doc.bottomMargin)
-            footer.drawOn(canvas, 10, 10)
+            footer.drawOn(canvas, 30, 10)
             # Release the canvas
             canvas.restoreState()
     
@@ -1210,9 +1221,9 @@ class OrcamentoPrint:
             # A large collection of style sheets pre-made for us
             styles = getSampleStyleSheet()
             styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
-            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
-            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
@@ -1319,13 +1330,7 @@ class OrcamentoPrint:
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.items_nao_incluso.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
-                
-                elements.append(PageBreak())
-                
-                elements.append(table_logo)
-                
-                elements.append(Spacer(1, 24))
-                
+                                
                 # 2 - Do valor e formas de pagamento
                 titulo = Paragraph("2 - DOS VALORES", styles['left_h2'])
                 elements.append(titulo)
@@ -1721,7 +1726,7 @@ from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.pdfgen import canvas
- 
+
 class NumberedCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         canvas.Canvas.__init__(self, *args, **kwargs)
@@ -1743,10 +1748,8 @@ class NumberedCanvas(canvas.Canvas):
     def draw_page_number(self, page_count):
         self.setFont("Helvetica", 7)
         # Change the position of this to wherever you want the page number to be
-        self.drawRightString(211 * mm, 15 * mm + (0.2 * inch),
+        self.drawRightString(200 * mm, 15 * mm + (0.2 * inch),
                              u"Página %d de %d" % (self._pageNumber, page_count))
- 
- 
  
 class ContratoPrint:
     """ 
@@ -1769,7 +1772,7 @@ class ContratoPrint:
             # Footer
             footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-001', styles['Normal'])
             footer.wrap(doc.width, doc.bottomMargin)
-            footer.drawOn(canvas, 10, 10)
+            footer.drawOn(canvas, 30, 10)
             # Release the canvas
             canvas.restoreState()
     
@@ -1794,9 +1797,9 @@ class ContratoPrint:
             # A large collection of style sheets pre-made for us
             styles = getSampleStyleSheet()
             styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
-            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
-            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=15, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT, fontSize=10))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
@@ -1861,20 +1864,24 @@ class ContratoPrint:
             # itens incluso titulo
             itens_incluso_titulo_p = Paragraph(u". Itens inclusos:", styles['left_h2'])
             elements.append(itens_incluso_titulo_p)
+            # space
+            elements.append(Spacer(1, 12))
             # itens incluso texto
             itens_inclusos_p = Paragraph(unicode(contrato.items_incluso).replace("\n", "<br />"), styles['justify'])
             elements.append(itens_inclusos_p)
             # space
-            elements.append(Spacer(1, 5))
+            elements.append(Spacer(1, 20))
             # itens N incluso titulo
             itens_n_incluso_titulo_p = Paragraph(". Itens não inclusos:", styles['left_h2'])
             elements.append(itens_n_incluso_titulo_p)
+            # space
+            elements.append(Spacer(1, 12))
             # itens N incluso texto
             itens_n_inclusos_p = Paragraph(unicode(contrato.items_nao_incluso).replace("\n", "<br />"), styles['justify'])
             elements.append(itens_n_inclusos_p)
             
             # space
-            elements.append(Spacer(1, 5))
+            elements.append(Spacer(1, 20))
             
             #
             # CLAUSULA 2 - NORMAS DE EXECUÇÃO
