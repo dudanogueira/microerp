@@ -1620,6 +1620,10 @@ def proposta_comercial_imprimir(request, proposta_id):
     
     proposta.save()
     modelos_proposta = getattr(settings, 'MODELOS_DE_PROPOSTAS')
+    # modelos de texto
+    modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
+    modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
+    
     dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA')
     form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, modelos=modelos_proposta)
     if request.POST:

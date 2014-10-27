@@ -16,7 +16,14 @@
 
 <form method="POST" id="configurar-form" name="configurar-form">
 {%csrf_token %}
-{{form_configura.as_p}}
+<div id="configurar-contrato">
+	{% for item in form_configura %}
+	<hr />
+	{{item.errors}}
+	{{item.label}}: 
+	{{item}}
+{% endfor %}
+</div>
 
 <div class="btn-group">
 	<button type="submit" class="btn btn-primary"><i class="fa fa-print"></i> Gerar Impressão</button>
@@ -57,6 +64,13 @@ $(document).ready(function() {
 			trigger: "hover",
 			placement: 'top'
 		});
+		{% if modelo_objeto.items %}
+		$("#id_objeto_proposto").after('<div style="float:right"><select id="opcao_modelo_objeto">{% for k,v in modelo_objeto.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_objeto" data-target="id_objeto_proposto">Substituir</button> <button class="modelo_objeto" data-target="id_objeto_proposto" data-adicionar="True">Acrescentar</button></div>');
+		{% endif %}
+	
+		{% if modelo_garantia.items %}
+		$("#id_garantia_proposto").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia_proposto">Substituir</button> <button class="modelo_garantia" data-target="id_garantia_proposto" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
+	
 	$('.btn-modal-add-follow-up').click(function(e){
 			
 			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
@@ -69,6 +83,31 @@ $(document).ready(function() {
 		});
 	
 });
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_objeto").val());
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_modelo_objeto").val());
+	}
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val());
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val());
+	}	
+});
+
+
+
+
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/comercial/comercial-menu.html" %}
