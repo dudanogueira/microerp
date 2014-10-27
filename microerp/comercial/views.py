@@ -384,6 +384,9 @@ class FormEditarProposta(forms.ModelForm):
         self.fields['valor_proposto'].widget.is_localized = True
         self.fields['parcelamentos_possiveis'].widget.attrs['class'] = 'select2'
         self.fields['parcelamentos_possiveis'].help_text = ""
+        self.fields['tipo'].label = "Tipo Principal"
+        self.fields['tipos'].label = 'Tipos dessa Proposta'
+        self.fields['tipos'].widget.attrs['class'] = 'select2'
     
     def clean_valor_proposto(self):
         data = self.cleaned_data['valor_proposto']
@@ -394,7 +397,7 @@ class FormEditarProposta(forms.ModelForm):
     
     class Meta:
         model = PropostaComercial
-        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo', 'parcelamentos_possiveis'
+        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo', 'tipos', 'parcelamentos_possiveis'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):

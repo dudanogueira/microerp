@@ -216,6 +216,7 @@ class PropostaComercial(models.Model):
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
     tipo = models.ForeignKey('TipoDeProposta', blank=True, null=True)
+    tipos = models.ManyToManyField('TipoDeProposta', blank=True, null=True, related_name="proposta_por_tipos_set")
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True, default=50)
     probabilidade_inicial = models.IntegerField("Probabilidade Inicial (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
