@@ -1439,6 +1439,19 @@ class OrcamentoPrint:
                 # objeto texto
                 texto = Paragraph(proposta.forma_pagamento_proposto, styles['justify'])
                 elements.append(texto)
+                elements.append(Spacer(1, 12))
+                # 2 - Do valor e formas de pagamento
+                titulo = Paragraph("2.2 - DOS VALORES", styles['left_h2'])
+                elements.append(titulo)
+                # space
+                elements.append(Spacer(1, 12))
+                
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
+                texto = "O valor global da proposta é de <strong>%s</strong> (<em>%s</em>)" % (valor_formatado, proposta.valor_extenso())
+                texto_p = Paragraph(texto, styles['justify'])
+                elements.append(texto_p)
+                
                 
                 # space
                 elements.append(Spacer(1, 12))
