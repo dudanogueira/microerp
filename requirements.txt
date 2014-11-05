@@ -18,3 +18,4 @@ stevedore==0.13
 workdays==1.0
 wsgiref==0.1.2
 xlrd==0.9.2
+sorl-thumbnail==11.12.1b

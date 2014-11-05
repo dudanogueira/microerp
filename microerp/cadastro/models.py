@@ -27,8 +27,6 @@ from django.db import models
 
 from django.conf import settings
 
-from south.modelsinspector import add_introspection_rules
-
 from django_extensions.db.fields import UUIDField
 
 from localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField

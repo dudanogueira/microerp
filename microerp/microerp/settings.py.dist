@@ -184,7 +184,6 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.admindocs',
     # apps terceiros
-    'south',
     'django_extensions',
     'sorl.thumbnail',
     'sekizai',
