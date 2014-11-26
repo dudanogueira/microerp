@@ -8,7 +8,15 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Modelos de Orçamento</h1>
 <p>
 <a href="{% url "comercial:orcamentos_modelo_novo" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Novo Modelo</a>
+<br />
+<div class="well well-small">
+	<form method="GET">
+	{{lista_produtos}}
+	<button type="submit" class="btn btn-info">Buscar Modelos com este Produto</button>
+	</form>
+</div>
 </p>
+
 
 	<hr />
 	{% for modelo in modelos %}
@@ -16,7 +24,7 @@
 			<a href="{% url "comercial:orcamentos_modelo_editar" modelo.id %}" class="btn btn-success"><i class="fa fa-pencil"></i> editar</a>
 			<a href="{% url "comercial:orcamentos_modelo_reajustar" modelo.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> reajustar</a>
 			<a href="{% url "comercial:orcamentos_modelo_gerenciar" modelo.id %}" class="btn btn-primary"><i class="fa fa-gear"></i> gerenciar</a>
-			<a href="{% url "comercial:orcamentos_modelo_apagar" modelo.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> apagar</a>
+			<a href="{% url "comercial:orcamentos_modelo_apagar" modelo.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> desativar</a>
 			
 		<hr />
 	{% endfor %}
@@ -31,6 +39,26 @@
 <script>
 $(document).ready(function() {
     $("#menu-comercial-gerencia-modelo-orcamento, #top-menu-comercial").addClass("active");
+	
+	$("#id_produto").select2({
+		placeholder: "",
+		minimumInputLength: 3,
+		ajax: { 
+			url: "{% url "ajax_consulta_produto" %}?mostra_preco=sim",
+			type: 'GET',
+			dataType: 'json',
+			data: function(term, page) {
+				return {
+					q: term,
+					page_limit: 10,
+				};
+			},
+			results: function (data) {
+				return {results: data};
+			},
+		},
+	});
+	
 });
 
 </script>

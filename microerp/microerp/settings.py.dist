@@ -26,6 +26,8 @@ INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+ALLOWED_HOSTS = ['127.0.0.1',]
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -406,3 +408,4 @@ FORMATOS_ETIQUETA_SUPORTADOS = {
      'Vertical': 2.54},
 }
 
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'

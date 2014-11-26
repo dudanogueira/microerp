@@ -374,6 +374,18 @@ class Orcamento(models.Model):
             self.save()
         return reajustou
 
+    def custo_real_total(self):
+        custo = 0
+        # material
+        for linha in self.linharecursomaterial_set.all():
+            custo += linha.quantidade * linha.produto.preco_venda
+        # humano
+        for linha in self.linharecursohumano_set.all():
+            custo += linha.quantidade * linha.cargo.fracao_hora_referencia
+        return custo
+        
+            
+
     def recalcula_custo_total(self, save=True):
         self.custo_material = self.linharecursomaterial_set.aggregate(total=Sum('custo_total'))['total'] or 0
         self.custo_humano = self.linharecursohumano_set.aggregate(total=Sum('custo_total'))['total'] or 0
@@ -729,7 +741,7 @@ class GrupoIndicadorDeProdutoProposto(models.Model):
     def __unicode__(self):
         return self.nome
     
-    nome = models.CharField(blank=True, max_length=100)
+    nome = models.CharField(blank=False, max_length=100)
 
 class SubGrupoIndicadorDeProdutoProposto(models.Model):
     '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''

@@ -779,6 +779,7 @@ def editar_proposta_converter(request, proposta_id):
                         proposta.contrato_vinculado = novo_contrato
                         #salva a proposta
                         proposta.save()
+                        messages.success(request, u"Sucesso! Proposta #%s convertida em Contrato #%s" % (proposta.id, novo_contrato.id))
                         # registra lancamentos vinculando ao novo contrato
                         i = 0
                         for form in form_configurar_contrato.forms:
@@ -1316,12 +1317,15 @@ class OrcamentoPrint:
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1.1 - MATERIAL INCLUSO", styles['left_h2'])
                 elements.append(desc_itens_titulo)
+                # space
+                elements.append(Spacer(1, 12))
+                
                 
                 texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
                 
                 # space
-                elements.append(Spacer(1, 24))
+                elements.append(Spacer(1, 12))
                 
                 
                 # 1.2 - Descrição dos Itens Não Inclusos
@@ -1333,6 +1337,9 @@ class OrcamentoPrint:
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.items_nao_incluso.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
+                # space
+                elements.append(Spacer(1, 12))
+                
                                 
                 # 2 - Do valor e formas de pagamento
                 titulo = Paragraph("2 - DOS VALORES", styles['left_h2'])
@@ -1673,7 +1680,7 @@ def proposta_comercial_imprimir(request, proposta_id):
                         pass
                 if request.user.funcionario.email:
                     dest.append(request.user.funcionario.email)
-                assunto = "[%s] - Proposta Comercial" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA")
+                assunto = "%s - Proposta Comercial %s" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA", proposta.id)
                 conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em anexo a proposta. ")
                 try:
                     nome_do_proposto = form_configura.cleaned_data['nome_do_proposto']
@@ -2201,9 +2208,18 @@ def orcamentos_modelo_novo(request):
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo-novo.html', locals(), context_instance=RequestContext(request),)
 
 
+class ListaProduto(forms.Form):
+    
+    produto = forms.ChoiceField(widget=forms.HiddenInput())
+    
+
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo(request):
-    modelos = Orcamento.objects.filter(ativo=True, modelo=True)
+    lista_produtos = ListaProduto()
+    if request.GET.get('produto', None):
+        modelos = Orcamento.objects.filter(ativo=True, modelo=True, linharecursomaterial__produto__id=request.GET.get('produto', None))
+    else:
+        modelos = Orcamento.objects.filter(ativo=True, modelo=True)
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo.html', locals(), context_instance=RequestContext(request),)
 
 class OrcamentoForm(forms.ModelForm):
@@ -2361,7 +2377,8 @@ def orcamentos_modelo_reajustar(request, modelo_id):
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_apagar(request, modelo_id):
     orcamento = get_object_or_404(Orcamento, modelo=True, pk=modelo_id)
-    orcamento.delete()
+    orcamento.ativo = False
+    orcamento.save()
     return redirect(reverse("comercial:orcamentos_modelo"))
 
 class SelecionaAnoIndicadorComercial(forms.Form):

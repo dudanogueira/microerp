@@ -6,7 +6,7 @@
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Editar Modelos de Orçamento</h1>
-<h2>{{orcamento.descricao}} - Valor Atual R$ {{orcamento.custo_total}}</h2>
+<h2>{{orcamento.descricao}} - Valor Atual R$ {{orcamento.custo_total}}<br /><small>Valor Calculado: R$ {{orcamento.custo_real_total|floatformat:2}}</small></h2>
 
 
 <form method="POST" class="form-inline" name="form-altera-modelo">
