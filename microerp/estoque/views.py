@@ -169,7 +169,7 @@ def importacao_ver(request):
     else:
         form = EnviarArquivoImportacao()
     disponiveis = ArquivoImportacaoProdutos.objects.filter(importado=False)
-    importados = ArquivoImportacaoProdutos.objects.filter(importado=True)
+    importados = ArquivoImportacaoProdutos.objects.filter(importado=True).order_by('importado_em')
     
     return render_to_response('frontend/estoque/estoque-importacao.html', locals(), context_instance=RequestContext(request),) 
 

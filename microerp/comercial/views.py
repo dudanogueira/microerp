@@ -1680,7 +1680,7 @@ def proposta_comercial_imprimir(request, proposta_id):
                         pass
                 if request.user.funcionario.email:
                     dest.append(request.user.funcionario.email)
-                assunto = "%s - Proposta Comercial %s" % getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA", proposta.id)
+                assunto = "%s - Proposta Comercial %s" % (getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA"), proposta.id)
                 conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em anexo a proposta. ")
                 try:
                     nome_do_proposto = form_configura.cleaned_data['nome_do_proposto']
