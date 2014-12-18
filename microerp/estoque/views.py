@@ -68,7 +68,7 @@ def possui_perfil_acesso_estoque_gerente(user, login_url="/"):
 ## FORMS
 
 class SelecionaProdutos(forms.Form):
-    produtos_adicionar = forms.CharField()
+    produtos_adicionar = forms.CharField(widget=forms.Textarea)
 
 #
 # VIEWS

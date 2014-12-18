@@ -149,11 +149,11 @@ class AdicionarCliente(forms.ModelForm):
                 raise ValidationError(u"Já existe um cliente com este CPF!")
         return cpf
     
-    def clean_inscricao_estadual(self):
-        tipo = self.cleaned_data.get('tipo', None)
-        inscricao_estadual = self.cleaned_data.get('inscricao_estadual', None)
-        if tipo == 'pj' and not inscricao_estadual:
-            raise ValidationError(u'Embora Válido, não é aceito um CNPJ com %s' % '000000000000000')
+    #def clean_inscricao_estadual(self):
+    #    tipo = self.cleaned_data.get('tipo', None)
+    #    inscricao_estadual = self.cleaned_data.get('inscricao_estadual', None)
+    #    if tipo == 'pj' and not inscricao_estadual:
+    #        raise ValidationError(u'Embora Válido, não é aceito um CNPJ com %s' % '000000000000000')
         
     def clean_cnpj(self):
         tipo = self.cleaned_data.get('tipo', None)
