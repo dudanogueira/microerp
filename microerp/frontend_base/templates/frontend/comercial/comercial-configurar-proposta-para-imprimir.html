@@ -105,6 +105,19 @@ $( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
 });
 
 
+$("#id_endereco_obra_proposto").after('<div style="float:right"><button class="sugere-endereco" data-target="id_endereco_obra_proposto">Sugerir Endereço Já Cadastrado</button></div>');
+
+$( "#configurar-contrato" ).on( "click", ".sugere-endereco", function(e) {
+	e.preventDefault();
+	$('#'+$(this).data('target')).val(
+			$("#id_rua_do_proposto").val() + ', ' + 
+			$("#id_bairro_do_proposto").val() + ' - ' + 
+			$("#id_cep_do_proposto").val() + ' - ' + 
+			$("#id_cidade_do_proposto").val()
+	 );
+});
+
+
 
 
 

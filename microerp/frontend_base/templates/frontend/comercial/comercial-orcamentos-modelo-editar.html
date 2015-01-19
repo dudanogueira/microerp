@@ -42,6 +42,7 @@
 		
 
 		{% for form in form_editar_linhas_material %}
+
 		<div class="row-fluid well well-small">
 			{{form.errors}}
 		
@@ -69,14 +70,18 @@
 		</div>
 		{% endfor %}
 		
- 		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button> 			<a href="{% url "comercial:orcamentos_modelo_reajustar" orcamento.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> Reajustar</a>
+		<p><br />
+			Adicionar <input type="text" name="quantidade_material" value=1>
+		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i>  Material</button>
+		</p>
+		
 		
 	</div>
 	
 	
 	<div class="tab-pane fade in" id="orcamento-linhas-mao-de-obra">
 		{% for form in form_editar_linhas_humano %}
-		<div class="row-fluid ">
+		<div class="row-fluid well well-small">
 			{{form.errors}}
 
 			<div class="span8">
@@ -105,12 +110,16 @@
 		{% endfor %}
 		
 		<p><br />
-		<button class="btn btn-primary" name="adicionar_linha_humano" value="adicionar"><i class="fa fa-plus"></i> Adicionar Mão de Obra</button>
+			Adicionar <input type="text" name="quantidade_humano" value=1>
+		<button class="btn btn-primary" name="adicionar_linha_humano" value="adicionar"><i class="fa fa-plus"></i>  Recurso Humano</button>
 		</p>
 		
 	</div>
 	
 </div>
+ 		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button> 			<a href="{% url "comercial:orcamentos_modelo_reajustar" orcamento.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> Reajustar</a>
+
+
 </form>
 <div class="well well-small">
 Notação: {{orcamento.gera_notacao}}

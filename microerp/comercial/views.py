@@ -210,7 +210,7 @@ class FormAdicionarFollowUp(forms.ModelForm):
         self.fields['probabilidade'].required = True
         self.fields['data_expiracao'].required = False
         self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
-        self.fields['visita_por'].queryset = Funcionario.objects.exclude(user__perfilacessocomercial=None, user__funcionario__periodo_trabalhado_corrente=None)
+        self.fields['visita_por'].queryset = Funcionario.objects.exclude(user__perfilacessocomercial=None).exclude(user__funcionario__periodo_trabalhado_corrente=None)
         self.fields['visita_por'].widget.attrs['class'] = 'select2'
 
     class Meta:
@@ -777,6 +777,8 @@ def editar_proposta_converter(request, proposta_id):
                         )
                         # relaciona novo contrato com essa proposta
                         proposta.contrato_vinculado = novo_contrato
+                        # determina 100% de fechamento da proposta
+                        proposta.probabilidade=100
                         #salva a proposta
                         proposta.save()
                         messages.success(request, u"Sucesso! Proposta #%s convertida em Contrato #%s" % (proposta.id, novo_contrato.id))
@@ -2315,20 +2317,42 @@ def orcamentos_modelo_editar(request, modelo_id):
     OrcamentoMaterialFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoMaterialModeloForm)
     OrcamentoRecursoHumanoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoHumano, extra=1, can_delete=True, form=LinhaOrcamentoHumanoModeloForm)
     if request.POST:
+        
+
         if 'adicionar_linha_material' in request.POST:
+            
+            try:
+                quantidade_material_adicionar = int(request.POST.get('quantidade_material', 1))
+            except:
+                quantidade_material_adicionar = int(1)
+            
+            
             messages.info(request, u"Nova Linha de Materiais adicionada")
             cp = request.POST.copy()
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
-            cp['orcamento-material-TOTAL_FORMS'] = int(cp['orcamento-material-TOTAL_FORMS'])+ 1
+            cp['orcamento-material-TOTAL_FORMS'] = int(cp['orcamento-material-TOTAL_FORMS'])+ quantidade_material_adicionar
             form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
-            form_orcamento = ModeloOrcamentoForm(cp, instance=orcamento)
+            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+
         if 'adicionar_linha_humano' in request.POST:
+            
+            try:
+                quantidade_humano_adicionar = int(request.POST.get('quantidade_humano', 1))
+            except:
+                quantidade_humano_adicionar = int(1)
+            
+            
             messages.info(request, u"Nova Linha de Mão de Obra adicionada")
             cp = request.POST.copy()
             form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
-            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ 1            
+            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ quantidade_humano_adicionar   
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
-            form_orcamento = ModeloOrcamentoForm(cp, instance=orcamento)
+            form_orcamento = OrcamentoForm(cp, instance=orcamento)
+        
+        
+        
+        
+        
         elif 'alterar-orcamento' in request.POST:
             form_editar_linhas_material = OrcamentoMaterialFormSet(request.POST, instance=orcamento, prefix="orcamento-material")
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(request.POST, instance=orcamento, prefix="orcamento-humano")
