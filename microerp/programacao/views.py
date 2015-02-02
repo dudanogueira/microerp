@@ -7,7 +7,8 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
-from models import FollowUpDeContrato
+from models import FollowUpDeContrato, TarefaDeProgramacao
+from rh.models import Funcionario
 
 from comercial.models import ContratoFechado
 
@@ -46,10 +47,32 @@ class FormEditarProgramacaoDeContrato(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(FormEditarProgramacaoDeContrato, self).__init__(*args, **kwargs)
+        self.fields['previsao_inicio_execucao'].widget.attrs['class'] = 'datepicker'
+        self.fields['previsao_termino_execucao'].widget.attrs['class'] = 'datepicker'
+        self.fields['efetivo_inicio_execucao'].widget.attrs['class'] = 'datepicker'
+        self.fields['efetivo_inicio_execucao'].widget.attrs['class'] = 'datepicker'
+        self.fields['efetivo_termino_execucao'].widget.attrs['class'] = 'datepicker'
 
     class Meta:
         model = ContratoFechado
-        fields = 'previsao_inicio_execucao', 'previsao_termino_execucao', 'efetivo_inicio_execucao', 'efetivo_termino_execucao', 'funcionarios_participantes', 'apoio_tecnico'
+        fields = 'previsao_inicio_execucao', 'previsao_termino_execucao', 'efetivo_inicio_execucao', \
+        'efetivo_termino_execucao', 'funcionarios_participantes', 'apoio_tecnico'
+
+
+class FormAdicionarTarefa(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        super(FormAdicionarTarefa, self).__init__(*args, **kwargs)
+        self.fields['contrato'].widget = forms.HiddenInput()
+        self.fields['funcionarios_participantes'].widget.attrs['class'] = 'select2'
+        self.fields['data_inicio'].widget.attrs['class'] = 'datetimepicker'
+        self.fields['data_fim'].widget.attrs['class'] = 'datetimepicker'
+        self.fields['funcionarios_participantes'].queryset = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
+
+    class Meta:
+        model = TarefaDeProgramacao
+        fields = 'contrato', 'titulo', 'descricao', 'funcionarios_participantes', 'data_inicio', 'data_fim', 
+
 #
 # VIEWS
 #
@@ -117,5 +140,26 @@ def editar_programacao_contrato(request, contrato_id):
     else:
         form_editar_contrato = FormEditarProgramacaoDeContrato(instance=contrato)
     return render_to_response('frontend/programacao/programacao-editar-programacao-contrato.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_programacao, login_url='/')
+def editar_programacao_contrato_adicionar_tarefa(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
+    if request.POST:
+        form = FormAdicionarTarefa(request.POST)
+        if form.is_valid():
+            tarefa = form.save(commit=False)
+            tarefa.criado_por = request.user.funcionario
+            tarefa.save()
+            if request.POST.get('acao-post-save') == 'outro':
+                return redirect(reverse("programacao:editar_programacao_contrato_adicionar_tarefa", args=[contrato.id]))
+            else:
+                return redirect(reverse("programacao:editar_programacao_contrato", args=[contrato.id]))
+            
+    else:
+        form = FormAdicionarTarefa(initial={'contrato': contrato.id})
     
+    
+    return render_to_response('frontend/programacao/programacao-editar-programacao-contrato-adicionar-tarefa.html', locals(), context_instance=RequestContext(request),)
+
+
     

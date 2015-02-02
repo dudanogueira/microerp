@@ -26,7 +26,6 @@ from cadastro.models import PerfilAcessoRecepcao
 from cadastro.models import PreCliente
 from cadastro.models import PreClienteSemInteresseOpcao
 from cadastro.models import PerfilClienteLogin
-from cadastro.models import Recado
 from cadastro.models import EnderecoCliente
 from cadastro.models import EnderecoEmpresa
 
@@ -88,13 +87,6 @@ class PreClienteAdmin(admin.ModelAdmin):
     list_display_links = list_display
     date_hierarchy = "criado"
 
-class RecadoAdmin(admin.ModelAdmin):
-    save_on_top = True
-    list_display = 'id', 'lido', 'destinatario', 'remetente', 'adicionado_por', 'criado', 'cliente'
-    list_display_links = list_display
-    date_hierarchy = "criado"
-    list_filter = 'destinatario', 'remetente', 'adicionado_por'
-
 class CidadeAdmin(admin.ModelAdmin):
     save_on_top = True
     search_fields = ('nome', 'estado')
@@ -118,7 +110,6 @@ admin.site.register(ClienteOrigem)
 admin.site.register(TipoDeConsultaDeCredito)
 admin.site.register(PerfilAcessoRecepcao, PerfilAcessoRecepcaoAdmin)
 admin.site.register(PreCliente, PreClienteAdmin)
-admin.site.register(Recado, RecadoAdmin)
 admin.site.register(PerfilClienteLogin, PerfilClienteLoginAdmin)
 admin.site.register(EnderecoEmpresa)
 admin.site.register(PreClienteSemInteresseOpcao)

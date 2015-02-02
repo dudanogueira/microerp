@@ -10,19 +10,47 @@
 
 <h2>Programação do Contrato #{{contrato.id}}</h2>
 
-{% if request.user.perfilacessocomercial.gerente %}
-<h4>Como Gerente</h4>
-{% endif %}
-<form method="POST">
-	{% csrf_token %}
-	{{form_editar_contrato.as_p}}
-	<button type="submit" class="btn btn-success">Alterar Contrato</button>
-</form>
+<ul class="nav nav-tabs">
+	<li class="active"><a href="#atividades" data-toggle="tab"><i class="fa fa-tasks"></i> Atividades</a></li>
+    <li class=""><a href="#prazos-info" data-toggle="tab"><i class="fa fa-info"></i> Prazos e Informações</a></li>
+
+</ul>
+
+
+<div id="programacao-contrato" class="tab-content">
+	
+	<!-- ATIVIDADES -->
+	<div class="tab-pane fade in active" id="atividades">
+		<a class="btn btn-primary" href="{% url "programacao:editar_programacao_contrato_adicionar_tarefa" contrato.id %}"><i class="fa fa-plus"></i> Tarefas</a>
+	</div>
+	
+	<!-- PRAZOS E INFORMAÇÕES -->
+	<div class="tab-pane fade in" id="prazos-info">
+		{% if request.user.perfilacessocomercial.gerente %}
+		<h4>Como Gerente</h4>
+		{% endif %}
+		<form method="POST">
+			{% csrf_token %}
+			{{form_editar_contrato.as_p}}
+			<button type="submit" class="btn btn-success">Alterar Contrato</button>
+		</form>
+	</div>
+</div>
+
+
+
 
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+
+
+
 <script>
 $(document).ready(function() {
 	$("#menu-programacao-home, #top-menu-programacao").addClass("active");

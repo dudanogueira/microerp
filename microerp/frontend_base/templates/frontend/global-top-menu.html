@@ -40,6 +40,11 @@
   <li id="top-menu-financeiro"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Financeiro" href="{% url "financeiro:home" %}"><i class="fa-white fa fa-money fa-2x"><span class="visible-phone">Financeiro</span></i></a></li>
   {% endif %}
   
+  
+  {% if request.user.perfilacessorelacionamento and  "relacionamento"|is_installed_app %}
+  <li id="top-menu-relacionamento"><a class="tooltip-items" data-placement="bottom" data-toggle="tooltip" title="Relacionamento" href="{% url "relacionamento:home" %}"><i class="fa-white fa fa-heart fa-2x"><span class="visible-phone">Relacionamento</span></i></a></li>
+  {% endif %}
+  
 </ul>
 
   {# Outros tipos de Links #}
@@ -49,7 +54,7 @@
       {% if request.user.funcionario.solicitacoes_total %}
 			<li class="purple">
 				<a href="{% url "minhas_solicitacoes" %}">
-					<i class="fa-bell-o fa-animated-bell fa-only fa"></i>
+					<i class="fa-bell-o fa-animated-bell fa-only fa icon-animated-bell"></i>
 					<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>
 				</a>
 			</li>

@@ -65,7 +65,7 @@
                 <li class="nav-header"><i class="fa fa-home fa-3x"></i> Principal</li>
                 <li id="main-home"><a href="{% url "home" %}"><i class="fa fa-th"></i> Meu Painel</a></li>
                 {% if request.user.funcionario %}
-                <li id="main-home-meus-recados"><a href="{% url "meus_recados" %}"><i class="fa fa-envelope"></i> Recados {% if request.user.funcionario.recados_nao_lidos.count %}<span class="badge badge-success">{{request.user.funcionario.recados_nao_lidos.count}}</span>{% endif %}</a></li>
+
                 {% if "solicitacao"|is_installed_app %}
                 
                 <li id="main-home-minhas-solicitacoes"><a href="{% url "minhas_solicitacoes" %}"><i class="fa fa-bell {% if request.user.funcionario.solicitacoes_total %}icon-animated-bell{% endif %}"></i> Solicitações {% if request.user.funcionario.solicitacoes_total %}<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>{%endif%}</a></li>

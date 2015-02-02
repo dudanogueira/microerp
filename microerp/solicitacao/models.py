@@ -66,6 +66,7 @@ class Solicitacao(models.Model):
     prioridade = models.IntegerField(blank=False, null=False, default=5, choices=SOLICITACAO_PRIORIDADE_CHOICES)
     descricao = models.TextField(u"Descrição", blank=False, null=False)
     tipo = models.ForeignKey('TipoSolicitacao', verbose_name="Tipo de Solicitação")
+    canal = models.ForeignKey('CanalSolicitacao', verbose_name="Canal da Solicitação")
     status = models.CharField(blank=False, max_length=100, choices=SOLICITACAO_STATUS_CHOICES, default="aberta")
     procede = models.BooleanField(default=True)
     nao_procede_porque = models.TextField(blank=True)
@@ -114,6 +115,14 @@ class TipoSolicitacao(models.Model):
         return self.nome
     
     nome = models.CharField(blank=True, max_length=100)
+
+class CanalSolicitacao(models.Model):
+    
+    def __unicode__(self):
+        return self.nome
+    
+    nome = models.CharField(blank=True, max_length=100)
+
 
 
 class PerfilAcessoSolicitacao(models.Model):

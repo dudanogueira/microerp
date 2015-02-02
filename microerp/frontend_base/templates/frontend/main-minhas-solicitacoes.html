@@ -5,19 +5,19 @@
 <title>{%block title %}{{block.super}} - Início - Solicitações{% endblock %}</title>
 
 {% block content %}
-<h1><i class="icon-th"></i> <i class="icon icon-bell"></i> Minhas Solicitações</h1>
+<h1><i class="fa fa-th"></i> <i class="fa  fa-bell"></i> Minhas Solicitações</h1>
 
 {% if solicitacoes_correcao %}
-    <h2><i class="icon-beaker"></i> Em Análise</h2>
-    <h3><i class="icon-wrench"></i> Correção</h3>
+    <h2><i class="fa fa-beaker"></i> Em Análise</h2>
+    <h3><i class="fa fa-wrench"></i> Correção</h3>
     {% for solicitacao in solicitacoes_correcao %}
         <div class="well well-small">
 
             <div class="row-fluid">
 
                 <div class="span7">
-                    <h4><i class="icon-bell icon-1x"></i><strong>#{{solicitacao.id}} {{solicitacao.reclamante}}</strong></h4>
-                    <i class="icon-tag"></i> {{solicitacao.get_prioridade_display}}
+                    <h4><i class="fa fa-bell fa-1x"></i><strong>#{{solicitacao.id}} {{solicitacao.reclamante}}</strong></h4>
+                    <i class="fa fa-tag"></i> {{solicitacao.get_prioridade_display}}
                     <p>
                     Contato: {% for contato in solicitacao.contato_principal %}
                             {% if contato %}{{contato|phonenumber}}{% endif %}
@@ -26,14 +26,14 @@
                         
                     {% if not solicitacao.correcao_iniciada %}
                     <hr />
-                    <a href="{% url "minhas_solicitacoes_abrir_correcao" solicitacao.id %}" class="btn btn-danger"><i class="icon-wrench icon-2x"></i> Corrigir</a>
+                    <a href="{% url "minhas_solicitacoes_abrir_correcao" solicitacao.id %}" class="btn btn-danger"><i class="fa fa-wrench fa-2x"></i> Corrigir</a>
                     
                     {% else %}
-                    <a href="{% url "minhas_solicitacoes_resolvido" solicitacao.id %}" class="btn btn-primary"><i class="icon-thumbs-up"></i> Marcar como Resolvido</a>
+                    <a href="{% url "minhas_solicitacoes_resolvido" solicitacao.id %}" class="btn btn-primary"><i class="fa fa-thumbs-up"></i> Marcar como Resolvido</a>
                     {# <button class="btn btn-success">Inserir Interação</button> #}
                     {% endif %}
                 </p>
-                <p><a href="#" class="btn danger" rel="popover" data-placement="top" data-toggle="popover" data-html="true" data-trigger="hover" data-content='{% include "frontend/solicitacao/solicitacao-historico-entrada.html" %}' data-original-title="Histórico para #{{solicitacao.id}}"><i class="icon-time"></i> Histórico de Entrada</a></p>
+                <p><a href="#" class="btn danger" rel="popover" data-placement="top" data-toggle="popover" data-html="true" data-trigger="hover" data-content='{% include "frontend/solicitacao/solicitacao-historico-entrada.html" %}' data-original-title="Histórico para #{{solicitacao.id}}"><i class="fa fa-time"></i> Histórico de Entrada</a></p>
 
                 </div>
     
@@ -53,8 +53,8 @@
 {% endif %}
 
 {% if solicitacoes_contato %}
-    <h2><i class="icon-phone"></i> Em Contato</h2>
-    <h3><i class="icon-circle"></i> Ponto de Contato</h3>
+    <h2><i class="fa fa-phone"></i> Em Contato</h2>
+    <h3><i class="fa fa-circle"></i> Ponto de Contato</h3>
     {% for solicitacao in solicitacoes_contato %}
         <div class="well">
     
@@ -63,12 +63,12 @@
                 {% if solicitacao.procede %}
                 <div class="span2 alert alert-info">
                     <div class="">
-                        <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="icon-thumbs-up icon-2x pull-right"></i>
+                        <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="fa fa-thumbs-up fa-2x pull-right"></i>
                     </div>    
                 </div>
                 {% else %}
                 <div class="span2 alert alert-danger">
-                <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="icon-thumbs-down icon-2x pull-right"></i><br />
+                <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="fa fa-thumbs-down fa-2x pull-right"></i><br />
                 </div>    
                 {% endif %}
             
@@ -79,13 +79,13 @@
                     {% endfor %}
                     <br />
                     
-                    <a href="#" class="btn danger" rel="popover" data-placement="top" data-toggle="popover" data-html="true" data-trigger="hover" data-content='{% include "frontend/solicitacao/solicitacao-historico-entrada.html" %}' data-original-title="Histórico para #{{solicitacao.id}}"><i class="icon-time"></i> Histórico de Entrada</a>
+                    <a href="#" class="btn danger" rel="popover" data-placement="top" data-toggle="popover" data-html="true" data-trigger="hover" data-content='{% include "frontend/solicitacao/solicitacao-historico-entrada.html" %}' data-original-title="Histórico para #{{solicitacao.id}}"><i class="fa fa-time"></i> Histórico de Entrada</a>
                 </p>
                 
                 </div>
         
                 <div class="span2">
-                    <a href="{% url "minhas_solicitacoes_fechar_contato" solicitacao.id %}" class="btn btn-large btn-primary pull-right"><i class="icon-phone"></i> Fechar Contato</a>
+                    <a href="{% url "minhas_solicitacoes_fechar_contato" solicitacao.id %}" class="btn btn-large btn-primary pull-right"><i class="fa fa-phone"></i> Fechar Contato</a>
                 </div>
         
             </div>
@@ -94,28 +94,28 @@
   
                 <div class="span4">
                     <div class="alert alert-info">
-                        <h5><i class="icon-comments icon-1x"></i> Solicitação</h5>
+                        <h5><i class="fa fa-comments fa-1x"></i> Solicitação</h5>
                         {{solicitacao.descricao}}<br />
-                        <small><strong><i class="icon-plus"></i> em {{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
+                        <small><strong><i class="fa fa-plus"></i> em {{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
                     </div>
                 </div>    
   
                 <div class="span4">
                     {% if solicitacao.procede %}
                     <div class="alert alert-warning">
-                        <h5><i class="icon-umbrella icon-1x"></i> Providência</h5>
+                        <h5><i class="fa fa-umbrella fa-1x"></i> Providência</h5>
                         {{solicitacao.providencia}}<br />
-                        <small><strong><i class="icon-bullhorn"></i> em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}<br />por {{solicitacao.despachado_por.funcionario}} </strong>
+                        <small><strong><i class="fa fa-bullhorn"></i> em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}<br />por {{solicitacao.despachado_por.funcionario}} </strong>
                         </small><br />
-                        <small><strong><i class="icon-wrench"></i> em {{solicitacao.correcao_iniciada|date:"SHORT_DATETIME_FORMAT"}}<br />por {{solicitacao.responsavel_correcao}} </strong>
+                        <small><strong><i class="fa fa-wrench"></i> em {{solicitacao.correcao_iniciada|date:"SHORT_DATETIME_FORMAT"}}<br />por {{solicitacao.responsavel_correcao}} </strong>
                         </small>
                     </div>
                     {% else %}
                 
                     <div class="alert alert-danger">
-                        <h5><i class="icon-thumbs-down icon-4x"></i> Improcedente</h5>
+                        <h5><i class="fa fa-thumbs-down fa-4x"></i> Improcedente</h5>
                         {{solicitacao.nao_procede_porque}}<br />
-                        <strong>{% if solicitacao.despachado_por.funcionario %}<i class="icon-thumbs-up"></i>em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}
+                        <strong>{% if solicitacao.despachado_por.funcionario %}<i class="fa-thumbs-up"></i>em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}
                             por {{solicitacao.despachado_por.funcionario}}{% endif %}{% if solicitacao.despachado_data %} 
                             {% endif %}</strong>
                     </div>
@@ -127,9 +127,9 @@
                 <div class="span4">
                         {% if solicitacao.procede %}
                         <div class="alert alert-success">
-                            <h5><i class="icon-check icon-1x"></i> Resolução</h5>
+                            <h5><i class="fa-check fa-1x"></i> Resolução</h5>
                             {{solicitacao.resolucao_final}}<br />
-                            <small><strong><i class="icon-thumbs-up"></i> em {{solicitacao.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}} por {{solicitacao.responsavel_correcao}} </strong></small>
+                            <small><strong><i class="fa-thumbs-up"></i> em {{solicitacao.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}} por {{solicitacao.responsavel_correcao}} </strong></small>
                         </div>
                         {% endif %}
       
@@ -143,7 +143,7 @@
 
 
 {% if solicitacoes_visto %}
-    <h3><i class="icon-check"></i> Visto</h3>
+    <h3><i class="fa fa-check"></i> Visto</h3>
     {% for solicitacao in solicitacoes_visto %}
         <div class="well well-small">
             <div class="row-fluid">
@@ -151,12 +151,12 @@
                 {% if solicitacao.procede %}
                 <div class="span2 alert alert-info">
                     <div class="">
-                        <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="icon-thumbs-up icon-2x pull-right"></i>
+                        <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="fa fa-thumbs-up fa-2x pull-right"></i>
                     </div>    
                 </div>
                 {% else %}
                 <div class="span2 alert alert-danger">
-                    <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="icon-thumbs-down icon-2x pull-right"></i><br />
+                    <h3><strong class="pull-left">#{{solicitacao.id}}</strong></h3> <i class="fa fa-thumbs-down fa-2x pull-right"></i><br />
                 </div>    
                 {% endif %}
         
@@ -167,12 +167,12 @@
                             {% if contato %}{{contato|phonenumber}}{% endif %}
                             {% endfor %}<br />
                     
-                        <a href="#" class="btn danger" rel="popover" data-placement="top" data-toggle="popover" data-html="true" data-trigger="hover" data-content='{% include "frontend/solicitacao/solicitacao-historico-entrada.html" %}' data-original-title="Histórico para #{{solicitacao.id}}"><i class="icon-time"></i> Histórico de Entrada</a>
+                        <a href="#" class="btn danger" rel="popover" data-placement="top" data-toggle="popover" data-html="true" data-trigger="hover" data-content='{% include "frontend/solicitacao/solicitacao-historico-entrada.html" %}' data-original-title="Histórico para #{{solicitacao.id}}"><i class="fa-time"></i> Histórico de Entrada</a>
                 
                 </div>
         
                 <div class="span2">
-                        <a href="{% url "minhas_solicitacoes_fechar_visto" solicitacao.id %}" class="btn btn-success pull-right"><i class="icon-check icon-2x"></i></a>
+                        <a href="{% url "minhas_solicitacoes_fechar_visto" solicitacao.id %}" class="btn btn-success pull-right"><i class="fa fa-check fa-2x"></i> Visto</a>
                 </div>
         
             </div>
@@ -181,25 +181,25 @@
         
                     <div class="span4">
                         <div class="alert alert-info">
-                            <h5><i class="icon-comments icon-1x"></i> Solicitação</h5>
+                            <h5><i class="fa-comments fa fa-1x"></i> Solicitação</h5>
                             {{solicitacao.descricao}}<br />
-                            <strong><i class="icon-plus"></i> {{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</strong>
+                            <strong><i class="fa fa-plus"></i> {{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</strong>
                         </div>
                     </div>        
         
                     <div class="span4">
                         {% if solicitacao.procede %}
                         <div class="alert alert-warning">
-                            <h5><i class="icon-umbrella icon-1x"></i> Providência</h5>
+                            <h5><i class="fa fa-umbrella fa fa-1x"></i> Providência</h5>
                             {{solicitacao.providencia}}<br />
-                            <small><strong><i class="icon-bullhorn"></i> por {{solicitacao.despachado_por.funcionario}} em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
+                            <small><strong><i class="fa fa-bullhorn"></i> por {{solicitacao.despachado_por.funcionario}} em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
 
                         </div>
                         {% else %}
                         <div class="well well-small alert-danger">
-                            <h5><i class="icon-thumbs-down icon-2x"></i> Motivo de Improcedência</h5>
+                            <h5><i class="fa fa-thumbs-down fa fa-2x"></i> Motivo de Improcedência</h5>
                             {{solicitacao.nao_procede_porque}}<br />
-                            <small><strong><i class="icon-bullhorn"></i> por {{solicitacao.despachado_por.funcionario}} em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
+                            <small><strong><i class="fa fa-bullhorn"></i> por {{solicitacao.despachado_por.funcionario}} em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
 
                         </div>
                         {% endif %}
@@ -208,19 +208,19 @@
                     <div class="span4">
                         {% if solicitacao.procede %}
                         <div class="alert alert-success">
-                            <h5><i class="icon-check icon-1x"></i> Resolução</h5>
+                            <h5><i class="fa fa-check fa-1x"></i> Resolução</h5>
                             {{solicitacao.resolucao_final}}<br />
                             <small><strong>por {{solicitacao.responsavel_correcao}} em {{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
                         </div>
                         <p class="alert alert-info">
-                            <i class="icon-phone"></i> Contato por {{solicitacao.responsavel_contato}} em {{solicitacao.contato_realizado|date:"SHORT_DATETIME_FORMAT"}}
+                            <i class="fa fa-phone"></i> Contato por {{solicitacao.responsavel_contato}} em {{solicitacao.contato_realizado|date:"SHORT_DATETIME_FORMAT"}}
                         </p>
                         
                         {% else %}
                         <div class="alert alert-info">
-                            <h5><i class="icon-phone icon-1x"></i> Contato</h5>
+                            <h5><i class="fa fa-phone fa-1x"></i> Contato</h5>
                             {{solicitacao.resolucao_final}}<br />
-                            <small><strong><i class="icon-phone"></i> por {{solicitacao.responsavel_contato}} em {{solicitacao.contato_realizado|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
+                            <small><strong><i class="fa fa-phone"></i> por {{solicitacao.responsavel_contato}} em {{solicitacao.contato_realizado|date:"SHORT_DATETIME_FORMAT"}}</strong></small>
 
                         </div>
                         
@@ -242,7 +242,7 @@
             $(document).ready(function() {
                 $("#main-home-minhas-solicitacoes, #top-menu-home").addClass("active");
                 $("a[data-toggle=popover]")
-                .popover()
+                .popover({placement:'right'})
                 .click(function(e) {
                     e.preventDefault()
                 })

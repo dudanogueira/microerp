@@ -9,7 +9,7 @@ from django.db.models import Q
 
 from django.contrib.auth.forms import AuthenticationForm
 
-from cadastro.models import Recado, PerfilClienteLogin
+from cadastro.models import PerfilClienteLogin
 from rh.models import Funcionario
 from solicitacao.models import Solicitacao
 

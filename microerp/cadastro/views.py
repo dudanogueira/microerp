@@ -15,7 +15,6 @@ from django.contrib.sites.models import Site
 from rh.models import Funcionario, Departamento
 # Cadastro
 from cadastro.models import Cliente, PreCliente
-from cadastro.models import Recado
 # solicitacao
 from solicitacao.models import Solicitacao
 # comercial
@@ -69,29 +68,9 @@ class AdicionarSolicitacaoForm(forms.ModelForm):
         
     class Meta:
         model = Solicitacao
-        fields = 'descricao', 'cliente', 'precliente', 'contato', 'tipo',
+        fields = 'descricao', 'cliente', 'precliente', 'contato', 'tipo', 'canal'
 
 
-class AdicionarRecadoForm(forms.ModelForm):
-    
-    def __init__(self, *args, **kwargs):
-        destinatario = kwargs.pop('destinatario')    
-        remetente = kwargs.pop('remetente')
-        super(AdicionarRecadoForm, self).__init__(*args, **kwargs)
-        self.fields['cliente'].empty_label = 'Nenhum Cliente'
-        self.fields['remetente'].empty_label = 'Escolha um Remetente'
-        self.fields['remetente'].required = True
-        self.fields['remetente'].initial = remetente
-        self.fields['destinatario'].empty_label = 'Escolha um Destinatario'
-        self.fields['destinatario'].required = True
-        self.fields['destinatario'].initial = destinatario
-    
-    avisar_departamento = forms.BooleanField(label="Avisar à todos", required=False)
-
-    class Meta:
-        model = Recado
-        fields = ('texto', 'tipo', 'tipo_outros', 'remetente', 'cliente', 'destinatario', 'avisar_departamento')
-    
 class PreClienteAdicionarForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         sugestao = kwargs.pop('sugestao')
@@ -250,7 +229,6 @@ def preclientes_adicionar(request):
         sugestao = request.GET.get('sugestao', None)
         form_add_precliente = PreClienteAdicionarForm(sugestao=sugestao)
     return render_to_response('frontend/cadastro/cadastro-preclientes-adicionar.html', locals(), context_instance=RequestContext(request),)
-
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)

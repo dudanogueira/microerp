@@ -5,27 +5,27 @@
 
 {% block content %}
 
-<h1><i class="icon-th"></i> <i class="icon-bullhorn"></i> Despachar Solicitação #{{solicitacao.id}}</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-bullhorn"></i> Despachar Solicitação #{{solicitacao.id}}</h1>
 
 <div class="row-fluid">
     
     <div class="span6">
         
         <p>
-            <i class="icon-briefcase"></i>
+            <i class="fa fa-briefcase"></i>
             {{solicitacao.reclamante}}
         </p>
 
         <p>
-            <i class="icon-user"></i> <i class="icon-wrench"></i>
+            <i class="fa fa-user"></i> <i class="fa fa-wrench"></i>
             <strong>Corretor</strong>: {{solicitacao.responsavel_correcao}}
         </p>
         <p>
-            <i class="icon-user"></i> <i class="icon-phone"></i>
+            <i class="fa fa-user"></i> <i class="fa fa-phone"></i>
             <strong>Ponto de Contato</strong>: {{solicitacao.responsavel_contato}}
         </p>
         <p>
-            <i class="icon-user"></i> <i class="icon-check"></i>
+            <i class="fa fa-user"></i> <i class="fa fa-check"></i>
             <strong>Visto</strong>: {{solicitacao.responsavel_contato}}
         </p>
         
@@ -36,6 +36,7 @@
         <p class="alert alert-info">
             {{solicitacao.descricao}}
         </p>
+		Solicitação Aberta há <strong>{{solicitacao.criado|timesince}}</strong>
         
         
     </div>
@@ -50,29 +51,27 @@
 <div class="row-fluid">
     
     <div class="span4">
-        <h3><i class=" icon-wrench"></i> Providência</h3>    
+        <h3><i class=" fa fa-wrench"></i> Providência</h3>    
         <p>{{solicitacao_form.providencia}}</p>
             
     </div>
     
     <div class="span8">
-        <h3><i class="icon-sitemap"></i> Abrangência</h3>    
+        <h3><i class="fa fa-sitemap"></i> Abrangência</h3>    
             <h6>Departamento Direto (Obrigatório)</h6>
             {{solicitacao_form.departamento_direto}}
             <h6>Departamentos Afetados (Opcional)</h6>
             {{solicitacao_form.departamentos_afetados}}
-            <h6><i class="icon-tag"></i> Prioridade</h6>
+            <h6><i class="fa fa-tag"></i> Prioridade</h6>
             <p>{{solicitacao_form.prioridade}}</p>
-            <p>    <input class="btn btn-primary" type="submit" name="confirmar" value="confirmar">
+            <p>    <button class="btn btn-primary" type="submit" name="confirmar" value="confirmar">Confirmar</button>
             </p>
         
     </div>
-    
-
 
 
 {% else %}
-<h3><i class="icon-thumbs-down"></i> Motivo da Improcedência</h3>
+<h3><i class="fa fa-thumbs-down"></i> Motivo da Improcedência</h3>
 <p><textarea name="motivo_improcedencia" class="span6"></textarea></p>
 <input type="submit" value="Improcedente" class="btn btn-danger" name="confirmar">
 {% endif %}
@@ -81,8 +80,8 @@
 
     {% block auxiliar-menu %}
     {% addtoblock "js" %}
-    <script type="text/javascript" src="/static/js/select2.js"></script>
-    <link href="/static/css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+	<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+	<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
     <script>
     $(document).ready(function() {
         $(".select2").select2();
