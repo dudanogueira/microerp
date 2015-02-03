@@ -191,7 +191,7 @@ class AdicionarCliente(forms.ModelForm):
             self.fields['cep'] = forms.CharField()
             self.fields['rua'] = forms.CharField()
             self.fields['numero'] = forms.CharField()
-            self.fields['cpf'] = forms.IntegerField()
+            #self.fields['cpf'] = forms.IntegerField()
             self.fields['complemento'] = forms.CharField(required=False)
             
             
