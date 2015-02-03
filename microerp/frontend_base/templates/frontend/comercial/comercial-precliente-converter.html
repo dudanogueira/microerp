@@ -25,6 +25,8 @@
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{ STATIC_URL }}js/select2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.mask.js"></script>
+
 <link href="{{ STATIC_URL }}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
@@ -32,6 +34,8 @@
 
 
 <script>
+
+$('#id_telefone_fixo').mask('(00) 0000-0000');
 
 $( ".datepicker" ).datepicker({
 	inline: true,

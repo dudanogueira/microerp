@@ -191,6 +191,7 @@ class AdicionarCliente(forms.ModelForm):
             self.fields['cep'] = forms.CharField()
             self.fields['rua'] = forms.CharField()
             self.fields['numero'] = forms.CharField()
+            self.fields['cpf'] = forms.IntegerField()
             self.fields['complemento'] = forms.CharField(required=False)
             
             
@@ -1160,8 +1161,16 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         modelos = kwargs.pop('modelos')
+        gerente = kwargs.pop('gerente', False)
         super(ConfigurarPropostaComercialParaImpressao, self).__init__(*args, **kwargs)
         self.fields['modelo'] = forms.ChoiceField(choices=modelos, label="Tipo de Proposta")
+        if gerente:
+            self.fields['vendedor'] = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(user__perfilacessocomercial=None).exclude(user__funcionario__periodo_trabalhado_corrente=None), label="Vendedor")
+            if self.instance.cliente and self.instance.cliente.designado:
+                vendedor = self.instance.cliente.designado
+            else:
+                vendedor = self.instance.precliente.designado
+            self.fields['vendedor'].initial = vendedor
         # 
         self.fields['nome_do_proposto'].required = True
         self.fields['rua_do_proposto'].required = True
@@ -1277,7 +1286,7 @@ class OrcamentoPrint:
                 elements.append(contratante_p)
                 
                 if proposta.email_proposto:
-                    texto = u"%s<br />" % proposta.email_proposto
+                    texto = u"<b>Email</b>: %s<br />" % proposta.email_proposto
                     contratante_p = Paragraph(texto, styles['justify'])
                     elements.append(contratante_p)
                 
@@ -1382,7 +1391,8 @@ class OrcamentoPrint:
                 elements.append(Spacer(1, 12))
                 
                 # texto validade
-                validade = "Essa proposta é válida até %s" % proposta.data_expiracao.strftime("%d/%m/%Y")
+                validade = "Essa proposta é válida até %s e foi emitida em %s" % \
+                ( proposta.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
                 texto = Paragraph(validade, styles['justify'])
                 elements.append(texto)
                 
@@ -1401,6 +1411,12 @@ class OrcamentoPrint:
                     (proposta.nome_do_proposto, proposta.documento_do_proposto, proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto)
                 contratante_texto_p = Paragraph(contratante_texto, styles['justify'])
                 elements.append(contratante_texto_p)
+                
+                if proposta.email_proposto:
+                    texto = u"<b>Email</b>: %s<br />" % proposta.email_proposto
+                    contratante_p = Paragraph(texto, styles['justify'])
+                    elements.append(contratante_p)
+                
 
                 # space
                 elements.append(Spacer(1, 12))
@@ -1470,25 +1486,30 @@ class OrcamentoPrint:
                 elements.append(titulo)
                 
                 # texto validade
-                validade = "Essa proposta é válida até %s" % proposta.data_expiracao.strftime("%d/%m/%Y")
+                validade = "Essa proposta é válida até %s e foi emitida em %s" % \
+                ( proposta.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
+                
                 texto = Paragraph(validade, styles['justify'])
                 elements.append(texto)
-                
             # TEXTO ESQUERDA FINAL
             if perfil.user.funcionario:
                 responsavel_proposta = perfil.user.funcionario
             else:
                 responsavel_proposta = proposta.designado
             
+
             
             
             if perfil and perfil.imagem_assinatura:
                 # space
                 elements.append(Spacer(1, 12))
                 
-                im = Image(perfil.imagem_assinatura.path, width=2*inch,height=1*inch,kind='proportional')
-                im.hAlign = 'LEFT'
-                elements.append(im)
+                try:
+                    im = Image(perfil.imagem_assinatura.path, width=2*inch,height=1*inch,kind='proportional')
+                    im.hAlign = 'LEFT'
+                    elements.append(im)
+                except:
+                    pass
             
             texto_esquerda_final = "Atenciosamente,<br /><b>%s</b>" % responsavel_proposta
             
@@ -1650,9 +1671,9 @@ def proposta_comercial_imprimir(request, proposta_id):
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
     
     dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA')
-    form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, modelos=modelos_proposta)
+    form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, modelos=modelos_proposta, gerente=request.user.perfilacessocomercial.gerente)
     if request.POST:
-        form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, modelos=modelos_proposta)
+        form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, modelos=modelos_proposta, gerente=request.user.perfilacessocomercial.gerente)
         if form_configura.is_valid():
             proposta = form_configura.save()
             template_escolhido_chave = form_configura.cleaned_data['modelo']
@@ -1668,7 +1689,12 @@ def proposta_comercial_imprimir(request, proposta_id):
             response['Content-Disposition'] = 'attachment; filename="%s"' % nome_arquivo_gerado
             buffer = BytesIO()
             report = OrcamentoPrint(buffer, 'Letter')
-            pdf = report.print_proposta(proposta, tipo=template_escolhido_chave, perfil=request.user.perfilacessocomercial)
+            if form_configura.cleaned_data['vendedor']:
+                perfil = form_configura.cleaned_data['vendedor'].user.perfilacessocomercial
+            else:
+                perfil = request.user.perfilacessocomercial
+                
+            pdf = report.print_proposta(proposta, tipo=template_escolhido_chave, perfil=perfil)
             response.write(pdf)
             if request.POST.get('enviar-por-email'):
                 f = forms.EmailField()

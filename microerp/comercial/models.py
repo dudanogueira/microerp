@@ -76,9 +76,11 @@ CONTRATO_STATUS_CHOICES = (
 
 CONTRATO_STATUS_DE_EXECUCAO_CHOICES = (
     ('naoiniciado', 'Não Iniciado'),
+    ('comunicadoinicio', 'Início do Contrato Comunicado'),
     ('emandamento', 'Em Andamento'),
     ('pendente', 'Pendente'),
     ('finalizado', 'Finalizado'),
+    ('comunicadofim', 'Fim do Contrato Comunicado'),
 )
 
 class PropostaComercial(models.Model):
@@ -600,21 +602,27 @@ class ContratoFechado(models.Model):
     
     def sugerir_texto_contratante(self):
         if self.cliente.tipo == "pj":
-            texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s''' % (
+            texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, TELEFONE FIXO: %s, TELEFONE CELULAR: %s, EMAIL: %s''' % (
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cnpj or "CNPJ: "+("_" * 30) ),
                 unicode(self.nome_proposto_legal or "Representante Legal: "+("_" * 30) ),
                 unicode(self.documento_proposto_legal or "Documento Representante Legal (CPF): "+("_" * 30) ),
                 unicode(self.cliente.logradouro_completo() or u"ENDEREÇO: "+("_" * 30)),
+                unicode(self.cliente.telefone_fixo or ("_" * 30)),
+                unicode(self.cliente.telefone_celular or ("_" * 30)),
+                unicode(self.cliente.email or ("_" * 30)),
             )
         else:
             #self.cliente.tipo =="pf"
-            texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado na endereço: %s''' % (
+            texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado na endereço %s, TELEFONE FIXO: %s, TELEFONE CELULAR: %s, EMAIL: %s''' % (
             
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cpf or "_" * 30 ),
                 unicode(self.cliente.rg or "_" * 30  ),
                 unicode(self.cliente.logradouro_completo()),
+                unicode(self.cliente.telefone_fixo or ("_" * 30)),
+                unicode(self.cliente.telefone_celular or ("_" * 30)),
+                unicode(self.cliente.email or ("_" * 30)),
             )
         return texto
     

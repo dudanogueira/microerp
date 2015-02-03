@@ -64,7 +64,7 @@ urlpatterns += patterns('',
     # modulo comercial
     url(r'^comercial/', include('comercial.urls', namespace="comercial")),
     # modulo solicitacao
-    url(r'^solicitao/', include('solicitacao.urls', namespace="solicitacao")),   
+    url(r'^solicitacao/', include('solicitacao.urls', namespace="solicitacao")),   
     # modulo estoque
     url(r'^estoque/', include('estoque.urls', namespace="estoque")),   
     # modulo producao

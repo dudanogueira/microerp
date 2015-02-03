@@ -334,13 +334,6 @@ class Funcionario(models.Model):
             current_site = Site.objects.get()
             return "ME:%s@%s" % (self.user.username, current_site.domain)
     
-    # RECADOS
-    def recados_nao_lidos(self):
-        return self.recado_recebido_set.filter(lido=False)
-    
-    def recados_lidos(self):
-        return self.recado_recebido_set.filter(lido=True)
-    
     def colegas_ativos_mesmo_dpto(self):
         colegas_dpto = Funcionario.objects.filter(
                 cargo_atual__departamento=self.cargo_atual.departamento,
