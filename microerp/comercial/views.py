@@ -191,7 +191,7 @@ class AdicionarCliente(forms.ModelForm):
             self.fields['cep'] = forms.CharField()
             self.fields['rua'] = forms.CharField()
             self.fields['numero'] = forms.CharField()
-            self.fields['cpf'] = forms.IntegerField()
+            #self.fields['cpf'] = forms.IntegerField()
             self.fields['complemento'] = forms.CharField(required=False)
             
             
@@ -1689,9 +1689,9 @@ def proposta_comercial_imprimir(request, proposta_id):
             response['Content-Disposition'] = 'attachment; filename="%s"' % nome_arquivo_gerado
             buffer = BytesIO()
             report = OrcamentoPrint(buffer, 'Letter')
-            if form_configura.cleaned_data['vendedor']:
+            try:
                 perfil = form_configura.cleaned_data['vendedor'].user.perfilacessocomercial
-            else:
+            except:
                 perfil = request.user.perfilacessocomercial
                 
             pdf = report.print_proposta(proposta, tipo=template_escolhido_chave, perfil=perfil)
