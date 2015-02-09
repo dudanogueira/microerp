@@ -144,6 +144,7 @@ class LancamentoFinanceiroReceber(models.Model):
     valor_recebido = models.DecimalField("Valor Recebido", max_digits=10, decimal_places=2, blank=True, null=True)
     modo_recebido = models.CharField(blank=False, null=False, max_length=100, choices=LANCAMENTO_MODO_RECEBIDO_CHOICES)
     data_recebido = models.DateField(blank=True, null=True)
+    observacao_recebido = models.TextField(u"Observações", blank=True, null=True)
     recebido_por = models.ForeignKey('rh.Funcionario', related_name="lancamento_recebido_set", blank=True, null=True)
     # conciliacao - recebido em conta
     data_recebido_em_conta = models.DateField(blank=True, null=True)

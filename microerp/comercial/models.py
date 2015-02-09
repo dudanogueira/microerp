@@ -56,6 +56,7 @@ CONTRATO_FORMA_DE_PAGAMENTO_CHOICES = (
     ('debito', u'Cartão de Débito'),
     ('dinheiro', 'Dinheiro'),
     ('cheque', 'Cheque'),
+    ('transferencia', u'Transferência Bancária'),
     ('permuta', 'Permuta'),
 )
 

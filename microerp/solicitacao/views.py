@@ -30,7 +30,6 @@ def possui_perfil_acesso_solicitacao_gerente(user, login_url="/"):
     except:
         return False
 
-
 # FORM
 class DespacharSolicitacaoForm(forms.ModelForm):
     

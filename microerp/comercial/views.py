@@ -657,7 +657,7 @@ class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
     
     class Meta:
         model = LancamentoFinanceiroReceber
-        fields = ("data_cobranca", 'valor_cobrado', 'modo_recebido')
+        fields = ("data_cobranca", 'valor_cobrado', 'modo_recebido', 'observacao_recebido')
         localized_fields = 'valor_cobrado',
 
 class ConfigurarContratoBaseadoEmProposta(forms.Form):
@@ -695,7 +695,7 @@ def editar_proposta_converter(request, proposta_id):
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
-    ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=1, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
+    ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
     usar_cartao_credito = UsarCartaoCredito()
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
         initial={
@@ -786,7 +786,7 @@ def editar_proposta_converter(request, proposta_id):
                         # registra lancamentos vinculando ao novo contrato
                         i = 0
                         for form in form_configurar_contrato.forms:
-                            if form.is_valid():
+                            if form.is_valid() and form not in form_configurar_contrato.deleted_forms:
                                 i += 1
                                 novo_lancamento = form.save(commit=False)
                                 novo_lancamento.contrato = novo_contrato

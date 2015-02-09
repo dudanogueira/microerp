@@ -45,7 +45,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-        <button type="submit" class="btn btn-success" form="configurar-form" name="enviar-por-email" value="enviar-por-email"><i class="fa fa-envelope"></i> Enviar por Email</button>
+        <button type="submit" class="btn btn-success" form="configurar-form" name="enviar-por-email" id="enviar-por-email" value="enviar-por-email" id="enviar-por-email"><i class="fa fa-envelope"></i> Enviar por Email</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->
@@ -59,6 +59,12 @@
 {% addtoblock "js" %}
 <script>
 $(document).ready(function() {
+	
+	$("#enviar-por-email").click(function(){
+		$(this).hide();
+	})
+	
+	
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
 	$('.popover_item').popover({
 			trigger: "hover",
