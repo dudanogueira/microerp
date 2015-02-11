@@ -20,6 +20,7 @@
 		</div>
 		
 		<div class="span4">
+			{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
 		</div>
 		
 	</div>
@@ -201,6 +202,9 @@ $( ".datepicker" ).datepicker({
 	inline: true,
     dateFormat: "dd/mm/yy",
 });
+
+$('.popover-items').popover({placement:'left'});
+
 
 $(".disableall :input").attr("disabled", true);
 
