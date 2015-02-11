@@ -132,7 +132,9 @@ $( "#configurar-contrato" ).on( "click", ".modelo_itens_inclusos", function(e) {
 	}else{
 		$('#'+$(this).data('target')).val($("#opcao_itens_inclusos").val());
 	}
-	$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val().replace("<br />", "\n"))
+	texto = $('#'+$(this).data('target')).val().replace(/<br\s*[\/]?>/gi, "\n");
+	$('#'+$(this).data('target')).val(texto)
+
 
 });
 
@@ -144,7 +146,8 @@ $( "#configurar-contrato" ).on( "click", ".modelo_itens_nao_inclusos", function(
 		$('#'+$(this).data('target')).val($("#opcao_itens_nao_inclusos").val());
 	}
 	
-	$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val().replace("<br />", "\n"))
+	texto = $('#'+$(this).data('target')).val().replace(/<br\s*[\/]?>/gi, "\n");
+	$('#'+$(this).data('target')).val(texto)
 });
 
 
