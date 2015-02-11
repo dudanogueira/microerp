@@ -132,6 +132,8 @@ $( "#configurar-contrato" ).on( "click", ".modelo_itens_inclusos", function(e) {
 	}else{
 		$('#'+$(this).data('target')).val($("#opcao_itens_inclusos").val());
 	}
+	$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val().replace("<br />", "\n"))
+
 });
 
 $( "#configurar-contrato" ).on( "click", ".modelo_itens_nao_inclusos", function(e) {
@@ -141,6 +143,8 @@ $( "#configurar-contrato" ).on( "click", ".modelo_itens_nao_inclusos", function(
 	}else{
 		$('#'+$(this).data('target')).val($("#opcao_itens_nao_inclusos").val());
 	}
+	
+	$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val().replace("<br />", "\n"))
 });
 
 
