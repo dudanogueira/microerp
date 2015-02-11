@@ -1668,6 +1668,10 @@ def proposta_comercial_imprimir(request, proposta_id):
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
+    # modelos de texto
+    modelo_itens_inclusos = getattr(settings, 'MODELOS_ITENS_INCLUSOS', None)
+    modelo_itens_nao_inclusos = getattr(settings, 'MODELOS_ITENS_NAO_INCLUSOS', None)
+    
     
     dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA')
     form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, modelos=modelos_proposta, gerente=request.user.perfilacessocomercial.gerente)

@@ -70,12 +70,27 @@ $(document).ready(function() {
 			trigger: "hover",
 			placement: 'top'
 		});
+
+
 		{% if modelo_objeto.items %}
 		$("#id_objeto_proposto").after('<div style="float:right"><select id="opcao_modelo_objeto">{% for k,v in modelo_objeto.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_objeto" data-target="id_objeto_proposto">Substituir</button> <button class="modelo_objeto" data-target="id_objeto_proposto" data-adicionar="True">Acrescentar</button></div>');
 		{% endif %}
 	
 		{% if modelo_garantia.items %}
 		$("#id_garantia_proposto").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia_proposto">Substituir</button> <button class="modelo_garantia" data-target="id_garantia_proposto" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
+	
+		{% if modelo_itens_inclusos.items %}
+		$("#id_descricao_items_proposto").after('<div style="float:right"><select id="opcao_itens_inclusos">{% for k,v in modelo_itens_inclusos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_itens_inclusos" data-target="id_descricao_items_proposto">Substituir</button> <button class="modelo_itens_inclusos" data-target="id_descricao_items_proposto" data-adicionar="True">Acrescentar</button></div>');
+		{% endif %}
+	
+	
+		{% if modelo_itens_nao_inclusos.items %}
+		$("#id_items_nao_incluso").after('<div style="float:right"><select id="opcao_itens_nao_inclusos">{% for k,v in modelo_itens_nao_inclusos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_itens_nao_inclusos" data-target="id_items_nao_incluso">Substituir</button> <button class="modelo_itens_nao_inclusos" data-target="id_items_nao_incluso" data-adicionar="True">Acrescentar</button></div>');
+		{% endif %}
+	
+	
+	
+	
 	
 	$('.btn-modal-add-follow-up').click(function(e){
 			
@@ -108,6 +123,24 @@ $( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
 	}else{
 		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val());
 	}	
+});
+
+$( "#configurar-contrato" ).on( "click", ".modelo_itens_inclusos", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_inclusos").val());
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_itens_inclusos").val());
+	}
+});
+
+$( "#configurar-contrato" ).on( "click", ".modelo_itens_nao_inclusos", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_nao_inclusos").val());
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_itens_nao_inclusos").val());
+	}
 });
 
 
