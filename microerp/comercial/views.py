@@ -1281,7 +1281,6 @@ class OrcamentoPrint:
                         proposta.nome_do_proposto, proposta.telefone_contato_proposto, 
                         texto_endereco
                     )
-                    
                 contratante_p = Paragraph(texto, styles['justify'])
                 elements.append(contratante_p)
                 
@@ -1962,7 +1961,10 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
 
             for lancamento in contrato.lancamentofinanceiroreceber_set.all():
-                lancamento_text = "<b>Parcela %s</b> de R$ %s no dia %s na forma de %s" % (lancamento.peso, lancamento.valor_cobrado, lancamento.data_cobranca.strftime("%d/%m/%y"), lancamento.get_modo_recebido_display())
+                observacao = ''
+                if lancamento.observacao_recebido:
+                    observacao = u" Observação: %s " % lancamento.observacao_recebido
+                lancamento_text = u"<b>Parcela %s</b> de R$ %s no dia %s na forma de %s.%s" % (lancamento.peso, lancamento.valor_cobrado, lancamento.data_cobranca.strftime("%d/%m/%y"), lancamento.get_modo_recebido_display(), observacao)
                 lancamento_p = Paragraph(unicode(lancamento_text).replace("\n", "<br />"), styles['justify'])
                 elements.append(lancamento_p)
                 elements.append(Spacer(1, 12))
@@ -1971,7 +1973,7 @@ class ContratoPrint:
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
             valor_formatado = locale.currency(contrato.valor, grouping=True)
             
-            total_texto = "Total: %s (%s)" % (valor_formatado, contrato.valor_extenso())
+            total_texto = u"Total: %s (%s)" % (valor_formatado, contrato.valor_extenso())
             total_p = Paragraph(total_texto.replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))

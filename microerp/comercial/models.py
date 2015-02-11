@@ -603,19 +603,19 @@ class ContratoFechado(models.Model):
     
     def sugerir_texto_contratante(self):
         if self.cliente.tipo == "pj":
-            texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, TELEFONE FIXO: %s, TELEFONE CELULAR: %s, EMAIL: %s''' % (
+            texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, Telefone Fixo: %s, Telefone Fixo: %s, Email: %s''' % (
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cnpj or "CNPJ: "+("_" * 30) ),
                 unicode(self.nome_proposto_legal or "Representante Legal: "+("_" * 30) ),
                 unicode(self.documento_proposto_legal or "Documento Representante Legal (CPF): "+("_" * 30) ),
-                unicode(self.cliente.logradouro_completo() or u"ENDEREÇO: "+("_" * 30)),
+                unicode(self.cliente.logradouro_completo() or u"Endereço: "+("_" * 30)),
                 unicode(self.cliente.telefone_fixo or ("_" * 30)),
                 unicode(self.cliente.telefone_celular or ("_" * 30)),
                 unicode(self.cliente.email or ("_" * 30)),
             )
         else:
             #self.cliente.tipo =="pf"
-            texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado na endereço %s, TELEFONE FIXO: %s, TELEFONE CELULAR: %s, EMAIL: %s''' % (
+            texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado no endereço %s, Telefone Fixo: %s, Telefone Celular: %s, Email: %s''' % (
             
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cpf or "_" * 30 ),

@@ -78,6 +78,13 @@ urlpatterns += patterns('',
     url(r'^ajax/consulta/cargos.json$', 'rh.views.ajax_consulta_cargo', name='ajax_consulta_cargo'),
 )
 
+
+if 'helpdesk' in settings.INSTALLED_APPS:
+    urlpatterns += patterns('',
+        # helpdesk
+        (r'helpdesk/', include('helpdesk.urls')),
+)
+
 # DEBUGG
 from django.conf import settings
 if settings.DEBUG:
