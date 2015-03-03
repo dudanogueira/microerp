@@ -672,7 +672,7 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
-    observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
+    #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
     apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
@@ -797,7 +797,7 @@ def editar_proposta_converter(request, proposta_id):
                         novo_contrato.garantia = configurar_contrato_form.cleaned_data['garantia']
                         novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
                         novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
-                        novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
+                        #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
                         novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
                         novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
                         novo_contrato.apoio_tecnico = configurar_contrato_form.cleaned_data['apoio_tecnico']
