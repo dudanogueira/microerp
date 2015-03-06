@@ -2104,7 +2104,7 @@ def contratos_gerar_impressao(request, contrato_id):
     if request.user.perfilacessocomercial.gerente:
         contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
     else:
-        contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status__in=["assinatura", "emaberto"])
+        contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status__in=["assinatura", "emaberto", "emanalise"])
     from io import BytesIO
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')

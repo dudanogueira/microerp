@@ -19,6 +19,8 @@
 	<h4>{{lista.grouper}}</h4>
 	<ul>
 	{% for contrato in lista.list %}
+	
+	
 		{% if contrato.status == "invalido" %}
 			<li> 
 			<a href="{% url "comercial:contratos_meus_revalidar" contrato.id %}">{{contrato}}</a>
@@ -54,7 +56,6 @@
 			{% else %}
 			<li> 
 				{{contrato}}
-				{% if contrato.status == "emaberto" %}
 					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" classrole="button" class="btn btn-success" data-toggle="modal" ><i class="fa fa-print"></i> Imprimir</a>
 					<!-- Modal -->
 					<div id="modal-configurar-impressao-contrato-{{contrato.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -73,8 +74,6 @@
 							<button class="btn btn-primary" type="submit" form="form-configura-impressao-contrato-{{contrato.id}}"><i class="fa fa-print"></i> imprimir</button>
 						</div>
 					</div>
-					
-				{% endif %}
 				
 				
 			</li>
