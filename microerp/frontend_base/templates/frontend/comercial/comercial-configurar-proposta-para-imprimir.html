@@ -109,9 +109,9 @@ $(document).ready(function() {
 $( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
 	e.preventDefault();
 	if ($(this).data('adicionar')){
-		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_objeto").val());
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_objeto").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}else{
-		$('#'+$(this).data('target')).val($("#opcao_modelo_objeto").val());
+		$('#'+$(this).data('target')).val($("#opcao_modelo_objeto").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}
 });
 
@@ -119,18 +119,18 @@ $( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
 $( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
 	e.preventDefault();
 	if ($(this).data('adicionar')){
-		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val());
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}else{
-		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val());
+		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}	
 });
 
 $( "#configurar-contrato" ).on( "click", ".modelo_itens_inclusos", function(e) {
 	e.preventDefault();
 	if ($(this).data('adicionar')){
-		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_inclusos").val());
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}else{
-		$('#'+$(this).data('target')).val($("#opcao_itens_inclusos").val());
+		$('#'+$(this).data('target')).val($("#opcao_itens_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}
 	texto = $('#'+$(this).data('target')).val().replace(/<br\s*[\/]?>/gi, "\n");
 	$('#'+$(this).data('target')).val(texto)
@@ -141,9 +141,9 @@ $( "#configurar-contrato" ).on( "click", ".modelo_itens_inclusos", function(e) {
 $( "#configurar-contrato" ).on( "click", ".modelo_itens_nao_inclusos", function(e) {
 	e.preventDefault();
 	if ($(this).data('adicionar')){
-		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_nao_inclusos").val());
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_nao_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}else{
-		$('#'+$(this).data('target')).val($("#opcao_itens_nao_inclusos").val());
+		$('#'+$(this).data('target')).val($("#opcao_itens_nao_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
 	}
 	
 	texto = $('#'+$(this).data('target')).val().replace(/<br\s*[\/]?>/gi, "\n");
