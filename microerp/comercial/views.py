@@ -1959,9 +1959,9 @@ class ContratoPrint:
             clausula_3_p = Paragraph("CLÁUSULA 3ª – DO VALOR E FORMA DE PAGAMENTO", styles['left_h1'])
             elements.append(clausula_3_p)
             # space
-            elements.append(Spacer(1, 12))
-            forma_pagamento_p = Paragraph(unicode(contrato.propostacomercial.forma_pagamento_proposto).replace("\n", "<br />"), styles['justify'])
-            elements.append(forma_pagamento_p)
+            #elements.append(Spacer(1, 12))
+            #forma_pagamento_p = Paragraph(unicode(contrato.propostacomercial.forma_pagamento_proposto).replace("\n", "<br />"), styles['justify'])
+            #elements.append(forma_pagamento_p)
             elements.append(Spacer(1, 12))
 
             for lancamento in contrato.lancamentofinanceiroreceber_set.all():
