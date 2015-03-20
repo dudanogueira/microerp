@@ -48,6 +48,8 @@ from reportlab.lib.units import inch, mm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from django.contrib.auth.models import User
 from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
+from reportlab.lib import colors
+
 
 #
 # FORMULARIOS
@@ -1858,6 +1860,7 @@ class ContratoPrint:
             styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
             styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h1_vermelho', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold", textColor = colors.red,))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT, fontSize=10))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
@@ -1888,6 +1891,18 @@ class ContratoPrint:
             # descricao
             id_contrato_p = Paragraph("CONTRATO DE PRESTAÇÃO DE SERVIÇOS.", styles['centered_h1'])
             elements.append(id_contrato_p)
+            
+            # mostra mensagem de status, menos se for emaberto ou lancado
+            if contrato.status not in ('emaberto', 'lancado'):
+                # space
+                elements.append(Spacer(1, 40))
+                
+                id_contrato_status_p = Paragraph(u"STATUS DO CONTRATO: %s" % contrato.get_status_display() , styles['left_h1_vermelho'])
+                elements.append(id_contrato_status_p)
+                
+                elements.append(Spacer(1, 40))
+                
+                
             
             # space
             elements.append(Spacer(1, 20))
