@@ -49,7 +49,6 @@ CONTROLE_TIPO_CHOICES = (
 )
 
 
-
 @deconstructible
 class AnexoControleDir(object):
 
@@ -109,33 +108,31 @@ class LinhaControleEquipamento(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-
 # 
-# LINHA DE MATERIAIS DO CONTRATO
+# LINHA DE MATERIAIS DO CONTRATO OU DA ORDEM DE SERVICO
 
 class ListaMaterialDoContrato(models.Model):
-    '''Lista Consolidada que gerencia a quantidade de Material que compoe um contrato
+    '''Lista Consolidada que gerencia a quantidade de Material que compoe um contrato ou ordem de serviço
     É com base nessa lista que serão gerados outros dois documentos
     
      - Registro de Material Entregue
      - Solicitação de Compras
+     
+     Pode ter origem na criação do contrato
+     ou pode ser criado junto a ordem de serviço
     '''
-    
-    def atualiza_lista(self):
-        '''atualiza essa lista conforme os orcamentos da proposta vinculada a este contrato'''
-        for k,v in self.contrato.propostacomercial.gera_notacao_lista_materiais().items():
-            produto = Produto.objects.get(pk=k)
-            linha,created = self.linhalistamaterial_set.get_or_create(produto=produto)
-            linha.quantidade_requisitada = v
-            linha.save()
-    
+        
     def total_materiais_requisitados(self):
         return self.linhalistamaterial_set.aggregate(Sum('quantidade_requisitada'))['quantidade_requisitada__sum']
     
     def total_materiais_atendidos(self):
         return self.linhalistamaterial_set.aggregate(Sum('quantidade_ja_atendida'))['quantidade_ja_atendida__sum']
-        
+    
+    # documento originário
+    ordem_de_servico = models.ForeignKey('programacao.OrdemDeServico', blank=True, null=True)
     contrato = models.OneToOneField('comercial.ContratoFechado', blank=True, null=True)
+    orcamento = models.OneToOneField('comercial.Orcamento', blank=True, null=True)
+    # outros
     ativa = models.BooleanField(default=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
@@ -143,7 +140,7 @@ class ListaMaterialDoContrato(models.Model):
 
 class LinhaListaMaterial(models.Model):
     lista  = models.ForeignKey(ListaMaterialDoContrato)
-    produto = models.ForeignKey('estoque.Produto', null=True, blank=True)
+    produto = models.ForeignKey('estoque.Produto', null=False, blank=False)
     quantidade_requisitada = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     quantidade_ja_atendida = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # metadata
@@ -158,7 +155,7 @@ class ListaMaterialEntregue(models.Model):
     '''Lista Consolidada De materiais Entregues
     '''
     entregue = models.BooleanField(default=False)
-    contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
+    ordem_de_servico = models.ForeignKey('programacao.OrdemDeServico', blank=True, null=True)
     entregue_por = models.ForeignKey("rh.Funcionario", blank=False, null=False, related_name="entregue_por_set")
     entregue_para = models.ForeignKey("rh.Funcionario", blank=False, null=False, related_name="entregue_para_set")
     # metadata
@@ -180,7 +177,7 @@ class LinhaListaMaterialEntregue(models.Model):
 class ListaMaterialCompra(models.Model):
     '''Lista Consolidada de Materiais para Compra
     '''
-    contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
+    ordem_de_servico = models.ForeignKey('programacao.OrdemDeServico', blank=True, null=True)
     ativa = models.BooleanField(default=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")

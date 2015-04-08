@@ -680,7 +680,6 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
 
 
-
 class UsarCartaoCredito(forms.Form):
     
     def __init__(self, *args, **kwargs):
@@ -803,7 +802,7 @@ def editar_proposta_converter(request, proposta_id):
                         novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
                         novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
                         novo_contrato.apoio_tecnico = configurar_contrato_form.cleaned_data['apoio_tecnico']
-                        novo_contrato.save()  
+                        novo_contrato.save()
                         # retorna para a view contratos em analise
                         if request.user.perfilacessocomercial.gerente:
                             # se gerente, retorna para contratos em analise
@@ -1197,7 +1196,7 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
     class Meta:
         model = PropostaComercial
         fields = 'nome_do_proposto', 'documento_do_proposto', 'rua_do_proposto', 'bairro_do_proposto', \
-        'cep_do_proposto', 'cidade_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
+        'cep_do_proposto', 'cidade_do_proposto', 'estado_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
         'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'items_nao_incluso', 'forma_pagamento_proposto', 'garantia_proposto',
 
 class OrcamentoPrint:
@@ -1275,8 +1274,8 @@ class OrcamentoPrint:
                 elements.append(Spacer(1, 24))
                 
                 # AC
-                texto_endereco = u"<strong>Rua</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s" % \
-                    (proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto)
+                texto_endereco = u"%s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s, <strong>Estado</strong>: %s" % \
+                    (proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto, proposta.estado_do_proposto)
                 texto = u"<b>A/C</b>: %s<br />\
             	<b>Telefone</b>: %s<br />\
             	<b>Endereço do Cliente</b>: %s <br />"% (
@@ -1311,6 +1310,7 @@ class OrcamentoPrint:
                 # 1 - DO OBJETO
                 do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
                 elements.append(do_objeto_titulo)
+                # espaco
                 elements.append(Spacer(1, 12))
                 # objeto texto
                 texto_objeto_p = Paragraph(proposta.objeto_proposto.replace('\n', '<br />'), styles['justify'])
@@ -1441,6 +1441,8 @@ class OrcamentoPrint:
                 # 1 - DO OBJETO
                 do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
                 elements.append(do_objeto_titulo)
+                # espaco
+                elements.append(Spacer(1, 12))
                 # objeto texto
                 texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
                 elements.append(texto_objeto_p)
@@ -1452,6 +1454,8 @@ class OrcamentoPrint:
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
+                # espaco
+                elements.append(Spacer(1, 12))
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
@@ -1462,6 +1466,8 @@ class OrcamentoPrint:
                 # 2.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
                 elements.append(desc_itens_titulo)
+                # espaco
+                elements.append(Spacer(1, 12))
                 # objeto texto
                 texto = Paragraph(proposta.forma_pagamento_proposto, styles['justify'])
                 elements.append(texto)
@@ -1471,7 +1477,6 @@ class OrcamentoPrint:
                 elements.append(titulo)
                 # space
                 elements.append(Spacer(1, 12))
-                
                 locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
                 valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
                 texto = "O valor global da proposta é de <strong>%s</strong> (<em>%s</em>)" % (valor_formatado, proposta.valor_extenso())
@@ -1485,7 +1490,8 @@ class OrcamentoPrint:
                 # 3 - VALIDADE
                 titulo = Paragraph("3 - VALIDADE", styles['left_h2'])
                 elements.append(titulo)
-                
+                # espaco
+                elements.append(Spacer(1, 12))
                 # texto validade
                 validade = "Essa proposta é válida até %s e foi emitida em %s" % \
                 ( proposta.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
@@ -1893,7 +1899,7 @@ class ContratoPrint:
             elements.append(id_contrato_p)
             
             # mostra mensagem de status, menos se for emaberto ou lancado
-            if contrato.status not in ('emaberto', 'lancado'):
+            if contrato.status not in ('assinatura', 'emaberto', 'lancado'):
                 # space
                 elements.append(Spacer(1, 40))
                 
@@ -1992,7 +1998,7 @@ class ContratoPrint:
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
             valor_formatado = locale.currency(contrato.valor, grouping=True)
             
-            total_texto = u"Total: %s (%s)" % (valor_formatado, contrato.valor_extenso())
+            total_texto = u"Total: %s (%s)" % (valor_formatado.decode('utf-8'), contrato.valor_extenso().decode('utf-8'))
             total_p = Paragraph(total_texto.replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))

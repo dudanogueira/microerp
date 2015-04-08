@@ -51,21 +51,30 @@ class PerfilAcessoProgramacao(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-
 class OrdemDeServico(models.Model):
+    
+    def __unicode__(self):
+        if self.contrato:
+            return u"Ordem de Serviço %s do Contrato #%s do Cliente %s" % (self.pk, self.contrato.pk, self.cliente)
+        else:
+            return u"Ordem de Serviço %s Sem Contrato do  Cliente %s" % (self.pk, self.cliente)
+            
+    
     cliente = models.ForeignKey('cadastro.Cliente')
+    contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True, help_text="Contrato Opcional")
     # valorizacao quando nao possui contrato
     status = models.CharField(blank=True, max_length=100, choices=ORDEM_SERVICO_STATUS_CHOICES, default='naoiniciado')
     valor = models.DecimalField(max_digits=10, decimal_places=2)
-    data_inicio = models.DateTimeField(blank=False)
-    data_fim = models.DateTimeField(blank=False)
+    data_inicio = models.DateTimeField(blank=True, null=True)
+    data_fim = models.DateTimeField(blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
-    
+
 
 class TarefaDeProgramacao(models.Model):
-    '''Model Objeto que pode dividir o contrato em diversas partes, com diferentes status de execuções, etc'''
+    '''Model Objeto divide a ordem de servico em diversas partes,
+    com diferentes status de execuções, etc'''
     
     def __unicode__(self):
         if self.contrato:
@@ -85,8 +94,8 @@ class TarefaDeProgramacao(models.Model):
     class Meta:
         ordering = (('criado',))
     
-    contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
     ordem_de_servico = models.ForeignKey('OrdemDeServico', blank=True, null=True)
+    listas_material_exigido = models.ManyToManyField('almoxarifado.ListaMaterialDoContrato')
     # outros dados
     titulo = models.CharField(u"Título", blank=True, max_length=100)
     descricao = models.TextField(blank=True, verbose_name=u"Descrição da Atividade")
@@ -108,7 +117,7 @@ class TarefaDeProgramacao(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-class FollowUpDeContrato(models.Model):
+class FollowUpDeOrdemDeServico(models.Model):
     
     def __unicode__(self):
         return u"Follow Up de Contrato #%s, %s" % (self.contrato.id, self.texto)
@@ -119,7 +128,7 @@ class FollowUpDeContrato(models.Model):
     class Meta:
         ordering = ['-criado']
     
-    contrato = models.ForeignKey('comercial.ContratoFechado')
+    ordem_de_servico = models.ForeignKey(OrdemDeServico)
     texto = models.TextField(blank=False)
     porcentagem_execucao = models.DecimalField(max_digits=3, decimal_places=0)
     tipo = models.CharField(blank=True, max_length=100, choices=TIPO_FOLLOWUP_CHOICES)

@@ -7,11 +7,12 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
-from models import FollowUpDeContrato, TarefaDeProgramacao
+from models import FollowUpDeOrdemDeServico, TarefaDeProgramacao
 from rh.models import Funcionario
 
 from comercial.models import ContratoFechado
 
+from programacao.models import OrdemDeServico
 
 from django import forms
 
@@ -37,11 +38,11 @@ class FormAdicionaFollowUpContrato(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(FormAdicionaFollowUpContrato, self).__init__(*args, **kwargs)
-        self.fields['contrato'].widget = forms.HiddenInput()
+        self.fields['ordem_de_servico'].widget = forms.HiddenInput()
         self.fields['criado_por'].widget = forms.HiddenInput()
     
     class Meta:
-        model = FollowUpDeContrato
+        model = FollowUpDeOrdemDeServico
 
 class FormEditarProgramacaoDeContrato(forms.ModelForm):
 
@@ -63,7 +64,7 @@ class FormAdicionarTarefa(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(FormAdicionarTarefa, self).__init__(*args, **kwargs)
-        self.fields['contrato'].widget = forms.HiddenInput()
+        #self.fields['contrato'].widget = forms.HiddenInput()
         self.fields['funcionarios_participantes'].widget.attrs['class'] = 'select2'
         self.fields['data_inicio'].widget.attrs['class'] = 'datetimepicker'
         self.fields['data_fim'].widget.attrs['class'] = 'datetimepicker'
@@ -71,7 +72,7 @@ class FormAdicionarTarefa(forms.ModelForm):
 
     class Meta:
         model = TarefaDeProgramacao
-        fields = 'contrato', 'titulo', 'descricao', 'funcionarios_participantes', 'data_inicio', 'data_fim', 
+        fields = 'titulo', 'descricao', 'funcionarios_participantes', 'data_inicio', 'data_fim', 
 
 #
 # VIEWS
@@ -90,9 +91,9 @@ def home(request):
             messages.success(request, 'FollowUp de Contrato Adicionado!')
     else:
         form_add_followup_contrato = FormAdicionaFollowUpContrato(initial={'criado_por': request.user.funcionario})
-    contratos = ContratoFechado.objects.filter(status='lancado').order_by('status_execucao')
+    ordens_de_servico = OrdemDeServico.objects.order_by('status')
     return render_to_response('frontend/programacao/programacao-home.html', locals(), context_instance=RequestContext(request),)
-    
+
 @user_passes_test(possui_perfil_acesso_programacao, login_url='/')
 def marcar_contrato_iniciado(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id)

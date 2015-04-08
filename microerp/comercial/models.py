@@ -43,6 +43,9 @@ from icalendar import Calendar, Event
 
 from estoque.models import Produto
 
+
+from localflavor.br.br_states import STATE_CHOICES
+
 PROPOSTA_COMERCIAL_STATUS_CHOICES = (
     ('aberta', 'Aberta'),
     ('convertida', 'Convertida'),
@@ -200,20 +203,7 @@ class PropostaComercial(models.Model):
         retorno = []
         for parcelamento in self.parcelamentos_possiveis.all():
             retorno.append((parcelamento, parcelamento.aplica_no_valor( self.consolidado() ) ) )
-        return retorno
-    
-    def gera_notacao_lista_materiais(self):
-        valores = self.orcamento_set.filter(ativo=True).values('linharecursomaterial__quantidade', 'linharecursomaterial__produto__id')
-        valores_dict = {}
-        for item in valores:
-            if item['linharecursomaterial__quantidade']:                
-                try:
-                    total = valores_dict[item['linharecursomaterial__produto__id']] + item['linharecursomaterial__quantidade']
-                    valores_dict[item['linharecursomaterial__produto__id']] = total
-                except KeyError:
-                    valores_dict[item['linharecursomaterial__produto__id']] = item['linharecursomaterial__quantidade']            
-        return valores_dict
-            
+        return retorno            
     
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
@@ -240,6 +230,7 @@ class PropostaComercial(models.Model):
     bairro_do_proposto = models.CharField(blank=True, max_length=100)
     cep_do_proposto = models.CharField(blank=True, max_length=100)
     cidade_do_proposto = models.CharField(blank=True, max_length=100)
+    estado_do_proposto = models.CharField(blank=True, null=True, max_length=100, choices=STATE_CHOICES, default='MG')
     endereco_obra_proposto = models.TextField(blank=True)
     representante_legal_proposto = models.CharField(blank=True, max_length=100)
     telefone_contato_proposto = models.CharField(blank=True, max_length=100)
@@ -634,7 +625,28 @@ class ContratoFechado(models.Model):
     
     def valor_extenso(self):
         return extenso_com_centavos(str(self.valor))
-    
+
+    def gera_ordem_de_servico(self):
+        '''Methodo que deve ser chamado quando converter um contrato
+        ele pega os orcamentos e converte em lista de materiais,
+        matendo os registros de documento originário, à partir de uma ordem de servicos
+        '''
+        # verifica se contrato já possui ordem de serviço,
+        # afinal só pode haver uma por contrato
+        if not self.ordemdeservico_set.all():
+            ordem_de_servico = self.ordemdeservico_set.create(
+                cliente=self.cliente, valor=self.valor,
+            
+            )
+            for orcamento in self.propostacomercial.orcamentos_ativos():
+                # para cada orcamento
+                lista_material_contrato = ordem_de_servico.listamaterialdocontrato_set.create(orcamento=orcamento)
+                for linha in orcamento.linharecursomaterial_set.all():
+                    # para cada material no orcamento
+                    lista_material_contrato.linhalistamaterial_set.create(
+                        produto=linha.produto, quantidade_requisitada=linha.quantidade
+                    )
+
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)
     categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
