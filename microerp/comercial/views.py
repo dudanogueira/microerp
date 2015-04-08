@@ -1408,7 +1408,7 @@ class OrcamentoPrint:
                 # space
                 elements.append(Spacer(1, 12))
                 
-                contratante_texto = u"<strong>Cliente</strong>: %s, <strong>Documento:</strong> %s, <strong>Localizado à rua</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s" %\
+                contratante_texto = u"<strong>Cliente</strong>: %s, <strong>Documento:</strong> %s, <strong>Endereço do Cliente:</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s" %\
                     (proposta.nome_do_proposto, proposta.documento_do_proposto, proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto)
                 contratante_texto_p = Paragraph(contratante_texto, styles['justify'])
                 elements.append(contratante_texto_p)
@@ -1445,7 +1445,7 @@ class OrcamentoPrint:
                 elements.append(Spacer(1, 12))
                 # objeto texto
                 texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
-                elements.append(texto_objeto_p)
+                elements.append(texto_objeto_p.replace('\n', '<br />'))
 
                 # space
                 elements.append(Spacer(1, 12))
