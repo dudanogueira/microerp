@@ -1276,7 +1276,7 @@ class OrcamentoPrint:
                 # AC
                 texto_endereco = u"%s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s, <strong>Estado</strong>: %s" % \
                     (proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto, proposta.estado_do_proposto)
-                texto = u"<b>A/C</b>: %s<br />\
+                texto = u"<b>Cliente</b>: %s<br />\
             	<b>Telefone</b>: %s<br />\
             	<b>Endereço do Cliente</b>: %s <br />"% (
                         proposta.nome_do_proposto, proposta.telefone_contato_proposto, 
@@ -1402,14 +1402,14 @@ class OrcamentoPrint:
                 
             elif tipo == "projetoeletrico":
                 
-                id_desc_p = Paragraph("Proposta de Elaboração de Projeto Elétrico", styles['centered_h1'])
+                id_desc_p = Paragraph("PROPOSTA DE ELABORAÇÃO DE PROJETO ELÉTRICO", styles['centered_h1'])
                 elements.append(id_desc_p)
                 
                 # space
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 24))
                 
-                contratante_texto = u"<strong>Cliente</strong>: %s, <strong>Documento:</strong> %s, <strong>Endereço do Cliente:</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s" %\
-                    (proposta.nome_do_proposto, proposta.documento_do_proposto, proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto)
+                contratante_texto = u"<strong>Cliente</strong>: %s, <strong>Documento:</strong> %s, <strong>Endereço do Cliente:</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s, <strong>Estado</strong>: %s" %\
+                    (proposta.nome_do_proposto, proposta.documento_do_proposto, proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto, proposta.estado_do_proposto)
                 contratante_texto_p = Paragraph(contratante_texto, styles['justify'])
                 elements.append(contratante_texto_p)
                 
@@ -1444,8 +1444,8 @@ class OrcamentoPrint:
                 # espaco
                 elements.append(Spacer(1, 12))
                 # objeto texto
-                texto_objeto_p = Paragraph(proposta.objeto_proposto, styles['justify'])
-                elements.append(texto_objeto_p.replace('\n', '<br />'))
+                texto_objeto_p = Paragraph(proposta.objeto_proposto.replace('\n', '<br />'), styles['justify'])
+                elements.append(texto_objeto_p)
 
                 # space
                 elements.append(Spacer(1, 12))
