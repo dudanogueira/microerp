@@ -1,0 +1,353 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial > Clientes{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid" id="sub-menu-clientes">
+	
+	<div class="span6">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-group"></i> Pré / Clientes</h1>
+	</div>
+	
+	<div class="span6">
+		<div id="form-buscar-pre-clientes">
+   	 <form class="form-search form-inline" action="{% url "comercial:clientes" %}">
+
+       <input tabindex="1" type="text" class="input-medium search-query" name="cliente" id="cliente_busca" value="{% if cliente_q %}{{cliente_q}}{%endif%}" placeholder="pré / cliente, cnpj">
+			 
+			 <p class="btn-group">
+        <button type="submit" class="btn btn-info"><i class="fa fa-search"></i> Buscar</button>
+        <a data-placement="top" data-toggle="tooltip" title="Adicionar Pré Cliente" href="{% url "comercial:precliente_adicionar" %}{% if cliente_q %}?sugestao={{cliente_q}}{% endif %}" class="btn btn btn-success tooltip-items"><i class="fa fa-plus"></i></a>
+				{% if cliente_q %}
+             <a href="." class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Limpar Busca"><i class="fa fa-trash-o"></i> </a>
+				{% endif %}
+			</p>
+		</form>
+		</div>
+	</div>
+</div>
+
+<ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
+    <li class="active"><a href="#buscar" class="ajaxtab" data-toggle="tab">Buscar</a></li>
+	<li> <a href="#sem-proposta" data-toggle="tab">Sem Proposta <span class="badge badge-warning">{{preclientes_sem_proposta.count}}</span> </a></li>
+	<li> <a href="#requisicoes-propostas" data-toggle="tab">Requisições de Proposta <span class="badge badge-important">{{requisicoes_propostas.count}}</span></a></li>
+
+</ul>
+
+<div class="row-fluid well well-small">
+	<div class="span3">
+		{% if request.user.perfilacessocomercial.gerente %}
+		<h4><i class="fa fa-user"></i> Como Gerente</h4>
+		{% endif %}
+	</div>
+	<form method="POST" class="form form-inline">
+	<div class="span6">
+		
+			{% csrf_token %}
+			{{form_filtrar_precliente.as_table}}
+	</div>
+	<div class="span3">
+		<p><Br />
+		<button type="submit" class="btn btn-primary" name="btn-aplicar-filtro" value="filtrar">Aplicar Filtro</button>
+		</p>
+	</div>
+	</form>
+	
+</div>
+
+<div id="tab-content-comercial-clientes" class="tab-content">
+
+	<div class="tab-pane fade in active" id="buscar">
+		{% if busca_feita %}
+		    <div class="tabela-preclientes">
+		        <table class="table table-hover table-striped table-condensed">
+		            <thead>
+		                <caption><h4 class="alert">Pré Clientes</h4></caption>
+		                <tr>
+		                    <th>Pré Cliente</th>
+							<th>Responsável</th>
+							<th>Contato</th>
+							<th>Dados</th>
+		                    <th>Ações</th>
+		                </tr>
+		            </thead>
+		            <tbody>
+    
+		                {% for cliente in preclientes %}
+ 
+		                <tr>
+		                    <td>{{cliente.nome}} </td>
+							<td>{% if cliente.designado %}{{cliente.designado}}{% endif %}</td>
+							<td>{{cliente.contato}}</td>
+							<td>{{cliente.dados}}</td>
+		                    <td>
+													<p class="btn-group">
+														
+						        <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Ficha do Pré Cliente" href="{% url "comercial:precliente_ver" cliente.id %}"><i class='fa fa-eye'></i></a>
+								
+	
+		                        <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='fa fa-magic'></i></a>
+
+		                        {% if "solicitacao"|is_installed_app %}
+												
+															<a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="fa fa-bell-o"></i> {{cliente.solicitacao_set.count}}</a>
+		                        {% endif %}
+												
+                        
+		                        <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_precliente_adicionar" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+													</p>
+                        
+		                    </td>
+		                </tr>
+		                {% empty %}
+    
+		                <tr>
+		                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+		                    <td>{% if cliente_q %}
+		                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+		                        {% endif %}
+		                    </td>
+		                </tr>
+
+		                {% endfor %}
+    
+    
+		            </tbody>
+		        </table>
+		    </div>
+		    <hr />
+		    <div class="tabela-cliente">
+				<table class="table table-hover table-striped table-condensed">
+					<thead>
+		                <caption><h4 class="alert alert-success" >Clientes</h4></caption>
+		                <tr>
+		                    <th>Cliente</th>
+							<th>Responsável</th>
+		                    <th>Ações</th>
+		                </tr>
+		        	</thead>
+					<tbody>
+						{% for cliente in clientes %}
+  
+						<tr>
+		                <td>{% if cliente.tipo == "pf" %}
+		                        <span class="label">{{cliente.tipo|upper}}</span>
+		                    {% else %}
+		                        <span class="label label-success">{{cliente.tipo|upper}}</span> 
+		                    {% endif %}
+							{{cliente.nome}}
+		                </td>
+						<td>{% if cliente.designado %}{{cliente.designado}}{% endif %}</td>
+		                <td>
+											<p class="btn-group">
+		                    <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Cliente" href="{% url "comercial:cliente_ver"  cliente.id %}?cliente={{cliente_q}}"> <i class="fa fa-eye"></i></a>
+										
+		                    {% if "solicitacao"|is_installed_app %}
+		                    <a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?cliente={{cliente.id}}">{{cliente.solicitacao_set.count}} <i class="fa fa-bell-o"></i></a>
+		                    {% endif %}
+		                    <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:cliente_ver" cliente.id %}?cliente={{cliente_q}}#tab_propostas">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+											</p>
+		                </td>
+		            </tr>
+						{% empty %}
+    
+						<tr>
+		                                        <td class="alert alert-info"><strong>Nenhum Encontrado!</strong></td>
+		                <td>
+		                </td>
+		            </tr>
+
+						{% endfor %}
+					</tbody>
+				</table>
+		    </div>
+		{% else %}
+
+			{% if request.user.perfilacessocomercial.gerente %}
+				<h2>Central de Clientes - Gerente</h2>
+		
+			{% else %}
+
+				<h2>Central de Clientes - Vendedor</h2>
+
+			{% endif %}
+			Quantidade de Pré Clientes: {{preclientes.count}}<Br />
+			Quantidade de Clientes: {{clientes.count}}<Br />
+	
+		{% endif %}
+	</div>
+	
+	<div class="tab-pane fade in" id="sem-proposta">
+	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
+	        <table class="table table-hover table-striped table-condensed">
+	            <thead>
+	                <caption><h4 class="alert">Pré Clientes Sem Proposta</h4></caption>
+	                <tr>
+	                    <th>Pré Cliente</th>
+						<th>Contato</th>
+						<th>Dados</th>
+						{% if request.user.perfilacessocomercial.gerente %}
+							<th>Responsável</th>
+						{% endif %}
+						<th>Criado Por</th>
+	                    <th>Ações</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+
+	                {% for cliente in preclientes_sem_proposta %}
+	                <tr>
+	                    <td>{{cliente.nome}}</td>
+						<td>{{cliente.contato}}</td>
+						<td>{{cliente.dados}}</td>
+						{% if request.user.perfilacessocomercial.gerente %}
+							<td>{{cliente.designado}}</td>
+						{% endif %}
+						<td>{{cliente.adicionado_por}}</td>
+						
+	                    <td>
+							<p class="btn-group">
+
+		
+
+        <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Ficha do Pré Cliente" href="{% url "comercial:precliente_ver" cliente.id %}"><i class='fa fa-eye'></i></a>
+		
+
+        <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='fa fa-magic'></i></a>
+
+        {% if "solicitacao"|is_installed_app %}
+						
+									<a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="fa fa-bell-o"></i> {{cliente.solicitacao_set.count}}</a>
+        {% endif %}
+
+        <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_precliente_adicionar" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+		
+		
+		        <a class="btn btn-danger tooltip-items" data-placement="top" data-toggle="tooltip" title="Sem Interesse" href="{% url "comercial:clientes_precliente_sem_interesse" cliente.id %}"><i class="fa fa-thumbs-down"></i> </a>
+		
+		
+		
+							</p>
+	                    </td>
+	                </tr>
+	                {% empty %}
+
+	                <tr>
+	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+	                    <td>{% if cliente_q %}
+	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+	                        {% endif %}
+	                    </td>
+	                </tr>
+
+	                {% endfor %}
+
+
+	            </tbody>
+	        </table>
+	    </div>
+
+
+	</div>
+	
+	<div class="tab-pane fade in" id="requisicoes-propostas">
+	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
+	        <table class="table table-hover table-condensed">
+	            <thead>
+	                <caption><h4 class="alert alert-danger">Requisições de Propostas para Clientes</h4></caption>
+	                <tr>
+	                    <th>Cliente</th>
+						<th>Data</th>
+						{% if request.user.perfilacessocomercial.gerente %}
+							<th>Responsável</th>
+						{% endif %}
+						<th>Descrição</th>
+	                    <th>Ações</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                {% for requisicao in requisicoes_propostas %}
+	                <tr>
+	                    <td>{% include "frontend/comercial/botao-cliente.html" with cliente=requisicao.cliente %}</td>
+						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+						{% if request.user.perfilacessocomercial.gerente %}
+							<td>{{requisicao.cliente.designado}}</td>
+						{% endif %}
+						<td class="alert alert-info"><i>{{requisicao.descricao}}, <small>{{requisicao.criado_por}}</small></i></td>
+						<td>
+						<p class="btn-group">
+
+						<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" requisicao.cliente.id %}?requisicao_origem={{requisicao.id}}" class="btn btn-success"><i class="fa fa-check"></i> Atender</a>						
+						
+						
+						</p>
+						</td>
+						
+
+	                </tr>
+	                {% empty %}
+
+	                <tr>
+	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+	                    <td>{% if cliente_q %}
+	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+	                        {% endif %}
+	                    </td>
+	                </tr>
+
+	                {% endfor %}
+
+
+	            </tbody>
+	        </table>
+	    </div>
+		
+	</div>
+	
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-clientes, #top-menu-comercial").addClass("active");
+    $("#cliente_busca").focus()
+});
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#sub-menu-clientes').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+$('.popover-items').popover()
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

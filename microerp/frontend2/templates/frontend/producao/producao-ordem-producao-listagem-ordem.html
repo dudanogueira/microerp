@@ -1,0 +1,103 @@
+		<div class="accordion-group solid-border">
+	<div class="accordion-heading">
+		<a class="accordion-toggle" data-toggle="collapse"  href="#collapse-ordem-{{ordem.id}}">
+			<h4>
+			<div class="badge">ID #{{ordem.id}}</div> - {% if ordem.data_fechado %}
+										<span class="badge badge-success">Fechado</span>
+										{% else %}
+										<span class="badge badge-important">Aberto</span>
+										{% if ordem.atrasada %}
+											<span class="badge badge-important">Atrasada</span>
+										{% else %}
+											<span class="badge badge-success">Em dia 
+												{% if ordem.proxima_atividade %}
+												Próx. Atividade: {{ordem.proxima_atividade.data|timeuntil}}
+												{% endif %}
+											</span>
+										{% endif %}
+						
+										{% endif %}
+									
+										{% ifequal ordem.criticidade 0 %}
+											<span class="badge badge-success">
+										{% endifequal %}
+										{% ifequal ordem.criticidade 1 %}
+											<span class="badge badge-warning">
+										{% endifequal %}
+										{% ifequal ordem.criticidade 2 %}
+												<span class="badge badge-important">
+										{% endifequal %}
+													{{ordem.get_criticidade_display}}
+											</span>
+										{{ordem.titulo}} - <small>{{ordem.descricao}}</small></h4>	
+		
+		</a>
+	</div>
+	<div id="collapse-ordem-{{ordem.id}}" class="accordion-body collapse">
+		<div class="accordion-inner">
+						{# Informacoes da Ordem #}
+		
+						{% if not ordem.data_fechado %}
+						{# BOTOES PARA EDITAR, SE ABERTO #}
+						{% if request.user.perfilacessoproducao.gerente %}
+						<div class="botoes-editar-fechar row-fluid">
+							
+							<div class="span5">
+								
+								<p class="btn-group">
+									<a data-controle-id="{{ordem.id}}" href="#FormAddAtividade" role="button" class="btn btn-info btn-add-atividade" data-toggle="modal" ><i class="fa fa-plus"></i> Atividade</a>
+									<a href="{% url "producao:ordem_de_compra_fechar" ordem.id %}" class="btn btn-success"><i class="fa fa-check"></i> Completo</a>
+									<a href="{% url "producao:ordem_de_compra_editar" ordem.id %}" class="btn btn-danger"><i class="fa fa-pencil"></i> Editar</a>
+									
+								</p>
+							</div>
+							
+							<div class="span3">
+								<h3>Atividades</h3>
+							</div>
+							
+							<div class="span4">
+								<i class="fa fa-clock-o"></i> {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+								<i class="fa fa-user"></i> {{ordem.funcionario}}<br />
+								{% if ordem.fornecedor %}
+								<i class="fa fa-building"></i> {{ordem.fornecedor}}<br />
+								{% endif %}
+							</div>
+						</div>
+						{% endif %}
+		
+						{% else %}
+						<strong>Tempo que ficou aberto</strong>: {{ordem.data_aberto|timesince}}<br />
+						<strong>Data de Fechamento</strong>: {{ordem.data_fechado|date:"SHORT_DATE_FORMAT"}}
+						{% endif %}
+
+						<div class="atividades-{{ordem.id}}">
+							<ul>
+								{% for atividade in ordem.atividadedecompra_set.all %}
+								{% if atividade.data_fechado %}
+								<li><span class="badge badge-success">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span> - {{atividade.descricao}}, <small>fechado em {{atividade.data_fechado|date:"SHORT_DATETIME_FORMAT"}} por {{atividade.fechado_por.funcionario}}</small>
+								</li>
+								{% else %}
+								<li>
+									<span class="badge badge-important">{{atividade.data|date:"SHORT_DATETIME_FORMAT"}}</span>
+									{% if atividade.atrasada %}
+										<span class="badge badge-important">Atrasada</span>
+									{% else %}
+										<span class="badge badge-success">Em dia</span>
+									{% endif %} - <strong>{{atividade.descricao}}</strong>, <small>aberto há {{atividade.data|timesince}}</small>
+									{% if request.user.perfilacessoproducao.gerente %}
+									<a href="{% url "producao:ordem_de_compra_atividade_reagendar" atividade.controle_de_compra.id atividade.id %}" class="btn btn-info btn-reagendar-atividade"><i class="fa fa-refresh"></i></a>
+									<a href="{% url "producao:ordem_de_compra_atividade_fechar" atividade.controle_de_compra.id atividade.id %}" class="btn btn-success"><i class="fa fa-check"></i></a> <a href="{% url "producao:ordem_de_compra_atividade_remover" atividade.controle_de_compra.id atividade.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i></a>
+									{% endif %}
+								</li>
+								{% endif %}
+								{% empty %}
+								{% if not ordem.data_fechado %}
+								<small><a href="#FormAddAtividade" role="button" class="btn-add-atividade" data-controle-id="{{ordem.id}}" data-toggle="modal">Nenhuma Atividade. Adicione uma nova atividade.</a></small>
+								{% endif %}
+								{% endfor %}
+							</ul>
+						</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,246 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Controle de EPI{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-signal"></i> Capacitação de Procedimentos</h1>
+
+<div class="row-fluid" id="sub-menu-capacitacao-de-procedimentos">
+	
+	<div class="span8">
+		<ul class="nav nav-tabs">
+		    <li class="active"><a href="#sem-capacitacao" data-toggle="tab">Sem Capacitação</a></li>
+		    <li class=""><a href="#capacitacao-defasada" data-toggle="tab">Capacitação Defasada</a></li>
+		</ul>
+		
+	</div>
+	
+	<div class="span4">
+		<a href="." class="btn btn-success"><i class="fa fa-refresh fa-4x"></i></a>
+	</div>
+
+</div>
+
+
+<div id="capacitacao-de-procedimentos" class="tab-content">
+	
+	<div class="tab-pane fade in active" id="sem-capacitacao">
+		<h2>Funcionários Sem Capacitação de Procedimento</h2>
+		{% for funcionario_listado in funcionarios_ativos %}
+			{% if funcionario_listado.capacitacao_de_procedimento_faltante %}
+			<div class="well well-small">
+				<div class="row-fluid">
+					
+					<div class="span6">
+							<h4>{{funcionario_listado}} - {{funcionario_listado.cargo}}</h4>
+					</div>
+
+					<div class="span6 btn-group">
+						<a href="{% url "rh:capacitacao_de_procedimentos_gerar_ar" funcionario_listado.id %}" data-tipo="adicionar" class="btn btn-primary gerar_atribuicao" data-name="subprocedimentos-{{funcionario_listado.id}}"><i class="fa fa-plus "></i> Gerar Atribuição de Responsabilidade</a>
+						{% if funcionario_listado.atribuicao_responsabilidade_nao_treinado_adicionar %}
+						<a href="{% url "rh:capacitacao_de_procedimentos_ver_ar" funcionario_listado.id %}?tipo=adicionar" class="btn btn-success teste"><i class="fa fa-check"></i>  Confirmar ({{funcionario_listado.atribuicao_responsabilidade_nao_treinado_adicionar|length}})</a>
+						{% endif %}
+					</div>
+					
+				</div>
+				
+			<table class="table table-condensed table-hover table-rounded">
+	      <thead>
+	            <tr>
+									<th></th>
+	                <th>Procedimento</th>
+	                <th>Sub Procedimento</th>
+									<th>Versão</th>
+									<th>Atualidade</th>
+	            </tr>
+	       </thead>
+				<tbody>
+						{% for subprocedimento in funcionario_listado.capacitacao_de_procedimento_faltante %}
+						<tr data-toggle="popover" data-title="<b>Procedimento</b>" data-html=True data-content="{{subprocedimento.descricao}}" class="alert alert-info popover_item">
+							<td><input type="checkbox" name="subprocedimentos-{{funcionario_listado.id}}" value="{{subprocedimento.id}}" checked id="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}"></td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								{{subprocedimento.procedimento}}
+								</label>
+							</td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								{{subprocedimento.nome}}
+								</label>
+							</td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								{{subprocedimento.versao}}
+								</label>
+							</td>
+							<td>
+								<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}">
+								
+								{{subprocedimento.atualizado|date:"SHORT_DATE_FORMAT"}}
+							</label>
+							</td>
+						</tr>
+						{% endfor %}
+
+				</tbody>
+			</table>
+			</div>
+			{% endif %}
+		{% endfor %}
+		
+	</div>
+	
+	<div class="tab-pane fade in" id="capacitacao-defasada">
+		<h2>Funcionários Com Capacitação Defasada</h2>
+
+		{% for funcionario_listado in funcionarios_ativos %}
+			{% if funcionario_listado.capacitacao_de_procedimento_defasado %}
+			<div class="well well-small">
+				<div class="row-fluid">
+
+					<div class="span6">
+						<h4>{{funcionario_listado}} - {{funcionario_listado.cargo}}</h4>
+					</div>
+
+					<div class="span6">
+						<p class="btn-group">
+						<a href="{% url "rh:capacitacao_de_procedimentos_gerar_ar" funcionario_listado.id %}" data-tipo="atualizar" class="btn btn-primary gerar_atribuicao" data-name="subprocedimentos-{{funcionario_listado.id}}-atualizar"><i class="fa fa-plus "></i> Gerar Atualização de Responsabilidade</a>
+						
+						{% if funcionario_listado.atribuicao_responsabilidade_nao_treinado_atualizar %}
+						<a href="{% url "rh:capacitacao_de_procedimentos_ver_ar" funcionario_listado.id %}?tipo=atualizar" class="btn btn-success teste"><i class="fa fa-check"></i>  Confirmar ({{funcionario_listado.atribuicao_responsabilidade_nao_treinado_atualizar|length}})</a>
+						{% endif %}
+					</p>
+						
+						
+					</div>					
+
+				</div>
+
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+	            <tr>
+									<th></th>
+	                <th>Procedimento</th>
+	                <th>Sub Procedimento</th>
+									<th>Versão Corrente</th>
+									<th>Versão Treinada</th>
+									<th>Última Capacitação</th>
+	            </tr>
+	      </thead>
+					<tbody>
+						{% for capacitacao in funcionario_listado.capacitacao_de_procedimento_defasado %}
+						
+						<tr data-toggle="popover" data-title="<b>Procedimento</b>" data-html=True data-content="{{capacitacao.subprocedimento.descricao}}" class="alert alert-info popover_item">
+						
+						
+						
+							<td><input type="checkbox" name="subprocedimentos-{{funcionario_listado.id}}-atualizar" value="{{capacitacao.subprocedimento.id}}" checked id="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}-atualizar"></td>
+							
+							<td><label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}-atualizar">
+								<strong>{{capacitacao.subprocedimento.procedimento.codigo}}</strong>: {{capacitacao.subprocedimento.procedimento.nome}}
+							</label>
+							</td>
+							
+							
+							<td><label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}-atualizar">
+								{{capacitacao.subprocedimento.nome}}
+							</label></td>
+
+							
+							<td>							<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}-atualizar">
+								{{capacitacao.subprocedimento.versao}}
+							</label></td>
+							
+							<td>							<label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}-atualizar">
+								{{capacitacao.versao_treinada}}
+							</label></td>
+							
+							
+							<td><label for="funcionario-{{funcionario_listado.id}}-subprocedimento-{{subprocedimento.id}}-atualizar">{{capacitacao.ultima_atualizacao|date:"SHORT_DATE_FORMAT"}}</label></td>
+						</tr>
+						{% endfor %}
+
+				</tbody>
+				</table>
+			</div>
+			{% endif %}
+		{% endfor %}
+		
+			
+		
+		
+
+	</div>
+
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+
+
+$(document).ready(function() {
+	$("#menu-rh-capacitacao-de-procedimentos, #top-menu-rh").addClass("active");
+	var activeTab = $('[href=' + location.hash + ']');
+	$('.popover_item').popover({
+			trigger: "hover",
+			placement: 'bottom'
+		});
+})
+
+$('#sub-menu-capacitacao-de-procedimentos').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = this.hash;
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+
+
+$('.gerar_atribuicao').click(function(e){
+	var botao = $(this)
+	e.preventDefault();
+	data = $("input[name="+botao.data('name')+"]:checked").map(
+	     function () {return this.value;}).get().join(",");
+ if (data){
+	 tipo = $(this).data('tipo')
+	 novo_href = botao.attr('href') + "?subprocedimentos=" + data + "&tipo="+tipo
+	 window.location.href = novo_href
+ }else{
+	 alert('Erro, é preciso selecionar pelo menos um Sub Procedimentos');
+ }
+
+})
+
+$("input[type='checkbox']").change(function() {
+	if (this.checked){
+		$(this).closest("tr").attr('class', 'alert alert-info tooltip_item'); 
+	}else{
+		$(this).closest("tr").attr('class', 'alert alert-warning tooltip_item'); 
+	}
+});
+
+function activateTab() {
+        var activeTab = $('[href=' + window.location.hash.replace('/', '') + ']');
+        activeTab && activeTab.tab('show');
+    }
+
+// Trigger when the page loads
+activateTab();
+
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

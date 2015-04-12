@@ -1,0 +1,757 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ver Sub Produtos{% endblock %}</title>
+
+{% block content %}
+<h1>{{subproduto.part_number}} - {{subproduto.nome}} {% if subproduto.ativo %}<span class="label label-success">Ativo</span>{% else %}<span class="label label-important">Inativo</span>{% endif %}</h1>
+{% if request.user.perfilacessoproducao.gerente %}
+<p class="btn-group">
+    <a class="btn btn-primary" href="{% url "producao:editar_subproduto" subproduto.id %}"><i class="fa fa-pencil"></i> Editar Sub Produto</a>
+
+		{% if subproduto.ativo %}
+		<a href="{% url "producao:inativar_subproduto" subproduto.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i> Inativar</a>
+
+		{% else %}
+		<a href="{% url "producao:ativar_subproduto" subproduto.id %}" class="btn btn-success"><i class="fa fa-thumbs-up"></i> Ativar</a>
+		{% endif %}
+
+
+</p>
+{% endif %}
+
+<ul class="nav nav-tabs" id="navtab-subproduto">
+    <li class="active"><a href="#informacoes" data-toggle="tab">Informações</a></li>
+    <li>
+        <a href="#participacao" data-toggle="tab">
+            Participações
+            <span class="badge badge-important">{{subproduto.total_participacao}}</span>
+
+        </a>
+    </li>
+    <li>
+        <a href="#linhas-componente" data-toggle="tab">
+            Componentes
+            <span class="badge badge-info">{{linha_componentes_padrao.count}}</span>
+					</a>
+    </li>
+    <li>
+        <a href="#sub-produtos-agregados" data-toggle="tab">
+            Sub Produtos
+            <span class="badge badge-success">{{subproduto.linhasubprodutos_agregados.count}}</span>
+            
+        </a>
+    </li>
+    <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
+        <span class="badge badge">{{subproduto.documentotecnicosubproduto_set.count}}</span>
+
+        
+    
+    
+    </a></li>
+    <li><a href="#relatorios" data-toggle="tab">Relatórios</a></li>
+    
+</ul>
+
+<div id="myTabContent" class="tab-content">
+
+    <div class="tab-pane fade in active" id="informacoes">
+
+        <div class="row-fluid">
+            <div class="span6">
+                <h2>Geral</h2>
+                <strong>Nome</strong>: {{subproduto.nome}}<br />
+                <strong>Descrição</strong>: {{subproduto.descricao}}<br /><br />
+								<p>
+                <strong>Somatório do Custo de Componentes:</strong> <span class="label label-info">R$ {{subproduto.custo_total_linhas|floatformat:2}}</span><br />
+								
+ 							 <strong>Somatório do Custo de Sub Produtos:</strong>                <span class="label label-success">R$ {{subproduto.valor_custo_total_dos_sub_produtos_agregados|floatformat:2}}</span><br />
+
+                <strong>Somatório Total de Custos</strong>: <span class="label">R$ {{subproduto.valor_total_de_custo|floatformat:2}}</span> 
+							</p>
+                <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}<br />
+
+                <h3>Situação de Testes e Produção</h3>
+					{% if subproduto.tipo_de_teste == 2 %}
+					<div id="situacao-teste-composto">
+						<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>Situação</th>
+							<th>Quantidade</th>
+							<th>Ação</th>
+						</tr>
+					</thead>
+					<tbody>
+							
+							<tr>
+								<td>Montado</td>
+								<td><span class="badge">{{subproduto.total_montado}}</span></td>
+								<td>
+									
+									<!-- Button to trigger modal -->
+									<span class="btn-group"><a role="button" href="#adicionar-montado" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-montado" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span> <a href="#enviar-para-teste" data-max-control="{{subproduto.total_montado}}" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-arrow-down"></i> Enviar para Testes</a>
+
+									<!-- Modal Enviar para Teste -->
+									<div id="enviar-para-teste" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Enviar para Teste</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-enviar-para-teste">
+												{% csrf_token %}
+											{{form_enviar_para_teste.as_p}}
+										</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-enviar-para-teste" class="btn btn-info" name="enviar-subproduto-teste-btn" value="enviado"><i class="fa fa-arrow-down"></i> Enviar para Testes</button>
+									  </div>
+									</div>
+									
+									<!-- Modal Adicionar Montado -->
+									<div id="adicionar-montado" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Adicionar Sub Produto Montado</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-adicionar-montado">
+												{% csrf_token %}
+												{{form_adiciona_montado.as_p}}
+											</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-adicionar-montado" class="btn btn-success" name="adiciona-subproduto-montado-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Montado</button>
+									  </div>
+									</div>
+
+									<!-- Modal Remover Montado -->
+									<div id="remover-montado" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Remover Sub Produto Montado</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-remover-montado">
+												{% csrf_token %}
+												{{form_remove_montado.as_p}}
+											</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-remover-montado" class="btn btn-success" name="remove-subproduto-montado-btn" value="remover"><i class="fa fa-minus"></i> Remover Montado</button>
+									  </div>
+									</div>
+									
+									
+								</td>
+							</tr>
+							<tr>
+								<td>Em Teste</td>
+								<td><span class="badge badge-info">{{subproduto.total_testando}}</span></td>
+								<td>
+									
+									<!-- Button to trigger modal -->
+									<span class="btn-group"><a role="button" href="#adicionar-testando" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-testando" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span> <a href="#enviar-para-funcional" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-arrow-down"></i> Enviar para Funcional</a>
+
+									<!-- Modal Enviar para Funcional -->
+									<div id="enviar-para-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Enviar para Funcional</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-enviar-para-funcional">
+												{% csrf_token %}
+											{{form_enviar_para_funcional.as_p}}
+										</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-enviar-para-funcional" class="btn btn-success" name="enviar-subproduto-funcional-btn" value="enviado"><i class="fa fa-arrow-down"></i> Enviar para Funcional</button>
+									  </div>
+									</div>
+
+									<!-- Modal Adicionar Testando -->
+									<div id="adicionar-testando" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Adicionar Sub Produto Testando</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-adicionar-testando">
+												{% csrf_token %}
+												{{form_adiciona_em_testes.as_p}}
+											</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-adicionar-testando" class="btn btn-success" name="adiciona-subproduto-testes-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Testando</button>
+									  </div>
+									</div>
+
+									<!-- Modal Remover Testando -->
+									<div id="remover-testando" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Remover Sub Produto Testando</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-remover-testando">
+												{% csrf_token %}
+												{{form_remove_testes.as_p}}
+											</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-remover-testando" class="btn btn-success" name="remove-subproduto-testes-btn" value="remover"><i class="fa fa-minus"></i> Remover Testando</button>
+									  </div>
+									</div>
+
+									
+									
+								</td>
+							</tr>
+							<tr>
+								<td>Funcional</td>
+								<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
+								<td>
+									
+									<span class="btn-group"><a role="button" href="#adicionar-funcional" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-funcional" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
+									
+									<!-- Modal Adicionar Funcional -->
+									<div id="adicionar-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Adicionar Sub Produto Funcional</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-adicionar-funcional">
+												{% csrf_token %}
+												{{form_adiciona_funcional.as_p}}
+											</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-adicionar-funcional" class="btn btn-success" name="adiciona-subproduto-funcional-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Funcional</button>
+									  </div>
+									</div>
+									
+									<!-- Modal Remover Funcional -->
+									<div id="remover-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+									  <div class="modal-header">
+									    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+									    <h3 id="myModalLabel">Remover Sub Produto Funcional</h3>
+									  </div>
+									  <div class="modal-body">
+											<form method="POST" id="form-remover-funcional">
+												{% csrf_token %}
+												{{form_remove_funcional.as_p}}
+											</form>
+									  </div>
+									  <div class="modal-footer">
+									    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+									    <button form="form-remover-funcional" class="btn btn-success" name="remove-subproduto-funcional-btn" value="remover"><i class="fa fa-minus"></i> Remover Funcional</button>
+									  </div>
+									</div>
+									
+									
+								</td>
+							</tr>
+							
+					</tbody>
+				</table>
+					</div>
+					{% elif subproduto.tipo_de_teste == 1  %}
+					<div id="situacao-teste-simples">
+						<table class="table table-condensed table-hover table-rounded">
+							<thead>
+								<tr>
+									<th>Situação</th>
+									<th>Quantidade</th>
+									<th>Ação</th>
+								</tr>
+							</thead>
+							<tbody>
+							
+								<tr>
+									<td>Funcional</td>
+									<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
+									<td>
+										<span class="btn-group"><a role="button" href="#adicionar-funcional" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-funcional" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
+										
+										<!-- Modal Adicionar Funcional -->
+										<div id="adicionar-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+											<div class="modal-header">
+												<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+												<h3 id="myModalLabel">Adicionar Sub Produto Funcional</h3>
+											</div>
+											<div class="modal-body">
+												<form method="POST" id="form-adicionar-funcional">
+													{% csrf_token %}
+													{{form_adiciona_funcional.as_p}}
+												</form>
+											</div>
+											<div class="modal-footer">
+												<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+												<button form="form-adicionar-funcional" class="btn btn-success" name="adiciona-subproduto-funcional-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Funcional</button>
+											</div>
+										</div>
+										<!-- Modal Remover Funcional -->
+										<div id="remover-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+											<div class="modal-header">
+												<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+												<h3 id="myModalLabel">Remover Sub Produto Funcional</h3>
+											</div>
+											<div class="modal-body">
+												<form method="POST" id="form-remover-funcional">
+													{% csrf_token %}
+													{{form_remove_funcional.as_p}}
+												</form>
+											</div>
+											<div class="modal-footer">
+												<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+												<button form="form-remover-funcional" class="btn btn-success" name="remove-subproduto-funcional-btn" value="remover"><i class="fa fa-minus"></i> Remover Funcional</button>
+											</div>
+										</div>
+										
+										
+									</td>
+								</tr>
+							
+							
+							
+							</tbody>
+						</table>
+					</div>
+					{% else %}
+					<div class="sotiacao-teste-nulo">
+							<strong>Não precisa de testes.</strong><br />
+						</div>
+					{% endif %}
+            </div>
+
+            <div clas="span6">
+                {% if subproduto.imagem %}
+                <a href="{{subproduto.imagem.url}}">
+                    
+                    {% thumbnail subproduto.imagem "200" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                    {% endthumbnail %}
+
+                </a>
+                {% endif %}
+                
+            </div>
+        </div>
+
+    </div>
+		
+    <div class="tab-pane fade in" id="participacao">
+			<h4>Participação Como Sub Produto de Outros Sub Produtos</h4>	
+			{% if participacao_subprodutos %}
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Item</th>
+						<th>Sub Produto</th>
+						<th>Quantidade</th>
+						<th>Nome</th>
+						<th>Descrição</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for participacao in participacao_subprodutos %}
+					<tr>
+						<td class="alert alert-danger">{{forloop.counter}}</td>
+						<td><a href="{% url "producao:ver_subproduto" participacao.subproduto_principal.id %}#sub-produtos-agregados">{{participacao.subproduto_principal.part_number}}</a></td>
+						<td><span class="badge badge-warning">{{participacao.quantidade}} und</span></td>
+						<td>{{participacao.subproduto_principal.nome}}</td>
+						<td>{{participacao.subproduto_principal.descricao}}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+				<small>Nenhuma Participação</small>
+			{% endif %}
+			<h4>Participação Como Sub Produto de Outros Produtos</h4>	
+			{% if agregado_em_produto %}
+			<table class="table table-condensed table-hover table-rounded">
+				<thead>
+					<tr>
+						<th>Item</th>
+						<th>Produto</th>
+						<th>Quantidade</th>
+						<th>Nome</th>
+						<th>Descrição</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for participacao in agregado_em_produto %}
+					<tr>
+						<td class="alert alert-danger">             {{forloop.counter}} </span>
+						</td>
+						<td><a href="{% url "producao:ver_produto" participacao.produto.id %}#linhas-subprodutos">{{participacao.produto.part_number}}</a></td>
+						<td><span class="badge badge-warning">{{participacao.quantidade}} und</span></td>
+						<td>{{participacao.produto.nome}}</td>
+						<td>{{participacao.produto.descricao}}</td>
+
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			{% else %}
+			<small>Nenhuma Participação</small>
+			{% endif %}
+			
+			
+	</div>
+    
+    <div class="tab-pane fade in" id="linhas-componente">
+        
+        <h2>Linhas de Componente do Sub Produto</h2>
+        <div class="row-fluid">
+
+			<div class="span2">
+		        {% if request.user.perfilacessoproducao.gerente %}
+        		<Br />
+		        <a href="{% url "producao:adicionar_linha_subproduto" subproduto.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
+        
+		        {% endif %}
+			</div>
+			<form method="POST">
+				{% csrf_token %}
+			<div class="span4">
+				{{form_filtrar_linhas.componente.label}}<Br />
+				{{form_filtrar_linhas.componente.errors}}
+				{{form_filtrar_linhas.componente}}
+			</div>
+			{% if subproduto.possui_tags %}
+			<div class="span3">
+				{{form_filtrar_linhas.tag.label}}<br />
+				{{form_filtrar_linhas.tag.errors}}
+				{{form_filtrar_linhas.tag}}
+			</div>
+			{% endif %}
+			<div class="span3">
+				<br />
+				<button type="submit" class="btn btn-success" name="filtrar-linhas-componentes" value="filtrar">
+						<i class="fa fa-filter"></i> Filtrar
+				</button>
+			</div>
+			</form>	
+		</div>
+
+        <table class="table table-condensed table-hover table-rounded">
+            <thead>
+                <tr>
+                    <th>Item</th>
+					{% if subproduto.possui_tags %}
+					<th>TAG</th>
+					{% endif %}
+                    <th>Componente</th>
+					<th>Opções</th>
+                    <th>Descrição</th>
+                    <th>QTD</th>
+					<th>Custo Unit.</th>
+                    <th>Custo Total</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for opcao_padrao in linha_componentes_padrao %}
+				<tr>
+                    <td class="alert-info" id="linha-id-{{linha.id}}">{{forloop.counter}}</td>
+										{% if opcao_padrao.linha.subproduto.possui_tags %}
+                    <td>
+                        {{opcao_padrao.linha.tag|upper}}
+                    </td>
+										{% endif %}
+                    <td>
+                        <a href="
+                        {% url "producao:ver_componente" opcao_padrao.componente.id %}
+                        ">{{opcao_padrao.componente.part_number}}</a>
+                    </td>
+                    <td>
+                        <span class="badge badge-info">{{opcao_padrao.linha.opcaolinhasubproduto_set.count}}</span>
+                    </td>
+										
+                    <td>
+                        {{opcao_padrao.linha.opcao_padrao.componente.descricao}}
+                    </td>
+                    <td>
+						<span class="badge badge-warning">
+                        {{opcao_padrao.quantidade}} {{opcao_padrao.componente.medida}}
+						</span>
+                    </td>
+					
+					<td>R$ {{opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
+                    <td>
+                        <span class="label">R$ {{opcao_padrao.linha.valor_custo_da_linha|floatformat:2}}</span>
+					</td>
+
+					<td>
+						<div class="btn-group">
+                            {% if request.user.perfilacessoproducao.gerente %}
+                            <a href="{% url "producao:editar_linha_subproduto" subproduto.id opcao_padrao.linha.id %}" class="btn">
+                                <i class="fa fa-pencil"></i>
+                            </a>
+                            <a class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')" href="{% url "producao:apagar_linha_subproduto" subproduto.id opcao_padrao.linha.id %}">
+                                <i class="fa fa-trash-o"></i>
+                            </a>
+                            {% else %}
+                            <a href="{% url "producao:editar_linha_subproduto" subproduto.id opcao_padrao.linha.id %}" class="btn">
+                                <i class="fa fa-eye-open"></i>
+                            </a>                   
+                            {% endif %}
+							</div>
+					</td>
+				</tr>           
+                  {% empty %}
+                  <tr>
+                      <td>
+                          Nenhuma Linha Encontrada.
+                      </td>
+                  </tr>
+                  {% endfor %}
+				  <tr>
+					  <td></td>
+					{% if subproduto.possui_tags %}
+						<td></td>
+					{% endif %}
+					  
+					  <td></td>
+					  <td></td>
+					  <td></td>
+					  <td></td>
+					  <td></td>
+  					  <td><span class="label label-success">R$ {{total_linha_componentes|floatformat:2}}</span></td>
+   					  <td></td>
+
+				  </tr>
+
+            </tbody>
+		</table>
+   
+	</div>
+    
+    <div class="tab-pane fade in" id="sub-produtos-agregados">
+        
+        <h2>Sub Produtos Agregados</h2>            
+                
+        <!-- Button to trigger modal -->
+        <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Sub Produto</a>
+ 
+        <!-- Modal Agregar Sub produto -->
+        <div id="modal-agregar-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">Agregar Sub Produto</h3>
+            </div>
+            <div class="modal-body">
+                
+                <form method="POST" action="#sub-produtos-agregados">
+                    {% csrf_token %}   
+                  
+                    {{form_agregar_subproduto.as_p}} 
+                
+                
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+                    <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar"><i class="fa fa-plus"></i> Agregar Sub Produto</button>
+                </form>
+                
+            </div>
+        </div>
+
+        <table class="table table-condensed table-hover table-rounded">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Sub Produto</th>
+                        <th>Nome</th>
+                        <th>Descrição</th>
+						<th>Qtd.</th>
+						<th>Custo Unit.</th>
+                        <th>Custo Total</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in subproduto.linhasubprodutos_agregados.all %}
+                    <tr>
+                        <td id="linha-id-{{linha.id}}" class="alert-success">{{forloop.counter}}</td>
+                        <td><a href="{% url "producao:ver_subproduto" linha.subproduto_agregado.id %}">{{linha.subproduto_agregado.part_number}}</a></td>
+						<td>{{linha.subproduto_agregado.nome}}</td>
+                        <td>{{linha.subproduto_agregado.descricao}}</td>
+						<td><span class="badge badge-warning">{{linha.quantidade}}</td>
+						<td>R$ {{linha.subproduto_agregado.custo|floatformat:2}}</td>
+                       	<td><span class="label">R$ {{linha.custo|floatformat:2}}</span ></td>
+                        <td>
+                                    {% if request.user.perfilacessoproducao.gerente %}
+                                    <a href="{% url "producao:subproduto_apagar_linha_subproduto_agregado" subproduto.id linha.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
+                                    {% endif %}
+                         </td>
+                    </tr>
+                    {% endfor %}
+					<tr>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td></td>
+						<td><span class="label label-success">R$ {{subproduto.custo_total_dos_sub_produtos_agregados|floatformat:2}}</span></td>
+						<td></td>
+						<td></td>
+					</tr>
+                </tbody>
+        </table>
+    </div>
+
+    <div class="tab-pane fade in" id="arquivos">
+        
+        <h2>Imagem</h2>
+        <div class="row-fluid">
+            <div class="span6">
+                {% if subproduto.imagem %}
+                <a href="{{subproduto.imagem.url}}">
+                    {% thumbnail subproduto.imagem "400" crop="center" as im %}
+                    <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+                    {% endthumbnail %}
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="span6">
+                {% if request.user.perfilacessoproducao.gerente %}
+                <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{form_imagem.as_p}}
+                    <button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Alterar / Anexar Imagem</button>
+
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+            <h2>Documentos Técnicos</h2>
+
+            {% if request.user.perfilacessoproducao.gerente %}
+            <form method="POST" class="form-inline" action="#arquivos" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{form_anexos.as_p}}
+                <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Anexar Arquivo</button>
+    
+            </form>
+            {% endif %}
+            <hr />
+            {% for anexo in subproduto.documentotecnicosubproduto_set.all %}
+						<p>
+            <span class="label">{{forloop.counter}}</span> - <a href="{{anexo.arquivo.url}}">{{anexo.nome}}</a>
+            {% if request.user.perfilacessoproducao.gerente %}
+            <a href="{% url "producao:ver_subproduto_apagar_anexo" subproduto.id anexo.id %}" class="btn btn-danger" onclick="return confirm('Tem certeza que Quer Apagar?')"><i class="fa fa-trash-o"></i></a>
+            {% endif %}
+						</p>
+            {% empty %}
+            Nenhum arquivo anexo.
+            {% endfor %}
+        
+    </div>
+
+	<div class="tab-pane fade in" id="relatorios">
+ 		 <p class="btn-group">
+ 			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='fa fa-print'></i> Impressão da Composição deste Sub Produto</a>
+ 		 </p>
+			
+		</div>	
+</div>
+{% endblock %}
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
+    {% if form_agregar_subproduto.errors %}
+    $('#modal-agregar-subproduto').modal('show');
+    {% endif %}
+		
+    {% if form_enviar_para_teste.errors %}
+    $('#enviar-para-teste').modal('show');
+    {% endif %}
+
+
+    {% if form_enviar_para_funcional.errors %}
+    $('#enviar-para-funcional').modal('show');
+    {% endif %}
+
+    {% if form_adiciona_montado.errors %}
+    $('#adicionar-montado').modal('show');
+    {% endif %}
+
+    {% if form_remove_montado.errors %}
+    $('#remover-montado').modal('show');
+    {% endif %}
+
+    {% if form_adiciona_em_testes.errors %}
+    $('#adicionar-testando').modal('show');
+    {% endif %}
+
+    {% if form_remove_testes.errors %}
+    $('#remover-testando').modal('show');
+    {% endif %}
+		
+		
+    {% if form_adiciona_funcional.errors %}
+    $('#adicionar-funcional').modal('show');
+    {% endif %}
+
+    {% if form_remove_funcional.errors %}
+    $('#remover-funcional').modal('show');
+    {% endif %}
+		
+		
+		$( ".datepicker" ).datepicker({
+			inline: true,
+	        dateFormat: "dd/mm/yy"
+        
+		});
+		
+
+});
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-subproduto').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

@@ -1,0 +1,124 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid" id="sub-menu-banco-de-horas">
+	
+	<div class="span8">
+		<ul class="nav nav-tabs">
+		    <li class="active"><a href="#banco-de-horas" data-toggle="tab">Banco de Horas</a></li>
+		    <li class=""><a href="#horas-extra" data-toggle="tab">Horas Extra</a></li>
+		</ul>
+		
+	</div>
+	
+	<div class="span4">
+	</div>
+
+</div>
+
+
+<div id="capacitacao-de-procedimentos" class="tab-content">
+	
+	<div class="tab-pane fade in active" id="banco-de-horas">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-time"></i> Banco de Horas</h1>
+		
+		{% for funcionario in funcionarios %}
+		<div class="well well-small alert alert-{{funcionario.banco_de_horas_situacao}}">
+		    <h2>{{funcionario}}</h2>
+    
+		    <a class="btn btn-info" href="{% url "rh:controle_banco_de_horas_do_funcionario" funcionario.id %}"><i class="icon-time icon-white"></i> Relatório Detalhado para {{funcionario}}</a>
+		    <h3>Admissão: {{funcionario.periodo_trabalhado_corrente.inicio}}</h3>
+		        <strong>Horas Trabalhadas Esperadas</strong>: {{funcionario.banco_de_horas_esperada}} horas<br />    
+		        <strong>Horas Trabalhadas Registrada</strong>: {{funcionario.banco_de_horas_trabalhadas|floatformat:1}} horas<br />
+		        <hr />
+		        <strong>Saldo</strong>:  <span class="badge badge-{% if funcionario.banco_de_horas_saldo > 0 %}success{%else%}important{%endif%}">{{funcionario.banco_de_horas_saldo|floatformat:1}}</span>
+        
+        
+		        <br />
+		        {% if funcionario.banco_de_horas_ultimo_lancamento %}
+		        <strong>Último Lançamento</strong>: De {{funcionario.banco_de_horas_ultimo_lancamento.inicio|date:"SHORT_DATE_FORMAT"}} a {{funcionario.banco_de_horas_ultimo_lancamento.fim|date:"SHORT_DATE_FORMAT"}}, Total: {{funcionario.banco_de_horas_ultimo_lancamento.total}}
+		        {% endif %}
+		        <hr />
+		</div>
+		{% endfor %}
+		
+	</div>
+	
+	<div class="tab-pane fade in active" id="horas-extra">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-flash"></i> Horas Extra</h1>
+		
+		<table class="table table-condensed table-hover table-rounded">
+      <thead>
+            <tr>
+								<th>ID</th>
+                <th>Funcionário</th>
+								<th>Cargo</th>
+                <th>Quantidade</th>
+								<th>Valor Total</th>
+								<th>Data da Execução</th>
+								<th>Solicitante</th>
+								<th>Ações</th>
+            </tr>
+      </thead>
+			<tbody>
+				{% for autorizacao in horas_extra_autorizadas %}
+				<tr>
+					<td>{{autorizacao.id}}</td>
+					<td>{{autorizacao.periodo_trabalhado.funcionario}}</td>
+					<td>{{autorizacao.periodo_trabalhado.funcionario.cargo_atual}}</td>
+					<td>{{autorizacao.quantidade}}</td>
+					<td>R$ {{autorizacao.valor_total|floatformat:2}}</td>
+					<td>{{autorizacao.data_execucao|date:"SHORT_DATE_FORMAT"}}</td>
+					<td>{{autorizacao.solicitante}}</td>
+					<td><a class="btn btn-success" href="{% url "rh:imprimir_hora_extra" autorizacao.periodo_trabalhado.funcionario.id autorizacao.id %}"><i class="fa fa-print"></i></a></td>
+				</tr>
+				{% endfor %}
+
+			</tbody>
+		</table>
+		
+		
+	</div>
+
+	
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-controle-de-bh, #top-menu-rh").addClass("active");
+});
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#sub-menu-banco-de-horas').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

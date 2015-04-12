@@ -1,0 +1,103 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Registro de Teste{% endblock %}</title>
+
+{% block content %}
+<h1><i class="icon-th"></i> <i class="icon-code-fork"></i>  Registro de Teste</h1>
+
+<div class="accordion" id="arvore-de-produtos">
+	{% for produto in produtos %}
+  <div class="accordion-group">
+    <div class="accordion-heading">
+      <a class="accordion-toggle" data-toggle="collapse"  href="#collapse{{produto.id}}">
+        {{produto}}
+      </a>
+    </div>
+    <div id="collapse{{produto.id}}" class="accordion-body collapse in">
+      <div class="accordion-inner">
+        <h4>Componentes</h4>
+				
+      	<table class="table table-condensed table-hover table-rounded">
+          <thead>
+              <tr>
+                  <th>Componente</th>
+									<th>Quantidade</th>
+									<th>Descrição</th>
+              </tr>
+          </thead>
+          <tbody>
+						{% for linha in produto.linhacomponenteavulsodoproduto_set.all %}
+							<tr>
+								<td>{{linha.componente.part_number}}</td>
+								<td>{{linha.quantidade}} {{linha.componente.medida}}</td>
+								<td>{{linha.componente.descricao}}</td>
+							</tr>
+						{% endfor %}
+												
+					</tbody>
+				</table>
+				
+				<h4>Sub Produtos</h4>
+				<div class="accordion" id="accordion-subproduto-{{produto.id}}">
+					{% for linha in produto.linhasubprodutodoproduto_set.all %}
+				  <div class="accordion-group">
+				    <div class="accordion-heading">
+				      <a data-target="#collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-toggle" data-toggle="collapse" data-parent="#accordion-subproduto-{{produto.id}}" href="#collapse-produto{{produto.id}}-linha{{linha.id}}" data-href="{% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}">
+				        {{linha.subproduto}}
+				      </a>
+				    </div>
+
+				    <div id="collapse-produto{{produto.id}}-linha{{linha.id}}" class="accordion-body collapse" data-href={% url "producao:arvore_de_produto_ajax_subproduto" linha.subproduto.id produto.id %}>
+				      <div class="accordion-inner">
+				        <i class='icon-spinner icon-spin icon-large icon-3x'></i>
+				      </div>
+				    </div>
+				  </div>
+					{% endfor %}
+					
+				</div>
+
+      </div>
+    </div>
+  </div>
+	{% endfor %}
+</div>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-arvore-de-produto, #top-menu-producao").addClass("active");
+	});
+	
+
+$(document).on("click", ".accordion-toggle", function(e){
+
+  var $this = $(this);
+  if($this.attr('data-href'))
+  {
+		$($this.attr('data-target')).load($this.attr('data-href'));
+  }
+	
+});
+
+
+$(document).on("click", ".carregar-url", function(e){
+	e.preventDefault()
+	var $this = $(this);
+	$($this.attr('target')).load($this.attr('data-url'));
+	
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

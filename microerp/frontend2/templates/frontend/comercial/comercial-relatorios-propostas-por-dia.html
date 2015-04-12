@@ -1,0 +1,121 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load soma_valor_propostas_lista %}
+
+<title>{%block title %}{{block.super}} - Comercial - Relatórios{% endblock %}</title>
+
+{% block content %}
+<div class="row-fluid">
+	<div class="span8">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-tachometer"></i> Relatórios</h1>
+		<h3>Propostas Por Dia</h3>
+		
+		{% if de and ate %}
+			Entre <strong>{{de|date:"SHORT_DATE_FORMAT"}}</strong> e <strong>{{ate|date:"SHORT_DATE_FORMAT"}}</strong>
+		{% endif %}
+		
+		{% if de and not ate %}
+			À partir de <strong>{{de|date:"SHORT_DATE_FORMAT"}}</strong>
+		{% endif %}
+		
+		{% if ate and not de %}
+			Até <strong>{{ate|date:"SHORT_DATE_FORMAT"}}</strong>
+		{% endif %}
+		
+
+	</div>
+	<div class="span4" id="filtro-relatorios">
+		<form class="form form-inline">
+			
+		De <input type="text" name="de" value="{{de|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br /> a <br /><input type="text" name="ate" value="{{ate|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br />
+
+		<button type="submit" value="70">Filtrar</button>
+		</form>
+	</div>
+</div>
+
+	{% regroup propostas by designado as propostas_agrupadas %}
+
+{% for lista in propostas_agrupadas %}
+	<h2>{% if lista.grouper == None %}Não Definido{% else %}{{lista.grouper}}{% endif %} - Total: R$ {{lista.list|total_propostas}}</h2>
+
+	{% for proposta in lista.list %}
+	<div class="well well-small">
+		<span class="alert alert-info">#{{proposta.id}}</span> <span class="label label-success">R$ {{proposta.valor_proposto}}</span>, criado em {{proposta.criado|date:"SHORT_DATETIME_FORMAT"}} {% if proposta.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
+			{% endif %}
+
+		<!-- Button trigger modal -->
+		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalFollowUps-{{proposta.id}}">
+		  Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
+		</button>
+		{% if proposta.definido_perdido_em %}
+		<div class="alert alert-danger">
+			<strong>Motivo</strong>: {{proposta.definido_perdido_motivo}}, <strong>Data</strong>: {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}, <strong>Por</strong>: {{proposta.definido_perdido_por}}. <span class="badge badge-important">{{proposta.get_status_display}}</span>
+		</div>
+		{% endif %}
+		
+		{% if proposta.definido_convertido_em %}
+		<div class="alert alert-success">
+			<strong>Convertido por</strong>: {{proposta.definido_convertido_por}}, <strong>Data</strong>: {{proposta.definido_convertido_em|date:"SHORT_DATETIME_FORMAT"}},  <span class="badge badge-success">{{proposta.get_status_display}}</span>
+		</div>
+		{% endif %}
+		
+		
+
+		<!-- Modal -->
+		<div class="modal fade" id="ModalFollowUps-{{proposta.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h4>
+      </div>
+      <div class="modal-body">
+		{% for fup in proposta.followupdepropostacomercial_set.all %}
+									<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+									<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+									<hr />
+		{% endfor %}
+		
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">X Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+	</div>
+	{% endfor %}
+
+
+{% endfor %}
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-relatorios, #top-menu-comercial").addClass("active");
+	$('.popover-items').popover({placement:'top'})
+	$( ".datepicker" ).datepicker({
+		inline: true,
+		dateFormat: "dd/mm/yy"
+	});
+	
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

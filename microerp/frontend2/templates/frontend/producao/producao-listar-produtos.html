@@ -1,0 +1,50 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Produto{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-windows"></i>   Produtos</h1>
+
+{% if request.user.perfilacessoproducao.gerente %}
+<p>
+    <a href="{% url "producao:adicionar_produto" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Novo Produto</a>
+</p>
+{% endif %}
+    <form class="form-search">
+      <input type="text" class="input-medium search-query" name="q_produto", id="busca_produto" {% if q_produto %}value="{{q_produto}}"{% endif %}>
+
+      <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar Produto</button>
+      <a class="btn btn-success" href="?q_produto=todos">Listar Todos</a>
+    </form>
+
+	{% if produtos_encontrados %}
+<div class="well well-small alert alert-success">Produtos Ativos</div>
+{% for produto in produtos_encontrados %}
+    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
+{% endfor %}
+{% endif %}
+
+{% if produtos_inativos %}
+<hr />
+<div class="well well-small alert alert-danger">Produtos Inativos</div>
+{% for produto in produtos_inativos %}
+    <p><a href="{% url "producao:ver_produto" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
+{% endfor %}
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-produtos, #top-menu-producao").addClass("active");
+    $("#busca_produto").focus()
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

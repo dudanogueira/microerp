@@ -1,0 +1,70 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Propostas Comerciais para Clientes</h1>
+
+
+{% if request.user.perfilacessocomercial.gerente %}
+<h4>Como Gerente</h4>
+
+{% endif %}
+
+<h3>{{cliente}}</h3>
+<p>
+    <a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="icon-plus"></i> Adicionar Proposta</a>
+</p>
+<div class="">
+    <div class="tabela-preclientes">
+        
+                <h3>Propostas Abertas</h3>
+            {% for proposta in propostas_abertas %}
+            <div class="well well-small">           
+                {% include "frontend/comercial/comercial-proposta-item.html" %}
+            </div>
+            {% empty %}
+                <div>
+                Nenhuma Proposta em Aberto.
+                </div>
+                
+            </tr>
+            {% endfor %}
+                    
+        
+        
+        </tbody>
+    </table>
+    
+</div>
+    
+    
+</div>
+
+<h3>Propostas Convertidas</h3>
+<div class="well well-small">
+{{propostas_fechadas}}
+</div>
+
+<h3>Propostas Perdidas</h3>
+<div class="well well-small">
+{{propostas_perdidas}}
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

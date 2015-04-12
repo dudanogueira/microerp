@@ -1,0 +1,116 @@
+<div class="well sidebar-nav">
+  <ul class="nav nav-list">
+    <li class="nav-header"><i class="fa fa-dropbox fa-2x"></i>Produção</li>
+    <li id="menu-producao-home"><a href="{% url "producao:home" %}"><i class="fa fa-th"></i> Início > Produção</a></li>
+    <li id="menu-producao-componentes"><a href="{% url "producao:listar_componentes" %}">
+                <i class="fa fa-stop"></i>
+                Componentes
+    </a></li>
+    
+    <li id="menu-producao-subprodutos">
+        <a href="{% url "producao:listar_subprodutos" %}">
+            <i class="fa fa-list-ul"></i>
+            Sub Produtos
+        </a>
+    </li>
+    
+    <li id="menu-producao-produtos">
+        <a href="{% url "producao:listar_produtos" %}">
+            <i class="fa fa-windows"></i>
+            Produtos
+        </a>
+    </li>
+    
+    <li id="menu-producao-estoque">
+        <a href="{% url "producao:listar_estoque" %}">
+            <i class="fa fa-archive"></i>
+            Estoque
+        </a>
+    </li>
+    
+    <li id="menu-producao-fabricantes-fornecedores">
+        <a href="{% url "producao:listar_fabricantes_fornecedores" %}">
+					<i class="fa fa-building"></i> Fabricante / Fornecedor
+				</a>
+    </li>
+		
+		
+    <li id="menu-producao-lancar-nota">
+        <a href="{% url "producao:lancar_nota" %}">
+            <i class="fa fa-paste"></i>
+            Lançar Nota Fiscal
+        </a>
+    </li>
+		
+    
+    <li id="menu-producao-ordem-de-producao">
+        <a href="{% url "producao:ordem_de_producao" %}">
+            <i class="fa fa-truck"></i>
+            Ordem de Produção
+        </a>
+    </li>
+		
+    <li id="menu-producao-movimento-de-producao">
+        <a href="{% url "producao:movimento_de_producao" %}">
+            <i class="fa fa-retweet"></i>
+            Movimento de Produção
+        </a>
+    </li>
+    <li id="menu-producao-rastreabilidade-de-producao">
+        <a href="{% url "producao:rastreabilidade_de_producao" %}">
+            <i class="fa fa-barcode"></i>
+            Rastreabilidade de Produção
+        </a>
+    </li>
+    <li id="menu-producao-controle-de-testes">
+        <a href="{% url "producao:controle_de_testes_producao" %}">
+            <i class="fa fa-umbrella"></i>
+            Controle de Testes
+        </a>
+    </li>
+		
+    <li id="menu-producao-totalizador-producao">
+        <a href="{% url "producao:totalizador_de_producao" %}">
+            <i class="fa fa-gears"></i>
+            Totalizador de Produção
+        </a>
+    </li>
+		
+    <li id="menu-producao-arvore-de-produto">
+        <a href="{% url "producao:arvore_de_produto" %}">
+            <i class="fa fa-code-fork"></i>
+            Árvore de Produtos
+        </a>
+    </li>
+		
+    <li id="menu-producao-ordem-de-compra">
+        <a href="{% url "producao:ordem_de_compra" %}">
+					<i class="fa fa-briefcase"></i> 
+					Controle de Atividades
+        </a>
+    </li>
+    <li id="menu-producao-requisicao-de-compra">
+        <a href="{% url "producao:requisicao_de_compra" %}">
+					<i class="fa fa-credit-card"></i> 
+					Requisição de Compra
+        </a>
+    </li>
+    <li id="menu-producao-registrar-nota-emitida">
+        <a href="{% url "producao:registrar_nota_fiscal_emitida" %}">
+					<i class="fa fa-dollar"></i> 
+					Registrar Nota Fiscal Emitida
+        </a>
+    </li>
+		
+		
+    
+    
+    
+    
+    
+    
+    
+    
+    
+  </ul>
+</div><!--/.well -->

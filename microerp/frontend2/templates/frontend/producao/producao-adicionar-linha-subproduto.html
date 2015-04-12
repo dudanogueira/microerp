@@ -1,0 +1,32 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Adicionar Linha do Sub Produto{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-list-ul"></i> Adicionar Linha {{subproduto.part_number}}</h1>
+
+<a href="{% url "producao:ver_subproduto" subproduto.id %}#linhas-componente"><i class="icon-arrow-left"></i> Voltar ao SubProduto {{subproduto.part_number}}</a>
+
+<form method="POST">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button class="btn btn-primary"><i class="icon-plus"></i> Adicionar Linha</button>
+</form>
+
+
+    {% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+	$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

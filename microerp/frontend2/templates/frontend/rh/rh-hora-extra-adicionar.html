@@ -1,0 +1,74 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+{% block content %}
+<h1>Funcionário: {{funcionario}}</h1>
+
+<h2><i class="fa fa-flash"></i> Adicionar Hora Extra</h2>
+<h3>Valor da Hora: {{valor_hora}}</h3>
+
+<div class="row-fluid">
+	<div class="span4">
+		<form method="POST">
+			{% csrf_token %}
+			{{form.as_p}}
+		<button type="submit" class="btn btn-primary"><i class="fa fa-check"></i> Autorizar Hora Extra</button>
+		</form>
+	</div>
+	<div class="span8">
+		<table class="table table-condensed table-hover table-rounded">
+      <thead>
+            <tr>
+								<th>ID</th>
+                <th>Quantidade</th>
+								<th>Valor Total</th>
+                <th>Data de Execução</th>
+								<th>Solicitante</th>
+								<th>Criado</th>
+								<th>Ações</th>
+            </tr>
+       </thead>
+			<tbody>
+					
+					{% for autorizacao in funcionario.periodo_trabalhado_corrente.autorizacaohoraextra_set.all %}
+				<tr>
+					<td>#{{autorizacao.id}}</td>
+					<td>{{autorizacao.quantidade}} horas</td>
+					<td><span class="label label-info">R$ {{autorizacao.valor_total|floatformat:2}}</span></td>
+					<td>{{autorizacao.data_execucao|date:"SHORT_DATE_FORMAT"}}</td>
+					<td>{{autorizacao.solicitante}}</td>
+					<td>{{autorizacao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
+					<td><a href="{% url "rh:imprimir_hora_extra" autorizacao.periodo_trabalhado.funcionario.id  autorizacao.id %}" class="btn btn-success"><i class="fa fa-print"></a></td>
+					{% endfor %}
+				</tr>
+
+			</tbody>
+		</table>
+
+	</div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+
+<script>
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+$(document).ready(function() {
+    $("#menu-rh-funcionarios, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

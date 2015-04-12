@@ -1,0 +1,28 @@
+{% load phonenumber_br %}
+<a class="btn popover-items" href="{% url "comercial:cliente_ver" cliente.id %}" data-trigger="hover" data-title="{{cliente.nome}}" data-html="true" data-content='{% if cliente.tipo == "pf" %}
+					<span class="label label-success">{{cliente.get_tipo_display}}</span>
+				{% else %}
+					<span class="label label-success">{{cliente.get_tipo_display}}</span> 
+				{% endif %}
+				{% if cliente.telefone_fixo %}
+                    <small class="label label-info"><i class="fa fa-phone"></i> {{cliente.telefone_fixo|phonenumber}}</small>
+                {% endif %}
+				{% if cliente.telefone_celular|phonenumber %}
+					<small class="label label-info">
+						<i class="fa fa-mobile-phone"></i> 									{{cliente.telefone_celular|phonenumber}}
+					</small>
+				{% endif %}
+				{% if cliente.contato %}
+				<br />
+				<i class="fa fa-user"></i> {{cliente.contato}}
+				{% endif %}
+				<span class="label label-important"><i class="fa fa-hand-o-right"></i> 				{% if cliente.designado %}{{cliente.designado}}{% else %}Nenhum Funcionário{%endif%} </span>
+			'>
+
+	{% if requisicao.cliente.tipo == "pf" %}
+		<span class="label">{{cliente.tipo|upper}}</span>
+	{% else %}
+		<span class="label label-success">{{cliente.tipo|upper}}</span> 
+	{% endif %}
+		{{cliente.nome}}
+</a>

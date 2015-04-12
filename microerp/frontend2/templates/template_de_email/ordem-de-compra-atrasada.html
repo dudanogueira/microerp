@@ -1,0 +1,14 @@
+Relatório Diário de Ordens de Compra Aberta
+{% for ordem in ordens_abertas %}{% if ordem.atrasada %}
+-------------------
+ORDEM {{ordem.id}}
+-------------------
+{% if ordem.fornecedor %}FORNECEDOR: {{ordem.fornecedor}}{% endif %}
+TÍTULO: {{ordem.titulo}}
+FUNCIONÁRIO: {{ordem.funcionario}}
+ABERTO EM: {{ordem.data_aberto|date:"SHORT_DATE_FORMAT"}}
+DESCRIÇÃO: {{ordem.descricao}}
+CRITICIDADE: {{ordem.get_criticidade_display}}
+ATIVIDADES ATRASADAS{% for atividade in ordem.atividades_atrasadas %}
+	- {{atividade.data|date:"SHORT_DATETIME_FORMAT"}} - Atrasado há: {{atividade.data|timesince}} - {{atividade.descricao}}{% endfor %}
+{% endif %}{% endfor %}

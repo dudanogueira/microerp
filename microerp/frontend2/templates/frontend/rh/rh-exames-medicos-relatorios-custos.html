@@ -1,0 +1,84 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH>Exames Médicos - Relatório de Custos{% endblock %}</title>
+
+{% block content %}
+<div class="row-fluid">
+	<div class="span6">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-user-md"></i> Exames Médicos</h1>
+		<h3>Relatório de Custos</h3>
+	</div>
+	<div class="span6">
+		<div class="btn-group pull-right" id="funcionarios-relatorios-botao">
+		    <button class="btn dropdown-toggle btn-large btn-primary" data-toggle="dropdown"><i class="icon icon-list-alt icon-white"></i> Relatórios <span class="caret"></span></button>
+		    <ul class="dropdown-menu">
+		        <li id="funcionario-relatorios-listar-ativos"><a href="{% url "rh:exames_medicos_relatorios_custos" %}" class=""><i class="icon-check"></i>Custos</a></li>
+		    </ul>
+		</div>
+	</div>
+</div>
+
+{% if resultados %}
+Relatório de: {{data_referencia|date:"F"}} de {{data_referencia|date:"Y"}}
+<a href="{% url "rh:exames_medicos_relatorios_custos" %}">Novo Relatório</a>
+<div class="well well-small">
+	<h4>Quantidade de Funcionários Ativos: {{periodos_trabalhados.count}}. Valor Mensal por Funcionário: R$ {{valor_exames_mensal_por_ativo}}</h4>
+	<ul>
+	{% for periodo in periodos_trabalhados %}
+	<li>Período: <span class="badge badge-info">#{{periodo.id}}</span> - {{periodo.funcionario}} - <strong>Início</strong>: {{periodo.inicio|date:"SHORT_DATE_FORMAT"}}{% if periodo.fim %}, <strong>Fim</strong>: {{periodo.fim|date:"SHORT_DATE_FORMAT"}}{% endif %}</li>
+	{% endfor %}
+	</ul>
+	<h5>Total Mensal de Exames: R$ {{total_mensal_exame}}</h5>
+</div>
+
+<div class="well well-small">
+	<h4>Rotinas</h4>
+	<ul>
+	{% for rotina in rotinas %}
+	<li>{{rotina}} - ID # {{rotina.id}} <span class="label label-info">R${{rotina.valor_total}}</span>
+		<ul>
+			{% for exame in rotina.exames.all %}
+			<li>{{exame.nome}} - R${{exame.valor}}</li>
+			{% endfor %}
+		</ul>
+	</li>
+	{% endfor %}
+	</ul>
+	<h5>Total De Rotinas de Exames: R${{total_rotinas}}</h5>
+</div>
+
+<h3>Total Geral: R$ {{total_geral}}</h3>
+
+{% else %}
+	<form method="POST" class="form-inline">
+	{% csrf_token %}
+	{{form_mes_referencia}}
+	<button type="submit" class="btn btn-primary">Filtrar</button>
+	</form>
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+
+$(document).ready(function() {
+    $("#menu-rh-exames-medicos, #top-menu-rh").addClass("active");
+	
+	$('.datepicker').each(function() {
+	   $(this).datepicker({
+		inline: true,
+	      dateFormat: "dd/mm/yy"
+
+			});
+	});
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

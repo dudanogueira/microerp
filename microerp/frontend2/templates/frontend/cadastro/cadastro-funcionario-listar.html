@@ -1,0 +1,81 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Contatos dos Funcionários</h1>
+
+<div class="accordion" id="accordion2">
+
+    {% for funcionario in funcionarios %}
+
+
+
+    <div class="accordion-group">
+        <div class="accordion-heading">
+            
+            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion2" href="#collapse{{funcionario.id}}">
+
+                {% thumbnail funcionario.foto "40x40" crop="center" as im %}
+                <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class="pull-left" style="padding-right: 20px">
+                {% endthumbnail %}
+                <h4> {{funcionario}}</h4>
+            </a>                  
+        </div>
+            
+            
+    </div>
+ 
+    <div id="collapse{{funcionario.id}}" class="accordion-body collapse">
+        <div class="accordion-inner">
+            <div class="btn-group">
+                <a href="{% url "cadastro:funcionarios_recados_listar" funcionario.id %}" class="btn btn-primary">
+                    <i class="icon icon-white icon-envelope"></i> Recados
+                </a>
+                <a href="{% url "cadastro:funcionarios_recados_adicionar" funcionario.id %}" class="btn btn-primary">
+                    <i class="icon icon-white icon-plus"></i> Adicionar Recado
+                </a>
+            </div>
+                
+                
+            <h3>Contatos</h3>
+            <div class="well well-small">
+                <p><span class="label label-info">Email</span>  <strong>{{funcionario.email}}</strong></p>
+                <p><span class="label label-info">Fixo</span>  <strong>{{funcionario.telefone_fixo}}</strong></p>
+                <p><span class="label label-info">Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
+                <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
+            </div>
+                
+            <h3>Endereço</h3>
+            <div class="well well-small">
+                <p><span class="label label-info">Rua</span>  <strong>{{funcionario.rua}}, {{funcionario.numero}}</strong></p>
+                <p><span class="label label-info">Bairro</span>  <strong>{{funcionario.bairro}}</strong></p>
+                <p><span class="label label-info">Cidade - Estado</span>  <strong>{{funcionario.bairro.cidade}}</strong></p>
+                <p><span class="label label-info">CEP</span>  <strong>{{funcionario.cep}}</strong></p>
+            </div>
+                
+                
+        </div>
+    </div>
+
+    {% endfor %}
+
+
+</div>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-collapse.js"></script>
+<script>
+$(document).ready(function() {
+    $("#menu-cadastro-funcionarios-list, #top-menu-cadastro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
+{% endblock%}

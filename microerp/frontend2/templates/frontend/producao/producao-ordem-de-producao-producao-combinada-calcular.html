@@ -1,0 +1,147 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção - Produção Combinada{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-truck"></i>  Ordem de Produção</h1>
+<h2>Produção Combinada</h2>
+<a href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</a>
+
+{% comment %}
+<strong>Notação de Produção</strong>: {{get_componentes}}
+{% endcomment %}
+
+
+	
+	<div class="row-fluid">
+		
+		<div class="span6">
+			<h2>Quantidades Analisadas</h2>
+			<ul>
+			{% for quantidade in quantidade_analisada %}
+				{% ifnotequal quantidade.1 '0' %}
+					<li><span class="badge badge-warning">{{quantidade.1}}</span> de <a href="{{quantidade.2}}">{{quantidade.0.part_number}} - {{quantidade.0.nome}}</a></li> 
+					{% endifnotequal %}
+			{% endfor %}
+			</ul>			
+		</div>
+		
+		
+		<div class="span6">
+			<br />
+			<h6>Legenda da Tabela</h6>
+			<p>
+					<small>
+				
+					* <strong>R$ Médio</strong> = Preço Médio Unitário	<br />
+					* <strong>Ult R$</strong> = Última Compra em Real	Sem Impostos<br />
+					* <strong>Ult USD</strong> = Última Compra em Dolar	Sem Impostos<br />
+					* <strong>Qtd Nec.</strong> = Quantidade Necessária para Produção	<br />
+					* <strong>Tot Estoq.</strong> = Total em TODOS os estoques<br />
+				</small>
+			</p>
+			
+		</div>
+		
+		
+	</div>
+	
+</p>
+
+{% if relatorio_producao %}
+<h2>Relatório de Faltas</h2>
+
+<table class="table table-condensed table-hover table-rounded">
+	<thead>
+		<tr>
+			<th>Item</th>
+			<th>Descrição</th>
+			<th>R$ Médio</th>
+			<th>Ult R$</th>
+			<th>Ult USD</th>
+			<th>Tot Estoq</th>
+			<th>Qtd Nec.</th>
+			<th>Faltante</th>
+			<th>Valor</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for relatorio in relatorio_producao %}
+		
+		<tr class="{% if relatorio.5 %}alert alert-success{% else %}alert alert-error{% endif %}">
+			<td><a href="{{relatorio.7}}">{{relatorio.0.part_number}}</a></td>
+			<td>{{relatorio.1}}</td>
+			<td>{% if relatorio.0.preco_medio_unitario %}R$ {{relatorio.0.preco_medio_unitario|floatformat:2}}{% endif %}
+				{% if relatorio.0.custo %}
+				R$ {{relatorio.0.custo|floatformat:2}}
+				{% endif %}
+			</td>
+			<td>{% if relatorio.0.preco_liquido_unitario_real %}R$ {{relatorio.0.preco_liquido_unitario_real|floatformat:2}}{% else %}-{%endif%}</td>
+			<td>{% if relatorio.0.preco_liquido_unitario_dolar %} USD {{relatorio.0.preco_liquido_unitario_dolar|floatformat:2}}{% else %}-{% endif %}</td>
+			<td>{{relatorio.3|floatformat:2}} {{relatorio.0.medida}}</td>
+			<td>{{relatorio.2|floatformat:2}} {{relatorio.0.medida}}</td>
+			<td>{{relatorio.4|floatformat:2}} {{relatorio.0.medida}}</td>
+			<td>R${{relatorio.6|floatformat:2}}</td>
+			
+		</tr>
+		
+		{% endfor %}
+		
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td><span class="badge badge-important">Total: R${{valor_total_compra|floatformat:2}}</span></td>
+			
+		</tr>
+		
+	</tbody>
+</table>
+
+{% endif %}
+
+
+
+
+{% if producao_liberada %}
+<h5 class="alert alert-success">PRODUÇÃO LIBERADA! Em: {{agora|date:"SHORT_DATETIME_FORMAT"}}</h5>
+{% else %}
+<h5 class="alert alert-error">PRODUÇÃO INVIÁVEL! Em: {{agora|date:"SHORT_DATETIME_FORMAT"}}</h5>
+{% endif %}
+
+<p>
+<a class="btn btn-primary" id="nova-consulta" href="{% url "producao:ordem_de_producao" %}#producao-combinada">Nova Consulta de Produção Combinada</a>
+</p>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+		
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#global-top-menu, #nova-consulta, #menu-lateral").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+	
+});
+
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

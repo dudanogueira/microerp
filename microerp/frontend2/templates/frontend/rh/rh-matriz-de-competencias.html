@@ -1,0 +1,53 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-trophy"></i> Matriz de Competências</h1>
+
+<h2>Competências</h2>
+    {% for competencia in competencias %}
+    <div class="well">
+        <h3>{{competencia}}</h3>
+        <div class="row-fluid">
+            <div class="span6">
+                <h4>Funcionários</h4>
+                <ul>
+                {% for funcionario in competencia.funcionarios_ativos %}
+                    <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}} ({{funcionario.cargo_atual}} - {{funcionario.cargo_atual.departamento}})</a></li>
+                {% endfor %}
+                </ul>
+            </div>
+            
+            <div class="span6">
+                <h4>Cargos</h4>
+                <ul>
+                {% for cargo in competencia.cargo_set.all %}
+                    <li>{{cargo}} ({{cargo.departamento}})</li>
+                {% endfor %}
+                </ul>
+                
+            </div>
+            
+        </div>
+    </div>
+    {% empty %}
+        <p><em>Nenhuma Competência Cadastrada.</em></p>
+    {% endfor %}
+    
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-matriz-de-competencias, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

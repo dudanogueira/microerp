@@ -1,0 +1,67 @@
+{% extends "frontend/base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Atribuição de Responsabilidade{% endblock %}</title>
+
+{% block content %}
+<div class="container">
+	<h1 class="text-center">Atribuição de Responsabilidade {{ar.get_tipo_de_treinamento_display|upper}}</h1>
+	<table style="width:100%">
+		<tr>
+			<td style="width:20%">Nome: {{funcionario.nome}}</td>
+			<td style="width:20%">			Data de Admissão: {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}</td>
+			<td style="width:20%">Cargo: {{funcionario.cargo_atual}}</td>
+			
+			<td style="width:10%" class="text-center"><h1>#{{ar.id}}</h1></td>
+			
+		</tr>
+	</table>
+	{% regroup subprocedimentos by procedimento as procedimento_group_list %}
+	{% for subprocedimentos in procedimento_group_list %}
+	<h1>{{subprocedimentos.grouper}} - {{subprocedimentos.grouper.descricao}}</h1>
+
+		
+		<table class="table table-condensed table-hover table-rounded table-bordered">
+			<thead>
+				<tr>
+					<th>Nome</th>
+					<th>Versão</th>
+					<th>Descrição do Sub Procedimento</th>
+					<th>Atualidade</th>
+					<th>Assinatura do Funcionário</th>
+				</tr>
+			</thead>
+			<tbody>
+						{% for subprocedimento in subprocedimentos.list %}
+					<tr class="">
+						<td>{{subprocedimento.nome}}</td>
+						<td>{{subprocedimento.versao}}</td>
+						<td>{{subprocedimento.descricao}}</td>
+						<td>{{subprocedimento.atualizado|date:"SHORT_DATE_FORMAT"}}</td>
+						<td>x</td>
+
+					</tr>
+					{% endfor %}
+			</tbody>
+		</table>
+
+	
+	{% endfor %}
+	
+
+	
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

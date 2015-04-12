@@ -1,0 +1,206 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Controle de Compra{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i>  Controle de Atividades de Compra</h1>
+
+<div class="btn-group">
+	
+	<!-- Button to trigger FILTRO modal -->
+	<a href="#FiltroModal" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-filter"></i> Filtrar</a>
+ 
+	<!-- Button to trigger ADD ORDEM -->
+	<a href="#AddOrdemModal" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Controle de Atividade</a>
+	{% if filtro %}
+	<a class="btn btn-warning" href="{% url "producao:ordem_de_compra" %}">Limpar Filtro</a> 
+	{% endif %}
+</div>
+
+<div class="accordion" id="accordion-ordens-compra">
+	
+	{% if mostrar_somente_atrasados %}
+	
+	{% for ordem in ordens %}
+		{% if ordem.atrasada %}
+			{% include "frontend/producao/producao-ordem-producao-listagem-ordem.html" %}
+		{% endif %}
+	{% endfor %}
+	
+	{% else %}
+	
+		{% for ordem in ordens %}
+			{% include "frontend/producao/producao-ordem-producao-listagem-ordem.html" %}
+		{% endfor %}
+	{% endif %}
+	
+</div>
+	
+<!-- Modal FILTRO -->
+<div id="FiltroModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3 id="myModalLabel"><i class="fa fa-filter"></i> Filtrar</h3>
+		</div>
+		<div class="modal-body">
+
+			<form class="form-horizontal" method="POST" id="filtro-ordem-compra">
+				{% csrf_token %}
+				{{form_filtro.as_p}}
+			</form>
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+			<button form="filtro-ordem-compra" type="submit" class="btn btn-primary" name="form-filtrar-ordem-de-compra" value="filtrar"><i class="fa fa-filter"></i> Filtrar</button>
+		</div>
+	</div>
+
+<!-- Modal ADD ORDEM -->
+<div id="AddOrdemModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3 id="myModalLabel"><i class="fa fa-plus"></i> Adicionar Controle de Compra</h3>
+		</div>
+		<div class="modal-body">
+
+			<form method="POST" id="form-add-ordem">
+				{% csrf_token %}
+				{{form_adicionar_ordem_de_compra.as_p}}
+			</form>
+
+
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+			<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-add-ordem" value="adicionar"><i class="fa fa-plus"></i> Adicionar</button>
+
+		</div>
+</div>
+
+<!-- Modal Reagendar Atividade -->
+<div id="ReagendarAtividadeModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3 id="myModalLabel"><i class="fa fa-plus"></i> Reagendar Atividade</h3>
+	</div>
+	<div class="modal-body" id="body-modal-reagendar-atividade">
+
+
+	</div>
+	<div class="modal-footer">
+		<button class="btn" data-dismiss="modal" aria-hidden="true">Fechar</button>
+		<button type="submit" class="btn btn-success" name="form-adicionar-ordem-de-compra" form="form-reagendar-atividade" value="adicionar"><i class="fa fa-resfresh"></i> Reagendar Atividade</button>
+			
+
+
+	</div>
+</div>
+
+<!-- Modal Add Atividade-->
+<div id="FormAddAtividade" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h3 id="myModalLabel">Adicionar Nova Atividade</h3>
+	</div>
+	<div class="modal-body">
+
+		<form method="POST" id="form-add-atividade">
+			{% csrf_token %}
+			{{form_add_atividade.as_p}}
+		</form>
+
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+		<button form="form-add-atividade" type="submit" name="registrar-atividade" value="adicionar" class="btn btn-success"><i class="fa fa-plus"></i> Registrar</button> 			<button form="form-add-atividade" type="submit" name="agendar-atividade" value="adicionar" class="btn btn-info"><i class="fa fa-clock-o"></i> Agendar</button>
+
+    
+	</div>
+</div>
+
+{% endblock %}
+
+				{% block auxiliar-menu %}
+
+				{% addtoblock "js" %}
+				<script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-collapse.js"></script>
+				<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+				<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+				
+				<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui.min.css" rel="stylesheet">
+				<script src="{{ STATIC_URL }}frontend/js/jquery-ui.custom.min.js"></script>
+				<script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-timepicker-addon.js"></script>
+				<script type="text/javascript" src="{{STATIC_URL}}frontend/js/jquery-ui-sliderAccess.js"></script>
+				
+				
+				
+				
+				
+
+				<script>
+				$(document).ready(function() {
+					$("#menu-producao-ordem-de-compra, #top-menu-producao").addClass("active");
+	
+					$( ".datepicker" ).datepicker({
+						inline: true,
+						dateFormat: "dd/mm/yy"
+					});
+					
+					$('.popover_item').popover({
+							trigger: "hover",
+							placement: 'bottom'
+						});
+					
+					
+					
+					$(".nopoint").keyup(function() {
+						$(this).val($(this).val().replace(/[.]/g, ""));
+					});
+	
+				  {% if form_adicionar_ordem_de_compra.errors %}
+				  $('#AddOrdemModal').modal('show');
+				  {% endif %}
+				  
+				});
+				
+				$(".datetimepicker").datetimepicker({ // Default regional settings
+					dateFormat: "dd/mm/yy",
+					minuteGrid: 15,
+					stepMinute: 5,
+					hourGrid: 3,
+					timeFormat: "HH:mm:ss",
+					parse: "loose",
+					separator: ' ',
+					currentText: 'Agora',
+					closeText: 'Fim',
+					amNames: ['AM', 'A'],
+					pmNames: ['PM', 'P'],
+					timeFormat: 'HH:mm',
+					timeSuffix: '',
+					timeOnlyTitle: 'Escolher Horário',
+					timeText: 'Horário',
+					hourText: 'Hora',
+					minuteText: 'Minuto',
+					secondText: 'Segundos',
+					millisecText: 'Millisecond',
+					microsecText: 'Microsecond',
+					timezoneText: 'Fuso Horário',
+					isRTL: false,
+				});
+				
+				
+			  $(".btn-add-atividade").on("click", function(){
+				  $("#id_controle_de_compra").val($(this).data('controle-id'));	
+			  })
+			  
+			  {% if form_add_atividade.errors %}
+			  $('#FormAddAtividade').modal('show');
+			  {% endif %}
+			  
+				
+				</script>
+				{% endaddtoblock %}
+				{% include "frontend/producao/producao-menu.html" %}
+				{% endblock%}

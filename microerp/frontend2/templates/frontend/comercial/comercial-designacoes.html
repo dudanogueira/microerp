@@ -1,0 +1,324 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Designações{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> Designações</h1>
+
+<ul class="nav nav-tabs normargin" id="navtab-designacao">
+	<li class="active"> <a href="#sem-designacao" data-toggle="tab">Sem Designação <span class="badge badge-warning">{{precliente_sem_designacao.count}}</span> <span class="badge badge-success">{{cliente_sem_designacao.count}}</span></a></li>
+	
+	<li> <a href="#designacao-invalida" data-toggle="tab">Designação Inválida <span class="badge badge-warning">{{precliente_designacao_invalida.count}}</span> <span class="badge badge-success">{{cliente_designacao_invalida.count}}</span></a></li>
+	<li><a href="#buscar" data-toggle="tab">Buscar</a></li>
+	
+</ul>
+	<form id="definir-designacoes-clientes" method="POST" action="{% url "comercial:designacoes_confirmar" %}">
+		{% csrf_token %}
+		<div id="tab-content-comercial-designacoes" class="tab-content">
+			
+
+			
+			<div class="tab-pane fade in active" id="sem-designacao">
+
+	    	<div class="tabela-preclientes-sem-proposta">
+				{% if precliente_sem_designacao %}
+				<input type="button" class="check btn-primary" data-selector="preclientes-semdesignacao" value="selecionar todos" />
+				{% endif %}
+	        	<table class="table table-hover table-condensed">
+	            	<thead>
+	                	<caption><h4 class="alert">Pré Clientes</h4></caption>
+						<tr>
+							<th></th>
+							<th>Pré Cliente</th>
+							<th>Contato</th>
+							<th>Dados</th>
+							<th>Ações</th>
+						</tr>
+					</thead>
+	            	<tbody>
+
+	                {% for cliente in precliente_sem_designacao %}
+	                <tr class="alert alert-info">
+						<td><input id="precliente-{{cliente.id}}" type="checkbox" class="preclientes-semdesignacao" name="preclientes" value="{{cliente.id}}" ></td>
+	                    <td><label for="precliente-{{cliente.id}}">{{cliente.nome}}</label></td>
+						<td><label for="precliente-{{cliente.id}}">{{cliente.contato}}</label></td>
+						<td><label for="precliente-{{cliente.id}}">{{cliente.dados}}</label></td>
+	                    <td>
+												<p class="btn-group">
+
+	                        <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='fa fa-magic'></i></a>
+
+	                        {% if "solicitacao"|is_installed_app %}
+														<a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="fa fa-bell-o"></i> {{cliente.solicitacao_set.count}}</a>
+	                        {% endif %}
+											
+                    
+	                        <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_precliente_adicionar" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+												</p>
+                    
+	                    </td>
+	                </tr>
+	                {% empty %}
+	                <tr>
+	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+	                    <td>{% if cliente_q %}
+	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+	                        {% endif %}
+	                    </td>
+	                </tr>
+	                {% endfor %}
+
+
+	            </tbody>
+				</table>
+			</div>
+		
+			{% if cliente_sem_designacao %}
+			<input type="button" class="check btn-primary" data-selector="clientes-semdesignacao" value="selecionar todos" />
+			{% endif %}
+			
+			<div class="tabela-cliente-sem-proposta">
+				<table class="table table-hover table-condensed">
+					<thead>
+		                <caption><h4 class="alert alert-success" >Clientes</h4></caption>
+		                <tr>
+							<th></th>
+		                    <th>Cliente</th>
+		                    <th>Ações</th>
+		                </tr>
+		        	</thead>
+					<tbody>
+						{% for cliente in cliente_sem_designacao %}
+						<tr class="alert alert-info">
+							<td><input id="cliente-{{cliente.id}}" type="checkbox" class="clientes-semdesignacao" name="clientes" value="{{cliente.id}}" ></td>
+		              	  	<td>
+								<label for="cliente-{{cliente.id}}">
+								{% if cliente.tipo == "pf" %}
+		                        <span class="label">{{cliente.tipo|upper}}</span>
+		                    {% else %}
+		                        <span class="label label-success">{{cliente.tipo|upper}}</span> 
+		                    {% endif %}
+		                    {{cliente.nome}}
+								</label>
+							</td>
+							<td>
+								<label for="cliente-{{cliente.id}}">
+											<p class="btn-group">
+		                    <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Cliente" href="{% url "comercial:cliente_ver"  cliente.id %}?cliente={{cliente_q}}"> <i class="fa fa-eye"></i></a>
+									
+		                    {% if "solicitacao"|is_installed_app %}
+		                    <a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?cliente={{cliente.id}}">{{cliente.solicitacao_set.count}} <i class="fa fa-bell-o"></i></a>
+		                    {% endif %}
+		                    <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:cliente_ver" cliente.id %}?cliente={{cliente_q}}#tab_propostas">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+											</p>
+										</label>
+		               		</td>
+		            	</tr>
+						{% empty %}
+						<tr>
+							<td class="alert alert-info"><strong>Nenhum Encontrado!</strong></td>
+							<td></td>
+		            	</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>	
+		</div>
+			<div class="tab-pane fade in" id="designacao-invalida">
+				<div class="tabela-preclientes-designacao-invalida">
+			{% if precliente_designacao_invalida %}
+			<input type="button" class="check btn-primary" data-selector="preclientes-designacaoinvalida" value="selecionar todos" />
+			{% endif %}
+			
+	        <table class="table table-hover table-condensed">
+	            <thead>
+	                <caption><h4 class="alert">Pré Clientes</h4></caption>
+	                <tr>
+						<th></th>
+	                    <th>Pré Cliente</th>
+						<th>Contato</th>
+						<th>Dados</th>
+						<th>Responsável</th>
+	                    <th>Ações</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+
+	                {% for cliente in precliente_designacao_invalida %}
+	                <tr class="alert alert-info">
+						<td><input id="precliente-{{cliente.id}}" type="checkbox" class="preclientes-designacaoinvalida" name="preclientes" value="{{cliente.id}}" ></td>
+	                    <td><label for="precliente-{{cliente.id}}">{{cliente.nome}}</label></td>
+						<td><label for="precliente-{{cliente.id}}">{{cliente.contato}}</label></td>
+						<td><label for="precliente-{{cliente.id}}">{{cliente.dados}}</label></td>
+						<td>{{cliente.designado}}</td>
+	                    <td>
+												<p class="btn-group">
+													
+		                    <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Cliente" href="{% url "comercial:precliente_ver"  cliente.id %}?cliente={{cliente_q}}"> <i class="fa fa-eye"></i></a>
+							
+
+	                        <a class="btn btn-primary tooltip-items" data-placement="top" data-toggle="tooltip" title="Converter Pré Cliente" href="{% url "comercial:precliente_converter" cliente.id %}"><i class='fa fa-magic'></i></a>
+
+	                        {% if "solicitacao"|is_installed_app %}
+														<a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?precliente={{cliente.id}}"><i class="fa fa-bell-o"></i> {{cliente.solicitacao_set.count}}</a>
+	                        {% endif %}
+											
+                    
+	                        <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:propostas_comerciais_precliente_adicionar" cliente.id %}">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+												</p>
+                    
+	                    </td>
+	                </tr>
+	                {% empty %}
+	                <tr>
+	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
+	                    <td>{% if cliente_q %}
+	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
+	                        {% endif %}
+	                    </td>
+	                </tr>
+	                {% endfor %}
+
+
+	            </tbody>
+	        </table>
+	    </div>
+				<div class="tabela-cliente-sem-proposta">
+				{% if cliente_designacao_invalida %}
+					<input type="button" class="check btn-primary" data-selector="clientes-designacaoinvalida" value="selecionar todos" />
+				{% endif %}
+					
+			<table class="table table-hover table-condensed">
+				<thead>
+	                <caption><h4 class="alert alert-success" >Clientes</h4></caption>
+	                <tr>
+						<th></th>
+	                    <th>Cliente</th>
+						<th>Responsável</th>
+	                    <th>Ações</th>
+	                </tr>
+	        	</thead>
+				<tbody>
+					{% for cliente in cliente_designacao_invalida %}
+					<tr class="alert alert-info">
+						<td><input id="cliente-{{cliente.id}}" type="checkbox" class="clientes-designacaoinvalida" name="clientes" value="{{cliente.id}}" ></td>
+	              	  	<td>
+							<label for="cliente-{{cliente.id}}">
+							{% if cliente.tipo == "pf" %}
+	                        <span class="label">{{cliente.tipo|upper}}</span>
+	                    {% else %}
+	                        <span class="label label-success">{{cliente.tipo|upper}}</span> 
+	                    {% endif %}
+	                    {{cliente.nome}}
+							</label>
+						</td>
+						<td>{{cliente.designado}}</td>
+						<td>
+							<label for="cliente-{{cliente.id}}">
+										<p class="btn-group">
+	                    <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Cliente" href="{% url "comercial:cliente_ver"  cliente.id %}?cliente={{cliente_q}}"> <i class="fa fa-eye"></i></a>
+									
+	                    {% if "solicitacao"|is_installed_app %}
+	                    <a class="btn btn-success tooltip-items" data-placement="top" data-toggle="tooltip" title="Adicionar Solicitação" href="{% url "comercial:solicitacao_adicionar" %}?cliente={{cliente.id}}">{{cliente.solicitacao_set.count}} <i class="fa fa-bell-o"></i></a>
+	                    {% endif %}
+	                    <a class="btn btn-warning tooltip-items" data-placement="top" data-toggle="tooltip" title="Propostas ({{cliente.propostacomercial_set.count}})" href="{% url "comercial:cliente_ver" cliente.id %}?cliente={{cliente_q}}#tab_propostas">{{cliente.propostacomercial_set.count}} <i class="fa fa-file-o"></i> </a>
+						
+										</p>
+									</label>
+	               		</td>
+	            	</tr>
+					{% empty %}
+					<tr>
+						<td class="alert alert-info"><strong>Nenhum Encontrado!</strong></td>
+						<td></td>
+	            	</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+	    </div>
+			</div>
+			<div class="tab-pane fade in" id="buscar">
+				{{escolher_clientes_form}}
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary" name="analisar-desginacoes-btn" value="analisar">
+			<i class=" fa fa-hand-o-right"></i> Designar Clientes
+		</button>
+	</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-comercial-gerenciar-designacoes, #top-menu-comercial").addClass("active");
+	
+	
+    $('.check:button').toggle(function(){
+		seletor = "." + $(this).data('selector');
+		items = $(seletor)
+        items.attr('checked','checked');
+        $(this).val('deselecionar todos');
+		
+		items.each(function(i,l){
+			$(l).closest("tr").attr('class', 'alert alert-info');
+		})
+		
+		
+		
+    },function(){
+		seletor = "."+$(this).data('selector');
+		items = $(seletor)
+        items.removeAttr('checked');
+        $(this).val('selecionar todos'); 
+		
+		items.each(function(i,l){
+					$(l).closest("tr").attr('class', '');    
+		})
+		
+
+    })
+	
+});
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-designacao').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+
+
+$("input[type='checkbox']").change(function() {
+	if (this.checked){
+		$(this).closest("tr").attr('class', 'alert alert-info'); 
+	}else{
+		$(this).closest("tr").attr('class', ''); 
+	}
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

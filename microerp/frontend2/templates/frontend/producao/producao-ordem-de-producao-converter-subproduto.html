@@ -1,0 +1,118 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Ordem de Produção: Converter Sub Produto{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="fa fa-th"></i> <i class="fa fa-truck"></i>  Ordem de Produção</h1>
+	<h2><i class="fa fa-list-ul"></i> Converter Sub Produto</h2>
+	<p>
+	<button id="esconder-linhas-ok" class="btn btn-success">Mostrar/Esconder Linhas OK</button>
+	</p>
+	
+	
+	<a href="{% url "producao:ver_subproduto" subproduto_original.id %}">{{subproduto_original}}</a> para <a href="{% url "producao:ver_subproduto" subproduto_destino.id %}">{{subproduto_destino}}</a>
+	
+	<div class="row-fluid">
+		<div class="span6">
+			
+			{% comment %}
+		<p>
+			Notação do Original: {{componentes_original}}<br />
+			Notação de Destino: {{componentes_destino}}
+		</p>
+		{% endcomment %}
+			
+			
+		</div>
+		
+		<div class="span6">
+			<div class="alert alert-info nomargin">
+				<h4>{{quantidade}} Unidades</h4>
+			</div>
+			
+			
+			
+		</div>
+		
+	</div>
+	{% if not confirmado %}
+	<div id="relatorio">
+
+    <table class="table table-condensed table-hover table-rounded">
+        <thead>
+            <tr>
+                <th>Componente</th>
+								<th>Descrição</th>
+								<th>Tot. Estoq.</th>
+								<th>Estoq. Prod.</th>
+								<th>Tot. Nec.</th>
+								<th>Falta</th>
+            </tr>
+        </thead>
+        <tbody>
+					{% for linha in relatorio %}
+					<tr class="{% if not linha.4 and not linha.5 %}
+							alert alert-danger
+							{% endif %}
+							{% if linha.4 and linha.5 %}
+							alert alert-waring
+							{% endif %}
+							{% if linha.4 and not linha.5 %}
+							alert alert-success linhaok
+							{% endif %}">
+						<td><a href="{% url "producao:ver_componente" linha.0.id %}">{{linha.0.part_number}}</a></td>
+						<td>{{linha.0.descricao}}</td>
+						<td class="tot-estoq">{{linha.2}} {{linha.0.medida}}</td>
+						<td class="tot-estoq-produtor">{{linha.3}} {{linha.0.medida}}</td>
+						<td class="tot-necessario">{{linha.1}} {{linha.0.medida}}</td>
+						<td class="tot-falta">{{linha.6}} {{linha.0.medida}}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		
+		
+	</div>	
+	{% if pode_converter and not alerta_movimento %}
+	<a class="btn btn-primary" href="?confirmado=sim"><i class="fa fa-refresh"></i> Conversão Liberada</a>
+	{% else %}
+	<div class="alert alert-danger">
+		<h4>Conversão Não Liberada</h4>
+	</div>	
+	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}#converter"><i class="fa fa-search"></i> Nova Pesquisa</a>
+	{% endif %}
+	{% else %}
+	<h1>Conversão realizada</h1>
+	{% endif %}
+	
+
+	{% if alerta_movimento %}
+	<div class="alert alert-warning">
+		<h4>É preciso movimentar o estoque para realizar a conversão</h4>
+	</div>
+	{% endif %}
+	
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
+		$("#esconder-linhas-ok").click(function(e){
+			e.preventDefault();
+			$(".linhaok").toggle();
+		});
+		
+		$(".linhaok").toggle();
+		
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

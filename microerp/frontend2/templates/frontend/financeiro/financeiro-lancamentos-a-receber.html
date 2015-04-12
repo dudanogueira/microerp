@@ -1,0 +1,356 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load phonenumber_br %}
+
+<title>{%block title %}{{block.super}} - Financeiro{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="icon-paperclip"></i> Lançamentos a Receber</h1>
+<h2>Lançamentos Pendentes</h2>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Valor Cobrado</th>
+            <th>Data</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lancamento in lancamentos_pendentes %}
+        <tr>
+            <td class="alert {% if lancamento.antecipado %}alert-warning{% else %}alert-danger{% endif %}">{{lancamento.id}}</td>
+            <td><button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.cliente.nome}}" data-html="true" data-content='
+                
+
+                {% if lancamento.contrato.cliente.tipo == "pf" %}
+                                                <span class="label">{{lancamento.contrato.cliente.get_tipo_display}}</span>
+                                            {% else %}
+                                                <span class="label label-success">{{lancamento.contrato.cliente.get_tipo_display}}</span> 
+                                            {% endif %}<br />
+                {% if lancamento.contrato.cliente.telefone_fixo %}
+                    <small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
+                {% endif %}
+                {% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
+<small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
+{% endif %}
+{% if lancamento.contrato.cliente.contato %}
+<br />
+    <i class="icon-user"></i> {{lancamento.contrato.cliente.contato}}
+{% endif %}
+
+    
+                
+                
+                
+                '>{% if lancamento.contrato.cliente.tipo == "pf" %}
+                                <span class="label">{{lancamento.contrato.cliente.tipo|upper}}</span>
+                            {% else %}
+                                <span class="label label-success">{{lancamento.contrato.cliente.tipo|upper}}</span> 
+                            {% endif %} {{lancamento.contrato.cliente.nome}}</button><br />
+                <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
+                <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
+                <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
+            </td>
+            <td>
+                <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span> <span class="label">{{lancamento.modo_recebido}}</span>
+                {% if lancamento.antecipado %}
+                <br />
+                <span class="badge badge-warning">Antecipado R$ {{lancamento.valor_recebido}} em {{lancamento.data_antecipado|date:"SHORT_DATE_FORMAT"}}</span>
+                {% endif %}
+                {% if lancamento.pendente %}
+                <br />
+                <small>
+                    <strong>Juros</strong>: R$ {{lancamento.juros}},
+                    <strong>Multa</strong>: R$ {{lancamento.multa}}<br />
+                    <span class="label label-important">Total: R$ {{lancamento.total_pendente}}</span>
+                </small>
+                {% endif %}
+            </td>
+            <td>
+                <strong>Data</strong>: {{lancamento.data_cobranca}}<br /> <small>(<strong>{{lancamento.data_cobranca|timesince}} atrasado</strong>)</small>
+                
+                {% if lancamento.observacaolancamento_set.count %}
+                <!-- Button to trigger modal -->
+                <p>
+                <a href="#modal-lancamento-{{lancamento.id}}" role="button" class="btn" data-toggle="modal">{{lancamento.observacaolancamento_set.count}} <i class="icon-comment"></i></a>
+                </p>
+ 
+                <!-- Modal -->
+                <div id="modal-lancamento-{{lancamento.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">Comentários do Lançamneto #{{lancamento.id}}</h3>
+                  </div>
+                  <div class="modal-body">
+                      {% for comentario in lancamento.observacaolancamento_set.all %}
+                      <div class="well well-small">
+                          <div class="row-fluid">
+                                  
+                            <div class="span5">
+                                    <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
+                                    <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
+                                      
+                                </div>
+                            <div class="span7">
+                                    <i class="icon-comment"></i> {{comentario.texto}}
+                                </div>
+
+                          </div>
+                      </div>
+                      {% endfor %}
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+                  </div>
+                </div>
+                {% endif %}
+                
+            </td>
+            <td>
+                <p class="btn-group">
+                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" data-placement="bottom" class="tooltip-items btn btn-primary" data-toggle="tooltip" title="Receber"><i class="icon-thumbs-up"></i> </a>
+                <a href="{% url "financeiro:lancamentos_a_receber_comentar" lancamento.id %}"   class="btn btn-success btn-comentar tooltip-items" data-toggle="tooltip" title="Comentar" data-placement="bottom"><i class="icon-comment"></i> </a>
+            </p>
+            </td>
+        </tr>
+        
+        {% empty %}
+        <tr>
+            <td><small>Nenhum Lançamento Pendente</small></td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
+
+<div class="row-fluid">
+    <div class="span7">
+        <strong>Soma dos Valores Cobrados:</strong> <span class="label label-success">R${{lancamentos_pendentes_total.valor_cobrado__sum}}</span><br />
+        <strong>Soma dos Valores Cobrados com Juros e Multa:</strong> <span class="label label-important">R${{total_com_juros_e_multa}}</span>
+    </div>
+    
+    <div class="span5">
+        <h5>Legenda</h5>
+        <span class="label label-success">Cobrado</span>
+        <span class="label label-important">Pendente</span>
+        <span class="label label-warning">Antecipado</span>
+        
+    </div>
+</div>
+
+<hr />
+<h3>Lançamentos Futuros Nesta Semana</h3>
+<h4>De {{inicio_semana|date:"SHORT_DATE_FORMAT"}} a {{fim_semana|date:"SHORT_DATE_FORMAT"}}</h4>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Cliente</th>
+            <th>Valor Cobrado</th>
+            <th>Data</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lancamento in lancamentos_futuros %}
+        <tr>
+            <td class="alert
+            {% if lancamento.pendente %}
+                alert-danger
+            {% else %}
+                {% if lancamento.antecipado %}
+                    alert-warning
+                {% else %}
+                    alert-info
+                {% endif %}
+            {% endif %}
+            "><strong>#{{lancamento.id}}</strong></td>
+            <td><button class="btn popover-items" data-trigger="hover" data-title="{{lancamento.contrato.cliente.nome}}" data-html="true" data-content='
+                
+
+                {% if lancamento.contrato.cliente.tipo == "pf" %}
+                                                <span class="label">{{lancamento.contrato.cliente.get_tipo_display}}</span>
+                                            {% else %}
+                                                <span class="label label-success">{{lancamento.contrato.cliente.get_tipo_display}}</span> 
+                                            {% endif %}<br />
+                {% if lancamento.contrato.cliente.telefone_fixo %}
+                    <small class="label label-info"><i class="icon-phone"></i> {{lancamento.contrato.cliente.telefone_fixo|phonenumber}}</small>
+                {% endif %}
+                {% if lancamento.contrato.cliente.telefone_celular|phonenumber %}
+<small class="label label-info"><i class="icon-mobile-phone"></i> {{lancamento.contrato.cliente.telefone_celular|phonenumber}}</small>
+{% endif %}
+    {% if lancamento.contrato.cliente.contato %}
+    <br />
+        <i class="icon-user"></i> {{lancamento.contrato.cliente.contato}}
+    {% endif %}
+    
+                
+                
+                
+                '>{% if lancamento.contrato.cliente.tipo == "pf" %}
+                                <span class="label">{{lancamento.contrato.cliente.tipo|upper}}</span>
+                            {% else %}
+                                <span class="label label-success">{{lancamento.contrato.cliente.tipo|upper}}</span> 
+                            {% endif %} {{lancamento.contrato.cliente.nome}}</button><br />
+                <strong>Contrato</strong>: #{{lancamento.contrato.id}}<br />
+                <strong>Categoria</strong>: {{lancamento.contrato.categoria}}<br />
+                <strong>Responsável</strong>: {{lancamento.contrato.responsavel}}
+            </td>
+            <td>
+                <span class="label label-success"><strong>Cobrado</strong>: R$ {{lancamento.valor_cobrado}}</span>
+                {% if lancamento.antecipado %}
+                <span class="label label-warning"><strong>Antecipado</strong>: R$ {{lancamento.valor_recebido}}</span>
+                {% endif %}
+                <span class="label">{{lancamento.modo_recebido}}</span>
+            </td>
+            <td><strong>Data</strong>: {{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}
+                {% if lancamento.pendente %}
+                    <span class="badge badge-important">pendente</span><br />
+                    <small>atrasado há {{lancamento.data_cobranca|timesince}}</small>
+                    <br />
+                    {% if lancamento.antecipado %}
+                    <span class="badge badge-warning">Antecipado em: {{lancamento.data_antecipado|date:"SHORT_DATE_FORMAT"}}</span>
+                    {% endif %}
+                {% endif %}
+                
+                {% if lancamento.observacaolancamento_set.count %}
+                <!-- Button to trigger modal -->
+                <p>
+                <a href="#modal-lancamento-{{lancamento.id}}" role="button" class="btn" data-toggle="modal">{{lancamento.observacaolancamento_set.count}} <i class="icon-comment"></i></a>
+            </p>
+ 
+                <!-- Modal -->
+                <div id="modal-lancamento-{{lancamento.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h3 id="myModalLabel">Comentários do Lançamneto #{{lancamento.id}}</h3>
+                  </div>
+                  <div class="modal-body">
+                      {% for comentario in lancamento.observacaolancamento_set.all %}
+                      <div class="well well-small">
+                          <div class="row-fluid">
+                                  
+                            <div class="span5">
+                                    <strong><i class="icon-user"></i> Funcionário</strong>: {{comentario.criado_por.funcionario}}<br />
+                                    <strong><i class="icon-calendar"></i>  Data</strong>: {{comentario.criado|date:"SHORT_DATETIME_FORMAT"}}
+                                      
+                                </div>
+                            <div class="span7">
+                                    <i class="icon-comment"></i> {{comentario.texto}}
+                                </div>
+
+                          </div>
+                      </div>
+
+                      {% endfor %}
+                    
+                  </div>
+                  <div class="modal-footer">
+                    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+                  </div>
+                </div>
+                {% endif %}
+                
+            </td>
+            <td>
+                <p class="btn-group">
+                {% if lancamento.antecipado %}
+                <a href="" class="tooltip-items btn btn-warning disabled" data-toggle="tooltip" title="Antecipado" data-placement="bottom">
+                    <i class="icon-usd"></i> </a>
+                </a>
+                <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="btn btn-primary tooltip-items" data-toggle="tooltip" title="Receber" data-placement="bottom"><i class="icon-thumbs-up"></i></a>
+                
+                {% else %}
+
+                    {% if lancamento.antecipavel %}
+                    <a href="{% url "financeiro:lancamentos_a_receber_antecipar" %}?lancamento={{lancamento.id}}" class="btn btn-danger tooltip-items" data-toggle="tooltip" title="Antecipar" data-placement="bottom">
+                        <i class="icon-arrow-left"></i> 
+                    </a>
+                    {% endif %}
+                    <a href="{% url "financeiro:lancamentos_a_receber_receber" lancamento.id %}" role="button" valor="{{lancamento.total_pendente}}" modo="{{lancamento.contrato.forma_pagamento}}" class="tooltip-items  btn btn-primary" data-toggle="tooltip" title="Receber" data-placement="bottom"><i class="icon-thumbs-up"></i> </a>
+                
+                    
+                {% endif %}
+                <a href="{% url "financeiro:lancamentos_a_receber_comentar" lancamento.id %}"   class="btn btn-success btn-comentar tooltip-items" data-toggle="tooltip" title="Comentar" data-placement="bottom"><i class="icon-comment"></i> </a>
+                
+                
+                </p>
+            </td>
+            
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="row-fluid">
+    <div class="span7">
+        <strong>Soma dos Valores Cobrados</strong>: <span class="label label-success">R$ {{soma_lancamentos_futuro.valor_cobrado__sum}}</span>
+        <br />
+        <strong>Soma dos Valores Antecipados</strong>: <span class="label label-warning">{{soma_lancamentos_antecipados.valor_recebido__sum}}</span>
+    </div>
+    
+    <div class="span5">
+        <h5>Legenda</h5>
+        <span class="label label-info">Agendado</span>
+        <span class="label label-success">Cobrado</span>
+        <span class="label label-important">Pendente</span>
+        <span class="label label-warning">Antecipado</span>
+        
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="modal-comentar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Comentar Lançamento</h3>
+  </div>
+  <div class="modal-body">
+      <form method="POST" id="form-comentar-lancamento">
+          {% csrf_token %}
+          <textarea name="comentario"></textarea>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button class="btn btn-primary" type="submit"><i class="icon-comment"> </i>Comentar</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    
+	$( ".datepicker" ).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+        
+	});
+    
+    $('.popover-items').popover()
+    
+    $(".btn-comentar").click(function(e){
+        e.preventDefault();
+        $("#form-comentar-lancamento").get(0).setAttribute('action', this.href);
+        $("#modal-comentar-lancamento").modal();
+        
+    })
+    
+    
+	$("#menu-financeiro-lancamentos-a-receber, #top-menu-financeiro").addClass("active");
+    
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/financeiro/financeiro-menu.html" %}
+{% endblock%}

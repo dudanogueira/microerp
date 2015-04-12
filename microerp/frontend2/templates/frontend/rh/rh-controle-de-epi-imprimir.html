@@ -1,0 +1,88 @@
+{% extends "frontend/base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Controle de EPI: Vincular Arquivo{% endblock %}</title>
+
+{% block content %}
+<div class="container">
+	<h1 class="text-center">Ficha de Controle de EPI's - Termo de Responsabilidade</h1>
+	
+	<table style="width:100%">
+		<tr>
+			<td style="width:20%">Nome: {{controle.funcionario.nome}}</td>
+			<td style="width:20%">			Data de Admissão: {{controle.funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}</td>
+			<td style="width:20%">Cargo: {{controle.funcionario.cargo_atual}}</td>
+			
+			<td style="width:10%" class="text-center"><h1>#{{controle.id}}</h1></td>
+			
+		</tr>
+	</table>
+	
+	<p>
+		Conforme as obrigações do empregado na Lei 6.514 de 21/02/1997, item 6.7.7 alínea a,b,c.
+	</p>
+	<p>
+		Obriga-se o empregado quanto ao EPI, a) usá-lo para finalidade a que se destina; b) Responsabiliza-se por sua guarda e conservação; c)Comunicar  ao empregado qualquer alteração que o torne impróprio para uso.
+	</p>
+	</p>
+		<strong>Declaro que recebi</strong> desta empresa os Equipamentos de Proteção Individual (EPI) discriminados abaixo e no verso e que a recusa de uso dos mesmos durante o horário de trabalho, constitui ato faltoso. Sujeito as penalidades previstas na lei, (Art.418 alínea “d” da CDL).
+	</p>
+		<p><strong>Certifico que me submeti às instruções de segurança do trabalho</strong> , orientação e acompanhamento de uso, gaurda e conservação desdes  equipamentos, ficando sobre minha responsabilidade e que caso haja extravio ou avaria, por dolo, imprudência, negligência ou empírica, sobre os  mesmos, terei o valor correspondentes aos EPI’s especificados abaixo nesta ficha descontado do meu salário ou qualquer crédito a que tenha direit (Art. 462 S 1° da CDL), conforme a presente autorização.</p>
+	</p>
+	
+	<table style="width:100%">
+		<tr>
+			<td style="width:20%">
+				<h6>{{local_padrao}}</h6>
+			</td>
+			<td style="width:20%">
+				<h6 >{% now "d/m/Y" %}</h6>
+			</td>
+			<td style="width:20%">
+				<h6>x</h6>
+			</td>
+		</tr>
+	</table>
+		
+  <table class="table table-striped table-condensed">
+    <thead>
+          <tr>
+			<th><small>Item</small></th>
+            <th><small>Material</small></th>
+            <th><small>Unidade</small></th>
+			<th><small>Quantidade</small></th>
+            <th><small>Entregue</small></th>
+			<th><small>Assinatura</small></th>
+          </tr>
+    </thead>
+		<tbody>
+				{% for linha in controle.linhacontroleequipamento_set.all %}
+				<tr>
+					<td><small>{{forloop.counter}}</small></td>
+					<td><small>{{linha.produto.codigo}} - {{linha.produto.nome}}</td>
+					<td><small>{{linha.produto.unidade_de_venda}}</td>
+					<td><small>{{linha.quantidade}}</td>
+					<td><small>{{linha.criado|date:"SHORT_DATE_FORMAT"}}</td>
+					<td></td>
+				</tr>
+				{% endfor %}
+
+		</tbody>
+	</table>
+			
+	
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

@@ -1,0 +1,52 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial > Clientes{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid" id="sub-menu-clientes">
+	
+	<div class="span6">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-group"></i> Pré / Clientes:</h1>
+	</div>
+	
+	<div class="span6">
+		<div id="form-buscar-pre-clientes">
+   	 <form class="form-search form-inline" action="{% url "comercial:clientes" %}">
+
+       <input tabindex="1" type="text" class="input-medium search-query" name="cliente" id="cliente_busca" value="{% if cliente_q %}{{cliente_q}}{%endif%}" placeholder="pré / cliente, cnpj">
+			 
+			 <p class="btn-group">
+        <button type="submit" class="btn btn-info"><i class="fa fa-search"></i> Buscar</button>
+        <a data-placement="top" data-toggle="tooltip" title="Adicionar Pré Cliente" href="{% url "comercial:precliente_adicionar" %}{% if cliente_q %}?sugestao={{cliente_q}}{% endif %}" class="btn btn btn-success tooltip-items"><i class="fa fa-plus"></i></a>
+				{% if cliente_q %}
+             <a href="." class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Limpar Busca"><i class="fa fa-trash-o"></i> </a>
+				{% endif %}
+			</p>
+		</form>
+		</div>
+	</div>
+</div>
+
+<h2>Sem Interesse: {{precliente}}</h2>
+
+<form method="POST">
+{% csrf_token %}
+{{form.as_p}}
+<button class="btn btn-primary" 	type="submit">Enviar</button>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-clientes, #top-menu-comercial").addClass("active");
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

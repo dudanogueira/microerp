@@ -1,0 +1,132 @@
+{% extends "frontend/base.html" %}
+{% load sekizai_tags %}
+{% block content %}
+<link href="{{STATIC_URL}}frontend/css/font-awesome.min.css" rel="stylesheet" />
+<title>{%block title %}{{block.super}} - Comercial -> Imprimir Orçamento{% endblock %}</title>
+<div class="container">
+<div class="row-fluid">
+	<div class="span4">
+		<img src="{{logo_empresa}}">
+	</div>
+	<div class="span8">
+		<h1>Proposta ID#{{proposta.id}}</h1>
+		<h3>{% if proposta.precliente %}{{proposta.precliente}}{% else %}{{proposta.cliente}}{% endif %}</h3>
+	</div>
+	
+	{% for orcamento in proposta.orcamentos_ativos %}
+	
+	<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}}
+		{% if orcamento.promocao %}
+				<i class="fa fa-asterisk "></i>
+				<small>promoção</small>
+				
+				{% else %}
+
+					{% if orcamento.tabelado %}
+					<i class="fa fa-table "></i>
+					<small>tabelado</small>
+					{% else %}
+					<i class="fa fa-clipboard "></i>
+					<small>avulso</small>
+					{% endif %}
+
+		{% endif %}
+</h2>
+	<table class="table table-condensed table-bordered table-rounded">
+		<thead>
+			<tr>
+				<th>ID</th>
+				<th>Produto/Cargo</th>
+				<th>Und</th>
+				<th>QTD</th>
+				<th>Valor Unit</th>
+				<th>Total</th>
+			</tr>
+		</thead>
+		</tbody>
+		{% for linha in orcamento.linharecursomaterial_set.all %}
+			<tr>
+				<td>{{linha.produto.codigo}}</td>
+				<td>{{linha.produto.nome}}</td>
+				<td>{{linha.produto.unidade}}</td>
+				<td>{{linha.quantidade}}</td>
+				<td>R$ {{linha.custo_unitario}}</td>
+				<td>R$ {{linha.custo_total}}</td>
+			</tr>
+		{% endfor %}
+		{% for linha in orcamento.linharecursohumano_set.all %}
+			<tr>
+				<td></td>
+				<td>{{linha.cargo.nome}}</td>
+				<td>HORA</td>
+				<td>{{linha.quantidade}}</td>
+				<td>R$ {{linha.custo_unitario}}</td>
+				<td>R$ {{linha.custo_total}}</td>
+			</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			{% if not orcamento.promocao and not orcamento.tabelado %}
+				<td><strong>R$ {{orcamento.custo_total|floatformat:2}} + {{orcamento.proposta.taxa_margem}}% = R$ {{orcamento.custo_total_com_margem|floatformat:2}}</strong></td>
+			{% else %}
+				<td><strong> R$ {{orcamento.custo_total}}</strong></td>
+			{% endif %}
+			
+		</tr>
+		</tbody>
+	</table>
+	
+	{% endfor %}
+	
+	
+	<h2>Recurso Logístico</h2>
+	<table class="table table-condensed table-bordered table-rounded">
+		<thead>
+			<tr>
+				<th>Tipo de Recurso</th>
+				<th>Descrição</th>
+				<th>Valor</th>				
+			</tr>
+		</thead>
+		</tbody>
+		{% for linha in proposta.linharecursologistico_set.all %}
+			<tr>
+				<td>{{linha.tipo}}</td>
+				<td>{{linha.descricao}}</td>
+				<td>{{linha.custo_total}}</td>				
+			</tr>
+		{% endfor %}
+		<tr>
+			<td></td>
+			<td></td>
+			<td>Total: R$ {{proposta.custo_logistica|floatformat:2}} + {{proposta.taxa_margem}}% = <strong>R$ {{proposta.custo_logistica_com_margem|floatformat:2}}</strong></td>
+		</tr>
+		</tbody>
+	</table>
+	
+
+	
+</div>
+
+<div class="row-fluid">
+	<div class="span6">
+	</div>
+	
+	<div class="span6">
+		<h4>Total Geral: R$ {{proposta.consolidado_liquido}} + {{proposta.taxa_margem}}% = R$ {{proposta.consolidado}}</h4>
+	</div>
+</div>
+	
+
+	
+</div>
+	
+
+	
+	
+
+{% endblock %}

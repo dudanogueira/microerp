@@ -1,0 +1,65 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% block content %}
+<h1>Exame Médico ID#{{exame.id}} - {{exame.get_tipo_display}}</h1>
+<h3>Funcionário: {{exame.funcionario}}</h3>
+<p>Período Trabalhado <strong>ID#{{exame.periodo_trabalhado.id}}</strong> {{exame.periodo_trabalhado}}</p>
+{% if not exame.data %}
+<p class="alert alert-danger">É necessário definir uma data!</p>
+<p><a href="{% url "rh:exame_realizado_hoje" exame.id %}" class="btn btn-success">Realizado Hoje</a></p>
+<hr />
+<p>
+    <form method="POST" name="agendar">{% csrf_token %}
+    {{form_agendar.as_p}}
+    <input type="submit" class="btn btn-info" name="agendar" value="Agendar">
+    </form>
+
+</p>
+    {% else %}
+    
+        {% if exame.realizado %}
+        Realizado em: {{exame.data}}
+        {% else %}
+        <h6>Agendado para: {{exame.data}}</h6>
+        <p>
+            
+            <form method="POST" name="exame_arquivo_form" {% if exame_arquivo_form.is_multipart %}enctype="multipart/form-data"{% endif %} action="{% url "rh:exame_realizado_hoje" exame.id %}">{% csrf_token %}
+            {{exame_arquivo_form.as_p}}
+            <input type="submit" class="btn btn-info" name="agendar" value="Enviar Arquivo Digital de Retorno do Exame">
+            </form>
+            
+            
+            
+            
+            <hr />
+            <form method="POST" name="agendar">{% csrf_token %}
+            {{form_agendar.as_p}}
+            <input type="submit" class="btn btn-info" name="agendar" value="Reagendar">
+            </form>
+
+        </p>
+        {% endif %}
+        
+    {% endif %}
+<hr />
+<div class="well">
+    <h4>Exames</h4>
+    <ul>
+    {% for exame_tipo in exame.exames.all %}
+        <li>{{exame_tipo}} - R${{exame_tipo.valor}}</li>
+    {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-exames-medicos, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

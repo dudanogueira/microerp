@@ -1,0 +1,144 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-thumbs-down"></i> <i class="fa fa-file-alt"></i> Aprovar Fechamento de Propostas</h1>
+{% if propostas_fechadas %}
+<input type="button" class="check btn-primary" data-selector="seleciona_propostas_fechar" value="deselecionar todos" />
+
+<form method="POST">
+{% csrf_token %}
+<table class="table table-stripped table-condensed">
+	
+	<thead>
+		<tr>
+			<th>ID</th>
+			<th width="30%">Pré/Cliente</th>
+			<th>Valor</th>
+			<th>Follow Ups</th>
+			<th>Ver Resumo</th>
+			<th>Motivo</th>
+			<th>Expiração</th>
+		</tr>
+	</thead>
+		{% for proposta in propostas_fechadas %}
+			<tr class="alert alert-info">
+				<td>
+					<input type="checkbox" name="seleciona_propostas_fechar" class="seleciona_propostas_fechar" value={{proposta.id}} id="check-{{proposta.id}}" checked>
+					<label for="check-{{proposta.id}}">
+					#{{proposta.id}}
+					</label>
+				</td>
+				<td>			{% if proposta.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
+			{% endif %}
+</td>
+				<td>R$ {{proposta.valor_proposto}}</td>
+				<td>
+					
+					{% if proposta.followupdepropostacomercial_set.count %}
+					<!-- Button to trigger modal -->
+					<a href="#followups-proposta-{{proposta.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-exchange"></i> {{proposta.followupdepropostacomercial_set.count}}</a>
+ 				   {% endif %}
+					<!-- Modal -->
+					<div id="followups-proposta-{{proposta.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+					  <div class="modal-header">
+					    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+					    <h3 id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h3>
+					  </div>
+					  <div class="modal-body">
+  						{% for fup in proposta.followupdepropostacomercial_set.all %}
+  							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+  							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+  							<hr />
+  						{% endfor %}
+						
+					  </div>
+					  <div class="modal-footer">
+					    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+					  </div>
+					</div>
+					
+
+				
+				</td>
+				<td><a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}"><i class="fa fa-arrow-right"></a></td>
+				<td>{{proposta.definido_perdido_motivo}}. por <i class='fa fa-user'></i>{{proposta.definido_perdido_por}} em <i class="fa fa-clock"></i> {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
+				<td>{{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</td>
+			</tr>
+		{% endfor %}
+	
+</table>
+<p class="btn-group">
+	<button type="submit" class="btn btn-danger" name="aprovar-fechamento" value="fechar"><i class="fa fa-thumbs-down"></i> Fechar Propostas</button>
+
+	<button type="submit" class="btn btn-success" name="reabrir-proposta" value="reabrir"><i class="fa fa-refresh"></i> Reabrir Propostas</button>
+</p>
+</form>
+{% else %}
+
+	<h2>Nenhuma Proposta para Aprovar Fechamento</h2>
+
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+
+<script>
+
+$(document).ready(function() {
+	$("#menu-comercial-aprovar-fechamentos, #top-menu-comercial").addClass("active");
+	
+    $('.check:button').toggle(function(){
+		
+		seletor = "."+$(this).data('selector');
+		items = $(seletor)
+        items.removeAttr('checked');
+        $(this).val('selecionar todos');        
+		items.each(function(i,l){
+					$(l).closest("tr").attr('class', '');    
+		})
+		
+    },function(){
+		$(this).closest("tr").attr('class', 'alert alert-info'); 
+		seletor = "." + $(this).data('selector');
+		items = $(seletor)
+        items.attr('checked','checked');
+        $(this).val('deselecionar todos');
+		items.each(function(i,l){
+			$(l).closest("tr").attr('class', 'alert alert-info');
+		})
+    })
+	
+	
+});
+
+$('.popover-items').popover()
+
+$("input[type='checkbox']").change(function() {
+	if (this.checked){
+		$(this).closest("tr").attr('class', 'alert alert-info'); 
+	}else{
+		$(this).closest("tr").attr('class', ''); 
+	}
+});
+
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

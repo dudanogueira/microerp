@@ -1,0 +1,17 @@
+{% extends "frontend/frontend-base.html" %}
+
+<title>{%block title %}{{block.super}} - Início{% endblock %}</title>
+
+{% block content %}
+{% if request.user.is_authenticated %}
+<h1>Olá {{request.user}}</h1>
+{% else %}
+<form action="{% url "login" %}" method="post">{% csrf_token %}
+{{form.as_p}}
+<input type="submit" class="btn btn-success" value="Login">
+<input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url "home" %}{%endif%}">
+</form>
+
+{% endif %}
+
+{% endblock %}

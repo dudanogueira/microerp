@@ -1,0 +1,424 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH>Indicadores do RH{% endblock %}</title>
+
+{% block content %}
+<div class="row-fluid">
+	<div class="span8">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-bar-chart-o"></i> Indicadores do RH</h1>
+		
+	</div>
+	<div class="span4" id="filtro-indicador">
+		<form method="" class="form form-inline">
+				<p class="btn-group">
+			{{form_seleciona_ano.ano}}
+				<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i></button>
+				<a id="imprimir" class="btn btn-success"><i class="fa fa-print"></i></a>
+			</p>
+			
+		</form>
+		
+	</div>
+</div>
+
+
+{% if resultados %}
+
+<style>
+.rotate {
+
+/* Safari */
+-webkit-transform: rotate(-90deg);
+
+/* Firefox */
+-moz-transform: rotate(-90deg);
+
+/* IE */
+-ms-transform: rotate(-90deg);
+
+/* Opera */
+-o-transform: rotate(-90deg);
+
+/* Internet Explorer */
+filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+
+}
+</style>
+
+<h2>Funcionários Admitidos em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info">Departamento</th>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for dpto, cargos in admitidos_cargo.items %}
+				{% for cargo,retorno in cargos.items %}
+				<tr>
+					{% if forloop.first %}
+						<th class="alert alert-info" rowspan={{cargos.items|length}}><small>{{dpto}}</small></th>
+					{% endif %}
+					{% for retorno in retorno.0 %}
+						<td {% if forloop.first%}class="alert"{%endif%}>{{retorno}} </td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+		{% endfor %}
+		<tr class="alert alert-info">
+			<td></td>
+			{% for campo in total_admissao_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+
+<h2>Funcionários Demitidos em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for linha in resultado_demissao %}
+		<tr>
+			{% for campo in linha %}
+			<td style="text-align: center" {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+				
+			{% endfor %}
+		</tr>
+		{% endfor %}
+		<tr class="alert alert-info">
+			{% for campo in total_demissao_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+
+<h2>Funcionários Ativos {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Cargo</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for linha in resultado_ativos %}
+			<tr>
+				{% for campo in linha %}
+				<td {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+				{% endfor %}
+			</tr>
+		{% endfor %}
+		<tr class="alert alert-info">
+			{% for campo in total_ativos_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+<h2>Horas Extra Executadas</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in horas_extra_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+
+<h2>Funcionários com Aumento Salarial</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_promovidos_salario_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Funcionários com Promoção de Cargo</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_promovidos_cargo_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Horas de Procedimento Treinadas por Mês</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Tipo de Treino</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+			
+			
+			
+			<tr class="">
+				<td class="alert"><strong>Adição de Competências</strong></td>
+				{% for campo in total_treinamento_procedimento_por_mes_adicao %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+			
+			<tr class="">
+				<td class="alert"><strong>Atualização de Competências</strong></td>
+				{% for campo in total_treinamento_procedimento_por_mes_atualizacao %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+			
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_treinamento_procedimento_por_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Local dos Funcionários</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Local</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for item in tabela_local_de_trabalho.values %}
+				<tr>
+					{% for campo in item %}
+					<td {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+					{% endfor %}
+				</tr>
+		{% endfor %}
+	</tbody>
+</table>
+
+
+<h2>Retenção de Funcionários {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				{% for campo in total_retidos_mes %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+
+<h2>Funcionários Campo X Escritório em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert">Tipo / Local</th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+		
+		{% for linha in tabela_campo_escritorio.items %}
+		<tr>
+			{% for campo in linha.1 %}
+				<td {% if forloop.first%}class="alert"{%endif%}>{{campo}}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+		<tr class="alert alert-info">
+			{% for campo in total_ativos_mes %}
+			<td style="text-align: center">{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+			{% endfor %}
+		</tr>
+	</tbody>
+</table>
+
+
+
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+    $("#menu-rh-indicadores, #top-menu-rh").addClass("active");
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#selecionar-produto-form").hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#filtro-indicador").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock %}
