@@ -1631,47 +1631,48 @@ def proposta_comercial_imprimir(request, proposta_id):
             proposta.documento_do_proposto = "CNPJ: %s" % proposta.cliente.cnpj
         if proposta.cliente and proposta.cliente.tipo == 'pf':
             proposta.documento_do_proposto = "CPF: %s" % proposta.cliente.cpf
-    # rua
-    if not proposta.rua_do_proposto and proposta.cliente:
-        if proposta.cliente.enderecocliente_set.filter(principal=True):
-            proposta.rua_do_proposto = "%s - %s" % (proposta.cliente.enderecocliente_set.filter(principal=True)[0].rua, proposta.cliente.enderecocliente_set.filter(principal=True)[0].numero)
-    # bairro
-    if not proposta.bairro_do_proposto and proposta.cliente:
-        if proposta.cliente.enderecocliente_set.filter(principal=True):
-            proposta.bairro_do_proposto = proposta.cliente.enderecocliente_set.filter(principal=True)[0].bairro.nome
-    # bairro
-    if not proposta.cep_do_proposto  and proposta.cliente:
-        if proposta.cliente.enderecocliente_set.filter(principal=True):
-            proposta.cep_do_proposto = proposta.cliente.enderecocliente_set.filter(principal=True)[0].cep
-    # cidade
-    if not proposta.cidade_do_proposto  and proposta.cliente:
-        if proposta.cliente.enderecocliente_set.filter(principal=True):
-            end = proposta.cliente.enderecocliente_set.filter(principal=True)[0]
-            proposta.cidade_do_proposto = "%s - %s" % (end.bairro.cidade.nome, end.bairro.cidade.estado) 
-    # endereco da obra proposta
-    if not proposta.endereco_obra_proposto and proposta.cliente:
-        if proposta.cliente.enderecocliente_set.filter(principal=True):
-            end = proposta.cliente.enderecocliente_set.filter(principal=True)[0]
-            proposta.endereco_obra_proposto = "Rua %s - %s, Bairro %s, CEP %s, Cidade: %s" % \
-            (end.rua, end.numero, end.bairro.nome, end.cep, end.bairro.cidade)
-    # telefone
-    if not proposta.telefone_contato_proposto:
-        if proposta.cliente:
-            if proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
-                proposta.telefone_contato_proposto = "Fixo: %s, Celular: %s" % (proposta.cliente.telefone_fixo, proposta.cliente.telefone_celular) 
-            elif proposta.cliente.telefone_fixo and not proposta.cliente.telefone_celular:
-                proposta.telefone_contato_proposto = "Fixo: %s" % proposta.cliente.telefone_fixo
-            elif not proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
-                proposta.telefone_contato_proposto = "Celular: %s" % proposta.cliente.telefone_celular
-    # email
-    if not proposta.email_proposto and proposta.cliente:
-        proposta.email_proposto = proposta.cliente.email
-
-    # descricao de itens
-    if not proposta.descricao_items_proposto and proposta.orcamentos_ativos():
-        proposta.descricao_items_proposto = proposta.texto_descricao_items()
     
-    proposta.save()
+    #    pega o endreco principal
+    try:
+        endereco_principal = proposta.cliente.enderecocliente_set.all()[0]
+    except:
+        endereco_principal = None
+    # rua
+    if endereco_principal:
+        if not proposta.rua_do_proposto and endereco_principal.rua:
+            proposta.rua_do_proposto = "%s - %s" % (
+                endereco_principal.rua, endereco_principal.numero
+            )
+        # bairro
+        if not proposta.bairro_do_proposto and endereco_principal.bairro:
+            proposta.bairro_do_proposto = endereco_principal.bairro.nome
+
+        # CEP
+        if not proposta.cep_do_proposto  and endereco_principal.cep:
+            proposta.cep_do_proposto = endereco_principal.cep
+
+        # cidade
+        if not proposta.cidade_do_proposto  and endereco_principal.bairro.cidade.nome:
+            proposta.cidade_do_proposto = endereco_principal.bairro.cidade.nome
+
+        # telefone
+        if not proposta.telefone_contato_proposto:
+            if proposta.cliente:
+                if proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
+                    proposta.telefone_contato_proposto = "Fixo: %s, Celular: %s" % (proposta.cliente.telefone_fixo, proposta.cliente.telefone_celular) 
+                elif proposta.cliente.telefone_fixo and not proposta.cliente.telefone_celular:
+                    proposta.telefone_contato_proposto = "Fixo: %s" % proposta.cliente.telefone_fixo
+                elif not proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
+                    proposta.telefone_contato_proposto = "Celular: %s" % proposta.cliente.telefone_celular
+        # email
+        if not proposta.email_proposto and proposta.cliente:
+            proposta.email_proposto = proposta.cliente.email
+
+        # descricao de itens
+        if not proposta.descricao_items_proposto and proposta.orcamentos_ativos():
+            proposta.descricao_items_proposto = proposta.texto_descricao_items()
+    
+    #proposta.save()
     modelos_proposta = getattr(settings, 'MODELOS_DE_PROPOSTAS')
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
@@ -1687,6 +1688,7 @@ def proposta_comercial_imprimir(request, proposta_id):
         form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, modelos=modelos_proposta, gerente=request.user.perfilacessocomercial.gerente)
         if form_configura.is_valid():
             proposta = form_configura.save()
+            proposta.save()
             template_escolhido_chave = form_configura.cleaned_data['modelo']
             template_escolhido = dicionario_template_propostas[template_escolhido_chave]
             # com tudo configurado, gera a proposta
