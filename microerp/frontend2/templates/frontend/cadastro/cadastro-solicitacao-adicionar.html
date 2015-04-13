@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
@@ -7,13 +8,9 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-bell"></i> Adicionar Solicitação</h1>
 <form method="POST">{% csrf_token %}
     
-    <div class="row-fluid">
-        
-    </div>
     
-{{form.as_p}}
-<input type="submit" class="btn btn-primary" value="Adicionar">
-
+{{form|bootstrap}}
+<button type="submit" class="btn btn-primary">Adicionar</button>
 </form>
 
 {% endblock %}

@@ -8,11 +8,11 @@
 
 <div class="row-fluid" id="sub-menu-clientes">
 	
-	<div class="span6">
+	<div class="col-md-6">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-group"></i> Pré / Clientes</h1>
 	</div>
 	
-	<div class="span6">
+	<div class="col-md-6">
 		<div id="form-buscar-pre-clientes">
    	 <form class="form-search form-inline" action="{% url "comercial:clientes" %}">
 
@@ -22,7 +22,7 @@
         <button type="submit" class="btn btn-info"><i class="fa fa-search"></i> Buscar</button>
         <a data-placement="top" data-toggle="tooltip" title="Adicionar Pré Cliente" href="{% url "comercial:precliente_adicionar" %}{% if cliente_q %}?sugestao={{cliente_q}}{% endif %}" class="btn btn btn-success tooltip-items"><i class="fa fa-plus"></i></a>
 				{% if cliente_q %}
-             <a href="." class="btn tooltip-items" data-placement="top" data-toggle="tooltip" title="Limpar Busca"><i class="fa fa-trash-o"></i> </a>
+             <a href="." class="btn btn-default tooltip-items" data-placement="top" data-toggle="tooltip" title="Limpar Busca"><i class="fa fa-trash-o"></i> </a>
 				{% endif %}
 			</p>
 		</form>
@@ -37,19 +37,19 @@
 
 </ul>
 
-<div class="row-fluid well well-small">
-	<div class="span3">
+<div class="">
+	<div class="col-md-3">
 		{% if request.user.perfilacessocomercial.gerente %}
 		<h4><i class="fa fa-user"></i> Como Gerente</h4>
 		{% endif %}
 	</div>
 	<form method="POST" class="form form-inline">
-	<div class="span6">
+	<div class="col-md-6">
 		
 			{% csrf_token %}
 			{{form_filtrar_precliente.as_table}}
 	</div>
-	<div class="span3">
+	<div class="col-md-3">
 		<p><Br />
 		<button type="submit" class="btn btn-primary" name="btn-aplicar-filtro" value="filtrar">Aplicar Filtro</button>
 		</p>
@@ -65,26 +65,25 @@
 		    <div class="tabela-preclientes">
 		        <table class="table table-hover table-striped table-condensed">
 		            <thead>
-		                <caption><h4 class="alert">Pré Clientes</h4></caption>
+		                <caption><h4 class="alert alert-warning">Pré Clientes</h4></caption>
 		                <tr>
 		                    <th>Pré Cliente</th>
 							<th>Responsável</th>
-							<th>Contato</th>
 							<th>Dados</th>
 		                    <th>Ações</th>
 		                </tr>
 		            </thead>
 		            <tbody>
-    
 		                {% for cliente in preclientes %}
  
 		                <tr>
 		                    <td>{{cliente.nome}} </td>
 							<td>{% if cliente.designado %}{{cliente.designado}}{% endif %}</td>
-							<td>{{cliente.contato}}</td>
-							<td>{{cliente.dados}}</td>
+							<td>{{cliente.dados}}
+								<br />
+								<strong>Contato:</strong> {{cliente.contato}}</td>
 		                    <td>
-													<p class="btn-group">
+								<p class="btn-group">
 														
 						        <a class="btn btn-info tooltip-items" data-placement="top" data-toggle="tooltip" title="Ver Ficha do Pré Cliente" href="{% url "comercial:precliente_ver" cliente.id %}"><i class='fa fa-eye'></i></a>
 								
@@ -134,7 +133,7 @@
   
 						<tr>
 		                <td>{% if cliente.tipo == "pf" %}
-		                        <span class="label">{{cliente.tipo|upper}}</span>
+		                        <span class="label label-warning">{{cliente.tipo|upper}}</span>
 		                    {% else %}
 		                        <span class="label label-success">{{cliente.tipo|upper}}</span> 
 		                    {% endif %}

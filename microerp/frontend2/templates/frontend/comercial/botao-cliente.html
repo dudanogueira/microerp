@@ -1,5 +1,5 @@
 {% load phonenumber_br %}
-<a class="btn popover-items" href="{% url "comercial:cliente_ver" cliente.id %}" data-trigger="hover" data-title="{{cliente.nome}}" data-html="true" data-content='{% if cliente.tipo == "pf" %}
+<a class="btn btn-default popover-items" href="{% url "comercial:cliente_ver" cliente.id %}" data-trigger="hover" data-title="{{cliente.nome}}" data-html="true" data-content='{% if cliente.tipo == "pf" %}
 					<span class="label label-success">{{cliente.get_tipo_display}}</span>
 				{% else %}
 					<span class="label label-success">{{cliente.get_tipo_display}}</span> 

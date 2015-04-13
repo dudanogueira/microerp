@@ -11,7 +11,7 @@
     <div class="span6">
         <div class="well well-small">
             <h2><i class="fa fa-briefcase"></i> Buscar Pré / Cliente</h2>
-            <form class="form-search" action="{% url "cadastro:home" %}">
+            <form class="form-search" action="{% url "cadastro:home" %}" class="form-horizontal">
                 <input tabindex="2" type="text" class="input-medium search-query" id="cliente_busca" name="cliente" value="{% if cliente_q %}{{cliente_q}}{%endif%}">
                 <button type="submit" class="btn btn-info"><i class="fa fa-white fa-search"></i> Buscar</button>
                 {% if cliente_q %}

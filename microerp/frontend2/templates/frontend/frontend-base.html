@@ -38,7 +38,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">MicroERP</a>
+          <a class="navbar-brand" href="#"><i class="fa fa-th"></i> MicroERP</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
 			
@@ -62,7 +62,7 @@
             
             {% if mostra_menu_principal_lateral %}
             <div class="well sidebar-nav principal">
-              <ul class="nav nav-list">
+              <ul class="nav nav-pills nav-stacked">
                 <li class="nav-header"><i class="fa fa-home fa-3x"></i> Principal</li>
                 <li id="main-home"><a href="{% url "home" %}"><i class="fa fa-th"></i> Meu Painel</a></li>
                 {% if request.user.funcionario %}
@@ -162,18 +162,6 @@
         </div><!--/span-->
       </div><!--/row-->
 
-      <hr>
-
-      <footer>
-				<div class="row-fluid">
-					<div class="span6">
-        	<p><strong>Powered by MicroERP</strong></p>
-					</div>
-					<div class="span6" id="datetime_stamp">
-						<small>{% now "d/m/Y H:i" %}</small>
-					</div>
-				</div>
-      </footer>
 
     </div><!--/.fluid-container-->
     <script src="{{STATIC_URL}}frontend/js/jquery/jquery.js"></script>

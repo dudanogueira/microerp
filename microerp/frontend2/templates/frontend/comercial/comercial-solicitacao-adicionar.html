@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -11,7 +12,7 @@
         
     </div>
     
-{{form.as_p}}
+{{form|bootstrap}}
 <input type="submit" class="btn btn-primary" value="Adicionar">
 
 </form>

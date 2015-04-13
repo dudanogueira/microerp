@@ -11,9 +11,9 @@
     <h1><i class="fa fa-th"></i> <i class="fa fa-home"></i> Olá {{request.user.funcionario}}</h1>
     
     {# Bloco de Banco de Horas e Férias#}
-    <div class="row-fluid">
+    <div class="row">
         
-        <div class="span6">
+        <div class="col-md-6">
             {% if rh_usa_banco_de_horas %}
             <div class="alert alert-{{request.user.funcionario.banco_de_horas_situacao}}">
                 <i class="fa fa-clock-o fa-4x pull-left"></i>
@@ -35,7 +35,7 @@
 			{% endif %}
         </div>
 
-        <div class="span6">
+        <div class="col-md-6">
             <div class="alert alert-info">
                 <i class="fa fa-picture-o fa-4x pull-left"></i>
                     <h2>Férias</h2>   
@@ -50,10 +50,10 @@
                 
     </div>
     
-		{% if request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
-			<div class="alert alert-danger">
-    <i class="fa fa-user-md fa-4x pull-left"></i>
-    <h2>Exames Médicos</h2>
+	{% if request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
+	<div class="alert alert-danger">
+    	<i class="fa fa-user-md fa-4x pull-left"></i>
+		<h2>Exames Médicos</h2>
         <ul>
         {% for exame in request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
         
@@ -84,11 +84,9 @@
     
 {% else %}
 <form action="{% url "login" %}" method="post">{% csrf_token %}
-{{form.as_p}}
-<input type="submit" class="btn btn-success" value="Login">
+	{{form.as_p}}
+	<input type="submit" class="btn btn-success" value="Login">
 </form>
-
-
 {% endif %}
 
 

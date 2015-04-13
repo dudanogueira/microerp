@@ -30,7 +30,7 @@
 			<li> 
 				{{contrato}}
 				<div class='btn-group'><!-- Button to trigger modal -->
-					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-print"></i> Imprimir</a><a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
+					<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn btn-default" data-toggle="modal"><i class="fa fa-print"></i> Imprimir</a><a href="{% url "comercial:contratos_meus_definir_assinado" contrato.id %}" class="btn btn-success">Marcar como assinado</a>
 				</div>
 					
 				<!-- Modal -->
@@ -97,41 +97,41 @@
 
 		{% for contrato in lista.list %}
 			<div class="well well-small"> 
-			<div class="row-fluid">
-				<div class="span2">
+			<div class="row">
+				<div class="col-md-2">
 					<h4 class="alert alert-info"># {{contrato.id}}</h4>
 					<p>
 					{% if contrato.status == "invalido" %}
 
-						<span class="badge badge-important">{{contrato.get_status_display}}</span>
+						<span class="label label-danger">{{contrato.get_status_display}}</span>
 					{% else %}
 				
 						{% if contrato.status == "emaberto" %}
-							<span class="badge badge-important">Em Aberto</span>
+							<span class="label label-danger">Em Aberto</span>
 							<small>Aguardando Financeiro</small>
 						{% endif %}
 					
 						{% if contrato.status == "emanalise" %}
-							<span class="badge badge-default">Em Análise</span>
+							<span class="label label-default">Em Análise</span>
 						{% endif %}
 				
 				
 						{% if contrato.status == "assinatura" %}
-							<span class="badge badge-success">Aguardando Assinatura</span>
+							<span class="label label-success">Aguardando Assinatura</span>
 						{% endif %}
 					
 						{% if contrato.status == "lancado" %}
-							<span class="badge badge-info">{{contrato.get_status_display}}</span>
+							<span class="label label-info">{{contrato.get_status_display}}</span>
 
 							{% if contrato.status_execucao == "naoinciiado" %}
-								<span class="badge badge-info">{{contrato.get_status_execucao_display}}</span> 
+								<span class="label label-info">{{contrato.get_status_execucao_display}}</span> 
 							{% endif %}
 							{% if contrato.status_execucao == "emandamento" %}
-								<span class="badge badge-success">{{contrato.get_status_execucao_display}}</span> 
+								<span class="label label-success">{{contrato.get_status_execucao_display}}</span> 
 							{% endif %}
 						
 							{% if contrato.status_execucao == "pendente" %}
-								<span class="badge badge-default">{{contrato.get_status_execucao_display}}</span> 
+								<span class="label label-default">{{contrato.get_status_execucao_display}}</span> 
 							{% endif %}
 						
 						
@@ -158,7 +158,7 @@
 					
 					
 						<!-- Button to trigger modal -->
-						<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-print"></i></a>
+						<a href="#modal-configurar-impressao-contrato-{{contrato.id}}" role="button" class="btn btn-default" data-toggle="modal"><i class="fa fa-print"></i></a>
 
 
 					
@@ -184,7 +184,7 @@
 					</div>
 				</div>
 			
-				<div class="span5">
+				<div class="col-md-5">
 					<p>
 					{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}  
 					<button class="btn popover-items" data-placement="top" data-trigger="hover" data-title="R$ {{contrato.valor}} em {{contrato.lancamentofinanceiroreceber_set.all.count}} X" data-html="true" data-content="
@@ -202,7 +202,7 @@
 				
 				</div>
 			
-				<div class="span5">
+				<div class="col-md-5">
 					{% if contrato.status_execucao == "emandamento"  %}
 					<h1>10%</h1>
 					{% endif %}
