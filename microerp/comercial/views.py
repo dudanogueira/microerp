@@ -1768,7 +1768,6 @@ def adicionar_follow_up(request, proposta_id):
                 
             else:
                 messages.error(request, u"Erro! Formulário inválido! Follow Up Não Adicionado.")
-                a
     # retorna para referrer ou view do cliente
     try:
         url = request.META['HTTP_REFERER']
