@@ -254,12 +254,24 @@ class PropostaComercial(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-class TipoDeProposta(models.Model):
-    
+
+class ClasseTipoDeProposta(models.Model):
     def __unicode__(self):
         return self.nome
     
+    nome = models.CharField(blank=False, max_length=100)
+    
+
+class TipoDeProposta(models.Model):
+    
+    def __unicode__(self):
+        if self.classe:
+            return '%s - %s' % (self.classe.nome, self.nome)
+        else:
+            return self.nome
+    
     nome = models.CharField(blank=True, max_length=100)
+    classe = models.ForeignKey(ClasseTipoDeProposta, blank=True, null=True)
 
 class FollowUpDePropostaComercial(models.Model):
     
@@ -657,6 +669,7 @@ class ContratoFechado(models.Model):
     items_incluso = models.TextField("Itens Incluso", blank=True)
     items_nao_incluso = models.TextField("Itens Não Incluso", blank=True)
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
+    normas_execucao = models.TextField("Normas de Execução", blank=True, null=True)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)

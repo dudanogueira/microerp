@@ -674,6 +674,7 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
+    normas_execucao = forms.CharField(widget = forms.Textarea, label=u"Normas de Execução", required=True)
     #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
@@ -698,6 +699,12 @@ def editar_proposta_converter(request, proposta_id):
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
     usar_cartao_credito = UsarCartaoCredito()
+    
+    try:
+        norma_execucao_padrao = settings.TIPO_NORMA_EXECUCAO[proposta.tipo.classe.pk]
+    except:
+        norma_execucao_padrao = ''
+    
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
         initial={
             'objeto': proposta.objeto_proposto,
@@ -707,6 +714,7 @@ def editar_proposta_converter(request, proposta_id):
             'observacoes': proposta.forma_pagamento_proposto,
             'nome_do_proposto_legal': proposta.nome_do_proposto,
             'documento_do_proposto_legal': proposta.documento_do_proposto,
+            'normas_execucao': norma_execucao_padrao
         }
     )
     form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
@@ -798,6 +806,7 @@ def editar_proposta_converter(request, proposta_id):
                         novo_contrato.garantia = configurar_contrato_form.cleaned_data['garantia']
                         novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
                         novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
+                        novo_contrato.normas_execucao = configurar_contrato_form.cleaned_data['normas_execucao']
                         #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
                         novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
                         novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
@@ -1161,10 +1170,8 @@ def designacoes_confirmar(request):
 class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
-        modelos = kwargs.pop('modelos')
         gerente = kwargs.pop('gerente', False)
         super(ConfigurarPropostaComercialParaImpressao, self).__init__(*args, **kwargs)
-        self.fields['modelo'] = forms.ChoiceField(choices=modelos, label="Tipo de Proposta")
         if gerente:
             self.fields['vendedor'] = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(user__perfilacessocomercial=None).exclude(user__funcionario__periodo_trabalhado_corrente=None), label="Vendedor")
             if self.instance.cliente and self.instance.cliente.designado:
@@ -1224,7 +1231,7 @@ class OrcamentoPrint:
             # Release the canvas
             canvas.restoreState()
     
-    def print_proposta(self, proposta, tipo, perfil=None):
+    def print_proposta(self, proposta, tipo='servico', perfil=None):
         
             buffer = self.buffer
             doc = SimpleDocTemplate(buffer,
@@ -1327,7 +1334,7 @@ class OrcamentoPrint:
                 
                 # objeto texto
                 # 1.1 - Descrição dos Itens
-                desc_itens_titulo = Paragraph("1.1.1 - MATERIAL INCLUSO", styles['left_h2'])
+                desc_itens_titulo = Paragraph("1.1.1 - ITENS INCLUSOS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
@@ -1341,7 +1348,7 @@ class OrcamentoPrint:
                 
                 
                 # 1.2 - Descrição dos Itens Não Inclusos
-                desc_itens_titulo = Paragraph("1.1.2 - MATERIAL NÃO INCLUSO", styles['left_h2'])
+                desc_itens_titulo = Paragraph("1.1.2 - ITENS NÃO INCLUSOS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
@@ -1400,104 +1407,6 @@ class OrcamentoPrint:
                 # space
                 elements.append(Spacer(1, 24))
                 
-            elif tipo == "projetoeletrico":
-                
-                id_desc_p = Paragraph("PROPOSTA DE ELABORAÇÃO DE PROJETO ELÉTRICO", styles['centered_h1'])
-                elements.append(id_desc_p)
-                
-                # space
-                elements.append(Spacer(1, 24))
-                
-                contratante_texto = u"<strong>Cliente</strong>: %s, <strong>Documento:</strong> %s, <strong>Endereço do Cliente:</strong> %s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s, <strong>Estado</strong>: %s" %\
-                    (proposta.nome_do_proposto, proposta.documento_do_proposto, proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto, proposta.estado_do_proposto)
-                contratante_texto_p = Paragraph(contratante_texto, styles['justify'])
-                elements.append(contratante_texto_p)
-                
-                if proposta.email_proposto:
-                    texto = u"<b>Email</b>: %s<br />" % proposta.email_proposto
-                    contratante_p = Paragraph(texto, styles['justify'])
-                    elements.append(contratante_p)
-                
-
-                # space
-                elements.append(Spacer(1, 12))
-                                
-                endereco_texto = u"<strong>Endereço da Obra</strong>: %s, <strong>Representante Legal</strong>: %s, <strong>Telefone(s)</strong>: %s" % \
-                    (proposta.endereco_obra_proposto, proposta.representante_legal_proposto, proposta.telefone_contato_proposto)
-                endereco_texto_p = Paragraph(endereco_texto, styles['justify'])
-                elements.append(endereco_texto_p)
-                
-                # space
-                elements.append(Spacer(1, 12))
-                
-                # Proponente
-                texto_proponente = getattr(settings, 'TEXTO_PROPONENTE_PROJETO_ELETRICO', 'SETTINGS: TEXTO_PROPONENTE_PROJETO_ELETRICO')
-                texto_proponente_p = Paragraph(texto_proponente, styles['justify'])
-                elements.append(texto_proponente_p)
-
-                # space
-                elements.append(Spacer(1, 12))
-                                
-                # 1 - DO OBJETO
-                do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
-                elements.append(do_objeto_titulo)
-                # espaco
-                elements.append(Spacer(1, 12))
-                # objeto texto
-                texto_objeto_p = Paragraph(proposta.objeto_proposto.replace('\n', '<br />'), styles['justify'])
-                elements.append(texto_objeto_p)
-
-                # space
-                elements.append(Spacer(1, 12))
-
-
-                # 1.1 - Descrição dos Itens
-                desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
-                elements.append(desc_itens_titulo)
-                # espaco
-                elements.append(Spacer(1, 12))
-                # objeto texto
-                texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
-                elements.append(texto_desc_itens_p)
-                
-                # space
-                elements.append(Spacer(1, 12))
-                
-                # 2.1 - Descrição dos Itens
-                desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
-                elements.append(desc_itens_titulo)
-                # espaco
-                elements.append(Spacer(1, 12))
-                # objeto texto
-                texto = Paragraph(proposta.forma_pagamento_proposto, styles['justify'])
-                elements.append(texto)
-                elements.append(Spacer(1, 12))
-                # 2 - Do valor e formas de pagamento
-                titulo = Paragraph("2.2 - DOS VALORES", styles['left_h2'])
-                elements.append(titulo)
-                # space
-                elements.append(Spacer(1, 12))
-                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
-                valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
-                texto = "O valor global da proposta é de <strong>%s</strong> (<em>%s</em>)" % (valor_formatado, proposta.valor_extenso())
-                texto_p = Paragraph(texto, styles['justify'])
-                elements.append(texto_p)
-                
-                
-                # space
-                elements.append(Spacer(1, 12))
-                
-                # 3 - VALIDADE
-                titulo = Paragraph("3 - VALIDADE", styles['left_h2'])
-                elements.append(titulo)
-                # espaco
-                elements.append(Spacer(1, 12))
-                # texto validade
-                validade = "Essa proposta é válida até %s e foi emitida em %s" % \
-                ( proposta.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
-                
-                texto = Paragraph(validade, styles['justify'])
-                elements.append(texto)
             # TEXTO ESQUERDA FINAL
             if perfil.user.funcionario:
                 responsavel_proposta = perfil.user.funcionario
@@ -1673,7 +1582,6 @@ def proposta_comercial_imprimir(request, proposta_id):
             proposta.descricao_items_proposto = proposta.texto_descricao_items()
     
     #proposta.save()
-    modelos_proposta = getattr(settings, 'MODELOS_DE_PROPOSTAS')
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
@@ -1683,19 +1591,17 @@ def proposta_comercial_imprimir(request, proposta_id):
     
     
     dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA')
-    form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, modelos=modelos_proposta, gerente=request.user.perfilacessocomercial.gerente)
+    form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, gerente=request.user.perfilacessocomercial.gerente)
     if request.POST:
-        form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, modelos=modelos_proposta, gerente=request.user.perfilacessocomercial.gerente)
+        form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, gerente=request.user.perfilacessocomercial.gerente)
         if form_configura.is_valid():
             proposta = form_configura.save()
             proposta.save()
-            template_escolhido_chave = form_configura.cleaned_data['modelo']
-            template_escolhido = dicionario_template_propostas[template_escolhido_chave]
             # com tudo configurado, gera a proposta
             from io import BytesIO
             
             # nome do arquivo
-            nome_arquivo_gerado = "proposta-%s-%s.pdf" % (proposta.id, template_escolhido_chave)
+            nome_arquivo_gerado = "proposta-%s.pdf" % proposta.id
             
             # Create the HttpResponse object with the appropriate PDF headers.
             response = HttpResponse(content_type='application/pdf')
@@ -1707,7 +1613,7 @@ def proposta_comercial_imprimir(request, proposta_id):
             except:
                 perfil = request.user.perfilacessocomercial
                 
-            pdf = report.print_proposta(proposta, tipo=template_escolhido_chave, perfil=perfil)
+            pdf = report.print_proposta(proposta, perfil=perfil)
             response.write(pdf)
             if request.POST.get('enviar-por-email'):
                 f = forms.EmailField()
@@ -1724,7 +1630,7 @@ def proposta_comercial_imprimir(request, proposta_id):
                 assunto = "%s - Proposta Comercial %s" % (getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA"), proposta.id)
                 conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em anexo a proposta. ")
                 try:
-                    nome_do_proposto = form_configura.cleaned_data['nome_do_proposto']
+                    nome_do_proposto = form_configura.cleaned_data['representante_legal_proposto'] 
                     nome_do_funcionario = request.user.funcionario.nome
                     conteudo = conteudo % {'nome_do_proposto': nome_do_proposto, 'nome_do_funcionario': nome_do_funcionario}
                     bbc = [i[0] for i in PerfilAcessoComercial.objects.filter(gerente=True).values_list('user__funcionario__email')]

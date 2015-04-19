@@ -72,7 +72,7 @@ class Solicitacao(models.Model):
     nao_procede_porque = models.TextField(blank=True)
     providencia = models.TextField(blank=True)
     # prazo
-    prazo = models.DateField(default=datetime.datetime.today()+datetime.timedelta(days=10))
+    prazo = models.DateField(default=datetime.datetime.today)
     resolucao_final = models.TextField("Resolução Final", blank=True)
     resolucao_final_data = models.DateTimeField(blank=True, null=True)
     # departamento / abrangencia
