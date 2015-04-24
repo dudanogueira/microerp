@@ -177,6 +177,16 @@ $(document).ready(function() {
 	{% if modelo_garantia.items %}
 	$("#id_garantia").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia">Substituir</button> <button class="modelo_garantia" data-target="id_garantia" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
 	
+	
+	{% if modelo_normas.items %}
+	$("#id_normas_execucao").after('<div style="float:right"><select id="opcao_normas_execucao">{% for k,v in modelo_normas.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_norma" data-target="id_normas_execucao">Substituir</button> <button class="modelo_norma" data-target="id_normas_execucao" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+	
+	{% if modelo_prazos.items %}
+	$("#id_prazos_execucao").after('<div style="float:right"><select id="opcao_prazos_execucao">{% for k,v in modelo_prazos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_prazo" data-target="id_prazos_execucao">Substituir</button> <button class="modelo_prazo" data-target="id_prazos_execucao" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+	
+	
 });
 
 $( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
@@ -194,6 +204,28 @@ $( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
 		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val());
 	}else{
 		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val());
+	}	
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_norma", function(e) {
+	texto = $("#opcao_normas_execucao").val().replace(/<br\s*[\/]?>/gi, "\n");
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + texto);
+	}else{
+		$('#'+$(this).data('target')).val(texto);
+	}	
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_prazo", function(e) {
+	e.preventDefault();
+	texto = $("#opcao_prazos_execucao").val().replace(/<br\s*[\/]?>/gi, "\n");
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + texto);
+	}else{
+		$('#'+$(this).data('target')).val(texto);
 	}	
 });
 

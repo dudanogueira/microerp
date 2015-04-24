@@ -210,6 +210,7 @@ class FormAdicionarFollowUp(forms.ModelForm):
         super(FormAdicionarFollowUp, self).__init__(*args, **kwargs)
         self.fields['proposta'].widget = forms.HiddenInput()
         self.fields['texto'].required = True
+        self.fields['proposta'].localized = False
         self.fields['probabilidade'].required = True
         self.fields['data_expiracao'].required = False
         self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
@@ -675,6 +676,8 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
     normas_execucao = forms.CharField(widget = forms.Textarea, label=u"Normas de Execução", required=True)
+    prazos_execucao = forms.CharField(widget = forms.Textarea, label=u"Prazos de Execução", required=True)
+    endereco_obra = forms.CharField(widget = forms.Textarea, label=u"Endereço da Obra", required=True)
     #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
@@ -697,14 +700,11 @@ def editar_proposta_converter(request, proposta_id):
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
+    modelo_normas = getattr(settings, 'TIPO_NORMA_EXECUCAO', None)
+    modelo_prazos = getattr(settings, 'MODELOS_PRAZOS_EXECUCAO', None)
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
     usar_cartao_credito = UsarCartaoCredito()
-    
-    try:
-        norma_execucao_padrao = settings.TIPO_NORMA_EXECUCAO[proposta.tipo.classe.pk]
-    except:
-        norma_execucao_padrao = ''
-    
+        
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
         initial={
             'objeto': proposta.objeto_proposto,
@@ -712,9 +712,9 @@ def editar_proposta_converter(request, proposta_id):
             'items_incluso': proposta.descricao_items_proposto,
             'items_nao_incluso': proposta.items_nao_incluso,
             'observacoes': proposta.forma_pagamento_proposto,
+            'endereco_obra': proposta.endereco_obra_proposto,
             'nome_do_proposto_legal': proposta.nome_do_proposto,
             'documento_do_proposto_legal': proposta.documento_do_proposto,
-            'normas_execucao': norma_execucao_padrao
         }
     )
     form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
@@ -807,6 +807,7 @@ def editar_proposta_converter(request, proposta_id):
                         novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
                         novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
                         novo_contrato.normas_execucao = configurar_contrato_form.cleaned_data['normas_execucao']
+                        novo_contrato.prazos_execucao = configurar_contrato_form.cleaned_data['prazos_execucao']
                         #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
                         novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
                         novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
@@ -1833,6 +1834,13 @@ class ContratoPrint:
             contratada_p = Paragraph("<b>CONTRATADA</b>: %s" % contratada_texto, styles['justify'])
             elements.append(contratada_p)
             
+            if contrato.endereco_obra:
+                # space
+                elements.append(Spacer(1, 12))                        
+                # ENDERECO DA OBRA
+                endereco_obra_p = Paragraph(u"<b>ENDEREÇO DA OBRA</b>: %s" % contrato.endereco_obra, styles['justify'])
+                elements.append(endereco_obra_p)
+            
             # space
             elements.append(Spacer(1, 12))
             #
@@ -1872,13 +1880,15 @@ class ContratoPrint:
             #
             # CLAUSULA 2 - NORMAS DE EXECUÇÃO
             #
-            clausula_2_p = Paragraph("CLÁUSULA 2ª - NORMAS DE EXECUÇÃO", styles['left_h1'])
+            clausula_2_p = Paragraph("CLÁUSULA 2ª - DIREITOS E OBRIGAÇÕES DA CONTRATADA E CONTRATANTE", styles['left_h1'])
             elements.append(clausula_2_p)
             # space
             elements.append(Spacer(1, 12))
-            
-            normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato")    
-            normas_execucao_p = Paragraph(str(normas_execucao_texto).replace("\n", "<br />"), styles['justify'])
+            if contrato.normas_execucao:
+                normas_execucao_texto = unicode(contrato.normas_execucao)
+            else:
+                normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato")    
+            normas_execucao_p = Paragraph(unicode(normas_execucao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(normas_execucao_p)
             
             #

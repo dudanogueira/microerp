@@ -648,7 +648,6 @@ class ContratoFechado(models.Model):
         if not self.ordemdeservico_set.all():
             ordem_de_servico = self.ordemdeservico_set.create(
                 cliente=self.cliente, valor=self.valor,
-            
             )
             for orcamento in self.propostacomercial.orcamentos_ativos():
                 # para cada orcamento
@@ -664,12 +663,14 @@ class ContratoFechado(models.Model):
     categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
     objeto = models.TextField(blank=False)
     nome_proposto_legal = models.CharField(blank=True, max_length=100)
+    endereco_obra = models.TextField(u"Endereço da Obra", blank=True, null=True)
     documento_proposto_legal = models.CharField("Documento Legal do Proposto (CPF)", blank=True, max_length=100)
     garantia = models.TextField(blank=True)
     items_incluso = models.TextField("Itens Incluso", blank=True)
     items_nao_incluso = models.TextField("Itens Não Incluso", blank=True)
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     normas_execucao = models.TextField("Normas de Execução", blank=True, null=True)
+    prazo_execucao = models.TextField("Prazos de Execução", blank=True, null=True)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
