@@ -623,7 +623,7 @@ class ContratoFechado(models.Model):
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cpf or "_" * 30 ),
                 unicode(self.cliente.rg or "_" * 30  ),
-                unicode(self.cliente.logradouro_completo()),
+                unicode(self.cliente.logradouro_completo() or "_" * 90),
                 unicode(self.cliente.telefone_fixo or ("_" * 30)),
                 unicode(self.cliente.telefone_celular or ("_" * 30)),
                 unicode(self.cliente.email or ("_" * 30)),
@@ -671,6 +671,8 @@ class ContratoFechado(models.Model):
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     normas_execucao = models.TextField("Normas de Execução", blank=True, null=True)
     prazo_execucao = models.TextField("Prazos de Execução", blank=True, null=True)
+    rescisao = models.TextField("Rescisão", blank=True, null=True)
+    foro = models.TextField("Foro", blank=True, null=True)
     conta_transferencia = models.ForeignKey('financeiro.ContaBancaria', blank=True, null=True)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)

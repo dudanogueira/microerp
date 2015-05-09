@@ -673,12 +673,15 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
         self.fields['apoio_tecnico'].widget.attrs['class'] = 'select2'
     
     objeto = forms.CharField(widget = forms.Textarea, label="Objeto do Contrato", required=True)
-    garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
-    normas_execucao = forms.CharField(widget = forms.Textarea, label=u"Normas de Execução", required=True)
+    normas_execucao = forms.CharField(widget = forms.Textarea, label=u"Direitos e Obrigações", required=True)
     prazos_execucao = forms.CharField(widget = forms.Textarea, label=u"Prazos de Execução", required=True)
+    rescisao = forms.CharField(widget = forms.Textarea, label=u"Rescisão", required=True)
+    garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
+    foro = forms.CharField(widget = forms.Textarea, label=u"Foro", required=True)
     endereco_obra = forms.CharField(widget = forms.Textarea, label=u"Endereço da Obra", required=True)
+    
     #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
@@ -704,9 +707,23 @@ def editar_proposta_converter(request, proposta_id):
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
     modelo_normas = getattr(settings, 'TIPO_NORMA_EXECUCAO', None)
     modelo_prazos = getattr(settings, 'MODELOS_PRAZOS_EXECUCAO', None)
+    modelo_rescisao = getattr(settings, 'MODELOS_RESCISAO', None)
+    modelo_foro = getattr(settings, 'MODELOS_FORO', None)
+    modelo_itens_inclusos = getattr(settings, 'MODELOS_ITENS_INCLUSOS', None)
+    modelo_items_nao_incluso = getattr(settings, 'MODELOS_ITENS_NAO_INCLUSOS', None)
+    modelo_foro = getattr(settings, 'MODELOS_FORO', None)
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
     usar_cartao_credito = UsarCartaoCredito()
-        
+    # preencher rescisao e foro automatico, pois sempre estrá vazio, com o primeiro valor possível
+    if modelo_rescisao:
+        rescisao_inicial = modelo_rescisao.items()[0][1]
+    else:
+        rescisao_inicial = None
+    if modelo_foro:
+        foro_inicial = modelo_foro.items()[0][1]
+    else:
+        foro_inicial = None
+    
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
         initial={
             'objeto': proposta.objeto_proposto,
@@ -717,6 +734,8 @@ def editar_proposta_converter(request, proposta_id):
             'endereco_obra': proposta.endereco_obra_proposto,
             'nome_do_proposto_legal': proposta.nome_do_proposto,
             'documento_do_proposto_legal': proposta.documento_do_proposto,
+            'foro': foro_inicial,
+            'rescisao': rescisao_inicial,
         }
     )
     form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
@@ -774,6 +793,7 @@ def editar_proposta_converter(request, proposta_id):
                             if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
                                 total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
                     # verifica se existe alguma parcela com transferencia, se sim, conta bancaria deve ser preenchido
+                    possui_transferencia = False
                     for form in form_configurar_contrato.forms:
                         if form not in form_configurar_contrato.deleted_forms:
                             if form.cleaned_data and form.cleaned_data.get('modo_recebido') == 'transferencia':
@@ -819,6 +839,10 @@ def editar_proposta_converter(request, proposta_id):
                             novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
                             novo_contrato.normas_execucao = configurar_contrato_form.cleaned_data['normas_execucao']
                             novo_contrato.prazos_execucao = configurar_contrato_form.cleaned_data['prazos_execucao']
+                            novo_contrato.endereco_obra = configurar_contrato_form.cleaned_data['endereco_obra']
+                            novo_contrato.rescisao = configurar_contrato_form.cleaned_data['rescisao']
+                            novo_contrato.prazo = configurar_contrato_form.cleaned_data['prazo']
+                            novo_contrato.foro = configurar_contrato_form.cleaned_data['foro']
                             #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
                             novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
                             novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
@@ -1946,7 +1970,8 @@ class ContratoPrint:
             # space
             elements.append(Spacer(1, 12))
             
-            prazos_texto = getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato")    
+            #prazos_texto = getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato")    
+            prazos_texto = contrato.prazo_execucao
             prazos_p = Paragraph(str(prazos_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(prazos_p)
             elements.append(Spacer(1, 12))
@@ -1960,7 +1985,8 @@ class ContratoPrint:
             # space
             elements.append(Spacer(1, 12))
             # 
-            rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
+            #rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
+            rescisao_texto = contrato.rescisao
             rescisao_p = Paragraph(str(rescisao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
             
@@ -1987,7 +2013,8 @@ class ContratoPrint:
             elements.append(clausula_6_p)
             # space
             # 
-            foro_texto = getattr(settings, "TEXTO_HTML_FORO", "Settings: TEXTO_HTML_FORO - Texto descrevendo O FORO do contrato")    
+            #foro_texto = getattr(settings, "TEXTO_HTML_FORO", "Settings: TEXTO_HTML_FORO - Texto descrevendo O FORO do contrato")    
+            foro_texto = contrato.foro
             foro_p = Paragraph(str(foro_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(foro_p)
             elements.append(Spacer(1, 12))
@@ -2739,7 +2766,7 @@ class FormAnalisarContrato(forms.ModelForm):
 
     class Meta:
         model = ContratoFechado
-        fields = ('objeto', 'categoria', 'responsavel_comissionado', 'responsavel', 'nome_proposto_legal', 'documento_proposto_legal', 'apoio_tecnico')
+        fields = ('objeto', 'categoria', 'responsavel_comissionado', 'responsavel', 'nome_proposto_legal', 'documento_proposto_legal', 'apoio_tecnico', 'endereco_obra')
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos_analisar(request, contrato_id):

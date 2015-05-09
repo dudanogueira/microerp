@@ -186,6 +186,24 @@ $(document).ready(function() {
 	$("#id_prazos_execucao").after('<div style="float:right"><select id="opcao_prazos_execucao">{% for k,v in modelo_prazos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_prazo" data-target="id_prazos_execucao">Substituir</button> <button class="modelo_prazo" data-target="id_prazos_execucao" data-adicionar="True">Acrescentar</button></div>');
 	{% endif %}
 	
+
+	{% if modelo_rescisao.items %}
+	$("#id_rescisao").after('<div style="float:right"><select id="opcao_rescisao">{% for k,v in modelo_rescisao.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_rescisao" data-target="id_rescisao">Substituir</button> <button class="modelo_rescisao" data-target="id_rescisao" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+
+	{% if modelo_foro.items|length > 1 %}
+	$("#id_foro").after('<div style="float:right"><select id="opcao_foro">{% for k,v in modelo_foro.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_foro" data-target="id_foro">Substituir</button> <button class="modelo_foro" data-target="id_foro" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+	
+	{% if modelo_itens_inclusos.items|length > 1 %}
+	$("#id_items_incluso").after('<div style="float:right"><select id="opcao_items_incluso">{% for k,v in modelo_itens_inclusos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_items_incluso" data-target="id_items_incluso">Substituir</button> <button class="modelo_items_incluso" data-target="id_items_incluso" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+	
+	{% if modelo_items_nao_incluso.items|length > 1 %}
+	$("#id_items_nao_incluso").after('<div style="float:right"><select id="opcao_items_nao_incluso">{% for k,v in modelo_items_nao_incluso.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_items_nao_incluso" data-target="id_items_nao_incluso">Substituir</button> <button class="modelo_items_nao_incluso" data-target="id_items_nao_incluso" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
+
+	
 	
 });
 
@@ -228,6 +246,51 @@ $( "#configurar-contrato" ).on( "click", ".modelo_prazo", function(e) {
 		$('#'+$(this).data('target')).val(texto);
 	}	
 });
+
+$( "#configurar-contrato" ).on( "click", ".modelo_rescisao", function(e) {
+	e.preventDefault();
+	texto = $("#opcao_rescisao").val().replace(/<br\s*[\/]?>/gi, "\n");
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + texto);
+	}else{
+		$('#'+$(this).data('target')).val(texto);
+	}	
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_foro", function(e) {
+	e.preventDefault();
+	texto = $("#opcao_foro").val().replace(/<br\s*[\/]?>/gi, "\n");
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + texto);
+	}else{
+		$('#'+$(this).data('target')).val(texto);
+	}	
+});
+
+$( "#configurar-contrato" ).on( "click", ".modelo_items_incluso", function(e) {
+	e.preventDefault();
+	texto = $("#opcao_items_incluso").val().replace(/<br\s*[\/]?>/gi, "\n");
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + texto);
+	}else{
+		$('#'+$(this).data('target')).val(texto);
+	}	
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_items_nao_incluso", function(e) {
+	e.preventDefault();
+	texto = $("#opcao_items_nao_incluso").val().replace(/<br\s*[\/]?>/gi, "\n");
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + texto);
+	}else{
+		$('#'+$(this).data('target')).val(texto);
+	}	
+});
+
+
+
 
 
 $( ".datepicker" ).datepicker({

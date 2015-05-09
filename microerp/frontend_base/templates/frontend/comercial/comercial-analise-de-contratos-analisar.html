@@ -59,6 +59,10 @@
 			Nenhum Lançamento				
 			{% endfor %}
 		</ul>
+		 {% if contrato.conta_transferencia %}
+			<small><strong>Conta para Transferência:</strong><br />
+				{{contrato.conta_transferencia}}</small>
+		{% endif %}
 
 		{% if contrato.propostacomercial.orcamento_set.all %}
 		<hr />
