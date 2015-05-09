@@ -841,7 +841,7 @@ def editar_proposta_converter(request, proposta_id):
                             novo_contrato.prazos_execucao = configurar_contrato_form.cleaned_data['prazos_execucao']
                             novo_contrato.endereco_obra = configurar_contrato_form.cleaned_data['endereco_obra']
                             novo_contrato.rescisao = configurar_contrato_form.cleaned_data['rescisao']
-                            novo_contrato.prazo_execucao = configurar_contrato_form.cleaned_data['prazo_execucao']
+                            novo_contrato.prazo_execucao = configurar_contrato_form.cleaned_data['prazos_execucao']
                             novo_contrato.foro = configurar_contrato_form.cleaned_data['foro']
                             #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
                             novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
