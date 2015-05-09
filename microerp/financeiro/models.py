@@ -60,12 +60,25 @@ class PerfilAcessoFinanceiro(models.Model):
     criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
 
-class ContaBancaria(models.Model):
+
+class Banco(models.Model):
     
     def __unicode__(self):
         return self.nome
     
+    
     nome = models.CharField(blank=True, max_length=100)
+    codigo = models.CharField(blank=True, max_length=100)
+
+class ContaBancaria(models.Model):
+    
+    def __unicode__(self):
+        return "%s (Banco: %s - AG: %s - CC: %s)" % (self.nome, self.banco.nome, self.agencia, self.conta)
+    
+    nome = models.CharField(blank=True, max_length=100)
+    banco = models.ForeignKey(Banco)
+    agencia = models.CharField(blank=True, max_length=100)
+    conta = models.CharField(blank=True, max_length=100)
 
 class LancamentoFinanceiroReceber(models.Model):
     

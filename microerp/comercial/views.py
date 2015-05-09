@@ -31,6 +31,7 @@ from comercial.models import PropostaComercial, FollowUpDePropostaComercial, Req
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao, CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 from comercial.models import LinhaRecursoMaterial, LinhaRecursoHumano, LinhaRecursoLogistico, Orcamento, GrupoIndicadorDeProdutoProposto
 from financeiro.models import LancamentoFinanceiroReceber
+from financeiro.models import ContaBancaria
 from estoque.models import Produto
 
 from django.conf import settings
@@ -682,6 +683,7 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
     apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
+    conta_transferencia = forms.ModelChoiceField(queryset=ContaBancaria.objects.all(), label=u"Conta para Transferência", help_text="Obrigatório Somente se houver Transferência Eletrônica nas Parcelas", required=False)
 
 
 class UsarCartaoCredito(forms.Form):
@@ -771,57 +773,68 @@ def editar_proposta_converter(request, proposta_id):
                         if form not in form_configurar_contrato.deleted_forms:
                             if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
                                 total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
-                    if float(total_lancamentos) == float(proposta.valor_proposto):
-                        # converte proposta e marca data e quem converteu
-                        proposta.status = "convertida"
-                        proposta.definido_convertido_em = datetime.datetime.now()
-                        proposta.definido_convertido_por = request.user.funcionario
-                        # cria o Contrato Convertido
-                        novo_contrato = ContratoFechado.objects.create(
-                            cliente=proposta.cliente,
-                            objeto=proposta.objeto_proposto,
-                            valor=proposta.valor_proposto,
-                            status="emanalise",
-                            responsavel=request.user.funcionario,
-                            responsavel_comissionado=proposta.designado,
-                        )
-                        # relaciona novo contrato com essa proposta
-                        proposta.contrato_vinculado = novo_contrato
-                        # determina 100% de fechamento da proposta
-                        proposta.probabilidade=100
-                        #salva a proposta
-                        proposta.save()
-                        messages.success(request, u"Sucesso! Proposta #%s convertida em Contrato #%s" % (proposta.id, novo_contrato.id))
-                        # registra lancamentos vinculando ao novo contrato
-                        i = 0
-                        for form in form_configurar_contrato.forms:
-                            if form.is_valid() and form not in form_configurar_contrato.deleted_forms:
-                                i += 1
-                                novo_lancamento = form.save(commit=False)
-                                novo_lancamento.contrato = novo_contrato
-                                novo_lancamento.peso = i
-                                novo_lancamento.save()
-                        # registra os dados configurados para o contrato (alterados ou importados da proposta)
-                        novo_contrato.objeto = configurar_contrato_form.cleaned_data['objeto']
-                        novo_contrato.garantia = configurar_contrato_form.cleaned_data['garantia']
-                        novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
-                        novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
-                        novo_contrato.normas_execucao = configurar_contrato_form.cleaned_data['normas_execucao']
-                        novo_contrato.prazos_execucao = configurar_contrato_form.cleaned_data['prazos_execucao']
-                        #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
-                        novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
-                        novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
-                        novo_contrato.apoio_tecnico = configurar_contrato_form.cleaned_data['apoio_tecnico']
-                        novo_contrato.save()
-                        # retorna para a view contratos em analise
-                        if request.user.perfilacessocomercial.gerente:
-                            # se gerente, retorna para contratos em analise
-                            return redirect(reverse("comercial:analise_de_contratos"))
-                        else:
-                            # caso contrario, retorna para a ficha do cliente
-                            return redirect(reverse("comercial:cliente_ver", args=[novo_contrato.cliente.id]))
+                    # verifica se existe alguma parcela com transferencia, se sim, conta bancaria deve ser preenchido
+                    for form in form_configurar_contrato.forms:
+                        if form not in form_configurar_contrato.deleted_forms:
+                            if form.cleaned_data and form.cleaned_data.get('modo_recebido') == 'transferencia':
+                                possui_transferencia = True
+                    if possui_transferencia and configurar_contrato_form.cleaned_data.get('conta_transferencia') is None:
+                        configurar_contrato_form.add_error('conta_transferencia', u"Contrato Possui Transferência Bancária, este campo é obrigatório.")
+                        messages.error(request, u"Erro! Contrato Possui transferência Bancária. É obrigatório Selecionar uma Conta Bancária")
                     else:
-                        messages.error(request, u"Erro! Valor das parcelas (R$ %s) NÃO CONFERE com valor proposto: R$ %s" % (total_lancamentos, proposta.valor_proposto))
+                        if float(total_lancamentos) == float(proposta.valor_proposto):
+                            # converte proposta e marca data e quem converteu
+                            proposta.status = "convertida"
+                            proposta.definido_convertido_em = datetime.datetime.now()
+                            proposta.definido_convertido_por = request.user.funcionario
+                            # cria o Contrato Convertido
+                            novo_contrato = ContratoFechado.objects.create(
+                                cliente=proposta.cliente,
+                                objeto=proposta.objeto_proposto,
+                                valor=proposta.valor_proposto,
+                                status="emanalise",
+                                responsavel=request.user.funcionario,
+                                responsavel_comissionado=proposta.designado,
+                            )
+                            # relaciona novo contrato com essa proposta
+                            proposta.contrato_vinculado = novo_contrato
+                            # determina 100% de fechamento da proposta
+                            proposta.probabilidade=100
+                            #salva a proposta
+                            proposta.save()
+                            messages.success(request, u"Sucesso! Proposta #%s convertida em Contrato #%s" % (proposta.id, novo_contrato.id))
+                            # registra lancamentos vinculando ao novo contrato
+                            i = 0
+                            for form in form_configurar_contrato.forms:
+                                if form.is_valid() and form not in form_configurar_contrato.deleted_forms:
+                                    i += 1
+                                    novo_lancamento = form.save(commit=False)
+                                    novo_lancamento.contrato = novo_contrato
+                                    novo_lancamento.peso = i
+                                    novo_lancamento.save()
+                            # registra os dados configurados para o contrato (alterados ou importados da proposta)
+                            novo_contrato.objeto = configurar_contrato_form.cleaned_data['objeto']
+                            novo_contrato.garantia = configurar_contrato_form.cleaned_data['garantia']
+                            novo_contrato.items_incluso = configurar_contrato_form.cleaned_data['items_incluso']
+                            novo_contrato.items_nao_incluso = configurar_contrato_form.cleaned_data['items_nao_incluso']
+                            novo_contrato.normas_execucao = configurar_contrato_form.cleaned_data['normas_execucao']
+                            novo_contrato.prazos_execucao = configurar_contrato_form.cleaned_data['prazos_execucao']
+                            #novo_contrato.observacoes = configurar_contrato_form.cleaned_data['observacoes']
+                            novo_contrato.nome_proposto_legal = configurar_contrato_form.cleaned_data['nome_do_proposto_legal']
+                            novo_contrato.documento_proposto_legal = configurar_contrato_form.cleaned_data['documento_do_proposto_legal']
+                            novo_contrato.apoio_tecnico = configurar_contrato_form.cleaned_data['apoio_tecnico']
+                            novo_contrato.conta_transferencia = configurar_contrato_form.cleaned_data['conta_transferencia']
+                            novo_contrato.save()
+                            # retorna para a view contratos em analise
+                            if request.user.perfilacessocomercial.gerente:
+                                # se gerente, retorna para contratos em analise
+                                return redirect(reverse("comercial:analise_de_contratos"))
+                            else:
+                                # caso contrario, retorna para a ficha do cliente
+                                return redirect(reverse("comercial:cliente_ver", args=[novo_contrato.cliente.id]))
+
+                        else:
+                            messages.error(request, u"Erro! Valor das parcelas (R$ %s) NÃO CONFERE com valor proposto: R$ %s" % (total_lancamentos, proposta.valor_proposto))
 
         return render_to_response('frontend/comercial/comercial-proposta-converter.html', locals(), context_instance=RequestContext(request),)
     else:
@@ -1896,10 +1909,14 @@ class ContratoPrint:
             #
             clausula_3_p = Paragraph("CLÁUSULA 3ª – DO VALOR E FORMA DE PAGAMENTO", styles['left_h1'])
             elements.append(clausula_3_p)
+
             # space
-            #elements.append(Spacer(1, 12))
-            #forma_pagamento_p = Paragraph(unicode(contrato.propostacomercial.forma_pagamento_proposto).replace("\n", "<br />"), styles['justify'])
-            #elements.append(forma_pagamento_p)
+            if contrato.conta_transferencia:
+                elements.append(Spacer(1, 12))
+                conta_transferencia_p = Paragraph(unicode(u"Conta Para Transferência: %s" % contrato.conta_transferencia), styles['justify'])
+                elements.append(conta_transferencia_p)
+
+
             elements.append(Spacer(1, 12))
 
             for lancamento in contrato.lancamentofinanceiroreceber_set.all():

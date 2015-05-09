@@ -671,6 +671,7 @@ class ContratoFechado(models.Model):
     forma_pagamento = models.CharField("Forma de Pagamento", blank=False, null=False, max_length=100, default="dinheiro", choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     normas_execucao = models.TextField("Normas de Execução", blank=True, null=True)
     prazo_execucao = models.TextField("Prazos de Execução", blank=True, null=True)
+    conta_transferencia = models.ForeignKey('financeiro.ContaBancaria', blank=True, null=True)
     parcelas = models.IntegerField("Quantidade de Parcelas", blank=False, null=False, default=1)
     inicio_cobranca = models.DateField(u"Início da Cobrança", default=datetime.datetime.today)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)

@@ -421,7 +421,6 @@ $(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
 
 $(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
 	$("#descricao-modal-add-follow-up").html( $(this).data('title') );
-	alert($(this).data('proposta-id'));
 	$("#id_proposta").val($(this).data('proposta-id'));
 	$("#id_texto").val('');
 	$("#id_probabilidade").val($(this).data('probabilidade'));

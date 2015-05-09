@@ -26,6 +26,7 @@ from financeiro.models import LancamentoFinanceiroReceber
 from financeiro.models import ContaBancaria
 from financeiro.models import ObservacaoLancamento
 from financeiro.models import ProcessoAntecipacao
+from financeiro.models import Banco
 
 class PerfilAcessoFinanceiroAdmin(admin.ModelAdmin):
     pass
@@ -46,3 +47,4 @@ admin.site.register(LancamentoFinanceiroReceber, LancamentoFinanceiroReceberAdmi
 admin.site.register(ContaBancaria)
 admin.site.register(ObservacaoLancamento, ObservacaoLancamentoAdmin)
 admin.site.register(ProcessoAntecipacao, ProcessoAntecipacaoAdmin)
+admin.site.register(Banco)
