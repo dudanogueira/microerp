@@ -1972,8 +1972,11 @@ class ContratoPrint:
             # space
             elements.append(Spacer(1, 12))
             
-            #prazos_texto = getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato")    
-            prazos_texto = unicode(contrato.prazo_execucao)
+            if contrato.prazo_execucao:
+                prazos_texto = unicode(contrato.prazo_execucao)
+            else:
+                prazos_texto = str(getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato"))
+            
             prazos_p = Paragraph(prazos_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(prazos_p)
             elements.append(Spacer(1, 12))
@@ -1987,8 +1990,10 @@ class ContratoPrint:
             # space
             elements.append(Spacer(1, 12))
             # 
-            #rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
-            rescisao_texto = unicode(contrato.rescisao)
+            if contrato.rescisao:
+                rescisao_texto = unicode(contrato.rescisao)
+            else:
+                rescisao_texto = str(getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao"))
             rescisao_p = Paragraph(rescisao_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
             
@@ -2015,8 +2020,10 @@ class ContratoPrint:
             elements.append(clausula_6_p)
             # space
             # 
-            #foro_texto = getattr(settings, "TEXTO_HTML_FORO", "Settings: TEXTO_HTML_FORO - Texto descrevendo O FORO do contrato")    
-            foro_texto = unicode(contrato.foro)
+            if contrato.foro:
+                foro_texto = unicode(contrato.foro)
+            else:
+                foro_texto = str(getattr(settings, "TEXTO_HTML_FORO", "Settings: TEXTO_HTML_FORO - Texto descrevendo O FORO do contrato"))
             foro_p = Paragraph(foro_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(foro_p)
             elements.append(Spacer(1, 12))
