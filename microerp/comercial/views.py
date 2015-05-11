@@ -1924,8 +1924,8 @@ class ContratoPrint:
             if contrato.normas_execucao:
                 normas_execucao_texto = unicode(contrato.normas_execucao)
             else:
-                normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato")    
-            normas_execucao_p = Paragraph(unicode(normas_execucao_texto).replace("\n", "<br />"), styles['justify'])
+                normas_execucao_texto = str(getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato"))
+            normas_execucao_p = Paragraph(normas_execucao_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(normas_execucao_p)
             
             elements.append(Spacer(1, 12))
