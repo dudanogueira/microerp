@@ -1917,7 +1917,7 @@ class ContratoPrint:
             #
             # CLAUSULA 2 - NORMAS DE EXECUÇÃO
             #
-            clausula_2_p = Paragraph("CLÁUSULA 2ª - DIREITOS E OBRIGAÇÕES DA CONTRATADA E CONTRATANTE", styles['left_h1'])
+            clausula_2_p = Paragraph(u"CLÁUSULA 2ª - DIREITOS E OBRIGAÇÕES DA CONTRATADA E CONTRATANTE", styles['left_h1'])
             elements.append(clausula_2_p)
             # space
             elements.append(Spacer(1, 12))
@@ -1927,6 +1927,8 @@ class ContratoPrint:
                 normas_execucao_texto = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato")    
             normas_execucao_p = Paragraph(unicode(normas_execucao_texto).replace("\n", "<br />"), styles['justify'])
             elements.append(normas_execucao_p)
+            
+            elements.append(Spacer(1, 12))
             
             #
             # CLAUSULA 3 - FORMAS DE PAGAMENTO
@@ -1971,8 +1973,8 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             
             #prazos_texto = getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato")    
-            prazos_texto = contrato.prazo_execucao
-            prazos_p = Paragraph(str(prazos_texto).replace("\n", "<br />"), styles['justify'])
+            prazos_texto = unicode(contrato.prazo_execucao)
+            prazos_p = Paragraph(prazos_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(prazos_p)
             elements.append(Spacer(1, 12))
 
@@ -1986,8 +1988,8 @@ class ContratoPrint:
             elements.append(Spacer(1, 12))
             # 
             #rescisao_texto = getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao")    
-            rescisao_texto = contrato.rescisao
-            rescisao_p = Paragraph(str(rescisao_texto).replace("\n", "<br />"), styles['justify'])
+            rescisao_texto = unicode(contrato.rescisao)
+            rescisao_p = Paragraph(rescisao_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
             
             
@@ -2014,8 +2016,8 @@ class ContratoPrint:
             # space
             # 
             #foro_texto = getattr(settings, "TEXTO_HTML_FORO", "Settings: TEXTO_HTML_FORO - Texto descrevendo O FORO do contrato")    
-            foro_texto = contrato.foro
-            foro_p = Paragraph(str(foro_texto).replace("\n", "<br />"), styles['justify'])
+            foro_texto = unicode(contrato.foro)
+            foro_p = Paragraph(foro_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(foro_p)
             elements.append(Spacer(1, 12))
             
