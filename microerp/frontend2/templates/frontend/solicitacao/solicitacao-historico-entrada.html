@@ -1,0 +1,54 @@
+<div class="adicionado">
+<strong>    <i class="icon-plus"></i> {{solicitacao.criado|date:"SHORT_DATETIME_FORMAT"}}</strong><br /> <small>{{solicitacao.criado|timesince:solicitacao.despachado_data}} depois<br /></small>
+</div>
+
+<div class="despachado">
+    {% if solicitacao.despachado_data %}
+    <i class="icon-bullhorn"></i> <strong>{{solicitacao.despachado_data|date:"SHORT_DATETIME_FORMAT"}}</strong><br />
+
+    {% if solicitacao.correcao_iniciada %}
+    <small>{{solicitacao.despachado_data|timesince:solicitacao.correcao_iniciada}} depois</small><br />
+
+
+    <i class="icon-wrench"></i> <strong>{{solicitacao.correcao_iniciada|date:"SHORT_DATETIME_FORMAT"}}</strong><br />
+    {% endif %}
+    {% endif %}
+</div>
+
+<div class="resolvido">
+    {% if solicitacao.resolucao_final_data %}
+
+    {% if solicitacao.procede %}
+        <div>
+        <small>{{solicitacao.despachado_data|timesince:solicitacao.resolucao_final_data}} depois</small><br />
+        <i class="icon-thumbs-up"></i> <strong>{{solicitacao.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}}</strong>
+    </div>
+    {% else %}
+        <div>
+                <i class="icon-thumbs-down"></i> <strong>{{solicitacao.resolucao_final_data|date:"SHORT_DATETIME_FORMAT"}}</strong>
+        {% endif %}
+        {% if not solicitacao.contato_realizado %}
+        <p class="label label-info"><i class="icon-phone"></i> Aguardando o seu contato</p>
+        <p>
+        <small><i class="icon-time"></i> Aberta há {{solicitacao.criado|timesince}}</small>
+        </p>
+    </div>
+    {% endif %}
+</div>
+ 
+<div class="visto">
+    
+{% if solicitacao.contato_realizado %}
+ <small>{{solicitacao.resolucao_final_data|timesince:solicitacao.contato_realizado}} depois</small><br />
+    
+    <i class="icon-phone"></i> <strong>{{solicitacao.contato_realizado|date:"SHORT_DATETIME_FORMAT"}}</strong><br />
+    
+    
+    <small><i class="icon-time"></i> Aberta há {{solicitacao.criado|timesince}}</small>
+    
+
+    {% endif %}
+</div>
+ 
+{% endif %}
+

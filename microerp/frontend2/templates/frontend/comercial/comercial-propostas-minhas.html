@@ -1,0 +1,509 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Propostas Comerciais</h1>
+
+
+<ul class="nav nav-tabs normargin" id="navtab-propostas-minhas">
+    <li class="active firstload"><a href="#propostas-abertas-validas" data-toggle="tab"><span class="label label-success">{{propostas_abertas_validas.count}}</span> Válidas</a></li>
+	<li> <a class="ajaxtab" data-url="{% url "comercial:propostas_comerciais_minhas_expiradas_ajax" %}" href="#propostas-abertas-expiradas" data-toggle="tab"><span class="label label-danger">{{propostas_abertas_expiradas_count}}</span> Expiradas</a></li>
+</ul>
+
+<div id="tab-content-comercial-clientes" class="tab-content">
+
+	<div class="tab-pane fade in active" id="propostas-abertas-validas">
+	
+		{% if request.user.perfilacessocomercial.gerente %}
+		<div class="well well-small">
+			<div class="row-fluid">
+			<div class="span4">
+				<h4>Como Gerente</h4>
+			</div>
+			
+			<div class="span8">
+				<strong>Consultores com Propostas Válidas:</strong>
+				
+				<select id="filtro-designado-validas">
+					<option value="todos">Todos</option>
+				{% for designado in designados_propostas_validas %}
+					<option value="{{designado.designado__id}}">{{designado.designado__nome}} ({{designado.designado__nome__count}})</option>
+				{% endfor %}
+				</select>
+				
+			</div>
+		</div>
+		</div>
+		{% endif %}
+
+		
+		
+		{% regroup propostas_abertas_validas by dono as propostas_abertas_validas_por_cliente %}
+		
+		{% for proposta_list in propostas_abertas_validas_por_cliente %}
+		<div class="dono-proposta-valida-group">
+			<p>
+			{% if proposta_list.list.0.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta_list.grouper %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
+			{% endif %}
+
+			</p>
+		
+		<table class="table table-condensed table.stripped">
+			<thread>
+					<tr>
+						<th class="alert alert-success">ID</th>
+						<th>Expiração</th>
+						<th>Valor</th>
+						<th>Probabilidade</th>
+						<th>Follow Up</th>
+						<th>Ações</th>
+					</tr>
+			</thead>
+			{% for proposta in proposta_list.list %}
+			<tr class="propostas-validas {% if proposta.designado %}propostas-validas-{{proposta.designado.id}}{% else %}propostas-validas-None{% endif %}">
+				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
+				<td>
+					{% if proposta.expira_hoje %}
+							<span class="badge badge-important">Hoje!</span>
+					{% else %}
+						<span class="label label-success"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span>
+							<small>{{proposta.data_expiracao|timeuntil}}</small>
+					{% endif %}
+				</td>
+				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
+				<td>
+					<div class="progress">
+					  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="{{proposta.probabilidade}}" aria-valuemin="0" aria-valuemax="100" style="width: {{proposta.probabilidade}}%">
+					    <span class="">{{proposta.probabilidade}}%</span>
+					  </div>
+					</div>
+
+				</td>
+				<td>
+					{% if proposta.ultimo_followup %}
+					<a 
+						href="#modal-follow-up-exibir"
+						role="button" 
+						data-toggle="modal"
+						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
+						data-follow-ups="
+						
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<hr />
+						{% endfor %}
+						"
+						class="btn btn-default popover-items carregar_follow_ups_modal"
+						data-trigger="hover"
+						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
+						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
+						">
+						{{proposta.followupdepropostacomercial_set.count}}
+					</a> <i class="fa fa-exchange"></i>
+					{%endif %}
+
+					<!-- Button to trigger modal de follow up -->
+					
+					<!-- Button to trigger modal de follow up -->
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-default tn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					
+				</td>
+				<td>
+							<div class="btn-group">
+	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Converter Proposta em Contrato"
+			><i class="fa fa-thumbs-up"></i></a>
+
+	        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Proposta Perdida" ><i class="fa fa-thumbs-down"></i></a>
+
+	        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Composição de Preço"
+			><i class="fa fa-dollar"></i></a>
+	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn btn-default tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Configurar Impressão"
+			><i class="fa fa-print"></i></a>
+						</div>
+				</td>
+			</tr>
+   		 	{% empty %}
+			{% endfor %}
+		</table>
+		</div>
+		{% endfor %}
+	</div>
+
+	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
+
+		{% if request.user.perfilacessocomercial.gerente %}
+		<div class="well well-small">
+			<div class="row-fluid">
+			<div class="span4">
+				<h4>Como Gerente</h4>
+			</div>
+			
+			<div class="span8">
+				<strong>Consultores com Propostas Expiradas:</strong>
+				<select id="filtro-designado-expiradas">
+					<option value="todos">Todos</option>
+				{% for designado in designados_propostas_expiradas %}
+					<option value="{{designado.designado__id}}">{{designado.designado__nome}} ({{designado.designado__nome__count}})</option>
+				{% endfor %}
+				</select>
+				
+			</div>
+		</div>
+		</div>
+		{% endif %}
+
+		{% regroup propostas_abertas_expiradas by dono as propostas_expiradas_por_cliente %}
+		
+		{% for proposta_list in propostas_expiradas_por_cliente %}
+		<div class="dono-proposta-expirada-group">
+			<p>
+			{% if proposta_list.list.0.cliente %}
+
+				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta_list.grouper %}
+			{% else %}
+				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
+			{% endif %}
+			</p>
+		
+		<table class="table table-condensed table.stripped table-expirada">
+			<thread>
+					<tr>
+						<th class="alert alert-danger">ID</th>
+						<th>Expiração</th>
+						<th>Valor</th>
+						<th>Probabilidade</th>
+						<th>Follow Up</th>
+						<th>Ações</th>
+					</tr>
+			</thead>
+			<tbody>
+				{% for proposta in proposta_list.list %}
+				<tr class="propostas-expiradas {% if proposta.designado %}propostas-expiradas-{{proposta.designado.id}}{% else %}propostas-expiradas-None{% endif %}">
+				<td class="alert alert-danger"><h6>#{{proposta.id}}</h6></td>
+				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+        <small>{{proposta.data_expiracao|timesince}}</small></td>
+				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
+				<td>
+					<div class="progress progress-striped active" style="width:100%px;">
+						<div class="bar" style="width: {{proposta.probabilidade}}%;">
+							<strong>{{proposta.probabilidade}}%</strong>
+						</div>
+					</div>
+				</td>
+				<td>
+					{% if proposta.ultimo_followup %}
+					<a href="#modal-follow-up-exibir"
+						role="button" 
+						data-toggle="modal"
+						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
+						data-follow-ups="
+						
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<hr />
+						{% endfor %}
+						"
+						class="btn popover-items carregar_follow_ups_modal"
+						data-toggle="popover"
+						data-placement="top"
+						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
+						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
+						">
+						{{proposta.followupdepropostacomercial_set.count}}
+					</a> <i class="fa fa-exchange"></i>
+					{%endif %}
+
+
+					<!-- Button to trigger modal de follow up -->
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+				</td>
+				<td>
+					<div class="btn-group">
+					{% if request.user.perfilacessocomercial.gerente %}
+						
+	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Converter Proposta em Contrato"
+			><i class="fa fa-thumbs-up"></i></a>
+
+
+	        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Composição de Preço"
+			><i class="fa fa-dollar"></i></a>
+
+
+	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Configurar Impressão"
+			><i class="fa fa-print"></i></a>
+			
+	        <a href="{% url "comercial:propostas_comerciais_ver" proposta.id %}" class="btn tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Ver Proposta"
+			><i class="fa fa-print"></i></a>
+
+
+
+					{% endif %}
+	        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger tooltip-items"
+			data-placement="top" data-toggle="tooltip" title="Proposta Perdida" ><i class="fa fa-thumbs-down"></i></a>
+					
+				
+				</td>
+			</tr>
+				{% empty %}
+				{% endfor %}
+			</tbody>
+		</table>
+		</div>
+		{% endfor %}
+		
+	</div>
+</div>
+
+
+<!-- Modal Adiciona FollowUp -->
+<div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Adicionar Follow Up</h3>
+  </div>
+  <div class="modal-body">
+		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+		<form method="POST" id="form-adicionar-follow-up" action="">
+			{% csrf_token %}
+			{{form_adicionar_follow_up.proposta}}
+			<table>
+				<tr>
+					<td>
+						{{form_adicionar_follow_up.texto.label}}
+						{{form_adicionar_follow_up.texto}}
+						{{form_adicionar_follow_up.texto.errors}}
+					</td>
+					<td>
+						{{form_adicionar_follow_up.probabilidade.label}}
+						{{form_adicionar_follow_up.probabilidade}}
+						{{form_adicionar_follow_up.probabilidade.errors}}
+						<br />
+						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
+						<br />
+						<div id="data-expiracao-modal-container">
+						{{form_adicionar_follow_up.data_expiracao.label}}
+						{{form_adicionar_follow_up.data_expiracao}}
+						{{form_adicionar_follow_up.data_expiracao.errors}}						
+						</div>
+						<br />
+						{{form_adicionar_follow_up.visita.label}}
+						{{form_adicionar_follow_up.visita}}
+						{{form_adicionar_follow_up.visita.errors}}
+						<div id="visita-por-modal-container">
+						<br />
+						{{form_adicionar_follow_up.visita_por.label}}
+						{{form_adicionar_follow_up.visita_por}}
+						{{form_adicionar_follow_up.visita_por.errors}}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
+
+<!-- Modal Exibe FollowUps -->
+<div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="ModalExibirFollowUpsLabel"></h3>
+  </div>
+  <div class="modal-body" id="ModalExibirFollowUpsBody">
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+
+<script>
+
+$('.nav-tabs').on("click", '.ajaxtab', function(e){
+	e.preventDefault();
+	var url = $(this).attr("data-url");
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+	// ajax load from data-url
+	$(href).load(url)
+	$(href).html("<i class='fa-spinner fa-spin fa-large fa-3x fa'></i>");
+	pane.tab('show');
+})
+
+
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+
+$('#id_texto').on("keyup change", function(){
+    if( $.trim($(this).val()) ){
+		
+    	$("#btn-adicionar-follow-up").show()
+    }else{
+    	$("#btn-adicionar-follow-up").hide()
+    }
+});
+
+
+$('#tab-content-comercial-clientes').on("hover", ".popover-items", function (e) {
+	$(this).popover("show");
+});
+
+
+$('').on("hover", ".tooltip-items", function (e) {
+	$(this).tooltip("show");
+});
+
+
+$(document).ready(function() {
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	
+	if (window.location.hash != ""){
+				hash = window.location.hash.replace("tab_", "");
+				$('a[href="' + hash + '"]').click();
+				window.location.hash = "#tab_"+hash.replace("#", "");
+		}else{
+			$('#propostas-abertas-validas').load($('.firstload a').attr("data-url"),function(result){
+			  $('.firstload a').tab('show');
+			});
+		}
+
+    {% if form_adicionar_follow_up.errors %}
+		$('#modal-follow-up-add').modal('show');
+    {% endif %}	
+	$('.popover-items').popover()
+
+});
+
+$(".tab-content").on("click", ".carregar_follow_ups_modal", function (e){
+	$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+	$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'));
+});
+
+$(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
+	$("#descricao-modal-add-follow-up").html( $(this).data('title') );
+	$("#id_proposta").val($(this).data('proposta-id'));
+	$("#id_texto").val('');
+	$("#id_probabilidade").val($(this).data('probabilidade'));
+	$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
+	$("#btn-adicionar-follow-up").hide();			
+    $("#data-expiracao-modal-container").hide();
+	$("#visita-por-modal-container").hide();
+	$("#modal-follow-up-add .errorlist").hide();
+	$("#id_reagenda_data_expiracao").attr('checked', false);
+	$("#id_visita").attr('checked', false);
+	$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+});
+
+	
+
+$("#id_reagenda_data_expiracao").on("change", function(e){
+	if($(this).is(':checked'))
+	    $("#data-expiracao-modal-container").show();  // checked
+	else
+	    $("#data-expiracao-modal-container").hide();
+})
+
+$("#id_visita").on("change", function(e){
+	if($(this).is(':checked'))
+	    $("#visita-por-modal-container").show();  // checked
+	else
+	    $("#visita-por-modal-container").hide();
+})
+
+$("#filtro-designado-validas").on("change", function(e){
+	$(".dono-proposta-valida-group").show();
+	if ($(this).val() == "todos"){
+		
+		$(".propostas-validas").show();
+	}else{
+		$(".propostas-validas").hide();
+		$(".propostas-validas-" + $(this).val()).show();
+		$(".dono-proposta-valida-group").each(function(){
+			if($(this).find("tr:visible.propostas-validas").length == 0){
+				$(this).hide();
+			}
+		})
+		
+	}
+});
+
+$(".tab-content").on("change", "#filtro-designado-expiradas", function (e){
+	$(".dono-proposta-expirada-group").show();
+	if ($(this).val() == "todos"){
+		$(".propostas-expiradas").show();
+	}else{
+		$(".propostas-expiradas").hide();
+		$(".propostas-expiradas-" + $(this).val()).show();
+		$(".dono-proposta-expirada-group").each(function(){
+			if($(this).find("tr:visible.propostas-expiradas").length == 0){
+				$(this).hide();
+			}
+		})
+	}
+
+});
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('#navtab-propostas-minhas').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

@@ -251,8 +251,8 @@ class PropostaComercial(models.Model):
     contrato_vinculado = models.OneToOneField('ContratoFechado', primary_key=False, blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="proposta_adicionada_set",  blank=True, null=True)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 class ClasseTipoDeProposta(models.Model):
@@ -295,8 +295,8 @@ class FollowUpDePropostaComercial(models.Model):
     # registro histórico
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="followup_adicionado_set",  blank=False, null=False)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 @deconstructible
@@ -324,8 +324,8 @@ class PerfilAcessoComercial(models.Model):
     imagem_assinatura = models.ImageField(upload_to=assinatura_local_imagem, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):
@@ -468,8 +468,8 @@ class Orcamento(models.Model):
     # metadata
     #orcamento_modelo = models.ForeignKey(self)
     criado_por = models.ForeignKey('rh.Funcionario', related_name="orcamento_criado_set",  blank=True, null=True)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaRecursoMaterial(models.Model):
     
@@ -483,8 +483,8 @@ class LinhaRecursoMaterial(models.Model):
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True,  default=0)
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaRecursoHumano(models.Model):
     orcamento = models.ForeignKey('Orcamento')
@@ -493,8 +493,8 @@ class LinhaRecursoHumano(models.Model):
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, default=0)
     quantidade = models.IntegerField(blank=False, null=False, verbose_name="Quantidade de Horas")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class TipoRecursoLogistico(models.Model):
 
@@ -509,8 +509,8 @@ class LinhaRecursoLogistico(models.Model):
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
     descricao = models.TextField(blank=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class TabelaDeParcelamento(models.Model):
     
@@ -708,14 +708,14 @@ class ContratoFechado(models.Model):
     data_validacao = models.DateTimeField(blank=True, null=True)
     funcionario_validador = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário que Validou", related_name="contrato_validado_set", blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class TipodeContratoFechado(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class FechamentoDeComissao(models.Model):
     
@@ -739,8 +739,8 @@ class FechamentoDeComissao(models.Model):
     comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="fechamento_comissao__set")
     contratos = models.ManyToManyField('ContratoFechado', blank=False, null=False)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     criado_por = models.ForeignKey('rh.Funcionario',  blank=True, null=True, related_name="fechamento_comissao_criado_set")    
 
 class LancamentoDeFechamentoComissao(models.Model):
@@ -770,8 +770,8 @@ class RequisicaoDeProposta(models.Model):
     proposta_vinculada = models.ForeignKey('PropostaComercial', blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="proposta_requisitada_set",  blank=True, null=True)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class GrupoIndicadorDeProdutoProposto(models.Model):
     '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''

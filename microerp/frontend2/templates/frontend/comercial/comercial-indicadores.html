@@ -1,0 +1,600 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Indicadores{% endblock %}</title>
+
+{% block content %}
+
+<div class="row-fluid">
+	<div class="span8">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-bar-chart-o"></i> Indicadores do Comercial</h1>
+		
+	</div>
+	<div class="span4" id="filtro-indicador">
+		<form method="" class="form form-inline">
+				<p class="btn-group">
+			{{form_seleciona_ano.ano}}
+				<button type="submit" class="btn btn-primary"><i class="fa fa-filter"></i></button>
+				<a id="imprimir" class="btn btn-success"><i class="fa fa-print"></i></a>
+				</p>	
+		</form>
+		
+	</div>
+</div>
+
+<h1>Contratos</h1>
+<div class="row-fluid">
+	<div class="span4"><h3 class="alert alert-success">Assinatura: {{contratos_aguardando_assinatura.count}}<br /><small>Aguardando Assinatura do Cliente</small></h3></div>
+	<div class="span4"><h3 class="alert alert-info">Em Análise: {{contratos_em_analise.count}}<br /><small>Aguardando a Validação do Gerente</small></h3></div>
+	
+</div>
+
+{% if resultados %}
+
+<h1>Base de Clientes</h1>
+
+
+<h2>Pré Clientes Criados em {{ano}}</h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in total_preclientes_criados %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Clientes Convertidos em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				<td><strong>Total</strong></td>
+				{% for campo in  total_preclientes_convertidos %}
+				<td>{% if forloop.first %}<strong>{{campo}}</strong>{% else %}{{campo}}{% endif%}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h1>Propostas Comerciais</h1>
+<h2>Propostas Abertas Válidas Atuais <small><em>(estratificação por responsabilidade de proposta)</em></small></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Propostas</th>
+			<th>Total</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for linha in propostas_abertas_nao_expiradas_por_responsavel %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{linha.designado__nome}}</strong></td>
+			<td>{{linha.id__count}}</td>
+			<td>R$ {{linha.valor_proposto__sum}}</td>
+		</tr>
+		{% endfor %}
+		
+		<tr class="alert alert-info">
+			<td></td>
+			<td><strong>{{propostas_abertas_nao_expiradas_contagem}}</strong></td>
+			<td><strong>R$ {{propostas_abertas_nao_expiradas_total}}</strong></td>
+		</tr>
+			
+	</tbody>
+</table>
+
+
+{% if propostas_abertas_expiradas %}
+<h2>Propostas Abertas Expiradas Atuais <small><em>(estratificação por responsabilidade de proposta)</em></small></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Propostas</th>
+			<th>Total</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for linha in propostas_abertas_expiradas_por_responsavel %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{linha.designado__nome}}</strong></td>
+			<td>{{linha.id__count}}</td>
+			<td>R$ {{linha.valor_proposto__sum}}</td>
+		</tr>
+			
+		{% endfor %}
+		
+		<tr class="alert alert-info">
+			<td></td>
+			<td><strong>{{propostas_abertas_expiradas_contagem}}</strong></td>
+			<td><strong>R$ {{propostas_abertas_expiradas_total}}</strong></td>
+		</tr>
+			
+	</tbody>
+</table>
+{% endif %}
+
+
+
+<h2>Propostas Abertas Válidas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Propostas</th>
+			<th>Total</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for linha in propostas_abertas_nao_expiradas_por_criador %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{linha.criado_por__nome}}</strong></td>
+			<td>{{linha.id__count}}</td>
+			<td>R$ {{linha.valor_proposto__sum}}</td>
+		</tr>
+			
+		{% endfor %}
+		
+		<tr class="alert alert-info">
+			<td></td>
+			<td><strong>{{propostas_abertas_nao_expiradas_contagem}}</strong></td>
+			<td><strong>R$ {{propostas_abertas_nao_expiradas_total}}</strong></td>
+		</tr>
+			
+	</tbody>
+</table>
+
+
+{% if propostas_abertas_expiradas %}
+<h2>Propostas Abertas Expiradas Atuais <small><em>(estratificação por criação de proposta)</em></small></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert"></th>
+			<th>Propostas</th>
+			<th>Total</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for linha in propostas_abertas_expiradas_por_criador %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{linha.criado_por__nome}}</strong></td>
+			<td>{{linha.id__count}}</td>
+			<td>R$ {{linha.valor_proposto__sum}}</td>
+		</tr>
+			
+		{% endfor %}
+		
+		<tr class="alert alert-info">
+			<td></td>
+			<td><strong>{{propostas_abertas_expiradas_contagem}}</strong></td>
+			<td><strong>R$ {{propostas_abertas_expiradas_total}}</strong></td>
+		</tr>
+			
+	</tbody>
+</table>
+{% endif %}
+
+<h2>Propostas Criadas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				{% for campo in  total_propostas_criadas %}
+				<td><strong>{{campo.0}}</strong> / R$ {{campo.1|floatformat:0}}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Propostas Convertidas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				{% for campo in  total_propostas_convertidas %}
+				<td>{{campo.0}} / R$ {{campo.1|floatformat}}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h2>Propostas Declinadas em {{ano}} <small><em>(quantidade/valor total)</small></em></h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+			<tr class="alert alert-info">
+				{% for campo in  total_propostas_perdidas %}
+				<td>{{campo.0}} / R$ {{campo.1|floatformat}}</td>
+				{% endfor %}
+			</tr>
+	</tbody>
+</table>
+
+<h1>Grupo de Indicadores</h1>
+{% if grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
+<h2>Indicadores de Grupos Produtos em Propostas Abertas Atualmente</h2>
+{% for grupo in grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
+	{{grupo.produto__grupo_indicador__nome}}: {{grupo.quantidade__sum}}<br />
+{% endfor %}
+{% endif %}
+
+{% if grupos_indicadores_produtos_orcamento_aberto_expirado %}
+<h2>Indicadores de Grupos Produtos em Propostas Expiradas Atualmente</h2>
+{% for grupo in grupos_indicadores_produtos_orcamento_aberto_expirado %}
+	{{grupo.produto__grupo_indicador__nome}}: {{grupo.quantidade__sum}}<br />
+{% endfor %}
+{% endif %}
+
+
+<h2>Indicadores de Grupo de Produtos Em Propostas Convertidas em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_grupo_indicadores_propostas_convertidas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+
+<h2>Indicadores de Grupo de Produtos Em Propostas Declinadas em {{ano}}</h2>
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_grupo_indicadores_propostas_perdidas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+<h1>Sub Grupo de Indicadores</h1>
+{% if sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado %}
+<h2>Indicadores de Sub Grupos de Produtos em Propostas Válidas Atualmente</h2>
+{% regroup sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado by produto__sub_grupo_indicador__grupo__nome as lista_por_grupo %}
+{% for grupo in lista_por_grupo %}
+<h2>{{grupo.grouper}}</h2>
+<ul>
+	{% for indicador in grupo.list %}
+	<li>{{indicador.produto__sub_grupo_indicador__nome}}: {{indicador.quantidade__sum}}</li>
+	{% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+
+
+{% if sub_grupos_indicadores_produtos_orcamento_aberto_expirado %}
+<h2>Indicadores de Sub Grupos de Produtos em Propostas Expiradas Atualmente</h2>
+{% regroup sub_grupos_indicadores_produtos_orcamento_aberto_expirado by produto__sub_grupo_indicador__grupo__nome as lista_por_grupo %}
+{% for grupo in lista_por_grupo %}
+<h2>{{grupo.grouper}}</h2>
+<ul>
+	{% for indicador in grupo.list %}
+	<li>{{indicador.produto__sub_grupo_indicador__nome}}: {{indicador.quantidade__sum}}</li>
+	{% endfor %}
+</ul>
+{% endfor %}
+{% endif %}
+
+
+<h1>Modelos de Orçamentos Tabelados</h1>
+
+<h2>Indicadores de Orçamentos Tabelados Originados em Propostas Abertas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_tabelado_abertas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+<h2>Indicadores de Orçamentos Tabelados Originados em Propostas Fechadas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_tabelado_fechadas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+<h1>Modelos de Orçamento Promocionais</h1>
+
+
+<h2>Indicadores de Orçamentos Promocionais Originados em Propostas Abertas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_promocionais_abertas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+
+<h2>Indicadores de Orçamentos Promocionais Originados em Propostas Fechadas <Br /><small>por data de criação da Proposta</small></h2>
+
+<table class="table table-condensed table-hover table-rounded table-bordered">
+	<thead>
+		<tr>
+			<th style="text-align: center" class="alert alert-info"></th>
+			<th>Janeiro</th>
+			<th>Fevereiro</th>
+			<th>Março</th>
+			<th>Abril</th>
+			<th>Maio</th>
+			<th>Junho</th>
+			<th>Julho</th>
+			<th>Agosto</th>
+			<th>Setembro</th>
+			<th>Outubro</th>
+			<th>Novembro</th>
+			<th>Dezembro</th>
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for k,v in total_propostas_gerados_promocionais_fechadas.items %}
+		<tr class="">
+			<td class="alert alert-info"><strong>{{k}}</strong></td>
+			{% for campo in v %}
+			<td>{{campo}}</td>
+			{% endfor %}
+		</tr>
+			
+		{% endfor %}
+			
+	</tbody>
+</table>
+
+
+
+
+
+
+
+{% endif %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-indicadores, #top-menu-comercial").addClass("active");
+    $("#cliente_busca").focus()
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#selecionar-produto-form").hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#filtro-indicador").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

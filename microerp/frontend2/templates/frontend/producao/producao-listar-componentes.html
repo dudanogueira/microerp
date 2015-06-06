@@ -1,0 +1,115 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-stop"></i> Componentes</h1>
+{% if request.user.perfilacessoproducao.gerente %}
+{# ADICIONAR TIPO COMPONENTE #}
+  <p class="btn-group">
+    <!-- Modal Adicionar Componente -->
+    <a href="#modal-add-componente" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Componente</a>
+    
+    <!-- Modal Adicionar Tipo -->
+    <a href="#adicionar-tipo-componente" role="button" class="btn-success btn" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Tipo</a>
+</p>
+    
+<!-- Modal do Tipo -->
+<div id="adicionar-tipo-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3>Adicionar Tipo de Componente</h3>
+  </div>
+  <div class="modal-body">
+
+      <form method="POST" class="form-horizontal">
+          {% csrf_token %}
+          {{tipo_componente_form.as_p}}
+
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button type="submit" value="Adicionar Tipo de Componente" name="adicionar-tipo-componente" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Tipo de Componente</button>
+    </form>
+  </div>
+</div>
+
+{# ADICIONAR COMPONENTE #}
+
+<!-- Modal do Componente -->
+<div id="modal-add-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="titulo-modal-add-componente" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="titulo-modal-add-componente">Adicionar Componente</h3>
+  </div>
+  <div class="modal-body">
+      <form method="POST" action="{% url "producao:adicionar_componentes" %}" class="form-inline">
+          {% csrf_token %}
+          {{componente_form}}
+
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+    <button type="submit" value="Adicionar Componente" name="pre-adicionar-componente" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Novo Componente</button>
+    </form>
+  </div>
+</div>
+
+{% endif %}
+{# BUSCAR COMPONENTES #}
+
+    <form class="form-search">
+      <input type="text" class="input-medium search-query" name="q_componente", id="busca_componente" {% if q_componente %}value="{{q_componente}}"{% endif %}>
+      <button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar Componente</button>
+      <a class="btn btn-success" href="?q_componente=todos">Listar Todos</a>
+     </form>
+
+	 {% if componentes_encontrados %}
+		 <div class="well well-small alert alert-success">Componentes Ativos</div>
+    {% for componente in componentes_encontrados %}
+<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
+    {% endfor %}
+	{% endif %}
+		
+		
+		{% if componentes_inativos %}
+		<hr />
+		<div class="well well-small alert alert-danger">Componentes Inativos</div>
+		{% for componente in componentes_inativos %}
+		<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
+		{% endfor %}
+		{% endif %}
+		
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    
+	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
+    $("#busca_componente").focus()
+    {% if tipo_componente_form.errors %}
+        $('#adicionar-tipo-componente').modal('show')
+    {% endif %}
+	$('#id_slug').bind('keyup blur',function(){ 
+	    $(this).val( $(this).val().replace(/[^a-zA-Z]/g,'') );
+		this.value = this.value.toUpperCase();
+	}
+);
+    
+    
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

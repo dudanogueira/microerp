@@ -1,0 +1,54 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Relatórios{% endblock %}</title>
+
+{% block content %}
+<div class="row-fluid">
+	<div class="span8">
+		<h1><i class="fa fa-th"></i> <i class="fa fa-tachometer"></i> Relatórios</h1>
+		
+	</div>
+	<div class="span4" id="filtro-relatorios">
+	</div>
+</div>
+
+<ul>
+<li><a href="{% url "comercial:relatorios_comercial_probabilidade" %}">Probabilidade de Proposta, agrupado por Tipo ou Funcionário</a></li>
+<li><a href="{% url "comercial:relatorios_comercial_propostas_declinadas" %}">Propostas Declinadas</a></li>
+<li><a href="{% url "comercial:relatorios_comercial_propostas_e_followups" %}">Propostas X FollowUps</a></li>
+<li><a href="{% url "comercial:relatorios_comercial_propostas_por_periodo_e_vendedor" %}">Propostas X Período</a></li>
+<li><a href="{% url "comercial:relatorios_comercial_propostas_visitas" %}">Followups com Visitas</a></li>
+	
+	
+
+</ul>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-comercial-relatorios, #top-menu-comercial").addClass("active");
+    $("#cliente_busca").focus()
+});
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#selecionar-produto-form").hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$("#filtro-indicador").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#content").removeClass('span9').addClass('span11');
+});
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

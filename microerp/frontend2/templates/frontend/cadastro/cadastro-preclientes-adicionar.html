@@ -1,0 +1,29 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load bootstrap %}
+
+
+<title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> Adicionar Pré Cliente</h1>
+<form method="post" class="form-horizontal">
+{% csrf_token %}
+{{form_add_precliente|bootstrap}}
+<input type="submit" class="btn btn-large btn-primary" value="Adicionar">
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-cadastro-cliente-pre-cliente, #top-menu-cadastro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/cadastro/cadastro-menu.html" %}
+{% endblock%}

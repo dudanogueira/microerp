@@ -1,0 +1,47 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Financeiro{% endblock %}</title>
+
+{% block content %}
+
+<h2><i class="icon-th"></i> <i class="icon-paperclip"></i> Identificar Lançamento #{{lancamento.id}} como Recebido</h2>
+<h3>Contrato: #{{lancamento.contrato.id}}</h3>
+<h3>Cliente: {{lancamento.contrato.cliente}}</h3>
+<span class="label label-success">Valor Original: {{lancamento.valor_cobrado}}</span>
+{% if lancamento.antecipado %}
+    <span class="label label-warning">Lançamento Antecipado</span>
+{% endif %}
+<form method="POST">
+    {% csrf_token %}
+{{form.as_p}}
+<p>
+<button type="submit" class="btn btn-primary"><i class="icon-thumbs-up"></i> Identificar</button>
+</p>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    
+	$( ".datepicker" ).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+        
+	});
+    
+    
+	$("#menu-financeiro-lancamentos-a-receber, #top-menu-financeiro").addClass("active");
+        
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/financeiro/financeiro-menu.html" %}
+{% endblock%}

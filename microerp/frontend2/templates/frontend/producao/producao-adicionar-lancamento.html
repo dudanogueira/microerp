@@ -1,0 +1,35 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+<h1>Nota Fiscal {{notafiscal.numero}}</h1>
+<h2>{{notafiscal.fabricante_fornecedor}}</h2>
+<h3>Adicionar Novo Lançamento</h3>
+<form method="POST">
+    {% csrf_token %}
+{{lancamento_form.as_p}}
+<button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar Novo Lançamento</button>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+
+$(document).ready(function() {
+	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
+    $(".nopoint").keyup(function() {
+            $(this).val($(this).val().replace(/[.]/g, ""));
+      });
+    
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

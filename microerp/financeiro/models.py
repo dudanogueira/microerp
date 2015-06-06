@@ -57,8 +57,8 @@ class PerfilAcessoFinanceiro(models.Model):
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 class Banco(models.Model):
@@ -172,8 +172,8 @@ class LancamentoFinanceiroReceber(models.Model):
     valor_materiais = models.DecimalField("Valor de Materiais", max_digits=10, decimal_places=2, blank=True, null=True)
     notas_fiscais = models.TextField(blank=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class ObservacaoLancamento(models.Model):
     
@@ -187,8 +187,8 @@ class ObservacaoLancamento(models.Model):
     texto = models.TextField(blank=True)
     criado_por = models.ForeignKey('rh.Funcionario', blank=False, null=False, related_name="observacaolancamento_criado_set")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class ProcessoAntecipacao(models.Model):
     
@@ -201,6 +201,6 @@ class ProcessoAntecipacao(models.Model):
     lancamentos_receber = models.ManyToManyField('LancamentoFinanceiroReceber')
     antecipado_por = models.ForeignKey('rh.Funcionario', blank=False, null=False, related_name="processoantecipacao_criado_set")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
      

@@ -1,0 +1,30 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Adicionar Produto{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-windows"></i>   Produtos - Adicionar</h1>
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+{{form.as_p}}
+{% if produto %}
+    <button type="submit" class="btn btn-primary"><i class="fa fa-pencil"></i> Editar</button>
+{% else %}
+    <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
+{% endif %}
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-producao-produtos, #top-menu-producao").addClass("active");
+    $("#busca_produto").focus()
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

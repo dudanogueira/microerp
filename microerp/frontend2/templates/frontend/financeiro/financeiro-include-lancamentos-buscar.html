@@ -1,0 +1,87 @@
+
+{% if id_contrato %}
+<h2>Buscando por Contrato #{{id_contrato}}</h2>
+{% endif %}
+
+{% if id_lancamento %}
+<h2>Buscando por Lançamento #{{id_lancamento}}</h2>
+{% endif %}
+
+{% if data_inicio and data_fim %}
+<h2>Buscando por Período: {{data_inicio|date:"SHORT_DATE_FORMAT"}} a {{data_fim|date:"SHORT_DATE_FORMAT"}}</h2>
+{% endif %}
+
+
+{% if buscado %}
+<a href="#buscar-filtrar" class="ajaxtab" data-url="{% url "financeiro:ajax_lancamento_buscar" %}">Limpar Busca</a>
+{% endif %}
+
+
+
+{% if lancamentos_exibir %}
+<div id="exibir-resultados">
+
+	{% include "frontend/financeiro/financeiro-include-linha-lancamento-futuro.html" %}
+</div>
+{% else %}
+<div id="exibir-busca">
+	{% if buscado and not lancamentos_exibir %}
+		{% if id_lancamento %}
+			<p class="alert alert-info">Nenhum Lançamento Encontrado!</p>
+		{% endif %}
+		{% if id_contrato %}
+			<p class="alert alert-info">Nenhum Contrato Encontrado!</p>
+		{% endif %}
+		
+	{% endif %}
+
+	<div class="row-fluid">
+		<div class="span6">
+			<h2>Buscar Contrato</h2>
+			<div class="well well-small">
+
+				<h5>Número do Contrato:</h5>
+				<form method="POST" class="form-inline" id="form-buscar-por-numero-contrato">
+					{% csrf_token %}
+					<input type="text" name="numero-contrato" value="{{id_contrato}}">
+					<button class="btn" type="submit" id="btn-buscar-por-numero-contrato"> <i class="icon-search"></i> Buscar</button>
+				</form>
+			</div>
+		</div>
+	
+		<div class="span6">
+			<h2>Buscar Lançamento</h2>
+			<div class="well well-small">
+				<h5>Número do Lançamento:</h5>
+				<form method="POST" class="form-inline" id="form-buscar-por-numero-lancamento">
+					{% csrf_token %}
+					<input type="text" name="numero-lancamento" value="{{id_lancamento}}">
+					<button class="btn" type="submit" id="btn-buscar-por-numero-lancamento"> <i class="icon-search"></i> Buscar</button>
+				</form>
+			</div>
+		</div>
+	
+	</div>
+
+	<div class="row-fluid">
+		
+		<div class="span6">
+				<h2>Filtrar por Período</h2>
+			<div class="well well-small">
+				<h5>Período</h5>
+				<form method="POST" class="form" id="form-buscar-por-periodo">
+					{% csrf_token %}
+				Data Início: <input type="text" class="datepicker"  name="data-inicio" value="{{inicio_busca|date:"SHORT_DATE_FORMAT"}}"><Br />
+				Data Fim: <input type="text" class="datepicker" name="data-fim" value="{{fim_busca|date:"SHORT_DATE_FORMAT"}}">
+				<p>
+				<button class="btn" type="submit" id="btn-buscar-por-periodo"> <i class="icon-search"></i> Buscar</button>
+			</p>
+		
+			</form>
+			</div>
+		</div>
+		
+			
+	</div>
+</div>
+{% endif %}

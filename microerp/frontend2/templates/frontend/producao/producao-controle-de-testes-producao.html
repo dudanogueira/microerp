@@ -1,0 +1,353 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Controle de Testes{% endblock %}</title>
+
+{% block content %}
+	<h1><i class="fa fa-th"></i> <i class="fa fa-umbrella"></i>  Controle de Testes da Produção</h1>
+
+	<ul class="nav nav-tabs" id="nav-tab-principal">
+    <li class="active"><a href="#lancamento-de-falha" data-toggle="tab"><i class="fa fa-rocket"></i> Lançamento de Falhas</a></li>
+		<li class=""><a href="#falha-tipo-perda" data-toggle="tab"><i class="fa fa-chain-broken"></i> Falhas de Perda</a></li>
+		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab"><i class="fa fa-wrench"></i> Falhas de Reparo</a></li>
+		<li class=""><a href="#indicadores" data-toggle="tab"><i class="fa fa-wrench"></i> Indicadores</a></li>
+		
+	</ul>
+	
+	<div id="myTabContent" class="tab-content">
+		
+		<div class="tab-pane fade in active" id="lancamento-de-falha">
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Lançamentos de Falha*</h2>
+					<small>*Exibindo somente os útlimos 200</small>
+				</div>
+				<div class="span6">
+					<a href="{% url "producao:controle_de_testes_producao_lancar_falha" %}" class="btn btn-primary"><i class="fa fa-rocket"></i> Lançar Falha</a>
+					
+				</div>
+			</div>
+			<div id="testes-de-perda">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Sub Produto</th>
+							<th>Testado</th>
+							<th>Funcional</th>
+							<th>Perda</th>
+							<th>Reparado</th>
+							<th>Func s/ reparar</th>
+							<th>Usuário</th>
+							<th>Data do Teste</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for falha in lancamentos_falha %}
+						<tr>
+							<td>{{falha.id}}</td>
+							<td><a href="{% url "producao:ver_subproduto" falha.subproduto.id %}">{{falha.subproduto.part_number}} {{falha.subproduto.nome}}</a></td>
+							<td>{{falha.quantidade_total_testada}}</td>
+							<td>{{falha.quantidade_funcional}}</td>
+							<td>{{falha.quantidade_perdida}}</td>
+							<td>{{falha.quantidade_reparada_funcional}}</td>
+							<td>{{falha.quantidade_funcional_direta}}</td>
+							<td>{{falha.criado_por}}</td>
+							<td>{{falha.data_lancamento|date:"SHORT_DATE_FORMAT"}}</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+			
+		</div>
+			
+		<div class="tab-pane fade in" id="falha-tipo-perda">
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Falha do Tipo Perda</h2>
+				</div>
+				<div class="span6">
+					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}?tipo=perda"><i class="fa fa-plus"></i> Adicionar Falha</a>
+					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
+					
+				</div>
+			</div>
+			
+			<div id="testes-de-perda">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Código</th>
+							<th>Descrição</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for falha in testes_perda %}
+						<tr>
+							<td>{{falha.id}}</td>
+							<td>{{falha.codigo}}</td>
+							<td>{{falha.descricao}}</td>
+						</tr>
+						{% endfor %}
+					
+					</tbody>
+				</table>
+			</div>
+			
+		</div>
+				
+		<div class="tab-pane fade in" id="falha-tipo-reparo">
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Falha do Tipo Reparo</h2>
+				</div>
+				<div class="span6">
+					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}?tipo=reparo"><i class="fa fa-plus"></i> Adicionar Falha</a>
+					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
+					
+				</div>
+			</div>			
+			<div id="testes-de-perda">
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Código</th>
+							<th>Descrição</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for falha in testes_reparo %}
+						<tr>
+							<td>{{falha.id}}</td>
+							<td>{{falha.codigo}}</td>
+							<td>{{falha.descricao}}</td>
+						</tr>
+						{% endfor %}
+					
+					</tbody>
+				</table>
+			</div>
+			
+			
+		</div>
+		
+		<div class="tab-pane fade in" id="indicadores">
+			<div id="filtro-container">
+				<h4>Indicadores</h4>
+				<form method="POST" id="filtrar-por-subproduto">
+						{% csrf_token %}
+						
+						
+					<div class="row-fluid">
+				
+						<div class="span2">
+							{{form_filtrar_falha.inicio.label}}<br />
+							{{ form_filtrar_falha.inicio.errors }}
+							{{form_filtrar_falha.inicio}}
+						</div>
+
+						<div class="span2">
+						{{form_filtrar_falha.fim.label}}<br />
+						{{ form_filtrar_falha.fim.errors }}
+						{{form_filtrar_falha.fim}}
+						</div>
+				
+						<div class="span4">
+						{{form_filtrar_falha.subproduto.label}}<br />
+						{{form_filtrar_falha.subproduto.erros}}
+						{{form_filtrar_falha.subproduto}}
+						</div>
+						
+						<div class="span4">
+						{{form_filtrar_falha.funcionario.label}}<br />
+						{{form_filtrar_falha.funcionario.erros}}
+						{{form_filtrar_falha.funcionario}}
+						</div>
+						
+
+					</div>
+					<button id="filtrar-indicadores-btn" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-primary"><i class="fa fa-filter"></i> Filtrar</button>
+					{% if filtro and lista_dicionario_retorno %}
+					<button id="imprimir" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-success"><i class="fa fa-print"></i> Imprimir</button>
+					{% endif %}
+				</form>
+			</div>
+				{% if filtro %}
+				{% for subprodutodic in lista_dicionario_retorno %}
+				<div class="well well-small">
+					<h4>{{subprodutodic.subproduto}}</h4>
+					
+					<div class="row-fluid">
+			
+						<div class="span3">
+							<h4>Quantitativo</h4>
+							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
+							<strong>Total Funcional</strong>: {{total_geral_funcional}}<br />
+							<Br />
+							<strong>Total de Reparo</strong>: {% if subprodutodic.total_por_tipo_reparo.total %} {{subprodutodic.total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
+							<strong>Total Func. S/ Reparar:</strong> {% if subprodutodic.total_funcional_direto.total %}{{subprodutodic.total_funcional_direto.total}}{% else %}0{% endif %}<br />
+							<strong>Total Testado</strong>: {% if subprodutodic.total_testado.total %}{{subprodutodic.total_testado.total}}{% else %}0{% endif %}<br />
+							
+							
+							
+						</div>
+						
+						<div class="span3">
+							<h4>Indicadores</h4>
+							 <strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda|floatformat:1}} %<br />
+							 <strong>Indicador Funcional:</strong> {{subprodutodic.indicador_funcional_geral|floatformat:1}} %<br
+							  />
+							  <br />
+							 <strong>Indicador de Reparo</strong>: {{subprodutodic.indicador_reparo|floatformat:1}} %<br />
+							 <strong>Indicador Func. S/ Reparar</strong>: {{subprodutodic.indicador_funcional_direto|floatformat:1}} %<br />
+							 
+							
+						</div>
+						
+						
+						<div class="span6">
+							<h4>Legenda</h4>
+							<strong>Indicador de Perda</strong> = Total de Perda / Total Testado<br />
+							<strong>Indicador Funcional</strong> = Total Funcional / Total Testado<br /><br />
+							<strong>Indicador de Reparo</strong> = Total Reparado / Total Funcional<br />
+							<strong>Indicador Func. S/ Reparar</strong> = Total Func. S/ Reparar / Total Funcional<br />
+						</div>
+					</div>
+					
+					<hr />
+					<h5>Resultado de Falhas de Reparo:</h5>
+				<table class="table table-condensed table-hover table-rounded">
+					<thead>
+						<tr>
+							<th>Código</th>
+							<th>Descrição</th>
+							<th>Quantidade</th>
+							<th>%</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for linha in subprodutodic.total_por_falha_reparo %}
+							<tr>
+								<td>{{linha.falha__codigo}}</td>
+								<td>{{linha.falha__descricao}}</td>
+								<td>{{linha.total}}</td>
+								<td>{% widthratio linha.total subprodutodic.total_por_tipo_reparo.total 100 %} %</td>
+							</tr>
+						{% empty %}
+						<tr>
+							<td>Nenhuma Falha de Reparo Encontrada</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+
+					<h5>Resultado de Falhas de Perda:</h5>
+					<table class="table table-condensed table-hover table-rounded">
+						<thead>
+						<tr>
+							<th>Código</th>
+							<th>Descrição</th>
+							<th>Quantidade</th>
+							<th>%</th>
+						</tr>
+					</thead>
+						<tbody>
+						{% for linha in subprodutodic.total_por_falha_perda %}
+							<tr>
+								<td>{{linha.falha__codigo}}</td>
+								<td>{{linha.falha__descricao}}</td>
+								<td>{{linha.total}}</td>
+								<td>{% widthratio linha.total subprodutodic.total_por_tipo_perda.total 100 %} %</td>
+							</tr>
+						{% empty %}
+						<tr>
+							<td>Nenhuma Falha de Perda Encontrada</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+					</table>
+				</div>
+				{% empty %}
+				Nenhuma Falha Encontrada
+				{% endfor %}
+				{% endif %}
+
+			
+			
+		</div>
+		
+	</div>
+
+
+	
+{% endblock %}
+
+{% block auxiliar-menu %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+{% addtoblock "js" %}
+
+<script>
+$(document).ready(function() {
+    $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");
+				
+});
+
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+$('.datepicker').each(function() {
+   $(this).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+    
+		});
+});
+
+
+$(document).on("click", "#imprimir", function(e){
+	e.preventDefault();
+	$(this).hide();
+	$("#menu-lateral").hide();
+	$("#global-top-menu").hide();
+	$(".adicionar-falha-btn").hide();
+	$("#main-content").css("padding-top", 0);
+	$("#nav-tab-principal").hide();
+	$("#content").removeClass('span9').addClass('span11');
+	$("#filtro-container").hide();
+});
+
+
+
+</script>
+
+{% endaddtoblock %}
+
+{% include "frontend/producao/producao-menu.html" %}
+
+{% endblock%}

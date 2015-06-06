@@ -1,0 +1,36 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - Produção - Controle de Compra{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> Editar Controle de Atividades de Compra</h1>
+
+{{ordem}}
+
+<form method="POST">
+{% csrf_token %}
+
+{{form_ordem.as_p}}
+<button type="submit" class="btn btn-primary"><i class="fa fa-pencil"></i> Alterar Controle de Compra</button>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script>
+
+$(document).ready(function() {
+	$("#menu-producao-ordem-de-compra, #top-menu-producao").addClass("active");
+	
+});
+				
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

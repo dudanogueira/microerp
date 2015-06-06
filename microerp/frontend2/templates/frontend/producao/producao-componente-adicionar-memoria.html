@@ -1,0 +1,51 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
+
+{% block content %}
+
+<a href="{% url "producao:ver_componente" componente.id %}#memoria"><i class="icon-arrow-left"></i> Voltar ao Componente {{componente.part_number}}</a>
+
+{% if form.errors %}
+    {{form.errors}}
+{% endif %}
+
+<form method="POST">
+    {% csrf_token %}
+
+<h1>O Componente: {{componente.part_number}}</h1>
+{{form.componente}}
+<h4>No Fornecedor:</h4>
+{{form.fornecedor}}
+<h4>Com Part Number Fornecedor:</h4>
+{{form.part_number_fornecedor}}
+<h4>Será Vinculado ao Fabricante:</h4>
+{{form.fabricante}}
+<h4>Com Part Number Fabricante:</h4>
+{{form.part_number_fabricante}}
+<p>
+    <button type="submit" class="btn btn-primary"><i class="icon-plus"></i> Enviar</button>
+</p>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    
+	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
+    $("#busca_componente").focus()
+});
+</script>
+
+
+
+
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

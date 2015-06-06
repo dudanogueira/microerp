@@ -43,6 +43,7 @@ class FormAdicionaFollowUpContrato(forms.ModelForm):
     
     class Meta:
         model = FollowUpDeOrdemDeServico
+        fields = '__all__'
 
 class FormEditarProgramacaoDeContrato(forms.ModelForm):
 

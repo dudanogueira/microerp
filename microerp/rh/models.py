@@ -459,8 +459,8 @@ class Funcionario(models.Model):
     # competencia
     competencias = models.ManyToManyField('Competencia', blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class IdiomaFuncionario(models.Model): 
     
@@ -474,8 +474,8 @@ class IdiomaFuncionario(models.Model):
     nivel = models.CharField(blank=True, max_length=100, choices=IDIOMA_FUNCIONARIO_NIVEL_CHOICES)
     instituicao = models.CharField("Instituição de Ensino do Idioma", blank=True, max_length=100)    
     # metas
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 
 class CursoFuncionario(models.Model):
@@ -489,8 +489,8 @@ class CursoFuncionario(models.Model):
     data = models.DateField(u"Data de Conclusão", default=datetime.datetime.today)
     carga_horaria = models.IntegerField("Carga Horária", blank=True, null=True)
     # metas
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 
 class ExperienciasProfissionaisFuncionario(models.Model):
@@ -520,8 +520,8 @@ class ExperienciasProfissionaisFuncionario(models.Model):
     ultimo_salario = models.DecimalField(u"Último Salário", max_digits=10, decimal_places=2)
     motivo_saida = models.CharField(blank=True, max_length=100)
     # metas
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class Cargo(models.Model):
     
@@ -547,8 +547,8 @@ class Cargo(models.Model):
     # procedimentos
     subprocedimentos = models.ManyToManyField('SubProcedimento')    
     # metas
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 
 class Departamento(models.Model):
@@ -610,8 +610,8 @@ class PeriodoTrabalhado(models.Model):
     inicio = models.DateField(default=datetime.datetime.today, blank=False)
     fim = models.DateField(blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class AtribuicaoDeCargo(models.Model):
     ''' Toda Atribuição de cargo deve estar vinculada a um
@@ -631,8 +631,8 @@ class AtribuicaoDeCargo(models.Model):
     local_empresa = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local designado", default=1)
     criado_por = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="atribuicaodecargo_criado_set")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class PromocaoSalario(models.Model):
     def __unicode__(self):
@@ -680,8 +680,8 @@ class PromocaoSalario(models.Model):
     observacao = models.TextField(blank=True, verbose_name=u"Observações Internas")
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="promocao_salarial_criada_set")
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class PromocaoCargo(models.Model):
     
@@ -731,8 +731,8 @@ class PromocaoCargo(models.Model):
     periodo_trabalhado = models.ForeignKey("PeriodoTrabalhado")
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="promocaocargo_criado_set")
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class SolicitacaoDeLicenca(models.Model):
     
@@ -765,8 +765,8 @@ class SolicitacaoDeLicenca(models.Model):
     data_autorizado = models.DateField(u"Data da Autorização", blank=True, null=True)
     processado_por = models.ForeignKey(Funcionario, blank=True, null=True, related_name="autorizado_por")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class FolhaDePonto(models.Model):
     
@@ -794,8 +794,8 @@ class FolhaDePonto(models.Model):
     arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, help_text="Arquivo a ser anexado no fechamento do mês da data de referência", max_length=300)
     funcionario_autorizador = models.ForeignKey(Funcionario, related_name="folhadeponto_autorizado_set", blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class EntradaFolhaDePonto(models.Model):
 
@@ -818,8 +818,8 @@ class EntradaFolhaDePonto(models.Model):
     arquivo = models.FileField(upload_to=funcionario_entrada_folha_ponto_assinada, blank=True, null=True, max_length=300, help_text="Arquivo a ser anexado a cada entrada")
     adicionado_por = models.ForeignKey('rh.Funcionario', related_name="entradas_folha_lancada_set")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class DependenteDeFuncionario(models.Model):
     
@@ -836,8 +836,8 @@ class DependenteDeFuncionario(models.Model):
     nascimento = models.DateField(default=datetime.datetime.today)
     funcionario = models.ForeignKey('Funcionario')
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class TipoDeExameMedico(models.Model):
     
@@ -853,8 +853,8 @@ class TipoDeExameMedico(models.Model):
     descricao = models.TextField(blank=True)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class RotinaExameMedico(models.Model):
     
@@ -898,8 +898,8 @@ class RotinaExameMedico(models.Model):
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     arquivo = models.FileField(upload_to=funcionario_rotina_exame_medico, blank=True, null=True, max_length=300)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class Demissao(models.Model):
     
@@ -921,8 +921,8 @@ class Demissao(models.Model):
     status = models.CharField(blank=True, max_length=100, choices=DEMISSAO_FUNCIONARIO_CHOICES, default="andamento")
     termo_recisorio = models.FileField(blank=True, null=True, upload_to=funcionario_termo_recisorio_path, max_length=500)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")    
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class PerfilAcessoRH(models.Model):
     '''Perfil de Acesso ao RH'''
@@ -935,8 +935,8 @@ class PerfilAcessoRH(models.Model):
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class Feriado(models.Model):
     
@@ -953,8 +953,8 @@ class Feriado(models.Model):
     # caso tenha sido importado
     uid = models.CharField(blank=True, max_length=100)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 class GrupoDeCompetencia(models.Model):
@@ -964,8 +964,8 @@ class GrupoDeCompetencia(models.Model):
     
     nome = models.CharField(blank=True, max_length=100)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class Competencia(models.Model):
     
@@ -977,8 +977,8 @@ class Competencia(models.Model):
     grupo = models.ForeignKey('GrupoDeCompetencia')
     nome = models.CharField(blank=True, max_length=100)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class Procedimento(models.Model):
     
@@ -990,8 +990,8 @@ class Procedimento(models.Model):
     descricao = models.TextField(u"Descrição", blank=True)
     departamento = models.ForeignKey('Departamento')
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class SubProcedimento(models.Model):
     
@@ -1003,8 +1003,8 @@ class SubProcedimento(models.Model):
     nome = models.CharField(blank=False, max_length=100)
     descricao = models.TextField(u"Descrição", blank=False)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class CapacitacaoDeSubProcedimento(models.Model):
     
@@ -1017,8 +1017,8 @@ class CapacitacaoDeSubProcedimento(models.Model):
     versao_treinada = models.IntegerField(u"Versão Treinada", blank=True, null=True, default=0)
     ultima_atualizacao = models.DateField("Última Atualização", default=datetime.datetime.today)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class AtribuicaoDeResponsabilidade(models.Model):
     
@@ -1035,8 +1035,8 @@ class AtribuicaoDeResponsabilidade(models.Model):
     confirmado_por = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="atribuicaoderesponsabilidade_confirmado_set")
     confirmado_data = models.DateTimeField(blank=True, null=True)
     criado_por = models.ForeignKey('rh.Funcionario', blank=False, null=False, related_name="atribuicaoderesponsabilidade_criado_set")
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class AutorizacaoHoraExtra(models.Model):
     
@@ -1052,8 +1052,8 @@ class AutorizacaoHoraExtra(models.Model):
     data_execucao = models.DateField(default=datetime.datetime.today)
     solicitante = models.ForeignKey('Funcionario', related_name="solicitante_horaextra_set")
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 # SIGNALS
 

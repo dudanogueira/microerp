@@ -1,0 +1,70 @@
+{% if nao_lidos %}
+<div class="well">
+    <h3 class="alert alert-info">Não lidos</h3>
+    {% for recado in nao_lidos %}
+    <div class="well well-small">
+        
+        
+        <div class="row-fluid">
+          <div class="span7">
+              <h4>Recado ID#{{recado.id}}</h4>
+              <p class="alert alert-success"><strong>De:</strong> {{recado.remetente}} || <strong>Para</strong>: {{recado.destinatario}}
+              </p>
+              <p>
+                  <strong><i class="icon icon-time"></i> Data:</strong> {{recado.criado}}, há <i>{{recado.criado|timesince}}</i>
+              </p>
+                  {% if recado.cliente %}
+                  <p class="alert alert-warning">
+                      <i class="icon icon-briefcase"></i> {{recado.cliente}}
+                  </p>
+                  {% endif %}
+              
+              
+          </div>
+          <div class="span5">
+              <p class="alert"><strong><i class="icon icon-comment"></i>  Texto</strong>: {{recado.texto}}<p>
+                  {% if not recado.email_enviado %}
+                  <small><strong><i class="icon icon-asterisk"></i> Email não enviado</strong></small>
+                  {% else %}
+                  <small><strong><i class="icon icon-envelope"></i> Email enviado</strong></small>
+                  {% endif %}
+                  {% if not readonly %}
+              <h4>Ações</h4>
+              <a href="{% url "meus_recados_marcar_lido" recado.id %}" class="btn btn-large btn-primary"><i class="icon icon-eye-open icon-white"></i> Lido</a>
+              {% endif %}
+              
+              
+          </div>
+        </div>
+        
+        
+
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if lidos %}
+<div class="well">
+    <h3 class="alert alert-danger">Lidos</h3>
+        {% for recado in lidos %}
+        <div class="well well-small">
+            <span class="label">ID#{{recado.id}}</span>
+            <strong>De:</strong> {{recado.remetente}} <strong>Para:</strong> {{recado.destinatario}} <strong>Data</strong>: {{recado.criado}}, 
+            <i class="icon icon-eye-open"></i> Lido em: {{recado.lido_em}}
+            <br />
+            {% if not recado.email_enviado %}
+            <small><strong><i class="icon icon-asterisk"></i> Email não enviado</strong></small>
+            {% else %}
+            <small><strong><i class="icon icon-envelope"></i> Email enviado</strong></small>
+            {% endif %}<br/>
+            
+            <p class="alert alert-info"><i class="icon icon-comment"></i> {{recado.texto}}</p>
+            {% if recado.cliente %}
+            <p class="alert alert-warnign"><i class="icon icon-briefcase"></i> {{recado.cliente}}</p>
+            
+            {% endif %}
+        </div>
+        {% endfor %}
+</div>
+{% endif %}

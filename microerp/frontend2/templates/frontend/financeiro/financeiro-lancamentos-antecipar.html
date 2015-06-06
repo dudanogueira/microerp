@@ -1,0 +1,112 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Financeiro - Antecipar Lançamento{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-arrow-left"></i> Antecipações</h1>
+{% if confirmado %}
+Confirmado!
+total:{{valor_total}}
+percentual: {{valor_percentual}} ({{percentual}}%)
+final: {{valor_final}}
+<h2>Lançamentos afetados</h2>
+<ul>
+    {% for lancamento in lancamentos_a_antecipar %}
+        <li>{{lancamento}}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if calcular %}
+
+    <div id="calcular">
+    <h2>Antecipação Calculada</h2>
+    
+    {% for lancamento in lancamentos_a_antecipar %}
+    <div class="well well-small">
+        <span class="badge badge-success">R$ {{lancamento.valor_cobrado}}</span> <span class="badge">{{lancamento.get_modo_recebido_display}}</span> em <span class="badge badge-info">{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</span> Lançamento #{{lancamento.id}} do contrato #{{lancamento.contrato.id}} do <span class="badge badge-warning">Cliente {{lancamento.contrato.cliente}}</span>
+    </div>
+        
+    {% endfor %}
+    
+    <span class="label label-success">Total: R${{valor_total.total}}</span> - <span class="label label-warning">{{percentual}}% (R$ {{valor_percentual}})</span> = <span class="label label-important">R$ {{resultado_final}}</span>
+</div>
+
+    <h3>Confirmar Antecipação?</h3>
+    <form method="POST">
+        {% csrf_token %}
+        {% for lancamento in lancamentos_a_antecipar %}
+            <input type="hidden" name="lancamento" value="{{lancamento.id}}">
+        {% endfor %}
+        <input type="hidden" name="percentual" value="{{percentual}}">
+        <button type="submit" class="btn btn-success" name="confirmar" value="confirmado"><i class="icon-check"></i> Confirmar</button>
+    </form>
+
+{% endif %}
+
+{% if not calcular and not confirmado %}
+    <div id="exibir-antecipaveis">
+        {{lancamentos_a_antecipar}}
+        {% if lancamentos_antecipaveis %}
+        <h2>Lançamentos Antecipáveis</h2>
+        <form method="POST" class="form form-inline">
+        {% csrf_token %}
+
+        {% for lancamento in lancamentos_antecipaveis %}
+        <div class="well well-small">
+            <input type="checkbox" name="lancamentos-a-antecipar" value="{{lancamento.id}}" id="lancamento-{{lancamento.id}}" {% ifequal lancamento_sugerido lancamento.id %}checked{%endifequal%}> <label for="lancamento-{{lancamento.id}}" >
+                <span class="badge badge-success">R$ {{lancamento.valor_cobrado}}</span> <span class="badge">{{lancamento.get_modo_recebido_display}}</span> em <span class="badge badge-info">{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</span> Lançamento #{{lancamento.id}} do contrato #{{lancamento.contrato.id}} do <span class="badge badge-warning">Cliente {{lancamento.contrato.cliente}}</span>. 
+            </label>
+        </div>
+        {% endfor %}
+        Percentual (%): <input type="text" name="percentual" value="0"><br />
+        <button type="submit" class="btn btn-primary" name="calcular-antecipacao" value="calcular"><i class="icon-arrow-left"></i> Antecipar</button>
+        </form>
+        {% endif %}
+    </div>
+    <div id="exibir-processos-antecipacao">
+        <h2>Antecipações Já realizada</h2>
+        {% for processo in processos %}
+        <div class="well">
+            <h4>{{processo}}</h4>
+            <h5>Lançamnetos</h5>
+            <ul>
+            {% for lancamento in processo.lancamentos.all %}
+                <li>{{lancamento}}</li>
+            {% endfor %}
+            </ul>
+            
+        </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+$(document).ready(function() {
+    
+	$( ".datepicker" ).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+        
+	});
+    
+    
+	$("#menu-financeiro-antecipar, #top-menu-financeiro").addClass("active");
+        
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/financeiro/financeiro-menu.html" %}
+{% endblock%}

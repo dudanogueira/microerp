@@ -1,0 +1,230 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - Produção - Lançar Nota{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-paste"></i> Lançar Nota</h1>
+
+
+<ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
+    <li class="active"><a href="#entrada-de-notas" class="ajaxtab" data-toggle="tab">Entrada de Nota Fiscal</a></li>
+	{% if not tipo %}
+		<li> <a href="#visualizador-de-notas" data-toggle="tab">Visualizador em Gráfico</a></li>
+	{% endif %}
+
+</ul>
+
+<div id="tab-content-ordem-producao" class="tab-content">
+	
+	<div class="tab-pane fade in active" id="entrada-de-notas">
+		
+		{% if request.user.perfilacessoproducao.gerente %}
+		<div id="escolha-tipo">
+		    {% if not tipo %}
+			<div class="row-fluid">
+				<div class="span6">
+					<h2>Adicionar Nota Fiscal do Tipo:</h2>
+				</div>
+				<div class="span6">
+					<br />
+				    <p class="btn-group">
+				    <a href="?tipo=nfe" class="btn btn-success"><i class="fa fa-paperclip"></i> Nota Fiscal Eletrônica (XML)</a>
+						<a href="{% url "producao:adicionar_nota" %}" class="btn btn-info"><i class="fa fa-user"></i> Nota Manual</a>
+				    </p>
+				</div>	
+			</div>
+			<hr />
+		    {% else %}
+		        <h2>Nota Fiscal Eletrônica</h2>
+				<h3>Selecione o Arquivo XML:</h3>
+				<a href="."><i class="fa fa-arrow-left"></i> Retornar</a>
+		        {% ifequal tipo 'nfe' %}
+		            <form method="POST" enctype="multipart/form-data">
+		                {% csrf_token %}
+		                {{upload_form}}
+		                <input type="submit" name="arquivo_nfe" class="btn btn-success" value="Enviar">
+		            </form>
+		        {% endifequal %}
+
+		    {% endif %}
+		</div>
+		{% endif %}
+
+		{% if not tipo %}
+			<div id="div-filtra-notas">
+				<form method="POST" class="form form-inline" id="form-filtra-notas-form">
+					{% csrf_token %}
+					<div class="row-fluid">
+						<div class="span2">
+							<strong>Status</strong>:<br/>
+							{{filtro_notas_form.status.errors}}
+							{{filtro_notas_form.status}}
+			
+						</div>
+						<div class="span4">
+							<strong>Fornecedor</strong>:<br/>
+							{{filtro_notas_form.fornecedor.errors}}
+							{{filtro_notas_form.fornecedor}}
+						</div>
+				
+						<div class="span2">
+							Início:<br/>
+							{{filtro_notas_form.inicio.errors}}
+							{{filtro_notas_form.inicio}}
+						</div>
+				
+						<div class="span2">
+							Fim:<br/>
+							{{filtro_notas_form.fim.errors}}
+							{{filtro_notas_form.fim}}
+						</div>
+						<div class="span1">
+							<br />
+							<button type="submit" class="btn btn-primary" name="filtrar-notas-fiscais-btn" value="filtrar">Filtrar</button>
+					
+						</div>
+	
+					</div>
+				</form>
+			</div>
+			{% if notas_exibir %}
+			<table class="table table-condensed table-hover table-rounded">
+			    <thead>
+			        <tr>
+			            <th>Fornecedor</th>
+			            <th>Série / # Nota</th>
+						<th>Tipo</th>
+						<th>Total S/ Imp.</th>
+						<th>Total C/ Imp.</th>
+						<th>Data Entrada</th>
+						<th>Ação</th>
+			        </tr>
+			    </thead>
+			    <tbody>
+
+						{% for nota in notas_exibir %}
+							<tr>
+								<td><a href="{% url "producao:ver_fabricantes_fornecedores" nota.fabricante_fornecedor.id  %}">{{nota.fabricante_fornecedor.nome}}</a></td>
+								<td>{{nota.numero_de_serie}} / {{nota.numero_identificador}}</td>
+								<td>{{nota.get_tipo_display}}</td>
+								<td>R$ {{nota.total_sem_imposto|floatformat:2}}</td>
+								<td>R$ {{nota.total_com_imposto|floatformat:2}}</td>
+								<td>{{nota.data_entrada|date:"SHORT_DATE_FORMAT"}}</td>
+								<td>
+									{% ifequal nota.status "a" %}
+										<a class="btn btn-primary" href="{% url "producao:ver_nota" nota.id %}"><i class="fa fa-pencil"></i></a>
+									{% else %}
+									<a class="btn btn-primary" href="{% url "producao:ver_nota" nota.id %}"><i class="fa fa-eye"></i></a>
+										{% endifequal %}
+								</td>
+							</tr>
+						{% endfor %}		
+						
+							<tr>
+								<td></td>
+								<td></td>
+								<td></td>
+								<td>R$ {{notas_filtro_total_sem_imposto.total_sem_imposto__sum|floatformat:2}}</td>
+								<td>R$ {{notas_filtro_total_com_imposto.total_com_imposto__sum|floatformat:2}}</td>
+								<td></td>
+								<td></td>
+							</tr>
+			
+					</tbody>
+				</thead>
+			</table>
+			{% else %}
+			<small>Nenhuma Nota a Exibir</small>
+			{% endif %}
+		{% endif %}
+	</div>
+	
+	<div class="tab-pane fade in" id="visualizador-de-notas">
+		<h4>Por Dia 
+			<a data-target="dados-por-dia" href="" class="btn btn-primary carregar-dados" data-periodo="dia" data-tipo="tabela" id="tabela-por-dia"><i class="fa fa-table"></i> Carregar Tabela</a>
+			<a data-target="dados-por-dia" href="" data-periodo="dia" data-tipo="grafico" class="btn btn-primary carregar-dados"><i class="fa fa-bar-chart-o"></i> Carregar Gráfico</a>
+		</h4>
+		<div id="dados-por-dia">
+			
+		</div>
+
+
+		<h4>Por Mês 			<a data-target="dados-por-mes" href="" class="btn btn-primary carregar-dados" data-periodo="mes" data-tipo="tabela" id="tabela-por-dia"><i class="fa fa-table"></i> Carregar Tabela</a>
+			<a data-target="dados-por-mes" href="" data-periodo="mes" data-tipo="grafico" class="btn btn-primary carregar-dados"><i class="fa fa-bar-chart-o"></i> Carregar Gráfico</a>
+</h4>
+
+	<div id="dados-por-mes">
+	
+	</div>
+
+		
+	</div>
+
+</div>
+
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.js"></script>
+<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.categories.js"></script>
+<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.time.js"></script>
+
+{% addtoblock "js" %}
+<script>
+
+$(document).ready(function() {
+	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
+	$('.datepicker').each(function() {
+	   $(this).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+			});
+	});
+});
+
+$(".carregar-dados").on("click", function(e){
+	e.preventDefault();
+	var target = $(this).data('target')
+	$.post(
+			"{% url "producao:nota_fiscal_dados" %}" + '?tipo=' + $(this).data('tipo') + '&amp;periodo=' + $(this).data('periodo'),
+			$( "#form-filtra-notas-form" ).serialize()
+	).done(
+		function( data ) {
+			$("#"+target).html(data);
+	});
+	
+
+})
+
+// Javascript to enable link to tab
+var hash = document.location.hash;
+var prefix = "tab_";
+if (hash) {
+    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+} 
+
+// Change hash for page-reload
+$('.nav-tabs a').on('shown', function (e) {
+    window.location.hash = e.target.hash.replace("#", "#" + prefix);
+});
+
+$('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
+	e.preventDefault();	
+	var href = this.hash;
+	window.location.hash = href.replace("#", "#" + "tab_");
+	var pane = $(this);
+	pane.tab('show');		
+})
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/producao/producao-menu.html" %}
+{% endblock%}

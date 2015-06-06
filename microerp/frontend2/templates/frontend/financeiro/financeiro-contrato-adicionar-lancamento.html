@@ -1,0 +1,59 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Financeiro{% endblock %}</title>
+
+{% block content %}
+<h2>Adicionar Lançamento em Contrato #{{contrato.id}}</h2>
+<h3>Cliente: {{contrato.cliente}}</h3>
+<h4>{{contrato.categoria}}</h4>
+
+
+<form method="POST">
+{% csrf_token %}
+{{form.as_p}}
+
+<p>
+    <button type="submit" class="btn btn-primary"><i class="icon-rocket"></i> Adicionar Lançamento a este contrato</button>
+</p>
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+
+{% addtoblock "js" %}
+
+<link href="{{ STATIC_URL }}frontend/css/ui-lightness/jquery-ui-date-picker.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script>
+$(function() {
+	
+	
+	$( ".datepicker" ).datepicker({
+		inline: true,
+        dateFormat: "dd/mm/yy"
+        
+	});
+
+	// Hover states on the static widgets
+	$( "#dialog-link, #icons li" ).hover(
+		function() {
+			$( this ).addClass( "ui-state-hover" );
+		},
+		function() {
+			$( this ).removeClass( "ui-state-hover" );
+		}
+	);
+});
+</script>
+
+<script>
+$(document).ready(function() {
+	$("#menu-financeiro-contratos-a-lancar, #top-menu-financeiro").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/financeiro/financeiro-menu.html" %}
+{% endblock%}

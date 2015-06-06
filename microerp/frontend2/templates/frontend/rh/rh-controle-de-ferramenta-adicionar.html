@@ -1,0 +1,105 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH -> Controle de Ferramenta: Adicionar{% endblock %}</title>
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-wrench"></i> RH - Adicionar Controle de Ferramenta</h1>
+<form method="POST">
+{% csrf_token%}
+{{form_adicionar.as_p}}
+<hr />
+<p>
+Adicionar <input name="quantidade_adicionar"> Linhas 
+<button type='submit' class="btn btn-primary" name="adicionar-campos-btn" value="adicionar"><i class="fa fa-plus"></i></button>
+</p>
+
+{{linha_equipamento_form.management_form}}
+
+{% for form in linha_equipamento_form.forms %}
+<div class="well well-small">
+	<div class="row-fluid">
+	
+		<div class="span1">
+			<h4>{{forloop.counter}}</h4>
+		</div>
+
+		<div class="span5">
+			{{form.produto.errors}}
+			Produto: {{form.produto}}
+		</div>
+	
+		<div class="span2">
+			{{form.quantidade.errors}}
+			Quantidade:<Br />{{form.quantidade}}
+		</div>
+		
+		<div class="span2">
+			{{form.data_previsao_devolucao.errors}}
+			Devolução Prevista:<Br />{{form.data_previsao_devolucao}}
+		</div>
+		
+	</div>
+</div>
+{% endfor %}
+
+<hr />
+<button type='submit' name="criar-controle-btn" class="btn btn-large btn-primary" value="criar"><i class="fa fa-plus"></i> Criar Controle</button>
+
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<script>
+
+$(document).ready(function() {
+	$("#menu-rh-controle-de-ferramenta, #top-menu-rh").addClass("active");
+	
+	$(".select2-ajax").select2({
+		placeholder: "",
+		minimumInputLength: 3,
+		id: function(e) { return e.id; },
+		ajax: { 
+			url: "{% url "ajax_consulta_produto" %}",
+			type: 'GET',
+			dataType: 'json',
+			data: function(term, page) {
+				return {
+					q: term,
+					page_limit: 10,
+				};
+			},
+			results: function (data) {
+				return {results: data};
+			},
+		},
+		initSelection: function(element, callback) {
+		    var id=$(element).val();
+		    if (id!=="") {
+		       $.ajax("{% url "ajax_consulta_produto" %}?id="+id, {
+		       dataType: "json"
+		       }).done(function(data) { 
+						 callback(data); 
+					 });
+		    }
+		},
+	});
+});
+
+$( ".datepicker" ).datepicker({
+	inline: true,
+      dateFormat: "dd/mm/yy"
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

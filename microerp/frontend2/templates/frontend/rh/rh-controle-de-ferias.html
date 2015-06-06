@@ -1,0 +1,100 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+
+<title>{%block title %}{{block.super}} - RH{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-picture"></i> Controle de Férias</h1>
+
+{% for funcionario in funcionarios %}
+<div class="well well-small alert alert-{{funcionario.ferias_situacao}}">
+    
+
+    <div class="cabecario">
+        {% if funcionario.ferias_situacao == "error" %}
+        <div class="alert alert-error">
+            <b>Atenção!</b> Funcionário em <strong>Situação Irregular</strong>.
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endif %}
+        <h4>{{funcionario}}</h4>
+        <p><strong>Admissão</strong>: {{funcionario.periodo_trabalhado_corrente.inicio}}
+         ({{funcionario.periodo_trabalhado_corrente.inicio|timesince}})</p>
+         <hr />
+     </div>
+     
+
+     <div class="row-fluid">
+       <div class="span6">
+           
+           <div class="descricao_dias_ferias">
+               <h5>Dias Agendados</h5>
+                   <ul>
+                   {% for d in funcionario.ferias_dias_agendados %}
+                       <li>{{d.delta}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
+                   {% empty %}
+                   <li>Nenhum dia Agendado</li>
+                   {% endfor %}
+
+                   </ul>
+               <h5>Dias Autorizados</h5>
+                   <ul>
+                   {% for d in funcionario.ferias_dias_autorizados %}
+                       <li>{{d.delta}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
+                   {% empty %}
+                   <li>Nenhum dia Autorizado</li>
+                   {% endfor %}
+
+                   </ul>
+               <hr />
+               <h5>Dias Gozados</h5>
+                   <ul>
+                   {% for d in funcionario.ferias_dias_gozados %}
+                       <li>{{d.delta}} dias: de {{d.inicio|date:"SHORT_DATE_FORMAT"}} à {{d.fim|date:"SHORT_DATE_FORMAT"}}</li>
+                   {% empty %}
+                   <li>Nenhum dia Gozado</li>
+                   {% endfor %}
+                   </ul>
+           </div>
+           
+       </div>
+       
+       
+       <div class="span6">
+           
+           <div class="sumario">
+               <h4>Sumário</h4>
+               <ul>
+               <li><strong>Dias de Direito</strong>: {{funcionario.ferias_dias_de_direito}} dias</li>
+               <li><strong>Total Geral de Férias</strong>: {{funcionario.ferias_dias_total_soma}}</li>
+               <li><strong>Dias de Férias Disponíveis</strong>:{{funcionario.ferias_dias_disponiveis}}</li>
+               </ul>
+           </div>
+           
+       </div>
+     </div>
+
+
+
+
+    
+
+
+
+    
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-rh-controle-de-ferias, #top-menu-rh").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

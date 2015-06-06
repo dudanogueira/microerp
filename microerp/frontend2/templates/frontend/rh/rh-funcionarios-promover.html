@@ -1,0 +1,45 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load thumbnail %}
+
+<title>{%block title %}{{block.super}} - RH - Promover Funcionário{% endblock %}</title>
+
+{% block content %}
+<h1>Promover: {{funcionario}} - Admissão: {{funcionario.periodo_trabalhado_corrente.inicio|date:"SHORT_DATE_FORMAT"}}</h1>
+
+<a href="{% url "rh:ver_funcionario" funcionario.id %}"><i class="fa fa-arrow-left"></i>Voltar à Ficha do Funcionário</a>
+
+<h4>{{funcionario.cargo_atual}} - {{funcionario.cargo_atual.departamento}}, Salário Atual: R$ {{funcionario.salario}}</h4>
+<form method="POST">
+	{% csrf_token %}
+{{form_promover.as_p}}
+	<button type="submit" class="btn btn-primary">Promover</button>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
+<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+
+<script>
+$(document).ready(function() {
+    $("#menu-rh-funcionarios, #top-menu-rh").addClass("active");
+		$('.datepicker').each(function() {
+		   $(this).datepicker({
+			inline: true,
+		      dateFormat: "dd/mm/yy"
+    
+				});
+		});
+		
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/rh/rh-menu.html" %}
+{% endblock%}

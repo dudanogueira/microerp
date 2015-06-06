@@ -1,0 +1,22 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Estoque{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="icon-th"></i> <i class="icon-shopping-cart"></i> Estoque</h1>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script>
+$(document).ready(function() {
+	$("#menu-estoque-home, #top-menu-estoque").addClass("active");
+});
+</script>
+{% endaddtoblock %}
+{% include "frontend/estoque/estoque-menu.html" %}
+{% endblock%}

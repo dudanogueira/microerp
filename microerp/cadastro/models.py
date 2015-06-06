@@ -92,8 +92,8 @@ class PreCliente(models.Model):
     data_convertido = models.DateField(blank=True, null=True)
     convertido_por = models.ForeignKey('rh.Funcionario', related_name="precliente_convertido_set", blank=True, null=True)
     adicionado_por = models.ForeignKey('rh.Funcionario', related_name="precliente_lancado_set")
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class PerfilClienteLogin(models.Model):
     '''
@@ -103,8 +103,8 @@ class PerfilClienteLogin(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, verbose_name="Usuário do Sistema", blank=True, null=True)
     cliente = models.OneToOneField('Cliente', verbose_name="Cliente Cadastrado no Sistema", blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 class Cliente(models.Model):
     u'''
@@ -251,8 +251,8 @@ class Cliente(models.Model):
     # comercial - designacao
     designado = models.ForeignKey('rh.Funcionario', verbose_name="Funcionário Designado", related_name="cliente_designado_set", blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class EnderecoCliente(models.Model):
     
@@ -282,8 +282,8 @@ class EnderecoCliente(models.Model):
     numero = models.CharField(blank=True, max_length=100, verbose_name=u"Número")
     complemento = models.CharField(blank=True, max_length=200, verbose_name=u"Complemento")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 class Ramo(models.Model):
@@ -358,8 +358,8 @@ class ConsultaDeCredito(models.Model):
     observacoes = models.TextField(u"Observações", blank=True, null=True)
     dados_originais = models.TextField("Dados Originais", blank=True, null=True, help_text="Este campo deve ser usado para armazenar o retorno de um webservice em seu formato original")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 class PerfilAcessoRecepcao(models.Model):
@@ -374,8 +374,8 @@ class PerfilAcessoRecepcao(models.Model):
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class EnderecoEmpresa(models.Model):
     '''unidade da empresa (matriz, filial, etc)'''
@@ -386,6 +386,6 @@ class EnderecoEmpresa(models.Model):
     cnpj_vinculado = models.CharField(blank=True, max_length=100)
     nome = models.CharField(blank=False, max_length=100)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     

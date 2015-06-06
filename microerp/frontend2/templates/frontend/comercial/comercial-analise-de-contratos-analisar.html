@@ -1,0 +1,187 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+
+<title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato {{contrato.id}}{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato #{{contrato.id}}</h1>
+<a href="{% url "comercial:propostas_comerciais_ver" contrato.propostacomercial.id %}" class="btn btn-primary">Resumo do Contrato</a>
+
+<div class="row-fluid">
+	
+	<div class="span6">
+		
+		<form method="post">
+		{% csrf_token %}
+
+		{{form_analisar_contrato.as_p}}
+		<div class="btn-group">
+			<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim"><i class="fa fa-pencil"></i> 	Alterar</button>
+			<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar Contrato</button>
+			<button data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</button>
+						<a class="btn btn-default" href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" name="contrato-invalido" value="sim"><i class="fa fa-print"></i> Gerar PDF</a>
+			
+		</div>
+		
+		<!-- Modal -->
+		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title" id="myModalLabel">Motivo de Invalidez</h4>
+		      </div>
+		      <div class="modal-body">
+				  <textarea name="motivo-invalido"></textarea>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        		<button type="submit" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</button>
+		      </div>
+		    </div><!-- /.modal-content -->
+		  </div><!-- /.modal-dialog -->
+		</div><!-- /.modal -->
+		
+		</form>
+	
+	</div>
+	
+	<div class="span6">
+		
+		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}  <strong>Valor do Contrato: R$ {{contrato.valor}}</strong>
+		
+		<h4>Lançamentos Configurados</h4>
+		<ul>
+			{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
+				<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> - R${{lancamento.valor_cobrado}} <em><small>{{lancamento.modo_recebido}}</small></em></li>
+			{% empty %}
+			Nenhum Lançamento				
+			{% endfor %}
+		</ul>
+
+		{% if contrato.propostacomercial.orcamento_set.all %}
+		<hr />
+		<h4>Orçamentos Vinculados</h4>
+		
+		<h6>Valor Consolidado: R$ {{contrato.propostacomercial.consolidado}}</h6>
+		<ul>
+		{% for orcamento in contrato.propostacomercial.orcamentos_ativos.all %}
+		<li>
+			<a href="" data-toggle="modal" data-target="#modal-orcamento-{{orcamento.id}}">
+			  {{orcamento.descricao}} - R$ {{orcamento.custo_total}} <i class="fa fa-list"></i>
+			</a>
+			<!-- Modal -->
+			<div class="modal fade" id="modal-orcamento-{{orcamento.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			  <div class="modal-dialog">
+			    <div class="modal-content">
+			      <div class="modal-header">
+			        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			        <h4 class="modal-title" id="myModalLabel">{{orcamento}}</h4>
+			      </div>
+			      <div class="modal-body">
+					  <table class="table table-bordered">
+						  <thead>
+							  <tr>
+								  <th>Quantidade</th>
+								  <th>Produto</th>
+							  </tr>
+						  </thead>
+						  <tbody>
+						  {% for linha in orcamento.linharecursomaterial_set.all %}
+						  <tr>
+							  <td>{{linha.quantidade}}</td>
+							  <td>{{linha.produto}}</td>
+						  </tr>
+						  {% endfor %}
+						  </tbody>
+						  
+					  </table>
+					  
+			      </div>
+			      <div class="modal-footer">
+			        <button type="button" class="btn btn-default btn-danger" data-dismiss="modal">X Fechar</button>
+			      </div>
+			    </div>
+			  </div>
+			</div>
+			
+		</li>
+			
+		{% endfor %}
+		</ul>
+		{% endif %}
+		<hr />
+		<h4>Check List</h4>
+		<ul>
+			<li>
+				Lançamentos Configurado: {% if contrato.lancamentofinanceiroreceber_set.count %}
+					<span class="label label-success">{{contrato.lancamentofinanceiroreceber_set.count}}</span>
+				{% else %}
+					<span class="label label-important">{{contrato.lancamentofinanceiroreceber_set.count}}</span>
+				{% endif %}
+			</li>
+			<li>
+				Orçamentos Vinculados: {% if contrato.propostacomercial.orcamentos_ativos.count %}
+					<span class="label label-success">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
+				{% else %}
+					<span class="label label-important">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
+				{% endif %}
+			</li>
+			
+			<li {% if contrato.garantia %} class="popover-items" data-trigger="hover" data-title="Garantia" data-content='{{contrato.garantia}}' {% endif %}>
+				Garantia: {% if contrato.garantia %}
+				<span class="badge badge-success"><i class="fa fa-check"></i>
+				{% else %}
+				<span class="label label-important">Não especificado</span>
+				{% endif %}
+			</li>
+			<li {% if contrato.items_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Inclusos" data-content='{{contrato.items_incluso}}' {% endif %}>
+				Itens Incluso: {% if contrato.items_incluso %}
+				<span class="badge badge-success"><i class="fa fa-check"></i>
+				{% else %}
+				<span class="label label-important">Não especificado</span>
+				{% endif %}
+			</li>
+			<li {% if contrato.items_nao_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Não Inclusos" data-content='{{contrato.items_nao_incluso}}' {% endif %}>
+				Itens Não Incluso: {% if contrato.items_nao_incluso %}
+				<span class="badge badge-success"><i class="fa fa-check"></i>
+				{% else %}
+				<span class="label label-important">Não especificado</span>
+				{% endif %}
+			</li>			
+			<li {% if contrato.cliente.enderecocliente_set.count %}class="popover-items" data-trigger="hover" data-title="Endereço" data-content='{{contrato.cliente.logradouro_completo}}' {% endif %}>
+				Endereços do Cliente: {% if contrato.cliente.enderecocliente_set.count %}
+				<span class="label label-success">{{contrato.cliente.enderecocliente_set.count}} Endereço{{contrato.cliente.enderecocliente_set.count|pluralize:"s"}}</span>
+				{% else %}
+				<span class="label label-important">Não possui</span>
+				{% endif %}
+			</li>
+		</ul>
+
+	</div>
+	
+</div>
+
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+
+<script>
+$(document).ready(function() {
+    $("#menu-comercial-analise-de-contratos, #top-menu-comercial").addClass("active");
+	$('.popover-items').popover({
+			trigger: "hover",
+			placement: 'left'
+	});
+	
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}
