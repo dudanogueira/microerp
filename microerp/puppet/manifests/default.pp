@@ -9,7 +9,7 @@ exec { 'apt-get upgrade -y':
 }
 
 # pacotes basicos
-$enhancers = [ "git-core", "screen", "python-psycopg2", "libpq-dev", "freetds-dev", "libmysqlclient-dev", ]
+$enhancers = [ "git-core", "screen", "python-psycopg2", "libpq-dev", "freetds-dev", "libmysqlclient-dev",  "libjpeg-dev", "libfreetype6-dev", "zlib1g-dev", "libpng12-dev"]
 package { 
   $enhancers: ensure => "installed"
 }
