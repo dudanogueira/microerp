@@ -47,7 +47,7 @@
 		<div class="row-fluid">
 			{{form.errors}}
 		
-			<div class="span6">
+			<div class="col-md-6">
 				{% if orcamento.promocao or orcamento.tabelado %}
 					{{form.instance.produto}}
 				{% else %}
@@ -57,7 +57,7 @@
 				{% endif %}
 			</div>
 		
-			<div class="span3">
+			<div class="col-md-3">
 				{% if orcamento.promocao or orcamento.tabelado %}
 						{% if form.instance.quantidade %}
 							<strong>Quantidade:</strong> {{form.instance.quantidade}}
@@ -70,7 +70,7 @@
 				{% endif %}
 			</div>
 		
-			<div class="span3">
+			<div class="col-md-3">
 				{% if not orcamento.promocao and not orcamento.tabelado %}
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
 				{% endif %}
@@ -104,7 +104,7 @@
 		<div class="row-fluid">
 			{{form.errors}}
 
-			<div class="span6">
+			<div class="col-md-6">
 				{% if orcamento.promocao or orcamento.tabelado %}
 				{{form.instance.cargo}}
 				{% else %}
@@ -115,7 +115,7 @@
 				{% endif %}
 			</div>
 		
-			<div class="span3">
+			<div class="col-md-3">
 				{% if orcamento.promocao or orcamento.tabelado %}
 				{% if form.instance.quantidade %}
 					{{form.instance.quantidade}} hora{{form.instance.quantidade|pluralize}}
@@ -131,7 +131,7 @@
 				{% endif %}
 			</div>
 		
-			<div class="span3">
+			<div class="col-md-3">
 				{% if not orcamento.promocao and not orcamento.tabelado %}
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
 				{% endif %}

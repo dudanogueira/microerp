@@ -14,7 +14,7 @@
 	<div class="col-md-6">
 		{% if request.user.perfilacessocomercial.gerente %}
 		<h4>Como Gerente</h4>
-		<span class="label label-info">Valor Mínimo: R$ {{proposta.consolidado|floatformat:2}}</span><br />
+		<span class="label label-info">Valor Mínimo: R$ {{proposta.consolidado|floatformat:2}}</span>
 		Lucro {{proposta.lucro}}%, Impostos: {{proposta.impostos}}%, Administrativo: {{proposta.administrativo}}%</small>
 		{% endif %}
 	</div>
@@ -42,10 +42,11 @@
 	</div>
 	
 	<div class="col-md-6">
+
 		<div class="well well-small">
 			<form method="POST" class="form form-inline " id="form-editar-proposta">
 			{% csrf_token %}
-			{{form_editar_proposta|bootstrap}}
+			{{form_editar_proposta.as_p}}
 			{% if proposta.parcelamentos_possiveis.all %}
 			<h6>Parcelamentos Configurados</h6>
 			<ul>
@@ -82,11 +83,11 @@
 		<h3>Orçamentos Ativos</h3>
 
 {% for orcamento_ativo in proposta.orcamentos_ativos %}
-<div class="row-fluid">
-	<div class="span8">
+<div class="row">
+	<div class="col-md-8">
 
 		<div class="row-fluid">
-			<div class="span10">
+			<div class="col-md-10">
 				<div class="alert alert-success">
 					{{orcamento_ativo}}<br />
 					{% if orcamento_ativo.promocao %}
@@ -97,7 +98,7 @@
 				
 			</div>
 			
-			<div class="span2">
+			<div class="col-md-2">
 				{% if orcamento_ativo.promocao %}
 				<i class="fa fa-asterisk fa-2x"></i>
 				<small>promoção</small>
@@ -119,7 +120,7 @@
 		
 		
 	</div>
-	<div class="span4">
+	<div class="col-md-4">
 		<p class="btn-group">
 			{% if orcamento_ativo.promocao or orcamento_ativo.tabelado %}
 			
@@ -146,12 +147,12 @@
 <h3>Orçamentos Inativos</h3>
 {% for orcamento_inativo in proposta.orcamentos_inativos %}
 <div class="row-fluid">
-	<div class="span8">
+	<div class="col-md-8">
 		<div class="alert alert-danger">
 			{{orcamento_inativo}}
 		</div>
 	</div>
-	<div class="span4">
+	<div class="col-md-4">
 		<p class="btn-group">
 			<a data-toggle="tooltip" title="Reativar" data-placement="top" href="{% url "comercial:editar_proposta_ativar_orcamento" orcamento_inativo.proposta.id orcamento_inativo.id %}" class="btn btn-success tooltip-items"><i class="fa fa-thumbs-up"></i></a>
 		</p>

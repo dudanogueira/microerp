@@ -78,8 +78,8 @@ class ControleDeEquipamento(models.Model):
     receptor_arquivo_impresso = models.ForeignKey('rh.Funcionario', related_name="autorizacao_controle_equipamento_set", verbose_name=u"Funcionário que Autorizou o Controle", help_text="Funcionário responsável pela entrega do equipamento.", blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', blank=True, null=True, related_name="controledeequipamento_criado_set")
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaControleEquipamento(models.Model):
     
@@ -105,8 +105,8 @@ class LinhaControleEquipamento(models.Model):
     data_devolvido = models.DateField(blank=True, null=True)
     # metadata
     funcionario_receptor = models.ForeignKey('rh.Funcionario', related_name="recepcao_linha_controle_equipamento_set", verbose_name=u"Funcionário que Autorizou o Controle", help_text="Funcionário responsável pela entrega do equipamento.", blank=True, null=True)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 # 
 # LINHA DE MATERIAIS DO CONTRATO OU DA ORDEM DE SERVICO
@@ -135,8 +135,8 @@ class ListaMaterialDoContrato(models.Model):
     # outros
     ativa = models.BooleanField(default=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaListaMaterial(models.Model):
     lista  = models.ForeignKey(ListaMaterialDoContrato)
@@ -144,8 +144,8 @@ class LinhaListaMaterial(models.Model):
     quantidade_requisitada = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     quantidade_ja_atendida = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 #
@@ -159,16 +159,16 @@ class ListaMaterialEntregue(models.Model):
     entregue_por = models.ForeignKey("rh.Funcionario", blank=False, null=False, related_name="entregue_por_set")
     entregue_para = models.ForeignKey("rh.Funcionario", blank=False, null=False, related_name="entregue_para_set")
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaListaMaterialEntregue(models.Model):
     lista  = models.ForeignKey(ListaMaterialEntregue)
     produto = models.ForeignKey('estoque.Produto')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 #
 # MATERIAL PARA COMPRA
@@ -180,13 +180,13 @@ class ListaMaterialCompra(models.Model):
     ordem_de_servico = models.ForeignKey('programacao.OrdemDeServico', blank=True, null=True)
     ativa = models.BooleanField(default=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaListaMaterialCompra(models.Model):
     lista  = models.ForeignKey(ListaMaterialCompra)
     produto = models.ForeignKey('estoque.Produto')
     quantidade = models.DecimalField(max_digits=10, decimal_places=2)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")

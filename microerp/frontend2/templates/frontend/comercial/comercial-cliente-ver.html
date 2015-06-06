@@ -9,11 +9,11 @@
 
 <div class="row-fluid">
 	
-	<div class="span6">
+	<div class="col-md-6">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Ficha do Cliente</h1>
 	</div>
 	
-	<div class="span6">
+	<div class="col-md-6">
 		<h1>{{cliente.nome}} <span class="label label-info">{{cliente.get_tipo_display|upper}}</span></h1> 
 	</div>
 </div>
@@ -31,15 +31,15 @@
 
 <div class="row-fluid" id="sub-menu-ficha-cliente">
 	
-	<div class="span4">
+	<div class="col-md-4">
 		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar </a>
 	</div>
 	
-	<div class="span4">
+	<div class="col-md-4">
 		<span class="label label-success">Responsável: {{cliente.designado}}</span><br />
 	</div>
 	
-	<div class="span4">
+	<div class="col-md-4">
 		{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
 		
 		<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>

@@ -89,8 +89,8 @@ class Solicitacao(models.Model):
     adicionado_por = models.ForeignKey('rh.Funcionario', related_name="solicitacao_adicionada_set",  blank=True, null=True)
     despachado_por = models.ForeignKey('rh.Funcionario', related_name="solicitacao_despachado_set",  blank=True, null=True)
     despachado_data = models.DateTimeField(blank=True, null=True)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
     def clean(self):
         # se nao procede, motivo obrigatorio
@@ -136,5 +136,5 @@ class PerfilAcessoSolicitacao(models.Model):
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")

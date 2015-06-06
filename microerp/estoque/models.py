@@ -44,8 +44,8 @@ class PerfilAcessoEstoque(models.Model):
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")        
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class TipoDeProduto(models.Model):
     
@@ -54,8 +54,8 @@ class TipoDeProduto(models.Model):
 
     nome = models.CharField(blank=True, max_length=100)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class Produto(models.Model):
     
@@ -99,8 +99,8 @@ class Produto(models.Model):
     grupo_indicador = models.ForeignKey('comercial.GrupoIndicadorDeProdutoProposto', blank=True, null=True)
     sub_grupo_indicador = models.ManyToManyField('comercial.SubGrupoIndicadorDeProdutoProposto', blank=True, null=True)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class CodigoDeBarra(models.Model):
     codigo_barras = models.CharField(blank=True, max_length=100)
@@ -115,8 +115,8 @@ class TabelaDePreco(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     percentual = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
     # meta
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 @deconstructible
@@ -140,8 +140,8 @@ class ArquivoImportacaoProdutos(models.Model):
     arquivo = models.FileField(upload_to=arquivo_importacao_dir)
     # meta
     enviado_por = models.ForeignKey('rh.Funcionario')
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criação")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualização")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
     
 
 # SIGNALS

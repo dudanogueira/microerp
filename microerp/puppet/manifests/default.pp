@@ -35,7 +35,7 @@ class { 'python' :
 }
 
 # Create the directory where the app will be installed
-file { '/opt/microerp/source/':
+file { ['/opt/microerp/source/', '/opt/microerp/', '/opt/']:
   ensure => directory,
 }
 

@@ -48,8 +48,8 @@ class PerfilAcessoProgramacao(models.Model):
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class OrdemDeServico(models.Model):
     
@@ -68,8 +68,8 @@ class OrdemDeServico(models.Model):
     data_inicio = models.DateTimeField(blank=True, null=True)
     data_fim = models.DateTimeField(blank=True, null=True)
     # metadata
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 
 class TarefaDeProgramacao(models.Model):
@@ -114,8 +114,8 @@ class TarefaDeProgramacao(models.Model):
     funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participantes_programacao", blank=True, null=True)
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="tarefa_de_programacao_adicionado_set",  blank=False, null=False)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class FollowUpDeOrdemDeServico(models.Model):
     
@@ -135,5 +135,5 @@ class FollowUpDeOrdemDeServico(models.Model):
     # registro histórico
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="followup_contrato_adicionado_set",  blank=False, null=False)
-    criado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now_add=True, verbose_name="Criado")
-    atualizado = models.DateTimeField(blank=True, default=datetime.datetime.now, auto_now=True, verbose_name="Atualizado")
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
