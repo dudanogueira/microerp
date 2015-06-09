@@ -1,4 +1,5 @@
 {% extends "frontend/frontend-base.html" %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
@@ -7,7 +8,7 @@
 <h1>Olá {{request.user}}</h1>
 {% else %}
 <form action="{% url "login" %}" method="post">{% csrf_token %}
-{{form.as_p}}
+{{form|bootstrap}}
 <input type="submit" class="btn btn-success" value="Login">
 <input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url "home" %}{%endif%}">
 </form>

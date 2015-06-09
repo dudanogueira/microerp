@@ -14,6 +14,6 @@ if [ ! -d /etc/puppet/modules/postgresql ];
     then puppet module install puppetlabs-postgresql --version 4.3.0
 fi
 
-if [ ! -d /etc/puppet/modules/vcsrepo ];
-    then puppet module install puppetlabs-vcsrepo --version 1.3.0
+if [ ! -d /etc/puppet/modules/mysql ];
+    then puppet module install puppetlabs-mysql --version 3.4.0
 fi

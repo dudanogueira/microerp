@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
-__version__ = '0.0.1'
+__version__ = '2.0.0'
 
 from django.utils.deconstruct import deconstructible
 
@@ -209,7 +209,7 @@ class PropostaComercial(models.Model):
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
     tipo = models.ForeignKey('TipoDeProposta', blank=True, null=True)
-    tipos = models.ManyToManyField('TipoDeProposta', blank=True, null=True, related_name="proposta_por_tipos_set")
+    tipos = models.ManyToManyField('TipoDeProposta', blank=True, related_name="proposta_por_tipos_set")
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True, default=50)
     probabilidade_inicial = models.IntegerField("Probabilidade Inicial (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
@@ -222,7 +222,7 @@ class PropostaComercial(models.Model):
     administrativo = models.IntegerField("Taxa Administrativa (%)", blank=False, null=False, default=0)
     impostos = models.IntegerField("Impostos (%)", blank=False, null=False, default=0)
     # parcelamentos selecionados
-    parcelamentos_possiveis = models.ManyToManyField('TabelaDeParcelamento', verbose_name=u"Parcelamenos Possíveis", blank=True, null=True)
+    parcelamentos_possiveis = models.ManyToManyField('TabelaDeParcelamento', verbose_name=u"Parcelamenos Possíveis", blank=True)
     # dados para impressao
     nome_do_proposto = models.CharField(blank=True, max_length=100)
     documento_do_proposto = models.CharField(blank=True, max_length=100)
@@ -696,7 +696,7 @@ class ContratoFechado(models.Model):
     previsao_termino_execucao = models.DateField(blank=True, null=True)
     efetivo_inicio_execucao = models.DateField(default=datetime.datetime.today)
     efetivo_termino_execucao = models.DateField(blank=True, null=True)
-    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participados", blank=True, null=True)
+    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participados", blank=True)
     apoio_tecnico = models.ForeignKey('rh.Funcionario', related_name="contratos_apoio_tecnico", blank=True, null=True, verbose_name=u"Apoio Técnico")
     #
     concluido = models.BooleanField(default=False)

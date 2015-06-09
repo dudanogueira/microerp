@@ -15,13 +15,17 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
+THUMBNAIL_DEBUG = True
+
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
-__version__ = '0.0.1'
+__version__ = '2.0'
 
 # Django settings for microerp project.
 import os
 INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
+
+NOME_SISTEMA = 'MicroERP'
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -36,10 +40,11 @@ MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'microerp.db',
-        'USER': '',
-        'PASSWORD': '',
+        #'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'microerp',
+        'USER': 'microerp',
+        'PASSWORD': 'microerp',
         'HOST': '',
         'PORT': '',
     }
@@ -56,8 +61,6 @@ EMAIL_HOST_PASSWORD = 'senha_do_email'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'CONTA DE ENVIO <usuario@email.com>'
-
-
 
 
 # Using default
@@ -159,7 +162,7 @@ TEMPLATE_DIRS = (
     # Don't forget to use absolute paths, not relative paths.
 )
 
-IMG_SRC_LOGO_EMPRESA = '/media/logo_mestria.png'
+IMG_SRC_LOGO_EMPRESA = '/static/logo_generica.png'
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
@@ -179,7 +182,8 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # front end
-    'frontend_base',
+    #'frontend_base',
+    'frontend2',
     # admin
     'django_admin_bootstrapped',
     # customizado
@@ -189,6 +193,7 @@ INSTALLED_APPS = (
     'django_extensions',
     'sorl.thumbnail',
     'sekizai',
+    'bootstrapform',
     # apps do projeto
     'cadastro',
     'rh',
@@ -196,9 +201,8 @@ INSTALLED_APPS = (
     'comercial',
     'solicitacao',
     'estoque',
-    'treinamento',
-    'producao',
-    #'account',
+    'programacao',
+    'financeiro'
 )
 
 # A sample logging configuration. The only tangible logging
@@ -229,9 +233,6 @@ LOGGING = {
         },
     }
 }
-    
-
-
 
 FORMATOS_ETIQUETA_SUPORTADOS = {
  1: {'Altura': 4.23,

@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
-__version__ = '0.0.1'
+__version__ = '2.0.0'
 
 import datetime
 
@@ -76,7 +76,7 @@ class Solicitacao(models.Model):
     resolucao_final = models.TextField("Resolução Final", blank=True)
     resolucao_final_data = models.DateTimeField(blank=True, null=True)
     # departamento / abrangencia
-    departamentos_afetados = models.ManyToManyField('rh.Departamento', related_name="solicitacao_afetada_set", blank=True, null=True)
+    departamentos_afetados = models.ManyToManyField('rh.Departamento', related_name="solicitacao_afetada_set", blank=True)
     departamento_direto = models.ForeignKey('rh.Departamento', related_name="solicitacao_direta_set", blank=True, null=True)
     # responsavel correcao
     responsavel_correcao = models.ForeignKey('rh.Funcionario', related_name="solicitacao_correcao_set", blank=True, null=True)

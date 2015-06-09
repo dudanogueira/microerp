@@ -111,7 +111,7 @@ class TarefaDeProgramacao(models.Model):
     # inicio, fim e participantes
     data_inicio = models.DateTimeField(blank=False)
     data_fim = models.DateTimeField(blank=False)
-    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participantes_programacao", blank=True, null=True)
+    funcionarios_participantes = models.ManyToManyField('rh.Funcionario', related_name="contratos_participantes_programacao", blank=True)
     # metadata
     criado_por = models.ForeignKey('rh.Funcionario', related_name="tarefa_de_programacao_adicionado_set",  blank=False, null=False)
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")

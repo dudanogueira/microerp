@@ -15,18 +15,63 @@ package {
 }
 
 # postgres
-class { 'postgresql::server': }
+class { 'postgresql::server':
+  ip_mask_allow_all_users    => '0.0.0.0/0',
+  listen_addresses           => '*',
+}
+
+postgresql::server::role { 'microerp':
+  password_hash => postgresql_password('microerp', 'microerp'),
+  createdb  => true
+}
+
+postgresql::server::db { 'microerp':
+  user     => 'microerp',
+  password => postgresql_password('microerp', 'microerp'),
+}
+
+postgresql::server::database_grant { 'microerp':
+  privilege => 'ALL',
+  db        => 'microerp',
+  role      => 'microerp',
+}
+
+postgresql::server::pg_hba_rule { 'permite acesso local para usuario':
+  description => "permite acesso local para usuario",
+  type => 'local',
+  database => 'microerp',
+  user => 'microerp',
+  auth_method => 'md5',
+  order=>'001',
+}
+
+# mysql
+class { 'mysql::server':
+
+      root_password    => 'root',
+
+      override_options => {
+          'mysqld' => {
+              'connect_timeout'                 => '60',
+              'bind_address'                    => '0.0.0.0',
+              'max_connections'                 => '100',
+              'max_allowed_packet'              => '512M',
+              'thread_cache_size'               => '16',
+              'query_cache_size'                => '128M',
+          }
+     }
+}
 
 
-#postgresql::server::role { 'intranet':
-#  password_hash => postgresql_password('intranet', 'intranet'),
-#}
+mysql::db { 'microerp':
+  user     => 'microerp',
+  password => 'microerp',
+  host     => '%',
+  grant    => ['all'],
+  charset => 'utf8',
+  collate => 'utf8_general_ci',
+}
 
-#postgresql::server::database_grant { 'intranet':
-#  privilege => 'ALL',
-#  db        => 'intranet',
-#  role      => 'intranet',
-#}
 
 # Install & configure Python
 class { 'python' :

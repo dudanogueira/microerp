@@ -6,7 +6,7 @@ django-debug-toolbar==1.3.0
 django-extensions==1.5.5
 django-localflavor==1.1
 django-markdown-deux==1.0.5
-django-sekizai==0.8.1
+-e git://github.com/ojii/django-sekizai.git#egg=django-sekizai
 icalendar==3.9.0
 ipython==3.1.0
 markdown2==2.3.0

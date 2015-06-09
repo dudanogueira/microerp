@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
-__version__ = '0.0.1'
+__version__ = '2.0.0'
 
 import os, datetime
 from django.db import models
@@ -457,7 +457,7 @@ class Funcionario(models.Model):
     periodo_trabalhado_corrente = models.OneToOneField("PeriodoTrabalhado", blank=True, null=True, related_name="periodo_trabalhado_corrente")
     endereco_empresa_designado = models.ForeignKey('cadastro.EnderecoEmpresa', verbose_name=u"Local de Trabalho Designado", default=1)
     # competencia
-    competencias = models.ManyToManyField('Competencia', blank=True, null=True)
+    competencias = models.ManyToManyField('Competencia', blank=True)
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
@@ -893,7 +893,7 @@ class RotinaExameMedico(models.Model):
     
     data = models.DateTimeField(blank=True, null=True, default=datetime.datetime.now, help_text="Formato: dd/mm/yy hh:mm")
     tipo = models.CharField(blank=True, max_length=100, choices=ROTINA_EXAME_MEDICO_CHOICES)
-    exames = models.ManyToManyField('TipoDeExameMedico', blank=True, null=True)
+    exames = models.ManyToManyField('TipoDeExameMedico', blank=True)
     realizado = models.BooleanField(default=False)
     periodo_trabalhado = models.ForeignKey('PeriodoTrabalhado')
     arquivo = models.FileField(upload_to=funcionario_rotina_exame_medico, blank=True, null=True, max_length=300)

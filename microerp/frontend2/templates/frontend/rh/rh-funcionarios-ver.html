@@ -31,8 +31,8 @@
 
 <div class="row-fluid">
     
-    <div class="span6">
-        <div class="span12 pagination-right well">
+    <div class="col-md-6">
+        <div class="col-md-12 pagination-right well">
             {% thumbnail funcionario.foto "150x150" crop="center" as im %}
                   <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
            {% endthumbnail %}
@@ -42,7 +42,7 @@
         
         </div>
     </div>
-    <div class="span6">
+    <div class="col-md-6">
         
         <h3>Período Trabalhado</h3>
             {% for periodo in funcionario.periodotrabalhado_set.all %}
@@ -80,7 +80,7 @@
 
 <div class="row-fluid">
     
-    <div class="span6">
+    <div class="col-md-6">
         <h3>Contatos</h3>
         <div class="well well-small">
             <p><span class="label label-info"><i class="fa fa-envelope"></i> Email</span>  <strong>{{funcionario.email}}</strong></p>
@@ -90,7 +90,7 @@
         </div>
     </div>
     
-    <div class="span6">
+    <div class="col-md-6">
         <h3>Endereço</h3>
         <div class="well well-small">
             <p><span class="label label-info"><i class="fa fa-road"></i> Rua</span>  <strong>{{funcionario.rua}}</strong></p>
@@ -104,7 +104,7 @@
 
 
 <div class="row-fluid">
-    <div class="span6">
+    <div class="col-md-6">
 		{% if rh_usa_banco_de_horas %}
         <h3>Folhas de Ponto</h3>
         <div class="well">
@@ -124,7 +124,7 @@
             {{funcionario.competencias.all|join:","}}
         </div>
     </div>
-    <div class="span6">
+    <div class="col-md-6">
         
         <h3>Dependentes</h3>
         <div class="well well-small">
@@ -177,7 +177,7 @@
 
 <div class="row-fluid well">
     
-    <div class="span6">
+    <div class="col-md-6">
         <h3>Agendados</h3>
         <div class="well well-small">
             
@@ -206,7 +206,7 @@
     
     
     
-    <div class="span6">
+    <div class="col-md-6">
         <h3>Passados</h3>
         <div class="well well-small">
 

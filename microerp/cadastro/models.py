@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
-__version__ = '0.0.1'
+__version__ = '2.0.0'
 
 import datetime
 from localflavor.br.br_states import STATE_CHOICES
