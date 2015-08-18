@@ -17,5 +17,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "virtualbox" do |v|
         v.memory = 2048
     end
+  config.push.define "heroku" do |push|
+    push.app = "pure-fjord-9242"
+  end
 end
 

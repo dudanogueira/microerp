@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -12,9 +13,7 @@
     <h3>Converter em Cliente</h3>
     <form id="converter-precliente" method="post">
         {% csrf_token %}
-    {{form.as_p}}
-	<h4>Endereço</h4>
-	{{form_adicionar_endereco.as_p}}
+    {{form|bootstrap}}
 	<h6>Responsável: {{precliente.designado}}<h6>
     <button type="submit" value="Converter" class="btn btn-primary"><i class="fa fa-magic"></i> Converter</button>
     </form>
@@ -24,6 +23,7 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cep.min.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/select2.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.mask.js"></script>
 
@@ -35,7 +35,9 @@
 
 <script>
 
-$('#id_telefone_fixo').mask('(00) 0000-0000');
+$('#id_telefone_fixo').mask('00-0000-0000');
+$('#id_telefone_celular').mask('00-0000-0000');
+$('#id_cep').mask('00.000-000');
 
 $( ".datepicker" ).datepicker({
 	inline: true,
@@ -58,6 +60,29 @@ function mostra_lista(lista){
 }
 
 $(document).ready(function() {
+	$("#id_cep").parent().append('<br /><a id="buscar-cep" class="btn btn-small btn-primary"><i class="icon-refresh icon-white"></i> Buscar CEP</a><div id="loading" style="display:none">carregando...</div>');
+	$('#buscar-cep').click(function (e) {
+		$('#id_cep').cep({
+			load: function () {
+				$('#result').empty();
+				$('#loading').show();
+			},
+			complete: function () {
+				$('#loading').hide();
+			},
+			error: function (msg) {
+				$('#result').html(msg);
+			},
+			success: function (data) {
+				console.log(data);
+				$('#id_rua').val(data.tipoLogradouro + ' ' + data.logradouro)
+				$('#id_bairro_texto').val(data.bairro)
+				$('#id_cidade_texto').val(data.cidade)
+				$('#id_uf_texto').val(data.estado)
+			}
+		});
+
+	});
 	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
 	esconde_lista(grupo_pj);
 	esconde_lista(grupo_pf);

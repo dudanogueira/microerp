@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -21,7 +22,7 @@
 <h3>{{cliente}}</h3>
 <form method="post">
     {% csrf_token %}
-{{form.as_p}}
+{{form|bootstrap}}
 <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Criar Proposta Comercial</button>
 </form>
 

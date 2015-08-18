@@ -76,14 +76,17 @@ class PreCliente(models.Model):
     
     def propostas_perdidas(self):
         return self.propostacomercial_set.filter(status__in=("perdida", "perdida_aguardando"))
-    
-    
-    
+
     cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
     dados = models.TextField(blank=True)
     designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
+    tipo = models.CharField(u"Tipo de Pré Cliente", blank=True, null=True, max_length=10, choices=TIPO_CLIENTE_CHOICES)
+    cnpj = models.CharField(u"CNPJ", blank=True, null=True, max_length=255)
+    cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
+    numero_instalacao = models.CharField(u"Número da Instalação", blank=True, null=True, max_length=300)
+    origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # metadata
     sem_interesse = models.BooleanField(default=False)
     sem_interesse_motivo = models.TextField("Motivo do Desinteresse", blank=True,)
@@ -222,7 +225,9 @@ class Cliente(models.Model):
                 return self.enderecocliente_set.exclude(telefone=None).first().telefone
             else:
                 return None
-    
+    def data_ultima_proposta_aberta(self):
+        return self.propostacomercial_set.filter(status='aberta').first().criado
+
     uuid = UUIDField()
     ativo = models.BooleanField(default=True)
     id_referencia = models.IntegerField(blank=True, null=True)
@@ -276,7 +281,11 @@ class EnderecoCliente(models.Model):
     # telefone
     telefone = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX", verbose_name="Telefone Associado")
     # endereço
-    bairro = models.ForeignKey("Bairro")
+    bairro = models.ForeignKey("Bairro", blank=True, null=True)
+    bairro_texto = models.CharField("Bairro", max_length=100,  blank=True, null=True)
+    cidade_texto = models.CharField("Cidade", max_length=100,  blank=True, null=True)
+    uf_texto = models.CharField("Estado", max_length=100,  blank=True, null=True, choices=STATE_CHOICES)
+
     cep = models.CharField(blank=True, max_length=100, verbose_name=u"CEP")
     rua = models.CharField(blank=True, max_length=500, verbose_name=u"Rua")
     numero = models.CharField(blank=True, max_length=100, verbose_name=u"Número")

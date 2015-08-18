@@ -2,12 +2,14 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load phonenumber_br %}
+{% load bootstrap %}
+{% load l10n %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
 
-<div class="row-fluid">
+<div class="row">
 	
 	<div class="col-md-6">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Ficha do Cliente</h1>
@@ -21,15 +23,15 @@
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes-gerais" data-toggle="tab"><i class="fa fa-info"></i> Informações</a></li>
 
-    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="badge badge-warning">{{cliente.propostas_abertas.count}}</span> <span class="badge badge-success">{{cliente.propostas_convertidas.count}}</span> <span class="badge badge-important">{{cliente.propostas_perdidas.count}}</span>
-	<span class="badge badge-default">{{cliente.propostas_expiradas.count}}</span>
+    <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="label label-warning">{{cliente.propostas_abertas.count}}</span> <span class="label label-success">{{cliente.propostas_convertidas.count}}</span> <span class="label label-danger">{{cliente.propostas_perdidas.count}}</span>
+	<span class="label label-default">{{cliente.propostas_expiradas.count}}</span>
 	</a></li>
 	
-	<li class=""><a href="#requisicao-de-proposta" data-toggle="tab">Requisições <span class="badge badge-important">{{cliente.requisicao_proposta_abertas.count}}</span> <span class="badge badge-success">{{cliente.requisicao_proposta_atendidas.count}}</span></a></li>
+	<li class=""><a href="#requisicao-de-proposta" data-toggle="tab">Requisições <span class="label label-danger">{{cliente.requisicao_proposta_abertas.count}}</span> <span class="label label-success">{{cliente.requisicao_proposta_atendidas.count}}</span></a></li>
 
 </ul>
 
-<div class="row-fluid" id="sub-menu-ficha-cliente">
+<div class="row" id="sub-menu-ficha-cliente">
 	
 	<div class="col-md-4">
 		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar </a>
@@ -63,7 +65,7 @@
 	<div class="tab-pane fade in active" id="informacoes-gerais">
 		<div class="row-fluid">
 	
-			<div class="span6">
+			<div class="col-md-6">
 		
 				<h4>Geral</h4>
 				<div class="well well-small">
@@ -90,7 +92,7 @@
 		
 			</div>
 	
-			<div class="span6">
+			<div class="col-md-6">
 				<h4>Contatos</h4>
 				<div class="well well-small">
 					<strong>Contato</strong>: {{cliente.contato}}<br />
@@ -105,7 +107,7 @@
 
 		<h4>Endereços</h4>
 		<!-- Button trigger modal -->
-		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalAdicionarEndereco">
+		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalAdicionarEndereco" id="botao-adicionar-endereco">
 		  <i class="fa fa-plus"></i> Adicionar Endereço
 		</button>
 
@@ -120,7 +122,7 @@
 		      <div class="modal-body">
 				  <form method="POST" id="form-adicionar-endereco">
 					{% csrf_token %}
-				  	{{form_adicionar_endereco.as_p}}
+				  	{{form_adicionar_endereco|bootstrap}}
 				  </form>
 		      </div>
 		      <div class="modal-footer">
@@ -137,7 +139,7 @@
 			{% for endereco in cliente.enderecocliente_set.all %}
 				<div class="well well-small {% if endereco.principal %}alert alert-success{%endif%}">
 			<strong>#{{endereco.id}}</strong>
-		{% if endereco.principal %}<span class="badge badge-info"><i class="fa fa-check fa-1x"></i> Principal</span>{%endif%} {{endereco.rua}}, {{endereco.numero}}, {{endereco.bairro}} - {{endereco.complemento}} - {{endereco.cep}}
+		{% if endereco.principal %}<span class="badge badge-info"><i class="fa fa-check fa-1x"></i> Principal</span>{%endif%} {{endereco.rua}}, {{endereco.numero}}, {{endereco.bairro_texto}}, {{endereco.cidade_texto}} - {{endereco.uf_texto}}  - {{endereco.complemento}} - CEP: {{endereco.cep}}
 				</div>
 			{% endfor %}
 		</div>
@@ -145,12 +147,13 @@
 	</div>
 
 	<div class="tab-pane fade in" id="propostas">
+		{% with cliente as cliente %}
 		{% if cliente.propostas_abertas.count %}
-		<h4 class="alert">Propostas Abertas: {{cliente.propostas_abertas.count}}</h4>
+		<h4 class="alert alert-warning">Propostas Abertas: {{cliente.propostas_abertas.count}}</h4>
 		<table class="table table-condensed table.stripped">
 			<thread>
-					<tr>
-						<th class="alert">ID</th>
+					<tr class="alert alert-default">
+						<th>ID</th>
 						<th>Expiração</th>
 						<th>Valor</th>
 						<th>Probabilidade</th>
@@ -160,32 +163,32 @@
 			</thead>
 			{% for proposta in cliente.propostas_abertas %}
 			<tr>
-				<td class="alert"><h6>#{{proposta.id}}</h6></td>
-				<td><span class="label {% if proposta.expirada %}label-important{% else %}label-success{% endif %}"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+				<td class="alert alert-warning"><h6>#{{proposta.id}}</h6></td>
+				<td><span class="label label-danger"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
 				<td>
-					<div class="progress progress-striped active" style="width:100%px;">
-						<div class="bar" style="width: {{proposta.probabilidade}}%;">
-							<strong>{{proposta.probabilidade}}%</strong>
-						</div>
+					<div class="progress">
+					  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="{{proposta.probabilidade}}" aria-valuemin="0" aria-valuemax="100" style="width: {{proposta.probabilidade}}%">
+					    <span class="">{{proposta.probabilidade}}%</span>
+					  </div>
 					</div>
 				</td>
 				<td>
 					{% if proposta.ultimo_followup %}
 					<a href="#modal-follow-up-exibir"
-						role="button" 
+						role="button"
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
+
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
+							<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='label label-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
-						class="btn popover_item carregar_follow_ups_modal"
-						data-probabilidade="{{proposta.probabilidade}}"
+						class="btn btn-default popover_item carregar_follow_ups_modal"
 						data-toggle="popover"
 						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
 						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
@@ -193,103 +196,101 @@
 						{{proposta.followupdepropostacomercial_set.count}}
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
+
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
-					
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" data-probabilidade="{{proposta.probabilidade}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				</td>
-				<td>
-					<div class="btn-group">
-								
-						{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
-						{# MENU DO GERENTE#}
-								
-						
-										<div class="btn-group">
-				        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success tooltip-items"
-						data-placement="top" data-toggle="tooltip" title="Converter Proposta em Contrato"
-						><i class="fa fa-thumbs-up"></i></a>
+						<td>
+							<div class="btn-group">
 
-				        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger tooltip-items"
-						data-placement="top" data-toggle="tooltip" title="Proposta Perdida" ><i class="fa fa-thumbs-down"></i></a>
+								{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
+								{# MENU DO GERENTE#}
 
-				        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning tooltip-items"
-						data-placement="top" data-toggle="tooltip" title="Composição de Preço"
-						><i class="fa fa-dollar"></i></a>
-				        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn tooltip-items"
-						data-placement="top" data-toggle="tooltip" title="Configurar Impressão"
-						><i class="fa fa-print"></i></a>
-									</div>
-						
-						{% else %}
-								
-						{% endif %}
-								
+				   							<div class="btn-group">
+				   	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success tooltip-items"
+				   			data-placement="top" data-toggle="tooltip" title="Converter Proposta em Contrato"
+				   			><i class="fa fa-thumbs-up"></i></a>
 
-								
-					</div>
+				   	        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger tooltip-items"
+				   			data-placement="top" data-toggle="tooltip" title="Proposta Perdida" ><i class="fa fa-thumbs-down"></i></a>
+
+				   	        <a href="{% url "comercial:editar_proposta" proposta.id %}" class="btn btn-warning tooltip-items"
+				   			data-placement="top" data-toggle="tooltip" title="Composição de Preço"
+				   			><i class="fa fa-dollar"></i></a>
+				   	        <a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn btn-default tooltip-items"
+				   			data-placement="top" data-toggle="tooltip" title="Configurar Impressão"
+				   			><i class="fa fa-print"></i></a>
+				   						</div>
+								{% else %}
+
+								{% endif %}
+
+
+							</div>
+
+
+
 				</td>
 			</tr>
    		 	{% empty %}
 			{% endfor %}
 		</table>
 		{% endif %}
-		
+
 		{% if cliente.propostas_expiradas.count %}
 		<h4 class="well well-small">Propostas Expiradas: {{cliente.propostas_expiradas.count}}</h4>
 		<table class="table table-condensed table.stripped">
 			<thread>
 					<tr>
 						<th class="well well-small">ID</th>
-						<th>Expirado em</th>
+						<th>Expiração</th>
 						<th>Valor</th>
 						<th>Probabilidade</th>
 						<th>Follow Up</th>
-						<th>Descrição</th>
 						<th>Ações</th>
 					</tr>
 			</thead>
 			{% for proposta in cliente.propostas_expiradas %}
 			<tr>
 				<td class="well well-small"><h6>#{{proposta.id}}</h6></td>
-				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
-        <small>{{proposta.data_expiracao|timesince}} atrás</small></td>
+				<td><span class="label label-danger"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+        <small>{{proposta.data_expiracao|timesince}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
 				<td>
-					<div class="progress progress-striped active" style="width:100%px;">
-						<div class="bar" style="width: {{proposta.probabilidade}}%;">
-							<strong>{{proposta.probabilidade}}%</strong>
+					<div class="progress">
+						<div style="width: 50%" aria-valuemax="100" aria-valuemin="0" aria-valuenow="50" role="progressbar" class="progress-bar progress-bar-striped active">
+							<span class="">50%</span>
 						</div>
 					</div>
 				</td>
 				<td>
 					{% if proposta.ultimo_followup %}
-					<a href="#modal-follow-up-exibir"
-						role="button" 
+					<a class="btn btn-default popover_item carregar_follow_ups_modal" href="#modal-follow-up-exibir"
+						role="button"
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
+
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
+							<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='label label-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
-						{% endfor %}
-						"
-						class="btn popover_item carregar_follow_ups_modal"
+						{% endfor %}"
+
 						data-toggle="popover"
 						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
 						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
 						">
 						{{proposta.followupdepropostacomercial_set.count}}
 					</a> <i class="fa fa-exchange"></i>
+
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
-					
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+
 				</td>
-				<td>{{proposta.observacoes}}</td>
-						<td>
-							
-								
+				<td>
+
 								{% if request.user.perfilacessocomercial.gerente %}
 								{# MENU DO GERENTE#}
 									<div class="btn-group">
@@ -297,15 +298,14 @@
 
 							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 
-									
+
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
-									
-									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
-									
+
+									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn btn-default"><i class="fa fa-print"></i></a>
 								</div>
 								{% else %}
 								<small><i>solicite ao gerente</i></small>
-								{% endif %}								
+								{% endif %}
 
 				</td>
 			</tr>
@@ -313,7 +313,7 @@
 			{% endfor %}
 		</table>
 		{% endif %}
-		
+
 		{% if cliente.propostas_convertidas.count %}
 		<h4 class="alert alert-success">Propostas Convertidas {{cliente.propostas_convertidas.count}}</h4>
 		<ul>
@@ -322,7 +322,7 @@
 		{% endfor %}
 		</ul>
 		{% endif %}
-		
+
 		{% if cliente.propostas_perdidas.count %}
 		<h4 class="alert alert-danger">Propostas Perdidas: {{cliente.propostas_perdidas.count}}</h4>
 		<table class="table table-condensed table.stripped">
@@ -333,13 +333,12 @@
 						<th>Valor</th>
 						<th>Probabilidade</th>
 						<th>Follow Up</th>
-						<th>Descrição</th>
 					</tr>
 			</thead>
 			{% for proposta in cliente.propostas_perdidas %}
 			<tr>
 				<td class="alert alert-danger"><h6>#{{proposta.id}}</h6></td>
-				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
+				<td><span class="label label-danger"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
 				<td>
@@ -352,13 +351,13 @@
 				<td>
 					{% if proposta.ultimo_followup %}
 					<a href="#modal-follow-up-exibir"
-						role="button" 
+						role="button"
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
+							<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='label label-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -369,20 +368,19 @@
 						">
 						 <i class="fa fa-exchange"></i> {{proposta.followupdepropostacomercial_set.count}}
 					</a>
-						{%endif %}
-					
-											<a data-placement="top" data-toggle="tooltip" title="Reabrir Proposta" class="btn btn-warning tooltip-items" href="{% url "comercial:proposta_comercial_reabrir" proposta.id %}?next={{ request.get_full_path|urlencode }}#tab_propostas"><i class="fa fa-unlock-alt"></i></a>
-											<a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}">Ver Proposta <i class="fa fa-arrow-right"></i></a>
-					
-					
+					{%endif %}
+
+
+						<a data-placement="top" data-toggle="tooltip" title="Reabrir Proposta" class="btn btn-warning tooltip-items" href="{% url "comercial:proposta_comercial_reabrir" proposta.id %}?next={{ request.get_full_path|urlencode }}#tab_propostas"><i class="fa fa-unlock-alt"></i></a> <a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}">Ver Proposta <i class="fa fa-arrow-right"></i></a>
 
 				</td>
-				<td>{{proposta.observacoes}}</td>
 			</tr>
    		 	{% empty %}
 			{% endfor %}
 		</table>
 		{% endif %}
+
+		{% endwith %}
 		
 	</div>
 
@@ -474,16 +472,18 @@
 </div>
 
 <!-- Modal Adiciona FollowUp -->
-<div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Adicionar Follow Up</h3>
-  </div>
-  <div class="modal-body">
-		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
-		<form method="POST" id="form-adicionar-follow-up">
+
+<div id="modal-follow-up-add" class="modal fade ">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Adicionar Follow Up</h4>
+      </div>
+      <div class="modal-body">
+        <p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+		<form method="POST" id="form-adicionar-follow-up" action="">
 			{% csrf_token %}
-			
 			{{form_adicionar_follow_up.proposta}}
 			<table>
 				<tr>
@@ -492,22 +492,19 @@
 						{{form_adicionar_follow_up.texto}}
 						{{form_adicionar_follow_up.texto.errors}}
 					</td>
-					
 					<td>
-						{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
-						
 						{{form_adicionar_follow_up.probabilidade.label}}
 						{{form_adicionar_follow_up.probabilidade}}
 						{{form_adicionar_follow_up.probabilidade.errors}}
 						<br />
 						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
 						{{form_adicionar_follow_up.reagenda_data_expiracao}}
-						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}
 						<br />
 						<div id="data-expiracao-modal-container">
 						{{form_adicionar_follow_up.data_expiracao.label}}
 						{{form_adicionar_follow_up.data_expiracao}}
-						{{form_adicionar_follow_up.data_expiracao.errors}}						
+						{{form_adicionar_follow_up.data_expiracao.errors}}
 						</div>
 						<br />
 						{{form_adicionar_follow_up.visita.label}}
@@ -519,43 +516,46 @@
 						{{form_adicionar_follow_up.visita_por}}
 						{{form_adicionar_follow_up.visita_por.errors}}
 						</div>
-										
-						
-						{% else %}
-						<input type="hidden" name="somente-texto" value="sim">
-						
-						{% endif %}
-						</div>
 					</td>
 				</tr>
 			</table>
 		</form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-    <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
-  </div>
-</div>
+      </div>
+      <div class="modal-footer">
+		<button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    	<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 
 <!-- Modal Exibe FollowUps -->
-<div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="ModalExibirFollowUpsLabel"></h3>
-  </div>
-  <div class="modal-body" id="ModalExibirFollowUpsBody">
-	  
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-  </div>
-</div>
+<div id="modal-follow-up-exibir" class="modal fade ">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="ModalExibirFollowUpsLabel">Modal title</h4>
+      </div>
+      <div class="modal-body" id="ModalExibirFollowUpsBody">
+        <p>One fine body&hellip;</p>
+      </div>
+      <div class="modal-footer">
+		<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
 
 
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cep.min.js"></script>
 <link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
 <script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.mask.js"></script>
@@ -586,13 +586,41 @@ $(document).ready(function() {
 	
 	{% if form_adicionar_endereco.errors %}
 		$('#ModalAdicionarEndereco').modal('show');
-	{% endif %}	
-	
-	
+	{% endif %}
+
+
 	$('.popover_item').popover({
-			trigger: "hover",
-			placement: 'top'
+		trigger: "hover",
+		placement: 'top'
+	});
+
+
+});
+
+$("#ModalAdicionarEndereco").on("shown.bs.modal", function () {
+		$("#id_cep").parent().append('<br /><a id="buscar-cep" class="btn btn-small btn-primary"><i class="icon-refresh icon-white"></i> Buscar CEP</a><div id="loading" style="display:none">carregando...</div>');
+	$('#buscar-cep').click(function (e) {
+		$('#id_cep').cep({
+			load: function () {
+				$('#result').empty();
+				$('#loading').show();
+			},
+			complete: function () {
+				$('#loading').hide();
+			},
+			error: function (msg) {
+				$('#result').html(msg);
+			},
+			success: function (data) {
+				console.log(data);
+				$('#id_rua').val(data.tipoLogradouro + ' ' + data.logradouro)
+				$('#id_bairro_texto').val(data.bairro)
+				$('#id_cidade_texto').val(data.cidade)
+				$('#id_uf_texto').val(data.estado)
+			}
 		});
+
+	});
 });
 
 
@@ -656,6 +684,7 @@ $("#id_visita").on("change", function(e){
 	else
 	    $("#visita-por-modal-container").hide();
 })
+
 
 
 </script>

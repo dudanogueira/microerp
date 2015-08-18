@@ -1,7 +1,8 @@
->{% extends "frontend/frontend-base.html" %}
+{% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load bootstrap %}
+{% load humanize %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -14,7 +15,7 @@
 	<div class="col-md-6">
 		{% if request.user.perfilacessocomercial.gerente %}
 		<h4>Como Gerente</h4>
-		<span class="label label-info">Valor Mínimo: R$ {{proposta.consolidado|floatformat:2}}</span>
+		<span class="label label-info">Valor Mínimo: R$ {{proposta.consolidado|intcomma}}</span>
 		Lucro {{proposta.lucro}}%, Impostos: {{proposta.impostos}}%, Administrativo: {{proposta.administrativo}}%</small>
 		{% endif %}
 	</div>
@@ -24,7 +25,7 @@
 	
 	<div class="col-md-6">
 		
-		<h3>#{{proposta.id}}</h3> 			{% if proposta.cliente %}
+		<h3>#{{proposta.id|intcomma}}</h3> 			{% if proposta.cliente %}
 
 				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
 			{% else %}
@@ -212,7 +213,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
-        <button type="submit" class="btn btn-primary" form="form_adicionar_orcamento" name="adicionar-orcamento-btn" value="adicionar">Adicionar Orçamento</button>
+        <button type="submit" class="btn btn-primary" form="form_adicionar_orcamento" name="adicionar-orcamento-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Orçamento</button>
       </div>
     </div><!-- /.modal-content -->
   </div><!-- /.modal-dialog -->

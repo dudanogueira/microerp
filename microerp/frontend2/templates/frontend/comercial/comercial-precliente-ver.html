@@ -2,6 +2,8 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load phonenumber_br %}
+{% load humanize %}
+{% load l10n %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -134,7 +136,7 @@
 					{%endif %}
 					
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" data-probabilidade="{{proposta.probabilidade}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				</td>
 						<td>
 							<div class="btn-group">
@@ -298,7 +300,7 @@
 							<hr />
 						{% endfor %}
 						"
-						class="btn popover_item carregar_follow_ups_modal"
+						class="btn btn-default popover_item carregar_follow_ups_modal"
 						data-toggle="popover"
 						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
 						<p class='alert alert-info'>{{proposta.ultimo_followup.data|date:"SHORT_DATETIME_FORMAT"}} </p>
@@ -332,89 +334,81 @@
 </div>
 
 <!-- Modal Adiciona FollowUp -->
-<div class="modal fade" id="modal-follow-up-add" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="myModalLabel">Adicionar Follow-up</h4>
-			</div>
-		    <div class="modal-body">
-		  		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
-		  		<form method="POST" id="form-adicionar-follow-up">
-		  			{% csrf_token %}
-			
-		  			{{form_adicionar_follow_up.proposta}}
-		  			<table>
-		  				<tr>
-		  					<td>
-		  						{{form_adicionar_follow_up.texto.label}}
-		  						{{form_adicionar_follow_up.texto}}
-		  						{{form_adicionar_follow_up.texto.errors}}
-		  					</td>
-					
-		  					<td>
-		  						{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
-						
-		  						{{form_adicionar_follow_up.probabilidade.label}}
-		  						{{form_adicionar_follow_up.probabilidade}}
-		  						{{form_adicionar_follow_up.probabilidade.errors}}
-		  						<br />
-		  						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
-		  						{{form_adicionar_follow_up.reagenda_data_expiracao}}
-		  						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
-		  						<br />
-		  						<div id="data-expiracao-modal-container">
-		  						{{form_adicionar_follow_up.data_expiracao.label}}
-		  						{{form_adicionar_follow_up.data_expiracao}}
-		  						{{form_adicionar_follow_up.data_expiracao.errors}}						
-		  						</div>
-		  						<br />
-		  						{{form_adicionar_follow_up.visita.label}}
-		  						{{form_adicionar_follow_up.visita}}
-		  						{{form_adicionar_follow_up.visita.errors}}
-		  						<div id="visita-por-modal-container">
-		  						<br />
-		  						{{form_adicionar_follow_up.visita_por.label}}
-		  						{{form_adicionar_follow_up.visita_por}}
-		  						{{form_adicionar_follow_up.visita_por.errors}}
-		  						</div>
 
-		  						{% else %}
-		  						<input type="hidden" name="somente-texto" value="sim">
-						
-		  						{% endif %}
-		  						</div>
-		  					</td>
-		  				</tr>
-		  			</table>
-		  		</form>
-		    </div>
-			<div class="modal-footer">
-				<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-				<button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
-			</div>
-		</div>
-	</div>
-</div>  
+<div id="modal-follow-up-add" class="modal fade ">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Adicionar Follow Up</h4>
+      </div>
+      <div class="modal-body">
+        <p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+		<form method="POST" id="form-adicionar-follow-up" action="">
+			{% csrf_token %}
+			{{form_adicionar_follow_up.proposta}}
+			<table>
+				<tr>
+					<td>
+						{{form_adicionar_follow_up.texto.label}}
+						{{form_adicionar_follow_up.texto}}
+						{{form_adicionar_follow_up.texto.errors}}
+					</td>
+					<td>
+						{{form_adicionar_follow_up.probabilidade.label}}
+						{{form_adicionar_follow_up.probabilidade}}
+						{{form_adicionar_follow_up.probabilidade.errors}}
+						<br />
+						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao}}
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}
+						<br />
+						<div id="data-expiracao-modal-container">
+						{{form_adicionar_follow_up.data_expiracao.label}}
+						{{form_adicionar_follow_up.data_expiracao}}
+						{{form_adicionar_follow_up.data_expiracao.errors}}
+						</div>
+						<br />
+						{{form_adicionar_follow_up.visita.label}}
+						{{form_adicionar_follow_up.visita}}
+						{{form_adicionar_follow_up.visita.errors}}
+						<div id="visita-por-modal-container">
+						<br />
+						{{form_adicionar_follow_up.visita_por.label}}
+						{{form_adicionar_follow_up.visita_por}}
+						{{form_adicionar_follow_up.visita_por.errors}}
+						</div>
+					</td>
+				</tr>
+			</table>
+		</form>
+      </div>
+      <div class="modal-footer">
+		<button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    	<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 
 <!-- Modal Exibe FollowUps -->
-<div class="modal fade" id="modal-follow-up-exibir" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
-	<div class="modal-dialog">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				<h4 class="modal-title" id="ModalExibirFollowUpsLabel">Exibindo Últimos Follow Ups</h4>
-			</div>
-		    <div class="modal-body" id="ModalExibirFollowUpsBody">
-		    </div>
-			<div class="modal-footer">
-				<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-			</div>
-		</div>
-	</div>
-</div>  
+<div id="modal-follow-up-exibir" class="modal fade ">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="ModalExibirFollowUpsLabel">Modal title</h4>
+      </div>
+      <div class="modal-body" id="ModalExibirFollowUpsBody">
+        <p>One fine body&hellip;</p>
+      </div>
+      <div class="modal-footer">
+		<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
 
 
 

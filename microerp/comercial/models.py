@@ -19,7 +19,7 @@ __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '2.0.0'
 
 from django.utils.deconstruct import deconstructible
-
+import uuid
 import datetime, os, locale, decimal
 
 from utils import extenso_com_centavos
@@ -29,6 +29,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 
 from django.db.models import Sum
+from localflavor.br.br_states import STATE_CHOICES
 
 from cadastro.models import Cliente
 from rh.models import Funcionario
@@ -43,6 +44,7 @@ from icalendar import Calendar, Event
 
 from estoque.models import Produto
 
+from localflavor.br.forms import BRCPFField, BRCNPJField, BRPhoneNumberField
 
 from localflavor.br.br_states import STATE_CHOICES
 
@@ -96,8 +98,11 @@ class PropostaComercial(models.Model):
             else:
                 proposto = 'precliente'
                 obj = self.precliente
-            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
-            valor_formatado = locale.currency(self.valor_proposto, grouping=True)
+            try:
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                valor_formatado = locale.currency(self.valor_proposto, grouping=True)
+            except:
+                valor_formatado = self.valor_proposto
             
             return u"Proposta #%s para %s %s de %s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, valor_formatado, self.probabilidade, self.criado_por)
     
@@ -315,37 +320,74 @@ class PerfilAcessoComercial(models.Model):
     class Meta:
         verbose_name = u"Perfil de Acesso ao Comercial"
         verbose_name_plural = u"Perfis de Acesso ao Comercial"
-        
-    
-    gerente = models.BooleanField(default=False)
+    super_gerente = models.BooleanField("Super Gerente", default=False)
+    gerente = models.BooleanField("Gerente da Empresa", default=False)
     analista = models.BooleanField(default=True)
     telefone_celular = models.CharField(blank=True, max_length=100)
     telefone_fixo = models.CharField(blank=True, max_length=100)
     imagem_assinatura = models.ImageField(upload_to=assinatura_local_imagem, blank=True, null=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
+    empresa = models.ForeignKey('EmpresaComercial', blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
+
+# EMPRESA PRINCIPAL E CREDENCIADA
+
+@deconstructible
+class LogoEmpresaDir(object):
+
+    def __call__(self, instance, filename):
+        return os.path.join(
+            'empresas/', str(instance.uuid), 'logo/', filename
+          )
+logo_empresa_local_imagem = LogoEmpresaDir()
+
+class EmpresaComercial(models.Model):
+
+    def __unicode__(self):
+        return self.nome_reduzido
+
+    logo = models.ImageField(upload_to=logo_empresa_local_imagem, blank=True, null=True)
+    uuid = models.UUIDField(default=uuid.uuid4)
+    nome = models.CharField(max_length=300)
+    nome_reduzido = models.CharField(max_length=300)
+    principal = models.BooleanField()
+    cnpj = models.CharField(max_length=300)
+    logradouro = models.CharField(max_length=300)
+    numero = models.IntegerField()
+    complemento = models.CharField(max_length=300, blank=True, null=True)
+    cep = models.CharField(max_length=300)
+    bairro = models.CharField(max_length=300)
+    cidade = models.CharField(max_length=300)
+    estado = models.CharField("Estado", max_length=100,  blank=True, null=True, choices=STATE_CHOICES)
+
+
 
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):
     '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
     
     def __unicode__(self):
+        try:
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            custo_total = locale.currency(self.custo_total, grouping=True)
+        except:
+            custo_total = self.custo_total
         if self.modelo:
             if self.promocao:
-                return u"Promoção Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
+                return u"Promoção Modelo: %s - R$ %s" % (self.descricao, custo_total)
             elif self.tabelado:
-                return u"Tabelado Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
+                return u"Tabelado Modelo: %s - R$ %s" % (self.descricao, custo_total)
             else:
-                return u"Modelo: %s - R$ %s" % (self.descricao, self.custo_total)
+                return u"Modelo: %s - R$ %s" % (self.descricao, custo_total)
         else:
             if self.promocao:
-                return u"Promoção: %s - R$ %s" % (self.descricao, self.custo_total)
+                return u"Promoção: %s - R$ %s" % (self.descricao, custo_total)
             elif self.tabelado:
-                return u"Tabelado: %s - R$ %s" % (self.descricao, self.custo_total)
+                return u"Tabelado: %s - R$ %s" % (self.descricao, custo_total)
             else:
-                return u"Avulso: %s - R$ %s" % (self.descricao, self.custo_total)
+                return u"Avulso: %s - R$ %s" % (self.descricao, custo_total)
 
     def clean(self):
         if self.promocao:

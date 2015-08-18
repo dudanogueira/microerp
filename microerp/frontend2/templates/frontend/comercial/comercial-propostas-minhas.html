@@ -1,6 +1,9 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load humanize %}
+{% load l10n %}
+{% load thumbnail %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -40,8 +43,6 @@
 		</div>
 		{% endif %}
 
-		
-		
 		{% regroup propostas_abertas_validas by dono as propostas_abertas_validas_por_cliente %}
 		
 		{% for proposta_list in propostas_abertas_validas_por_cliente %}
@@ -50,9 +51,22 @@
 			{% if proposta_list.list.0.cliente %}
 
 				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta_list.grouper %}
+
+				{% if request.user.perfilacessocomercial %}
+					{% thumbnail proposta_list.grouper.designado.perfilacessocomercial.empresa.logo "100x100" crop="center" format="PNG" as im %}
+    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+					{% endthumbnail %}
+				{% endif %}
+
 			{% else %}
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
+				{% if request.user.perfilacessocomercial %}
+					{% thumbnail proposta_list.list.0.precliente.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
+    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+					{% endthumbnail %}
+				{% endif %}
 			{% endif %}
+
 
 			</p>
 		
@@ -69,7 +83,7 @@
 			</thead>
 			{% for proposta in proposta_list.list %}
 			<tr class="propostas-validas {% if proposta.designado %}propostas-validas-{{proposta.designado.id}}{% else %}propostas-validas-None{% endif %}">
-				<td class="alert alert-success"><h6>#{{proposta.id}}</h6></td>
+				<td class="alert alert-success"><h6>#{{proposta.id|unlocalize}}</h6></td>
 				<td>
 					{% if proposta.expira_hoje %}
 							<span class="badge badge-important">Hoje!</span>
@@ -78,7 +92,7 @@
 							<small>{{proposta.data_expiracao|timeuntil}}</small>
 					{% endif %}
 				</td>
-				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
+				<td>R$ {{proposta.valor_proposto|intcomma}}</td>
 				<td>
 					<div class="progress">
 					  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="{{proposta.probabilidade}}" aria-valuemin="0" aria-valuemax="100" style="width: {{proposta.probabilidade}}%">
@@ -97,8 +111,8 @@
 						data-follow-ups="
 						
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
-							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
+							<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %} <small class='label label-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -114,7 +128,7 @@
 					<!-- Button to trigger modal de follow up -->
 					
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-default tn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
 				</td>
 				<td>
@@ -140,7 +154,7 @@
 		</table>
 		</div>
 		{% endfor %}
-	</div>
+		</div>
 
 	<div class="tab-pane fade in" id="propostas-abertas-expiradas">
 
@@ -192,7 +206,7 @@
 			<tbody>
 				{% for proposta in proposta_list.list %}
 				<tr class="propostas-expiradas {% if proposta.designado %}propostas-expiradas-{{proposta.designado.id}}{% else %}propostas-expiradas-None{% endif %}">
-				<td class="alert alert-danger"><h6>#{{proposta.id}}</h6></td>
+				<td class="alert alert-danger"><h6>#{{proposta.id|unlocalize}}</h6></td>
 				<td><span class="label label-important"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span><Br />
         <small>{{proposta.data_expiracao|timesince}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
@@ -208,12 +222,12 @@
 					<a href="#modal-follow-up-exibir"
 						role="button" 
 						data-toggle="modal"
-						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
+						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id|unlocalize}}"
 						data-follow-ups="
 						
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
 							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
+							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %} <small class='badge badge-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
 							<hr />
 						{% endfor %}
 						"
@@ -229,7 +243,7 @@
 
 
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" data-probabilidade="{{proposta.probabilidade}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" data-nova-data-reagendamento={{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}} data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Expira: {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				</td>
 				<td>
 					<div class="btn-group">
@@ -274,13 +288,16 @@
 
 
 <!-- Modal Adiciona FollowUp -->
-<div id="modal-follow-up-add" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Adicionar Follow Up</h3>
-  </div>
-  <div class="modal-body">
-		<p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
+
+<div id="modal-follow-up-add" class="modal fade ">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Adicionar Follow Up</h4>
+      </div>
+      <div class="modal-body">
+        <p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
 		<form method="POST" id="form-adicionar-follow-up" action="">
 			{% csrf_token %}
 			{{form_adicionar_follow_up.proposta}}
@@ -298,12 +315,12 @@
 						<br />
 						{{form_adicionar_follow_up.reagenda_data_expiracao.label}}
 						{{form_adicionar_follow_up.reagenda_data_expiracao}}
-						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}						
+						{{form_adicionar_follow_up.reagenda_data_expiracao.errors}}
 						<br />
 						<div id="data-expiracao-modal-container">
 						{{form_adicionar_follow_up.data_expiracao.label}}
 						{{form_adicionar_follow_up.data_expiracao}}
-						{{form_adicionar_follow_up.data_expiracao.errors}}						
+						{{form_adicionar_follow_up.data_expiracao.errors}}
 						</div>
 						<br />
 						{{form_adicionar_follow_up.visita.label}}
@@ -319,25 +336,35 @@
 				</tr>
 			</table>
 		</form>
-  </div>
-  <div class="modal-footer">
-      <button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
-    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-  </div>
-</div>
+      </div>
+      <div class="modal-footer">
+		<button class="btn btn-primary" form="form-adicionar-follow-up" id="btn-adicionar-follow-up"><i class="fa fa-plus"></i> Adicionar Follow Up</button>
+    	<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 
 <!-- Modal Exibe FollowUps -->
-<div id="modal-follow-up-exibir" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="ModalExibirFollowUpsLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="ModalExibirFollowUpsLabel"></h3>
-  </div>
-  <div class="modal-body" id="ModalExibirFollowUpsBody">
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-  </div>
-</div>
+<div id="modal-follow-up-exibir" class="modal fade ">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="ModalExibirFollowUpsLabel">Modal title</h4>
+      </div>
+      <div class="modal-body" id="ModalExibirFollowUpsBody">
+        <p>One fine body&hellip;</p>
+      </div>
+      <div class="modal-footer">
+		<button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
 
 {% endblock %}
 

@@ -39,11 +39,10 @@ class AdicionarEnderecoClienteForm(forms.ModelForm):
         if self.precliente:
             self.fields['cliente'].widget = forms.HiddenInput()
         self.fields['principal'].widget = forms.HiddenInput()
-        self.fields['bairro'].widget.attrs['class'] = 'select2'
         
     class Meta:
         model = EnderecoCliente
-        fields = 'principal', 'cliente', 'telefone', 'bairro', 'cep', 'rua', 'numero', 'complemento'
+        fields = 'principal', 'cliente', 'telefone', 'cep', 'rua', 'numero', 'bairro_texto', 'cidade_texto', 'uf_texto', 'complemento'
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
     

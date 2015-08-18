@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load humanize %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -31,7 +32,7 @@
 	<div class="col-md-9">
 		<h4>Últimos Follow Ups</h4>
 			{% for followup in ultimos_followups %}
-				<p class="well well-small"><span class="label label-success"> #{{followup.proposta.id}}</span>  <strong>R${{followup.proposta.valor_proposto}}</strong>
+				<p class="well well-small"><span class="label label-success"> #{{followup.proposta.id}}</span>  <strong>R${{followup.proposta.valor_proposto|intcomma}}</strong>
 					
 					{% if followup.proposta.cliente %}
 						{% include "frontend/comercial/botao-cliente.html" with cliente=followup.proposta.cliente %}

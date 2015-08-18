@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Sum
+from localflavor.br.br_states import STATE_CHOICES
 
 from django.core.mail import EmailMessage
 
@@ -75,6 +76,7 @@ class PreClienteAdicionarForm(forms.ModelForm):
         perfil = kwargs.pop('perfil')
         super(PreClienteAdicionarForm, self).__init__(*args, **kwargs)
         self.fields['designado'].empty_label = "Nenhum"
+        self.fields['tipo'].required = True
         if sugestao:
             self.fields['nome'].initial = sugestao
         if not perfil.gerente:
@@ -83,10 +85,55 @@ class PreClienteAdicionarForm(forms.ModelForm):
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
         self.fields['designado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
         self.fields['designado'].widget.attrs['class'] = 'select2'
-        
+
+    def clean_cpf(self):
+        tipo = self.cleaned_data.get('tipo', None)
+        cpf = self.cleaned_data.get('cpf', None)
+        if tipo == 'pf' and not cpf:
+            raise ValidationError(u"Para Pré Clientes do tipo PF (Pessoa Física) é necessário informar o CPF")
+        elif tipo =='pf' and cpf:
+            try:
+                cpf = BRCPFField().clean(cpf)
+            except:
+                raise ValidationError(u"Número do CPF Inválido!")
+
+            # checa se já existe CPF no banco de dados
+            if cpf:
+                precliente = PreCliente.objects.filter(cpf=cpf)
+                if precliente:
+                    raise ValidationError(u"Já existe um cliente com este CPF: %s" % precliente[0].nome)
+        return cpf
+
+    #def clean_inscricao_estadual(self):
+    #    tipo = self.cleaned_data.get('tipo', None)
+    #    inscricao_estadual = self.cleaned_data.get('inscricao_estadual', None)
+    #    if tipo == 'pj' and not inscricao_estadual:
+    #        raise ValidationError(u'Embora Válido, não é aceito um CNPJ com %s' % '000000000000000')
+
+    def clean_cnpj(self):
+        tipo = self.cleaned_data.get('tipo', None)
+        cnpj = self.cleaned_data.get('cnpj', None)
+        if tipo == 'pj' and not cnpj:
+            raise ValidationError(u"Para Clientes do tipo PJ (Pessoa Jurídica) é necessário informar o CNPJ")
+        elif tipo == 'pj' and cnpj:
+            try:
+                cnpj = BRCNPJField().clean(cnpj)
+                if cnpj == '00000000000000':
+                    raise ValidationError(u"Número do CNPJ Inválido!")
+            except:
+                raise ValidationError(u"Número do CNPJ Inválido!")
+
+            # checa se já existe CPF no banco de dados
+            if cnpj:
+                precliente = PreCliente.objects.filter(cnpj=cnpj)
+                if precliente:
+                    raise ValidationError(u"Já existe um cliente com este CNPJ!: %s" % precliente[0].nome)
+
+        return cnpj
+
     class Meta:
         model = PreCliente
-        fields = 'nome', 'contato', 'dados', 'designado'
+        fields = 'nome', 'tipo', 'cpf', 'cnpj', 'numero_instalacao', 'contato', 'dados', 'origem', 'designado'
 
 class AdicionarPropostaForm(forms.ModelForm):
     
@@ -189,11 +236,14 @@ class AdicionarCliente(forms.ModelForm):
             self.fields['nome'].initial = precliente.nome
             self.fields['observacao'].initial = precliente.dados
         if com_endereco:
-            self.fields['bairro'] = forms.ModelChoiceField(queryset=Bairro.objects.all())
-            self.fields['bairro'].widget.attrs['class'] = 'select2'
+            #self.fields['bairro'] = forms.ModelChoiceField(queryset=Bairro.objects.all())
+            #self.fields['bairro'].widget.attrs['class'] = 'select2'
             self.fields['cep'] = forms.CharField()
             self.fields['rua'] = forms.CharField()
             self.fields['numero'] = forms.CharField()
+            self.fields['bairro_texto'] = forms.CharField()
+            self.fields['cidade_texto'] = forms.CharField()
+            self.fields['uf_texto'] = forms.ChoiceField(choices=STATE_CHOICES)
             #self.fields['cpf'] = forms.IntegerField()
             self.fields['complemento'] = forms.CharField(required=False)
             
@@ -477,8 +527,6 @@ def editar_proposta_imprimir_orcamentos_da_proposta(request, proposta_id):
     return render_to_response('frontend/comercial/comercial-editar-proposta-imprimir-orcamentos.html', locals(), context_instance=RequestContext(request),)
 
 
-
-
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_inativar_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
@@ -501,10 +549,13 @@ class LinhaRecursoLogisticoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(LinhaRecursoLogisticoForm, self).__init__(*args, **kwargs)
         self.fields['tipo'].required = True
+        self.fields['custo_total'].localize = True
+        self.fields['custo_total'].widget.is_localized = True
     
     class Meta:
         model = LinhaRecursoLogistico
         fields = 'tipo', 'custo_total', 'descricao'
+        localized_fields = 'custo_total',
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta(request, proposta_id):
@@ -937,6 +988,10 @@ def precliente_adicionar(request):
             form = form_add_precliente = PreClienteAdicionarForm(data=request.POST, sugestao=None, perfil=request.user.perfilacessocomercial)
             if form.is_valid():
                 precliente = form.save(commit=False)
+                if precliente.tipo == 'pf':
+                    precliente.cnpj = None
+                else:
+                    precliente.cpf = None
                 precliente.adicionado_por = request.user.funcionario
                 precliente.save()
                 messages.success(request, u'Pré Cliente %s adicionado com sucesso!' % precliente)
@@ -951,6 +1006,10 @@ def precliente_adicionar(request):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def precliente_converter(request, pre_cliente_id):
     precliente = get_object_or_404(PreCliente, id=pre_cliente_id)
+    if request.GET.get('proposta_referencia', None):
+        proposta_referencia = PropostaComercial.objects.get(pk=request.GET.get('proposta_referencia', None))
+    else:
+        proposta_referencia = None
     if request.POST:
         form = AdicionarCliente(request.POST, precliente=precliente, com_endereco=True)
         if form.is_valid():
@@ -968,7 +1027,10 @@ def precliente_converter(request, pre_cliente_id):
             propostas_precliente.update(precliente=None, cliente=cliente_novo)
             # salva o endereco
             cliente_novo.enderecocliente_set.create(
-                bairro=form.cleaned_data['bairro'],
+                #bairro=form.cleaned_data['bairro'],
+                bairro_texto = form.cleaned_data['bairro_texto'],
+                cidade_texto = form.cleaned_data['cidade_texto'],
+                uf_texto = form.cleaned_data['uf_texto'],
                 cep=form.cleaned_data['cep'],
                 rua=form.cleaned_data['rua'],
                 numero=form.cleaned_data['numero'],
@@ -981,7 +1043,18 @@ def precliente_converter(request, pre_cliente_id):
             else:
                 return redirect(reverse('comercial:cliente_ver', args=[cliente_novo.id]))
     else:
-        form = AdicionarCliente(precliente=precliente, com_endereco=True)
+        initial = {}
+        if proposta_referencia:
+            initial={
+                'email': proposta_referencia.email_proposto,
+                'rua': proposta_referencia.rua_do_proposto,
+                'bairro_texto': proposta_referencia.bairro_do_proposto,
+                'cep': proposta_referencia.cep_do_proposto,
+                'cidade_texto': proposta_referencia.cidade_do_proposto,
+                'uf_texto': proposta_referencia.estado_do_proposto
+            }
+
+        form = AdicionarCliente(precliente=precliente, com_endereco=True, initial=initial )
     return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -1066,9 +1139,19 @@ def propostas_comerciais_minhas(request):
             (Q(precliente__designado=None) & Q(cliente__designado=None))
             ).count()
     else:
-        propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente')
-        propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).count()
-        
+        if request.user.perfilacessocomercial.super_gerente:
+            propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('-criado', 'precliente', 'cliente')
+            propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).count()
+        else:
+            propostas_abertas_validas = PropostaComercial.objects.filter(
+                status='aberta',
+                data_expiracao__gte=datetime.date.today(),
+                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            ).order_by('-criado', 'precliente', 'cliente')
+            propostas_abertas_expiradas_count = PropostaComercial.objects.filter(
+                status='aberta', data_expiracao__lt=datetime.date.today(),
+                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            ).count()
         
     designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
     
@@ -1084,7 +1167,14 @@ def propostas_comerciais_minhas_expiradas_ajax(request):
             (Q(precliente__designado=None) & Q(cliente__designado=None))
             )
     else:
-        propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())
+        if request.user.perfilacessocomercial.super_gerente:
+            propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today())
+        else:
+            propostas_abertas_expiradas = PropostaComercial.objects.filter(
+                    status='aberta', data_expiracao__lt=datetime.date.today(),
+                    designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            )
+
 
 
     designados_propostas_expiradas = propostas_abertas_expiradas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
@@ -1628,7 +1718,7 @@ def proposta_comercial_imprimir(request, proposta_id):
     modelo_itens_nao_inclusos = getattr(settings, 'MODELOS_ITENS_NAO_INCLUSOS', None)
     
     
-    dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA')
+    dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA', {})
     form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, gerente=request.user.perfilacessocomercial.gerente)
     if request.POST:
         form_configura = ConfigurarPropostaComercialParaImpressao(request.POST, instance=proposta, gerente=request.user.perfilacessocomercial.gerente)
@@ -2296,10 +2386,14 @@ class LinhaOrcamentoMaterialModeloForm(forms.ModelForm):
         self.fields['produto'].widget.attrs['class'] = 'select2-ajax-material'
         self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
         self.fields['custo_total'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
+        self.fields['custo_total'].localize = True
+        self.fields['custo_total'].widget.is_localized = True
 
     class Meta:
         model = LinhaRecursoMaterial
         fields = 'quantidade', 'produto', 'custo_total'
+        localized_fields = 'custo_total',
+
 
 
 

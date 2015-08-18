@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -21,8 +22,8 @@
 <h3>Pré Cliente: {{precliente}}</h3>
 <form method="post">
     {% csrf_token %}
-{{form.as_p}}
-<button type="submit" class="btn btn-primary">Enviar</button>
+{{form|bootstrap}}
+<button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
 </form>
 
 {% endblock %}

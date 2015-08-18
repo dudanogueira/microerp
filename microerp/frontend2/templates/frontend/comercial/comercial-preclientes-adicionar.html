@@ -9,19 +9,65 @@
 <form method="post" class="form-horizontal">
 {% csrf_token %}
 {{form_add_precliente|bootstrap}}
-<input type="submit" class="btn btn-large btn-primary" value="Adicionar">
+<button type="submit" class="btn btn-large btn-primary" value="Adicionar"><i class="fa fa-plus"></i> Adicionar</button>
 </form>
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.mask.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
+
+var grupo_pj = ['id_cnpj',]
+var grupo_pf = ['id_cpf',]
+
+function esconde_lista(lista){
+	lista.forEach(function(entry){
+		$('label[for='+entry+'], #'+entry+'').hide();
+	});
+}
+function mostra_lista(lista){
+	lista.forEach(function(entry){
+		$('label[for='+entry+'], #'+entry+'').show();
+	})
+}
+
 $(document).ready(function() {
     $("#menu-comercial-cliente-pre-cliente, #top-menu-comercial").addClass("active");
+    $('#id_cpf').mask('000.000.000-00');
+    $('#id_cnpj').mask('00.000.000/0000-00');
+
+    esconde_lista(grupo_pj);
+    esconde_lista(grupo_pf);
+    {% if form_add_precliente.errors %}
+		checa_exibicao_por_tipo($("#id_tipo").val());
+	{% endif %}
+
 });
+
+function checa_exibicao_por_tipo(valor){
+	if (valor == "pf"){
+		esconde_lista(grupo_pj);
+		mostra_lista(grupo_pf);
+
+	}else if(valor == "pj"){
+		esconde_lista(grupo_pf);
+		mostra_lista(grupo_pj);
+
+	}else{
+		esconde_lista(grupo_pj);
+		esconde_lista(grupo_pf);
+	}
+
+}
+
+$("#id_tipo").on("change", function(){
+	checa_exibicao_por_tipo($(this).val());
+});
+
 </script>
 {% endaddtoblock %}
 {% include "frontend/comercial/comercial-menu.html" %}

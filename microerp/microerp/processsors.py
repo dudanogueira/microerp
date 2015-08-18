@@ -1,7 +1,11 @@
 
 from django.conf import settings
 def logo_empresa(request):
-    logo_empresa = getattr(settings, 'IMG_SRC_LOGO_EMPRESA', None)
+    # logo empresa muda se perfil comercial tiver empresa
+    try:
+        logo_empresa = request.user.perfilacessocomercial.empresa.logo.url
+    except:
+        logo_empresa = getattr(settings, 'IMG_SRC_LOGO_EMPRESA', None)
     ambiente_testes = getattr(settings, 'AMBIENTE_TESTES', False)
     mostra_menu_principal_lateral = getattr(settings, 'MOSTRAR_MENU_PRINCIPAL_LATERAL', True)
     rh_usa_banco_de_horas = getattr(settings, 'RH_USA_BANCO_DE_HORAS', True)

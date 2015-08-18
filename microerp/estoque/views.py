@@ -31,6 +31,7 @@ from django.core import management
 import datetime
 import operator
 import decimal
+import locale
 from django import forms
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
@@ -315,7 +316,14 @@ def ajax_consulta_produto(request):
             pk=id_produto
         )
         if mostra_preco:
-            nome_produto = "%s - %s (V: R$ %s / C: R$ %s)" % (produto.codigo,produto.nome, produto.preco_venda, produto.preco_custo)
+            try:
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                preco_venda = locale.currency(produto.preco_venda, grouping=True)
+                preco_custo = locale.currency(produto.preco_custo, grouping=True)
+            except:
+                preco_venda = produto.preco_venda
+                preco_custo = produto.preco_custo
+            nome_produto = "%s - %s (V: R$ %s / C: R$ %s)" % (produto.codigo,produto.nome, preco_venda, preco_custo)
         else:
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
         result={"text":nome_produto, "id": str(produto.id), "preco": float(produto.preco_venda)}
@@ -323,7 +331,14 @@ def ajax_consulta_produto(request):
     result = []
     for produto in produtos:
         if mostra_preco:
-            nome_produto = "%s - %s (V: R$ %s / C: R$ %s)" % (produto.codigo,produto.nome, produto.preco_venda, produto.preco_custo)
+            try:
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                preco_venda = locale.currency(produto.preco_venda, grouping=True)
+                preco_custo = locale.currency(produto.preco_custo, grouping=True)
+            except:
+                preco_venda = produto.preco_venda
+                preco_custo = produto.preco_custo
+            nome_produto = "%s - %s (V: R$ %s / C: R$ %s)" % (produto.codigo,produto.nome, preco_venda, preco_custo)
         else:
             nome_produto = "%s - %s" % (produto.codigo,produto.nome)
         

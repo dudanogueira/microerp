@@ -85,6 +85,7 @@ class PreClienteAdmin(admin.ModelAdmin):
     save_on_top = True
     list_display = 'id', 'nome', 'contato', 'dados', 'cliente_convertido'
     list_display_links = list_display
+    search_fields = 'nome', 'cpf', 'cnpj'
     date_hierarchy = "criado"
 
 class CidadeAdmin(admin.ModelAdmin):
@@ -102,6 +103,9 @@ class PerfilClienteLoginAdmin(admin.ModelAdmin):
     list_display = 'cliente', 'user'
     raw_id_fields = 'cliente',
 
+class EnderecoClienteAdmin(admin.ModelAdmin):
+    list_display = 'cliente', 'rua', 'numero', 'cidade_texto', 'bairro_texto', 'uf_texto'
+
 admin.site.register(Cliente, ClienteAdmin)
 admin.site.register(Cidade, CidadeAdmin)
 admin.site.register(Bairro, BairroAdmin)
@@ -113,3 +117,4 @@ admin.site.register(PreCliente, PreClienteAdmin)
 admin.site.register(PerfilClienteLogin, PerfilClienteLoginAdmin)
 admin.site.register(EnderecoEmpresa)
 admin.site.register(PreClienteSemInteresseOpcao)
+admin.site.register(EnderecoCliente, EnderecoClienteAdmin)

@@ -14,21 +14,21 @@
 	{{form_editar_linhas_material.management_form}}
 	{{form_editar_linhas_humano.management_form}}
 	
-<div class="row-fluid">
-	<div  class="span8">
+<div class="row row-fluid">
+	<div  class="col-md-8">
 		{{form_orcamento.as_p}}
 		{{form.errors}}
 	</div>
 		
-	<div  class="span4">
-		
-      	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar</a> 
+	<div  class="col-md-4">
+
+      	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar</a>
 		 {% if not orcamento.promocao and not orcamento.tabelado %}
  		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button>
 		{% endif %}
-		
-		 
-		
+
+
+
 	</div>
 </div>
 
@@ -41,12 +41,11 @@
 <div id="tab-content-orcamento-linhas" class="tab-content">
 
 	<div class="tab-pane fade in active" id="orcamento-linhas-material">
-		
+
 
 		{% for form in form_editar_linhas_material %}
-		<div class="row-fluid">
+		<div class="row ">
 			{{form.errors}}
-		
 			<div class="col-md-6">
 				{% if orcamento.promocao or orcamento.tabelado %}
 					{{form.instance.produto}}
@@ -55,6 +54,7 @@
 				{{form.produto}}
 				{{form.produto.errors}}
 				{% endif %}
+
 			</div>
 		
 			<div class="col-md-3">
@@ -77,7 +77,7 @@
 				<Br />
 				{% if not forloop.last or forloop.first %}
 					{% if not orcamento.promocao and not orcamento.tabelado %}
-						<span class="badge badge-info"><strong>Total:</strong>$ <span id="total-da-linha-material-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total|floatformat:2}}</span></span>
+						<span class="badge badge-info"><strong>Total:</strong> R$ <span id="total-da-linha-material-{{forloop.counter}}" class="valor_linhas">{{form.instance.custo_total}}</span></span>
 					{% endif %}
 				{% endif %}
 			</div>
@@ -97,11 +97,10 @@
 		{% endif %}
 		
 	</div>
-	
-	
+
 	<div class="tab-pane fade in" id="orcamento-linhas-mao-de-obra">
 		{% for form in form_editar_linhas_humano %}
-		<div class="row-fluid">
+		<div class="row">
 			{{form.errors}}
 
 			<div class="col-md-6">
@@ -257,7 +256,9 @@ function calcula_linha_material(id){
 				valor_total += Number($(this).html());
 			}
 		})
-		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));	
+
+		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));
+
 	}
 }
 
