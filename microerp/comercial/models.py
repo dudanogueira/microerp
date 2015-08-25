@@ -31,12 +31,12 @@ from django.core.exceptions import ValidationError
 from django.db.models import Sum
 from localflavor.br.br_states import STATE_CHOICES
 
-from cadastro.models import Cliente
+from cadastro.models import Cliente, PreCliente
 from rh.models import Funcionario
 
 import urllib2
 
-from django.db.models import signals
+from django.db.models import signals, Q
 
 from django.contrib import messages
 
@@ -73,6 +73,7 @@ CONTRATO_TIPO_CHOICES = (
 
 CONTRATO_STATUS_CHOICES = (
     ('cancelado', 'Cancelado'),
+    ('arquivado', 'Arquivado'),
     ('emanalise', 'Em Análise'),
     ('invalido', u'Inválido'),
     ('assinatura', u'Aguardando Assinatura'),
@@ -320,6 +321,67 @@ class PerfilAcessoComercial(models.Model):
     class Meta:
         verbose_name = u"Perfil de Acesso ao Comercial"
         verbose_name_plural = u"Perfis de Acesso ao Comercial"
+
+    def funcionarios_disponiveis(self):
+        '''mostra todos os funcionarios disponiveis pra este perfil
+        se super gerente, mostra todos, especificando a empresa
+        se gerente ou analista, mostra todos da mesma empresa'''
+
+        if self.super_gerente:
+            ids_possiveis = self._meta.model.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        else:
+            ids_possiveis = self._meta.model.objects.filter(empresa=self.empresa).exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        return Funcionario.objects.filter(pk__in=ids_possiveis)
+
+    def ultimos_followups(self, quantidade=10):
+        '''
+        Mostra todos os followups que o perfil tem acesso
+        se Super Gerente, todos de todas as empresas especificando empresa no nome funcionario
+        se Gerente, todos somente da empresa comercial
+        '''
+        if self.super_gerente:
+            # super gerente, puxa todos
+            ultimos_followups = FollowUpDePropostaComercial.objects.all()
+
+        elif self.gerente:
+            # gerente puxa somente empresa
+            ultimos_followups = FollowUpDePropostaComercial.objects.filter(
+                #mesma empresa
+                Q(proposta__designado__user__perfilacessocomercial__empresa=self.empresa)
+            )
+        elif not self.gerente and not self.super_gerente:
+            ultimos_followups = FollowUpDePropostaComercial.objects.filter(
+                # propostas designadas amim
+                Q(proposta__designado=self.user.funcionario) | \
+                # propostas de clientes designados a mim
+                Q(proposta__cliente__designado=self.user.funcionario) | \
+                # propostas de preclientes desginados a mim
+                Q(proposta__precliente__designado=self.user.funcionario) | \
+                # propostas, preclientes e clientes sem designacao
+                Q(proposta__designado=None) | \
+                Q(proposta__cliente__designado=None) & \
+                Q(proposta__precliente__designado=None) & \
+                Q(proposta__designado__user__perfilacessocomercial__empresa=self.empresa)
+
+            )
+        if quantidade:
+            ultimos_followups = ultimos_followups[0:quantidade]
+        return ultimos_followups
+
+    def preclientes_sem_proposta(self):
+        return PreCliente.objects.filter(
+                propostacomercial=None,
+                cliente_convertido=None,
+                designado=self.user.funcionario,
+                sem_interesse=False
+        )
+
+    def requisicao_de_proposta(self):
+        return RequisicaoDeProposta.objects.filter(
+                atendido=False,
+                cliente__designado=self.user.funcionario
+        )
+
     super_gerente = models.BooleanField("Super Gerente", default=False)
     gerente = models.BooleanField("Gerente da Empresa", default=False)
     analista = models.BooleanField(default=True)
@@ -361,8 +423,6 @@ class EmpresaComercial(models.Model):
     bairro = models.CharField(max_length=300)
     cidade = models.CharField(max_length=300)
     estado = models.CharField("Estado", max_length=100,  blank=True, null=True, choices=STATE_CHOICES)
-
-
 
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):

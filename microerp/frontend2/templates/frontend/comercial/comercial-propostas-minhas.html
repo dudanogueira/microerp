@@ -52,19 +52,10 @@
 
 				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta_list.grouper %}
 
-				{% if request.user.perfilacessocomercial %}
-					{% thumbnail proposta_list.grouper.designado.perfilacessocomercial.empresa.logo "100x100" crop="center" format="PNG" as im %}
-    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-					{% endthumbnail %}
-				{% endif %}
-
 			{% else %}
+
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta_list.list.0.precliente %}
-				{% if request.user.perfilacessocomercial %}
-					{% thumbnail proposta_list.list.0.precliente.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
-    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-					{% endthumbnail %}
-				{% endif %}
+
 			{% endif %}
 
 

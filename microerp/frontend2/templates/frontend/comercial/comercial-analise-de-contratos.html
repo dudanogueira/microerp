@@ -7,13 +7,25 @@
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato</h1>
 	{% regroup contratos_em_analise by responsavel as contratos_em_analise_por_responsavel %}
-	
-	
+
+
 {% for lista in contratos_em_analise_por_responsavel %}
-	<h3>{{lista.grouper}}</h3>
+<h3>{{lista.grouper}}</h3>
+
 	{% for contrato in lista.list %}
-	<div class="well well-small"><a href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">{{contrato}}. Responsável: {{contrato.responsavel}}, Comissionado: {{contrato.responsavel_comissionado}}. <span class="label label-info">Criado em: {{contrato.criado|date:"SHORT_DATETIME_FORMAT"}}</span></a></div>
+	<div class="row row-fluid well well-sm">
+		<div class="col-md-1">
+			<a class="btn btn-primary" href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">#{{contrato.id}}</a>
+		</div>
+
+		<div class="col-md-11">
+				{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
+				Responsável: {{contrato.responsavel}}, Comissionado: {{contrato.responsavel_comissionado}}. <span class="label label-info">Criado em: {{contrato.criado|date:"SHORT_DATETIME_FORMAT"}}</span>
+		</div>
+
+	</div>
 	{% endfor %}
+
 {% endfor %}
 
 
@@ -27,6 +39,7 @@
 <script>
 $(document).ready(function() {
     $("#menu-comercial-analise-de-contratos, #top-menu-comercial").addClass("active");
+	$('.popover-items').popover()
 });
 
 </script>

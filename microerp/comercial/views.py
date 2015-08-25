@@ -52,6 +52,9 @@ from django.contrib.auth.models import User
 from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
 from reportlab.lib import colors
 
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.pdfgen import canvas
+
 
 #
 # FORMULARIOS
@@ -76,14 +79,14 @@ class PreClienteAdicionarForm(forms.ModelForm):
         perfil = kwargs.pop('perfil')
         super(PreClienteAdicionarForm, self).__init__(*args, **kwargs)
         self.fields['designado'].empty_label = "Nenhum"
+        self.fields['designado'].required = True
         self.fields['tipo'].required = True
         if sugestao:
             self.fields['nome'].initial = sugestao
         if not perfil.gerente:
             self.fields['designado'].widget = forms.HiddenInput()
             self.fields['designado'].initial = perfil.user.funcionario
-        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
-        self.fields['designado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        self.fields['designado'].queryset = perfil.funcionarios_disponiveis()
         self.fields['designado'].widget.attrs['class'] = 'select2'
 
     def clean_cpf(self):
@@ -310,16 +313,11 @@ def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
 def home(request):
     # widget cliente
     #ultimos followups
-    if not request.user.perfilacessocomercial.gerente:
-        ultimos_followups = FollowUpDePropostaComercial.objects.filter(
-            Q(proposta__designado=request.user.funcionario) | Q(proposta__cliente__designado=request.user.funcionario) | Q(proposta__precliente__designado=request.user.funcionario) | \
-            Q(proposta__designado=None) | (Q(proposta__cliente__designado=None) & Q(proposta__precliente__designado=None))
-        )[0:10]
-    else:
-        ultimos_followups = FollowUpDePropostaComercial.objects.all()[0:10]
+    ultimos_followups = request.user.perfilacessocomercial.ultimos_followups()
         
-    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, designado=request.user.funcionario, sem_interesse=False).count()
-    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False, cliente__designado=request.user.funcionario).count()
+    preclientes_sem_proposta = request.user.perfilacessocomercial.preclientes_sem_proposta().count()
+
+    requisicoes_propostas = request.user.perfilacessocomercial.requisicao_de_proposta().count()
     return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -355,55 +353,100 @@ def clientes_precliente_sem_interesse(request, precliente_id):
 class FiltrarPreClientesERequisicoesForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
+        perfil = kwargs.pop('perfil')
         super(FiltrarPreClientesERequisicoesForm, self).__init__(*args, **kwargs)
         self.fields['funcionario'].widget.attrs['class'] = 'select2'
-        ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
-        self.fields['funcionario'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        self.fields['funcionario'].queryset = perfil.funcionarios_disponiveis()
 
     funcionario = forms.ModelChoiceField(queryset=None, label="Funcionário", required=False, empty_label="Todos do Comercial")
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def clientes(request):
-    form_filtrar_precliente = FiltrarPreClientesERequisicoesForm()  
+    form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(perfil=request.user.perfilacessocomercial)
     cliente_q = request.GET.get('cliente', False)
-    preclientes = PreCliente.objects.filter(cliente_convertido=None)
-    clientes = Cliente.objects.filter(ativo=True)
+    #preclientes = PreCliente.objects.filter(cliente_convertido=None)
+    #clientes = Cliente.objects.filter(ativo=True)
     if cliente_q:
         busca_feita = True
         cliente_q = cliente_q.strip()
-        clientes = Cliente.objects.filter(
-            Q(ativo=True) & \
+        # se super gerente, puxa todos
+        if request.user.perfilacessocomercial.super_gerente:
+            clientes = Cliente.objects.filter(
+                Q(ativo=True) & \
+                Q(nome__icontains=cliente_q) | \
+                Q(fantasia__icontains=cliente_q) | \
+                Q(cnpj__icontains=cliente_q) | \
+                Q(cpf__icontains=cliente_q)
+            )
+        # puxa somente os da mesma empresa
+        else:
+            clientes = Cliente.objects.filter(
+                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            ).filter(
+                Q(ativo=True) & \
+                Q(nome__icontains=cliente_q) | \
+                Q(fantasia__icontains=cliente_q) | \
+                Q(cnpj__icontains=cliente_q) | \
+                Q(cpf__icontains=cliente_q)
+            )
+        #puxa todos os pre clientes, menos os já convertidos)
+        preclientes = PreCliente.objects.filter(
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa,
+            cliente_convertido=None
+        ).filter(
             Q(nome__icontains=cliente_q) | \
-            Q(fantasia__icontains=cliente_q) | \
             Q(cnpj__icontains=cliente_q) | \
             Q(cpf__icontains=cliente_q)
         )
-        #puxa todos os pre clientes, menos os já convertidos)
-        preclientes = preclientes.filter(nome__icontains=cliente_q, cliente_convertido=None) 
     else:
         if request.GET.get('cliente') == '' or request.POST.get('btn-aplicar-filtro', None):
             busca_feita = True
-            clientes = Cliente.objects.filter(ativo=True)
-            preclientes = PreCliente.objects.filter(cliente_convertido=None, sem_interesse=False)
+            clientes = Cliente.objects.filter(
+                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            )
+            preclientes = PreCliente.objects.filter(
+                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa,
+                cliente_convertido=None
+            )
+    if request.user.perfilacessocomercial.super_gerente:
+        # mostra todos preclientes sem proposta
+        preclientes_sem_proposta = PreCliente.objects.filter(
+                propostacomercial=None, cliente_convertido=None,
+                sem_interesse=False,
+        ).order_by('nome')
+        # mostra todas as requsicoes
+        requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
+    elif not request.user.perfilacessocomercial.super_gerente and request.user.perfilacessocomercial.gerente:
+        # mostra todos preclientes sem proposta da mesma empresa
+        preclientes_sem_proposta = PreCliente.objects.filter(
+            propostacomercial=None, cliente_convertido=None,
+            sem_interesse=False,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        ).order_by('nome')
+        # mostra requisicoes da empresa empresa
+        requisicoes_propostas = RequisicaoDeProposta.objects.filter(
+                atendido=False,
+                cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        ).order_by('cliente__nome')
+    else:
+        # mostra somente meus preclientes sem proposta da minha empresa
+        preclientes_sem_proposta = PreCliente.objects.filter(
+            propostacomercial=None, cliente_convertido=None,
+            sem_interesse=False,
+            designado=request.user.funcionario,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        ).order_by('nome')
+        # mostra somente meus clientes com requisicao de proposta
 
-    preclientes_sem_proposta = PreCliente.objects.filter(propostacomercial=None, cliente_convertido=None, sem_interesse=False, designado=request.user.funcionario).order_by('nome')
-    requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
-    # se nao for gerente, limita a listagem para os que lhe sao designados
-    if not request.user.perfilacessocomercial.gerente:
-        preclientes = preclientes.filter(designado=request.user.funcionario)
-        preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=request.user.funcionario)
-        requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=request.user.funcionario)
-        
     if request.POST.get('btn-aplicar-filtro', None):
-        form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(request.POST)
+        form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(request.POST, perfil=request.user.perfilacessocomercial)
         if form_filtrar_precliente.is_valid():
             funcionario_escolhido = form_filtrar_precliente.cleaned_data['funcionario']
             if funcionario_escolhido:
                 clientes = clientes.filter(designado=funcionario_escolhido)
                 preclientes = preclientes.filter(designado=funcionario_escolhido)
                 preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
-                requisicoes_propostas = requisicoes_propostas.filter(cliente__designado=funcionario_escolhido)
     return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -680,7 +723,16 @@ def editar_proposta_fechar(request, proposta_id):
 def gerencia_aprovar_fechamentos(request):
     if request.POST:
         propostas_a_fechar = request.POST.getlist('seleciona_propostas_fechar')
-        propostas = PropostaComercial.objects.filter(pk__in=propostas_a_fechar)
+        if request.user.perfilacessocomercial.super_gerente:
+            propostas = PropostaComercial.objects.filter(
+                pk__in=propostas_a_fechar
+            )
+
+        else:
+            propostas = PropostaComercial.objects.filter(
+                pk__in=propostas_a_fechar,
+                cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            )
         for proposta in propostas:
             if request.POST.get('aprovar-fechamento'):
                 proposta.status = 'perdida'
@@ -689,8 +741,12 @@ def gerencia_aprovar_fechamentos(request):
                 proposta.status = 'aberta'
                 messages.success(request, "Proposta #%s Reaberta!" % proposta.id)
             proposta.save()
-                
-    propostas_fechadas = PropostaComercial.objects.filter(status="perdida_aguardando")
+    if request.user.perfilacessocomercial.super_gerente:
+        propostas_fechadas = PropostaComercial.objects.filter(status="perdida_aguardando")
+    else:
+        propostas = PropostaComercial.objects.filter(
+            cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
     return render_to_response('frontend/comercial/comercial-gerenciar-aprovar-perdidas.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -1051,7 +1107,11 @@ def precliente_converter(request, pre_cliente_id):
                 'bairro_texto': proposta_referencia.bairro_do_proposto,
                 'cep': proposta_referencia.cep_do_proposto,
                 'cidade_texto': proposta_referencia.cidade_do_proposto,
-                'uf_texto': proposta_referencia.estado_do_proposto
+                'uf_texto': proposta_referencia.estado_do_proposto,
+                'tipo': proposta_referencia.precliente.tipo,
+                'cpf': proposta_referencia.precliente.cpf,
+                'cnpj': proposta_referencia.precliente.cnpj,
+                'origem': proposta_referencia.precliente.origem
             }
 
         form = AdicionarCliente(precliente=precliente, com_endereco=True, initial=initial )
@@ -1130,7 +1190,8 @@ def propostas_comerciais_minhas(request):
     form_adicionar_follow_up = FormAdicionarFollowUp()
 
     if not request.user.perfilacessocomercial.gerente:
-        propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente').filter(
+        propostas_abertas_validas = PropostaComercial.objects.filter(
+            status='aberta', data_expiracao__gte=datetime.date.today()).order_by('cliente', 'precliente').filter(
             Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
             (Q(precliente__designado=None) & Q(cliente__designado=None))
             )
@@ -1145,8 +1206,9 @@ def propostas_comerciais_minhas(request):
         else:
             propostas_abertas_validas = PropostaComercial.objects.filter(
                 status='aberta',
-                data_expiracao__gte=datetime.date.today(),
-                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+                data_expiracao__gte=datetime.date.today()).filter(
+                    Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                    Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
             ).order_by('-criado', 'precliente', 'cliente')
             propostas_abertas_expiradas_count = PropostaComercial.objects.filter(
                 status='aberta', data_expiracao__lt=datetime.date.today(),
@@ -1383,8 +1445,10 @@ class OrcamentoPrint:
             # Our container for 'Flowable' objects
             elements = []
             # logo empresa
-            
-            im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
+            if perfil.empresa:
+                im = Image(perfil.empresa.logo.path)
+            else:
+                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
             im.hAlign = 'LEFT'
             
             # id da proposta
@@ -1818,15 +1882,12 @@ def adicionar_follow_up(request, proposta_id):
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus(request):
     if request.user.perfilacessocomercial.gerente:
-        meus_contratos = ContratoFechado.objects.all().order_by('responsavel')
+        meus_contratos = ContratoFechado.objects.all().order_by('responsavel').exclude(status="arquivado")
+        #meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status')
     else:
-        meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status')
+        meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status').exclude(status="arquivado")
     return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
 
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.pdfgen import canvas
 
 class NumberedCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
@@ -1877,7 +1938,7 @@ class ContratoPrint:
             # Release the canvas
             canvas.restoreState()
     
-    def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False):
+    def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
             
         
             buffer = self.buffer
@@ -1911,7 +1972,10 @@ class ContratoPrint:
             elements = []
             
             # logo empresa
-            im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
+            if perfil.empresa:
+                im = Image(perfil.empresa.logo.path)
+            else:
+                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
             im.hAlign = 'LEFT'
             
             # id do contrato
@@ -2193,6 +2257,7 @@ def contratos_gerar_impressao(request, contrato_id):
 
     buffer = BytesIO()
 
+
     report = ContratoPrint(buffer, 'Letter')
     if request.GET.get('testemunha1'):
         testemunha1 = Funcionario.objects.get(pk=int(request.GET.get('testemunha1')))
@@ -2207,7 +2272,7 @@ def contratos_gerar_impressao(request, contrato_id):
             messages.error(request, "Erro! Impossível testemunhas iguais para gerar a impressão do contrato!")
             return redirect(reverse("comercial:contratos_meus"))
     imprime_logo = request.GET.get('imprime_logo')
-    pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2, imprime_logo=imprime_logo)
+    pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2, imprime_logo=imprime_logo, perfil=request.user.perfilacessocomercial)
     response.write(pdf)
     return response
     
@@ -2241,7 +2306,16 @@ def contratos_meus_definir_assinado(request, contrato_id):
     contrato.status = "emaberto"
     contrato.save()
     return redirect(reverse("comercial:contratos_meus"))
-    
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def contratos_meus_arquivar(request, contrato_id):
+    contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="emaberto")
+    messages.success(request, u"Sucesso! Contrato #%s Arquivado" % contrato.pk)
+    contrato.status = "arquivado"
+    contrato.save()
+    return redirect(reverse("comercial:contratos_meus"))
+
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus_revalidar(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="invalido")
@@ -2555,44 +2629,81 @@ def indicadores_do_comercial(request):
     # propostas 
     # propostas fechadas
     total_propostas_perdidas = []
-    
-    # contratos
-    contratos_em_analise = ContratoFechado.objects.filter(status='emanalise')
-    contratos_aguardando_assinatura = ContratoFechado.objects.filter(status='assinatura')
 
-    
+    # contratos
+    contratos_em_analise = ContratoFechado.objects.filter(
+        status='emanalise',
+        cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
+    contratos_aguardando_assinatura = ContratoFechado.objects.filter(
+        status='assinatura',
+        cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
+
+
     for month in range(1,13):
         # preclientes criados
-        preclientes_no_mes = PreCliente.objects.filter(criado__year=ano, criado__month=month).count()
+        preclientes_no_mes = PreCliente.objects.filter(
+            criado__year=ano, criado__month=month,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        ).count()
         total_preclientes_criados.append(preclientes_no_mes)
         # preclientes convertidos
-        preclientes_covnertidos_no_mes = PreCliente.objects.filter(data_convertido__year=ano, data_convertido__month=month).count()
+        preclientes_covnertidos_no_mes = PreCliente.objects.filter(
+            data_convertido__year=ano, data_convertido__month=month,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        ).count()
         total_preclientes_convertidos.append(preclientes_covnertidos_no_mes)
         # propostas criadas
-        propostas_criadas_mes = PropostaComercial.objects.filter(criado__year=ano, criado__month=month)
+        propostas_criadas_mes = PropostaComercial.objects.filter(
+            criado__year=ano, criado__month=month,
+        ).filter(
+            Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+            Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         contagem_propostas_criadas_mes = propostas_criadas_mes.count()
         valores_propostas_criadas_mes = propostas_criadas_mes.aggregate(Sum('valor_proposto'))['valor_proposto__sum'] or 0
         total_propostas_criadas.append((contagem_propostas_criadas_mes, valores_propostas_criadas_mes))
         # propostas convertidas
-        propostas_convertidas_mes = PropostaComercial.objects.filter(definido_convertido_em__year=ano, definido_convertido_em__month=month)
+        propostas_convertidas_mes = PropostaComercial.objects.filter(
+            definido_convertido_em__year=ano, definido_convertido_em__month=month
+        ).filter(
+            Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+            Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         contagem_propostas_convertidas_mes = propostas_convertidas_mes.count()
         valores_propostas_convertidas_mes = propostas_convertidas_mes.aggregate(Sum('valor_proposto'))['valor_proposto__sum'] or 0
         total_propostas_convertidas.append((contagem_propostas_convertidas_mes, valores_propostas_convertidas_mes))
         # propostas perdidas
-        propostas_perdidas_mes = PropostaComercial.objects.filter(definido_perdido_em__year=ano, definido_perdido_em__month=month)
+        propostas_perdidas_mes = PropostaComercial.objects.filter(
+            definido_perdido_em__year=ano, definido_perdido_em__month=month
+        ).filter(
+            Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+            Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         contagem_propostas_criadas_mes = propostas_perdidas_mes.count()
         valores_propostas_criadas_mes = propostas_perdidas_mes.aggregate(Sum('valor_proposto'))['valor_proposto__sum'] or 0
         total_propostas_perdidas.append((contagem_propostas_criadas_mes, valores_propostas_criadas_mes))
-        
+
     # propostas abertas não expiradas
-    propostas_abertas_nao_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__gte=datetime.date.today())
+    propostas_abertas_nao_expiradas = PropostaComercial.objects.filter(
+        status="aberta", data_expiracao__gte=datetime.date.today()
+    ).filter(
+        Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+        Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+    )
     propostas_abertas_nao_expiradas_contagem = propostas_abertas_nao_expiradas.count()
     propostas_abertas_nao_expiradas_por_criador = propostas_abertas_nao_expiradas.values('criado_por__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_nao_expiradas_por_responsavel = propostas_abertas_nao_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_nao_expiradas_total = propostas_abertas_nao_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']    
 
     # propostas abertas expiradas
-    propostas_abertas_expiradas = PropostaComercial.objects.filter(status="aberta", data_expiracao__lt=datetime.date.today())
+    propostas_abertas_expiradas = PropostaComercial.objects.filter(
+        status="aberta", data_expiracao__lt=datetime.date.today()
+    ).filter(
+        Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+        Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+    )
     propostas_abertas_expiradas_contagem = propostas_abertas_expiradas.count()
     propostas_abertas_expiradas_por_criador = propostas_abertas_expiradas.values('criado_por__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_expiradas_por_responsavel = propostas_abertas_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
@@ -2661,7 +2772,10 @@ def indicadores_do_comercial(request):
                 proposta__status="aberta",
                 proposta__criado__year=ano,
                 proposta__criado__month=month,
-            ).exclude(Q(tabelado_originario=None)).count()
+            ).exclude(Q(tabelado_originario=None)).filter(
+                Q(proposta__cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(proposta__precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        ).count()
             grupo_month_set.append(quantidades)
         total_propostas_gerados_tabelado_abertas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_tabelado_abertas = OrderedDict(sorted(total_propostas_gerados_tabelado_abertas.items(), key=lambda t: t[0]))
@@ -2676,7 +2790,10 @@ def indicadores_do_comercial(request):
                 proposta__status__in=['perdida', 'perdida_aguardando'],
                 proposta__criado__year=ano,
                 proposta__criado__month=month,
-            ).exclude(Q(tabelado_originario=None)).count()
+            ).exclude(Q(tabelado_originario=None)).filter(
+                Q(proposta__cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(proposta__precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        ).count()
             grupo_month_set.append(quantidades)
         total_propostas_gerados_tabelado_fechadas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_tabelado_fechadas = OrderedDict(sorted(total_propostas_gerados_tabelado_fechadas.items(), key=lambda t: t[0]))
@@ -2692,7 +2809,10 @@ def indicadores_do_comercial(request):
                 proposta__status="aberta",
                 proposta__criado__year=ano,
                 proposta__criado__month=month,
-            ).exclude(Q(promocao_originaria=None)).count()
+            ).exclude(Q(promocao_originaria=None)).filter(
+                Q(proposta__cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(proposta__precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        ).count()
             grupo_month_set.append(quantidades)
         total_propostas_gerados_promocionais_abertas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_promocionais_abertas = OrderedDict(sorted(total_propostas_gerados_promocionais_abertas.items(), key=lambda t: t[0]))
@@ -2707,7 +2827,12 @@ def indicadores_do_comercial(request):
                 proposta__status__in=['perdida', 'perdida_aguardando'],
                 proposta__criado__year=ano,
                 proposta__criado__month=month,
-            ).exclude(Q(promocao_originaria=None)).count()
+            ).exclude(
+                Q(promocao_originaria=None)
+            ).filter(
+                Q(proposta__cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(proposta__precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        ).count()
             grupo_month_set.append(quantidades)
         total_propostas_gerados_promocionais_fechadas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_promocionais_fechadas = OrderedDict(sorted(total_propostas_gerados_promocionais_fechadas.items(), key=lambda t: t[0]))
@@ -2722,6 +2847,7 @@ def relatorios_comercial(request):
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_por_periodo_e_vendedor(request):
+
     erro = False
     try:
         de = request.GET.get('de', None)
@@ -2738,13 +2864,22 @@ def relatorios_comercial_propostas_por_periodo_e_vendedor(request):
         erro = True
     if not erro:
         if de and ate:
-            propostas = PropostaComercial.objects.filter(criado__range=(de,ate))
+            propostas = PropostaComercial.objects.filter(criado__range=(de,ate)).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         elif de and not ate:
             de = datetime.datetime.combine(de, datetime.time(00, 00))
-            propostas = PropostaComercial.objects.filter(criado__gte=de)
+            propostas = PropostaComercial.objects.filter(criado__gte=de).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         elif not de and ate:
             ate = datetime.datetime.combine(ate, datetime.time(23, 59))
-            propostas = PropostaComercial.objects.filter(criado__lte=ate)
+            propostas = PropostaComercial.objects.filter(criado__lte=ate).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
     try:
         propostas = propostas.order_by('designado')
     except:
@@ -2788,7 +2923,10 @@ def relatorios_comercial_probabilidade(request):
     except:
         probabilidade = 70
     agrupador = request.GET.get('agrupador', 'tipo')
-    propostas = PropostaComercial.objects.filter(probabilidade__gte=probabilidade, status="aberta")
+    propostas = PropostaComercial.objects.filter(probabilidade__gte=probabilidade, status="aberta").filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
 
     if agrupador == "tipo":
         propostas = propostas.order_by('tipo')
@@ -2805,7 +2943,10 @@ def relatorios_comercial_propostas_e_followups(request):
         followup_n = 0
 
     agrupador = request.GET.get('agrupador', 'tipo')
-    propostas = PropostaComercial.objects.annotate(num_fup=Count('followupdepropostacomercial')).filter(num_fup=followup_n)
+    propostas = PropostaComercial.objects.annotate(num_fup=Count('followupdepropostacomercial')).filter(num_fup=followup_n).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
     
     if agrupador == "tipo":
         propostas = propostas.order_by('tipo')
@@ -2832,15 +2973,27 @@ def relatorios_comercial_propostas_declinadas(request):
         erro = True
     if not erro:
         if de and ate:
-            propostas = PropostaComercial.objects.filter(definido_perdido_em__range=(de,ate), status__in=['perdida', 'perdida_aguardando'])
+            propostas = PropostaComercial.objects.filter(definido_perdido_em__range=(de,ate), status__in=['perdida', 'perdida_aguardando']).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         elif de and not ate:
             de = datetime.datetime.combine(de, datetime.time(00, 00))
-            propostas = PropostaComercial.objects.filter(definido_perdido_em__gte=de, status__in=['perdida', 'perdida_aguardando'])
+            propostas = PropostaComercial.objects.filter(definido_perdido_em__gte=de, status__in=['perdida', 'perdida_aguardando']).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         elif not de and ate:
             ate = datetime.datetime.combine(ate, datetime.time(23, 59))
-            propostas = PropostaComercial.objects.filter(definido_perdido_em__lte=ate, status__in=['perdida', 'perdida_aguardando'])
+            propostas = PropostaComercial.objects.filter(definido_perdido_em__lte=ate, status__in=['perdida', 'perdida_aguardando']).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         else:
-            propostas = PropostaComercial.objects.filter(status__in=['perdida', 'perdida_aguardando'])
+            propostas = PropostaComercial.objects.filter(status__in=['perdida', 'perdida_aguardando']).filter(
+                Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         
         if agrupador == "tipo":
             propostas = propostas.order_by('tipo')
@@ -2854,7 +3007,10 @@ def relatorios_comercial_propostas_declinadas(request):
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos(request):
-    contratos_em_analise = ContratoFechado.objects.filter(status="emanalise")
+    contratos_em_analise = ContratoFechado.objects.filter(
+        status="emanalise",
+        cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     return render_to_response('frontend/comercial/comercial-analise-de-contratos.html', locals(), context_instance=RequestContext(request),)
 
 class FormAnalisarContrato(forms.ModelForm):

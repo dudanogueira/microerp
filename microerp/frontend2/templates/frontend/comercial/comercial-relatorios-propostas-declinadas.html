@@ -2,14 +2,15 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load soma_valor_propostas_lista %}
+{% load l10n %}
 
 <title>{%block title %}{{block.super}} - Comercial - Relatórios{% endblock %}</title>
 
 {% block content %}
 <div class="row-fluid">
-	<div class="span8">
+	<div class="col-md-8">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-tachometer"></i> Relatórios</h1>
-		<h3>Propostas Declinadas</h3>
+		<h2>Propostas Declinadas</h2>
 		
 		{% if de and ate %}
 			Entre <strong>{{de|date:"SHORT_DATE_FORMAT"}}</strong> e <strong>{{ate|date:"SHORT_DATE_FORMAT"}}</strong>
@@ -25,7 +26,7 @@
 		
 
 	</div>
-	<div class="span4" id="filtro-relatorios">
+	<div class="col-md-4" id="filtro-relatorios">
 		<form class="form form-inline">
 			
 		De <input type="text" name="de" value="{{de|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br /> a <br /><input type="text" name="ate" value="{{ate|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br />
@@ -47,7 +48,7 @@
 {% endif %}
 
 {% for lista in propostas_agrupadas %}
-	<h2>{% if lista.grouper == None %}Não Definido{% else %}{{lista.grouper}}{% endif %} - Total: R$ {{lista.list|total_propostas}}</h2>
+	<h1>{% if lista.grouper == None %}Não Definido{% else %}{{lista.grouper}}{% endif %} - Total: R$ {{lista.list|total_propostas}}</h1>
 
 	{% for proposta in lista.list %}
 	<div class="well well-small">
@@ -59,37 +60,38 @@
 			{% endif %}
 
 		<!-- Button trigger modal -->
-		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalFollowUps-{{proposta.id}}">
-		  Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
+		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalFollowUps-{{proposta.id|unlocalize}}">
+			Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
 		</button>
+
 		
 		<div class="alert alert-danger">
 			<strong>Motivo</strong>: {{proposta.definido_perdido_motivo}}, <strong>Data</strong>: {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}, <strong>Por</strong>: {{proposta.definido_perdido_por}}. <span class="badge badge-important">{{proposta.get_status_display}}</span>
 		</div>
-		
+
+
 
 		<!-- Modal -->
-		<div class="modal fade" id="ModalFollowUps-{{proposta.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h4>
-      </div>
-      <div class="modal-body">
-		{% for fup in proposta.followupdepropostacomercial_set.all %}
-									<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-									<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
-									<hr />
-		{% endfor %}
-		
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">X Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
+		<div class="modal fade" id="ModalFollowUps-{{proposta.id|unlocalize}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+						<h4 class="modal-title" id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h4>
+					</div>
+					<div class="modal-body">
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+						<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
+						<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='label label-important'>Nova Expiração: {{fup.data|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+						<hr />
+						{% endfor %}
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">X Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 	{% endfor %}
 

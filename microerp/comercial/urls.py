@@ -64,6 +64,7 @@ urlpatterns = patterns('',
     url(r'^contrato/meus/$', 'comercial.views.contratos_meus', name='contratos_meus'),
     url(r'^contrato/meus/revalidar/(?P<contrato_id>[0-9]+)/$', 'comercial.views.contratos_meus_revalidar', name='contratos_meus_revalidar'),
     url(r'^contrato/meus/definir-assinado/(?P<contrato_id>[0-9]+)/$', 'comercial.views.contratos_meus_definir_assinado', name='contratos_meus_definir_assinado'),
+    url(r'^contrato/meus/arquivar/(?P<contrato_id>[0-9]+)/$', 'comercial.views.contratos_meus_arquivar', name='contratos_meus_arquivar'),
     url(r'^contrato/meus/gerar-impressao/(?P<contrato_id>[0-9]+)/$', 'comercial.views.contratos_gerar_impressao', name='contratos_gerar_impressao'),
     # comissoes - gerencia
     url(r'^gerencia/comissoes/$', 'comercial.views.gerencia_comissoes', name='gerencia_comissoes'),

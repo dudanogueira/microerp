@@ -164,6 +164,12 @@ class Funcionario(models.Model):
     def funcionario(self):
         return self
 
+    def nome_reduzido(self):
+        nome_items = self.nome.split(" ")
+        if len(nome_items) > 1:
+            return " ".join(nome_items[0:2])
+        else:
+            return self.nome
     class Meta:
         verbose_name = u"Funcionário"
         verbose_name_plural = u"Funcionários"

@@ -33,8 +33,6 @@
 <ul class="nav nav-tabs normargin" id="navtab-ordem-producao">
     <li class="active"><a href="#buscar" class="ajaxtab" data-toggle="tab">Buscar</a></li>
 	<li> <a href="#sem-proposta" data-toggle="tab">Sem Proposta <span class="badge badge-warning">{{preclientes_sem_proposta.count}}</span> </a></li>
-	<li> <a href="#requisicoes-propostas" data-toggle="tab">Requisições de Proposta <span class="badge badge-important">{{requisicoes_propostas.count}}</span></a></li>
-
 </ul>
 
 <div class="row row-fluid">
@@ -163,18 +161,6 @@
 					</tbody>
 				</table>
 		    </div>
-		{% else %}
-
-			{% if request.user.perfilacessocomercial.gerente %}
-				<h2>Central de Clientes - Gerente</h2>
-		
-			{% else %}
-
-				<h2>Central de Clientes - Vendedor</h2>
-
-			{% endif %}
-			Quantidade de Pré Clientes: {{preclientes.count}}<Br />
-			Quantidade de Clientes: {{clientes.count}}<Br />
 	
 		{% endif %}
 	</div>
@@ -251,61 +237,6 @@
 
 
 	</div>
-	
-	<div class="tab-pane fade in" id="requisicoes-propostas">
-	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
-	        <table class="table table-hover table-condensed">
-	            <thead>
-	                <caption><h4 class="alert alert-danger">Requisições de Propostas para Clientes</h4></caption>
-	                <tr>
-	                    <th>Cliente</th>
-						<th>Data</th>
-						{% if request.user.perfilacessocomercial.gerente %}
-							<th>Responsável</th>
-						{% endif %}
-						<th>Descrição</th>
-	                    <th>Ações</th>
-	                </tr>
-	            </thead>
-	            <tbody>
-	                {% for requisicao in requisicoes_propostas %}
-	                <tr>
-	                    <td>{% include "frontend/comercial/botao-cliente.html" with cliente=requisicao.cliente %}</td>
-						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-						{% if request.user.perfilacessocomercial.gerente %}
-							<td>{{requisicao.cliente.designado}}</td>
-						{% endif %}
-						<td class="alert alert-info"><i>{{requisicao.descricao}}, <small>{{requisicao.criado_por}}</small></i></td>
-						<td>
-						<p class="btn-group">
-
-						<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" requisicao.cliente.id %}?requisicao_origem={{requisicao.id}}" class="btn btn-success"><i class="fa fa-check"></i> Atender</a>						
-						
-						
-						</p>
-						</td>
-						
-
-	                </tr>
-	                {% empty %}
-
-	                <tr>
-	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
-	                    <td>{% if cliente_q %}
-	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
-	                        {% endif %}
-	                    </td>
-	                </tr>
-
-	                {% endfor %}
-
-
-	            </tbody>
-	        </table>
-	    </div>
-		
-	</div>
-	
 </div>
 
 

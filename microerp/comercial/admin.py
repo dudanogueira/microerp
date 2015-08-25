@@ -51,7 +51,8 @@ def lancar_contrato(modeladmin, request, queryset):
 lancar_contrato.short_description = u"Lançar Contrato para o Financeiro"
 
 class PerfilAcessoComercialAdmin(admin.ModelAdmin):
-    list_display = 'user', 'gerente', 'analista'
+    list_display = 'user', 'gerente', 'analista', 'super_gerente', 'empresa'
+    list_filter = 'empresa',
 
 class FollowUpPropostaInlineAdmin(admin.StackedInline):
     model = FollowUpDePropostaComercial
@@ -107,6 +108,10 @@ class LancamentoDeFechamentoComissaoAdmin(admin.ModelAdmin):
 class TabelaDeComissaoAdmin(admin.ModelAdmin):
     list_display = 'valor_inicio', 'valor_fim', 'porcentagem'
 
+class EmpresaComercialAdmin(admin.ModelAdmin):
+    list_display = 'nome', 'nome_reduzido', 'principal'
+    search_fields = 'nome',
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
@@ -126,4 +131,4 @@ admin.site.register(LinhaRecursoLogistico)
 admin.site.register(LinhaRecursoHumano)
 admin.site.register(TabelaDeParcelamento)
 admin.site.register(ClasseTipoDeProposta)
-admin.site.register(EmpresaComercial)
+admin.site.register(EmpresaComercial, EmpresaComercialAdmin)

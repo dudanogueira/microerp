@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato {{contrato.id}}{% endblock %}</title>
 
@@ -10,12 +11,12 @@
 
 <div class="row-fluid">
 	
-	<div class="span6">
+	<div class="col-md-6">
 		
 		<form method="post">
 		{% csrf_token %}
 
-		{{form_analisar_contrato.as_p}}
+		{{form_analisar_contrato|bootstrap}}
 		<div class="btn-group">
 			<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim"><i class="fa fa-pencil"></i> 	Alterar</button>
 			<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar Contrato</button>
@@ -47,9 +48,11 @@
 	
 	</div>
 	
-	<div class="span6">
+	<div class="col-md-6">
 		
-		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}  <strong>Valor do Contrato: R$ {{contrato.valor}}</strong>
+		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
+		<br />
+		<strong>Valor do Contrato: R$ {{contrato.valor}}</strong>
 		
 		<h4>Lançamentos Configurados</h4>
 		<ul>

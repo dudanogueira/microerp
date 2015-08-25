@@ -1,4 +1,5 @@
 {% load phonenumber_br %}
+{% load thumbnail %}
 <a class="btn btn-default popover-items" href="{% url "comercial:precliente_ver" precliente.id %}" cliente.id %}" data-trigger="hover" data-title="{{precliente.nome}}" data-html="true" data-content='
 			<span class="label label-warning">Pré Cliente</span>
 			{% if precliente.contato %}
@@ -10,10 +11,18 @@
 				</p>
             {% endif %}
 			{% if precliente.designado %}
-			<span class="label label-important"><i class="fa fa-hand-o-right"></i> {{precliente.designado}}</span>
+			<span class="label label-danger"><i class="fa fa-hand-o-right"></i> {{precliente.designado}}</span>
+			{% else %}
+			<span class="label label-danger"><i class="fa fa-hand-o-right"></i> Nenhum Funcionário Designado</span>
 			{% endif %}			
 			'>
 
 		<span class="label label-warning">PC</span>
 		{{precliente.nome}}
 </a>
+
+				{% if request.user.perfilacessocomercial.super_gerente %}
+					{% thumbnail precliente.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
+    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+					{% endthumbnail %}
+				{% endif %}

@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -11,7 +12,7 @@
 <form method="POST" class="form form-search">
 {% csrf_token %}
 	<div class="input-append">
-	{{form_filtra_tabela}}
+	{{form_filtra_tabela|bootstrap}}
 	<button type="submit" class="btn btn-primary"><i class="fa fa-search"></i> Buscar</button>
 	</div>
 </form>
@@ -25,7 +26,9 @@
 				<th>Nome</th>
 				<th>Preço de Venda</th>
 				<th>Descrição</th>
+				{% if request.user.perfilacessocomercial.empresa.principal %}
 				<th>Estoque</th>
+				{% endif %}
 			</tr>
 		</thead>
 		<tbody>
@@ -35,7 +38,9 @@
 				<td>{{produto.nome}}</td>
 				<td class="alert alert-success"><strong>R$ {{produto.preco_consumo}}</strong></td>
 				<td>{{produto.descricao}}</td>
+				{% if request.user.perfilacessocomercial.empresa.principal %}
 				<td class="alert alert-warning">{{produto.quantidade_em_estoque}}</td>
+				{% endif %}
 			</tr>
 			{% endfor %}
 		</tbody>

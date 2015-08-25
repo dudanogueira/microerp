@@ -6,12 +6,12 @@
 <title>{%block title %}{{block.super}} - Comercial - Relatórios{% endblock %}</title>
 
 {% block content %}
-<div class="row-fluid">
-	<div class="span8">
+<div class="row">
+	<div class="col-md-8">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-tachometer"></i> Relatórios</h1>
 		<h3>Propostas Abertas e {% if not followup_n %}Sem{% else %}com {{followup_n}}{%endif%} Follow Ups</h3>
 	</div>
-	<div class="span4" id="filtro-relatorios">
+	<div class="col-md-4" id="filtro-relatorios">
 		<form class="form form-inline">
 			
 		<input type="integer" name="followup_n" value="{{followup_n}}"><br />
@@ -45,31 +45,31 @@
 
 		<!-- Button trigger modal -->
 		<button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#ModalFollowUps-{{proposta.id}}">
-		  Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
+			Visualizar Follow Ups ({{proposta.followupdepropostacomercial_set.all.count}})
 		</button>
-		
+
 		<!-- Modal -->
 		<div class="modal fade" id="ModalFollowUps-{{proposta.id}}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h4>
-      </div>
-      <div class="modal-body">
-		{% for fup in proposta.followupdepropostacomercial_set.all %}
-									<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-									<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.data|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
-									<hr />
-		{% endfor %}
-		
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-dismiss="modal">X Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+						<h4 class="modal-title" id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h4>
+					</div>
+					<div class="modal-body">
+						{% for fup in proposta.followupdepropostacomercial_set.all %}
+						<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
+						<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='label label-danger'>Nova Expiração: {{fup.data|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+						<hr />
+						{% endfor %}
+
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-dismiss="modal">X Fechar</button>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 	{% endfor %}
 

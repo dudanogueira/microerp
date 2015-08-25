@@ -87,10 +87,8 @@ $(document).ready(function() {
 	esconde_lista(grupo_pj);
 	esconde_lista(grupo_pf);
 
-	{% if form.errors %}
-		checa_exibicao_por_tipo($("#id_tipo").val());
-	{% endif %}
-	
+	checa_exibicao_por_tipo($("#id_tipo").val());
+
 });
 function checa_exibicao_por_tipo(valor){
 	if (valor == "pf"){

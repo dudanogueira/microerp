@@ -1,4 +1,5 @@
 {% load phonenumber_br %}
+{% load thumbnail %}
 <a class="btn btn-default popover-items" href="{% url "comercial:cliente_ver" cliente.id %}" data-trigger="hover" data-title="{{cliente.nome}}" data-html="true" data-content='{% if cliente.tipo == "pf" %}
 					<span class="label label-success">{{cliente.get_tipo_display}}</span>
 				{% else %}
@@ -16,7 +17,7 @@
 				<br />
 				<i class="fa fa-user"></i> {{cliente.contato}}
 				{% endif %}
-				<span class="label label-important"><i class="fa fa-hand-o-right"></i> 				{% if cliente.designado %}{{cliente.designado}}{% else %}Nenhum Funcionário{%endif%} </span>
+				<span class="label label-danger"><i class="fa fa-hand-o-right"></i> 				{% if cliente.designado %}{{cliente.designado}}{% else %}Nenhum Funcionário Designado{%endif%} </span>
 			'>
 
 	{% if requisicao.cliente.tipo == "pf" %}
@@ -26,3 +27,10 @@
 	{% endif %}
 		{{cliente.nome}}
 </a>
+
+
+				{% if request.user.perfilacessocomercial.super_gerente %}
+					{% thumbnail proposta_list.grouper.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
+    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+					{% endthumbnail %}
+				{% endif %}

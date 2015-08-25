@@ -1,82 +1,116 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load l10n %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
 
+
 <h1><i class="fa fa-th"></i> <i class="fa fa-thumbs-down"></i> <i class="fa fa-file-alt"></i> Aprovar Fechamento de Propostas</h1>
 {% if propostas_fechadas %}
-<input type="button" class="check btn-primary" data-selector="seleciona_propostas_fechar" value="deselecionar todos" />
 
 <form method="POST">
 {% csrf_token %}
-<table class="table table-stripped table-condensed">
-	
-	<thead>
-		<tr>
-			<th>ID</th>
-			<th width="30%">Pré/Cliente</th>
-			<th>Valor</th>
-			<th>Follow Ups</th>
-			<th>Ver Resumo</th>
-			<th>Motivo</th>
-			<th>Expiração</th>
-		</tr>
-	</thead>
+<div>
+      <table class="table">
+		  <thead>
+		  <tr>
+			  <th><input type="checkbox" id="checkAll" checked/>
+				  ID </th>
+			  <th width="10%">Pré/Cliente</th>
+			  <th>Valor</th>
+			  <th>Follow Ups</th>
+			  <th>Ver Resumo</th>
+			  <th>Motivo</th>
+			  <th>Expiração</th>
+		  </tr>
+		  </thead>
+        <tbody>
 		{% for proposta in propostas_fechadas %}
-			<tr class="alert alert-info">
-				<td>
-					<input type="checkbox" name="seleciona_propostas_fechar" class="seleciona_propostas_fechar" value={{proposta.id}} id="check-{{proposta.id}}" checked>
-					<label for="check-{{proposta.id}}">
+		<tr>
+			<th scope="row">
+				<input type="checkbox" name="seleciona_propostas_fechar" class="seleciona_propostas_fechar" value={{proposta.id}} id="check-{{proposta.id}}" checked>
+				<label for="check-{{proposta.id}}">
 					#{{proposta.id}}
-					</label>
-				</td>
-				<td>			{% if proposta.cliente %}
+				</label>
+			</th>
+			<td>
+				{% if proposta.cliente %}
 
 				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
 			{% else %}
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
 			{% endif %}
-</td>
-				<td>R$ {{proposta.valor_proposto}}</td>
-				<td>
-					
-					{% if proposta.followupdepropostacomercial_set.count %}
-					<!-- Button to trigger modal -->
-					<a href="#followups-proposta-{{proposta.id}}" role="button" class="btn" data-toggle="modal"><i class="fa fa-exchange"></i> {{proposta.followupdepropostacomercial_set.count}}</a>
- 				   {% endif %}
-					<!-- Modal -->
-					<div id="followups-proposta-{{proposta.id}}" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-					  <div class="modal-header">
-					    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-					    <h3 id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h3>
-					  </div>
-					  <div class="modal-body">
-  						{% for fup in proposta.followupdepropostacomercial_set.all %}
-  							<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='badge badge-warning'>{{fup.probabilidade}}%</small>
-  							<small class='badge badge-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='badge badge-important'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
-  							<hr />
-  						{% endfor %}
-						
-					  </div>
-					  <div class="modal-footer">
-					    <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
-					  </div>
-					</div>
-					
+			</td>
+			<td>
+				R$ {{proposta.valor_proposto}}
+			</td>
+			<td>
 
-				
-				</td>
-				<td><a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}"><i class="fa fa-arrow-right"></a></td>
-				<td>{{proposta.definido_perdido_motivo}}. por <i class='fa fa-user'></i>{{proposta.definido_perdido_por}} em <i class="fa fa-clock"></i> {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}</td>
-				<td>{{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</td>
-			</tr>
+				{% if proposta.followupdepropostacomercial_set.count %}
+				<!-- Button to trigger modal -->
+				<a href="#followups-proposta-{{proposta.id|unlocalize}}" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-exchange"></i> {{proposta.followupdepropostacomercial_set.count}}</a>
+				{% endif %}
+				<!-- Modal -->
+				<div id="followups-proposta-{{proposta.id|unlocalize}}" class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+								<h4 class="modal-title" id="myModalLabel">Follow Ups Proposta #{{proposta.id}}</h4>
+							</div>
+							<div class="modal-body">
+								{% for fup in proposta.followupdepropostacomercial_set.all %}
+								<strong>{{fup.criado_por.funcionario}}</strong>: {{fup.texto}} <small class='label label'>{{fup.probabilidade}}%</small>
+								<small class='label label'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<br /><small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %}
+								<hr />
+								{% endfor %}
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</td>
+			<td><a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}"><i class="fa fa-arrow-right"></a></td>
+			<td>
+				<!-- Button to trigger modal -->
+				<a href="#motivo-proposta-{{proposta.id|unlocalize}}" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-info"></i></a>
+
+				<!-- Modal -->
+				<div id="motivo-proposta-{{proposta.id|unlocalize}}" class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+					<div class="modal-dialog" role="document">
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+								<h4 class="modal-title" id="myModalLabel">Motivo de fechamento da Proposta #{{proposta.id}}</h4>
+							</div>
+							<div class="modal-body">
+								{{proposta.definido_perdido_motivo}}. por <i class='fa fa-user'></i>{{proposta.definido_perdido_por}} em <i class="fa fa-clock"></i> {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</td>
+			<td>{{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</td>
+		</tr>
 		{% endfor %}
-	
-</table>
-<p class="btn-group">
+        </tbody>
+      </table>
+    </div>
+
+
+
+
+	<p class="btn-group">
 	<button type="submit" class="btn btn-danger" name="aprovar-fechamento" value="fechar"><i class="fa fa-thumbs-down"></i> Fechar Propostas</button>
 
 	<button type="submit" class="btn btn-success" name="reabrir-proposta" value="reabrir"><i class="fa fa-refresh"></i> Reabrir Propostas</button>
@@ -101,40 +135,14 @@
 
 $(document).ready(function() {
 	$("#menu-comercial-aprovar-fechamentos, #top-menu-comercial").addClass("active");
-	
-    $('.check:button').toggle(function(){
-		
-		seletor = "."+$(this).data('selector');
-		items = $(seletor)
-        items.removeAttr('checked');
-        $(this).val('selecionar todos');        
-		items.each(function(i,l){
-					$(l).closest("tr").attr('class', '');    
-		})
-		
-    },function(){
-		$(this).closest("tr").attr('class', 'alert alert-info'); 
-		seletor = "." + $(this).data('selector');
-		items = $(seletor)
-        items.attr('checked','checked');
-        $(this).val('deselecionar todos');
-		items.each(function(i,l){
-			$(l).closest("tr").attr('class', 'alert alert-info');
-		})
-    })
-	
+	$("#checkAll").change(function () {
+		$("input:checkbox").prop('checked', $(this).prop("checked"));
+	});
 	
 });
 
 $('.popover-items').popover()
 
-$("input[type='checkbox']").change(function() {
-	if (this.checked){
-		$(this).closest("tr").attr('class', 'alert alert-info'); 
-	}else{
-		$(this).closest("tr").attr('class', ''); 
-	}
-});
 
 
 

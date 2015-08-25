@@ -7,11 +7,11 @@
 {% block content %}
 
 <div class="row-fluid">
-	<div class="span8">
+	<div class="col-md-8">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-bar-chart-o"></i> Indicadores do Comercial</h1>
 		
 	</div>
-	<div class="span4" id="filtro-indicador">
+	<div class="col-md-4" id="filtro-indicador">
 		<form method="" class="form form-inline">
 				<p class="btn-group">
 			{{form_seleciona_ano.ano}}
@@ -25,8 +25,8 @@
 
 <h1>Contratos</h1>
 <div class="row-fluid">
-	<div class="span4"><h3 class="alert alert-success">Assinatura: {{contratos_aguardando_assinatura.count}}<br /><small>Aguardando Assinatura do Cliente</small></h3></div>
-	<div class="span4"><h3 class="alert alert-info">Em Análise: {{contratos_em_analise.count}}<br /><small>Aguardando a Validação do Gerente</small></h3></div>
+	<div class="col-md-6"><h3 class="alert alert-success">Assinatura: {{contratos_aguardando_assinatura.count}}<br /><small>Aguardando Assinatura do Cliente</small></h3></div>
+	<div class="col-md-6"><h3 class="alert alert-info">Em Análise: {{contratos_em_analise.count}}<br /><small>Aguardando a Validação do Gerente</small></h3></div>
 	
 </div>
 

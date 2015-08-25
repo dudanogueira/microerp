@@ -15,6 +15,11 @@
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
 			{% endif %}
 
+{% if proposta.status == "perdida" and proposta.definido_perdido_motivo %}
+	<div class="alert alert-danger"><b>Motivo de Fechamento</b>: {{proposta.definido_perdido_motivo}}</div>
+{% endif %}
+
+
 {% if request.user.perfilacessocomercial.gerente %}
 <h4>Como Gerente</h4>
 {% endif %}
