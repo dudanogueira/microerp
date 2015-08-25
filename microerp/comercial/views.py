@@ -261,6 +261,7 @@ class AdicionarCliente(forms.ModelForm):
 class FormAdicionarFollowUp(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
+        perfil = kwargs.pop('perfil')
         super(FormAdicionarFollowUp, self).__init__(*args, **kwargs)
         self.fields['proposta'].widget = forms.HiddenInput()
         self.fields['texto'].required = True
@@ -268,7 +269,7 @@ class FormAdicionarFollowUp(forms.ModelForm):
         self.fields['probabilidade'].required = True
         self.fields['data_expiracao'].required = False
         self.fields['data_expiracao'].widget.attrs['class'] = 'datepicker'
-        self.fields['visita_por'].queryset = Funcionario.objects.exclude(user__perfilacessocomercial=None).exclude(user__funcionario__periodo_trabalhado_corrente=None)
+        self.fields['visita_por'].queryset = perfil.funcionarios_disponiveis()
         self.fields['visita_por'].widget.attrs['class'] = 'select2'
 
     class Meta:
@@ -465,7 +466,7 @@ def cliente_ver(request, cliente_id):
     else:
         form_adicionar_endereco = AdicionarEnderecoClienteForm(cliente=cliente)
     cliente_q = request.GET.get('cliente', None)
-    form_adicionar_follow_up = FormAdicionarFollowUp()
+    form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
     return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
 
@@ -999,7 +1000,7 @@ class VincularPreClienteParaPreClienteForm(forms.Form):
 @user_passes_test(possui_perfil_acesso_comercial)
 def precliente_ver(request, pre_cliente_id):
     precliente = get_object_or_404(PreCliente, pk=pre_cliente_id)
-    form_adicionar_follow_up = FormAdicionarFollowUp()
+    form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
     if request.POST:
         form_vincular_a_cliente = VincularPreClienteParaClienteForm(request.POST)
@@ -1187,7 +1188,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
-    form_adicionar_follow_up = FormAdicionarFollowUp()
+    form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_validas = PropostaComercial.objects.filter(
@@ -1225,8 +1226,7 @@ def propostas_comerciais_minhas_expiradas_ajax(request):
     
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).filter(
-            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario) | Q(designado=None) & \
-            (Q(precliente__designado=None) & Q(cliente__designado=None))
+            Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario)
             )
     else:
         if request.user.perfilacessocomercial.super_gerente:
@@ -1855,7 +1855,7 @@ def proposta_comercial_imprimir(request, proposta_id):
 def adicionar_follow_up(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, status="aberta", pk=proposta_id)
     if request.POST:
-        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST)
+        form_adicionar_follow_up = FormAdicionarFollowUp(request.POST, perfil=request.user.perfilacessocomercial)
         if form_adicionar_follow_up.is_valid():
             follow_up = form_adicionar_follow_up.save(commit=False)
             follow_up.criado_por = request.user.funcionario
