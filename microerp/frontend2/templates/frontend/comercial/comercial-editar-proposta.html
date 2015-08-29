@@ -3,6 +3,7 @@
 {% load check_installed %}
 {% load bootstrap %}
 {% load humanize %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -206,9 +207,9 @@
         <h4 class="modal-title" id="myModalLabel">Descrição do Novo Orçamento</h4>
       </div>
       <div class="modal-body">
-		  <form method="POST" id="form_adicionar_orcamento" name="form_adicionar_orcamento" class="form form-inline">
+		  <form method="POST" id="form_adicionar_orcamento" name="form_adicionar_orcamento">
 			  {% csrf_token %}
-			  {{adicionar_orcamento_form.as_p}}
+			  {{adicionar_orcamento_form|bootstrap}}
 		  </form>
       </div>
       <div class="modal-footer">

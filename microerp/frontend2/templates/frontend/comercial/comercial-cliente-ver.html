@@ -4,6 +4,8 @@
 {% load phonenumber_br %}
 {% load bootstrap %}
 {% load l10n %}
+{% load thumbnail %}
+
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -15,26 +17,29 @@
 		<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Ficha do Cliente</h1>
 	</div>
 	
-	<div class="col-md-6">
-		<h1>{{cliente.nome}} <span class="label label-info">{{cliente.get_tipo_display|upper}}</span></h1> 
+	<div class="col-md-6 text-right">
+		<h1>{{cliente.nome}} <span class="label label-info">{{cliente.get_tipo_display|upper}}</span>
+			{% if request.user.perfilacessocomercial.super_gerente and cliente.designado %}
+				{% thumbnail cliente.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
+				<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+				{% endthumbnail %}
+			{% endif %}
+		</h1>
 	</div>
 </div>
 
 <ul class="nav nav-tabs">
     <li class="active"><a href="#informacoes-gerais" data-toggle="tab"><i class="fa fa-info"></i> Informações</a></li>
-
     <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="label label-warning">{{cliente.propostas_abertas.count}}</span> <span class="label label-success">{{cliente.propostas_convertidas.count}}</span> <span class="label label-danger">{{cliente.propostas_perdidas.count}}</span>
 	<span class="label label-default">{{cliente.propostas_expiradas.count}}</span>
 	</a></li>
-	
-	<li class=""><a href="#requisicao-de-proposta" data-toggle="tab">Requisições <span class="label label-danger">{{cliente.requisicao_proposta_abertas.count}}</span> <span class="label label-success">{{cliente.requisicao_proposta_atendidas.count}}</span></a></li>
-
 </ul>
 
 <div class="row" id="sub-menu-ficha-cliente">
 	
 	<div class="col-md-4">
-		<a href="{% url "comercial:clientes" %}?cliente={{cliente_q}}"><i class="fa fa-arrow-left"></i> Retornar </a>
+
+		<a href="{% url "comercial:clientes" %}{%if cliente_q %}?cliente={{cliente_q}}{% endif %}"><i class="fa fa-arrow-left"></i> Retornar </a>
 	</div>
 	
 	<div class="col-md-4">
@@ -60,7 +65,7 @@
 </div>
 
 
-<div id="ficha-funcionario" class="tab-content">
+<div id="ficha-cliente" class="tab-content">
 	
 	<div class="tab-pane fade in active" id="informacoes-gerais">
 		<div class="row-fluid">
@@ -382,91 +387,6 @@
 
 		{% endwith %}
 		
-	</div>
-
-	<div class="tab-pane fade in" id="requisicao-de-proposta">
-		
-	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
-	        <table class="table table-hover table-condensed">
-	            <thead>
-	                <caption><h4 class="alert alert-danger">Requisições de Propostas Em Aberto</h4></caption>
-	                <tr>
-						<th>Data</th>
-						<th>Descrição</th>
-	                    <th>Ações</th>
-	                </tr>
-	            </thead>
-	            <tbody>
-	                {% for requisicao in cliente.requisicao_proposta_abertas %}
-	                <tr>
-						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}}</td>
-						<td class="alert alert-info"><i>{{requisicao.descricao}}, <small>{{requisicao.criado_por}}</small></i></td>
-						<td>
-						<p class="btn-group">
-
-						<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" requisicao.cliente.id %}?requisicao_origem={{requisicao.id}}" class="btn btn-success"><i class="fa fa-check"></i> Atender</a>						
-						
-						
-						</p>
-						</td>
-						
-
-	                </tr>
-	                {% empty %}
-
-	                <tr>
-	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
-	                    <td>{% if cliente_q %}
-	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
-	                        {% endif %}
-	                    </td>
-	                </tr>
-
-	                {% endfor %}
-
-
-	            </tbody>
-	        </table>
-	    </div>
-		
-		
-		
-	    <div class="tabela-preclientes-sem-proposta" id="tabela-precliente">
-	        <table class="table table-hover table-condensed">
-	            <thead>
-	                <caption><h4 class="alert alert-sucess">Requisições de Propostas Atendidas</h4></caption>
-	                <tr>
-						<th>Criação</th>
-						<th>Atendimento</th>
-	                    <th>Proposta Vinculada</th>
-	                </tr>
-	            </thead>
-	            <tbody>
-	                {% for requisicao in cliente.requisicao_proposta_atendidas %}
-	                <tr>
-						<td>{{requisicao.criado|date:"SHORT_DATETIME_FORMAT"}} por {{requisicao.criado_por}}</td>
-						<td>{{requisicao.atendido_data|date:"SHORT_DATETIME_FORMAT"}} por {{requisicao.atendido_por}}</td>
-						<td>Proposta: #{{requisicao.proposta_vinculada.id}}, <strong>{{requisicao.proposta_vinculada.get_status_display}}</strong>, <strong>{{requisicao.proposta_vinculada.probabilidade}}%</strong> de <strong>R${{requisicao.proposta_vinculada.valor_proposto}}</strong></td>
-
-	                </tr>
-	                {% empty %}
-
-	                <tr>
-	                    <td class="alert alert-info"><strong>Nenhum  Encontrado!</strong></td>
-	                    <td>{% if cliente_q %}
-	                        <a href="."><i class="fa fa-trash-o"></i> Limpar Busca</a>
-	                        {% endif %}
-	                    </td>
-	                </tr>
-
-	                {% endfor %}
-
-
-	            </tbody>
-	        </table>
-	    </div>
-		
-	
 	</div>
 
 </div>

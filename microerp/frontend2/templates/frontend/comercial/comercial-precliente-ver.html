@@ -15,7 +15,7 @@
 		<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Ficha do Pré Cliente</h1>
 	</div>
 	
-	<div class="span6">
+	<div class="col-md-6">
 		<h1>{{precliente.nome}}</h1> 
 	</div>
 
@@ -43,6 +43,9 @@
 		<strong>Dados:</strong> {{precliente.dados}}<br />
 		<strong>Contato:</strong> {{precliente.contato}}<br />
 		<strong>Designado:</strong> {{precliente.designado}}<br />
+		<strong>Tipo:</strong> {{precliente.get_tipo_display}}: {% if precliente.tipo == 'pf' %}{{precliente.cpf}}{% else %}{{precliente.cnpj}}{% endif %}<br />
+		<strong>Origem:</strong> {{precliente.origem}}<br />
+
 		<hr />
 		
 		

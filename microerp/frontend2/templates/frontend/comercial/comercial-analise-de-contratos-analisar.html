@@ -9,7 +9,7 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato #{{contrato.id}}</h1>
 <a href="{% url "comercial:propostas_comerciais_ver" contrato.propostacomercial.id %}" class="btn btn-primary">Resumo do Contrato</a>
 
-<div class="row-fluid">
+<div class="row">
 	
 	<div class="col-md-6">
 		
@@ -17,13 +17,14 @@
 		{% csrf_token %}
 
 		{{form_analisar_contrato|bootstrap}}
-		<div class="btn-group">
+
+			<p class="btn-group">
 			<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim"><i class="fa fa-pencil"></i> 	Alterar</button>
 			<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar Contrato</button>
-			<button data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</button>
-						<a class="btn btn-default" href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" name="contrato-invalido" value="sim"><i class="fa fa-print"></i> Gerar PDF</a>
+			<a data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</a>
+			<a class="btn btn-default" href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" name="contrato-invalido" value="sim"><i class="fa fa-print"></i> Gerar PDF</a>
 			
-		</div>
+		</p>
 		
 		<!-- Modal -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

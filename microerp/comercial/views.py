@@ -66,9 +66,11 @@ class ConfigurarImpressaoContrato(forms.Form):
         contrato = kwargs.pop('contrato')
         super(ConfigurarImpressaoContrato, self).__init__(*args, **kwargs)
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
+        funcionarios_disponiveis = Funcionario.objects.filter(user__perfilacessocomercial__empresa=contrato.cliente.designado.user.perfilacessocomercial.empresa)
         initial1 = contrato.responsavel_comissionado or None
-        self.fields['testemunha1'] = forms.ModelChoiceField(queryset=Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis), initial=initial1, label="Testemunha 1")
-        self.fields['testemunha2'] = forms.ModelChoiceField(queryset=Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis), required=False, label="Testemunha 2")
+        a = contrato.cliente.designado
+        self.fields['testemunha1'] = forms.ModelChoiceField(queryset=funcionarios_disponiveis, initial=initial1, label="Testemunha 1")
+        self.fields['testemunha2'] = forms.ModelChoiceField(queryset=funcionarios_disponiveis, required=False, label="Testemunha 2")
         self.fields['imprime_logo'] = forms.BooleanField()
         self.fields['imprime_logo'].initial = True
 
@@ -102,9 +104,14 @@ class PreClienteAdicionarForm(forms.ModelForm):
 
             # checa se já existe CPF no banco de dados
             if cpf:
-                precliente = PreCliente.objects.filter(cpf=cpf)
+                # primeiro os preclientes não convertidos
+                precliente = PreCliente.objects.filter(cpf=cpf, cliente_convertido=None)
                 if precliente:
                     raise ValidationError(u"Já existe um cliente com este CPF: %s" % precliente[0].nome)
+                # agora os preclientes convertidos, no caso, clientes
+                cliente = Cliente.objects.filter(cpf=cpf)
+                if cliente:
+                    raise ValidationError(u"Já existe um cliente com este CPF: %s" % cliente[0].nome)
         return cpf
 
     #def clean_inscricao_estadual(self):
@@ -366,8 +373,7 @@ class FiltrarPreClientesERequisicoesForm(forms.Form):
 def clientes(request):
     form_filtrar_precliente = FiltrarPreClientesERequisicoesForm(perfil=request.user.perfilacessocomercial)
     cliente_q = request.GET.get('cliente', False)
-    #preclientes = PreCliente.objects.filter(cliente_convertido=None)
-    #clientes = Cliente.objects.filter(ativo=True)
+    # busca realizada
     if cliente_q:
         busca_feita = True
         cliente_q = cliente_q.strip()
@@ -377,6 +383,14 @@ def clientes(request):
                 Q(ativo=True) & \
                 Q(nome__icontains=cliente_q) | \
                 Q(fantasia__icontains=cliente_q) | \
+                Q(cnpj__icontains=cliente_q) | \
+                Q(cpf__icontains=cliente_q)
+            )
+            # todos os preclientes
+            preclientes = PreCliente.objects.filter(
+                cliente_convertido=None
+            ).filter(
+                Q(nome__icontains=cliente_q) | \
                 Q(cnpj__icontains=cliente_q) | \
                 Q(cpf__icontains=cliente_q)
             )
@@ -391,15 +405,16 @@ def clientes(request):
                 Q(cnpj__icontains=cliente_q) | \
                 Q(cpf__icontains=cliente_q)
             )
+            preclientes = PreCliente.objects.filter(
+                designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa,
+                cliente_convertido=None
+            ).filter(
+                Q(nome__icontains=cliente_q) | \
+                Q(cnpj__icontains=cliente_q) | \
+                Q(cpf__icontains=cliente_q)
+            )
         #puxa todos os pre clientes, menos os já convertidos)
-        preclientes = PreCliente.objects.filter(
-            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa,
-            cliente_convertido=None
-        ).filter(
-            Q(nome__icontains=cliente_q) | \
-            Q(cnpj__icontains=cliente_q) | \
-            Q(cpf__icontains=cliente_q)
-        )
+
     else:
         if request.GET.get('cliente') == '' or request.POST.get('btn-aplicar-filtro', None):
             busca_feita = True
@@ -745,8 +760,9 @@ def gerencia_aprovar_fechamentos(request):
     if request.user.perfilacessocomercial.super_gerente:
         propostas_fechadas = PropostaComercial.objects.filter(status="perdida_aguardando")
     else:
-        propostas = PropostaComercial.objects.filter(
-            cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        propostas_fechadas = PropostaComercial.objects.filter(
+            cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa,
+            status="perdida_aguardando"
         )
     return render_to_response('frontend/comercial/comercial-gerenciar-aprovar-perdidas.html', locals(), context_instance=RequestContext(request),)
 
@@ -777,8 +793,11 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     pro contrato com base na proposta'''
     
     def __init__(self, *args, **kwargs):
+        perfil = kwargs.pop('perfil', None)
         super(ConfigurarContratoBaseadoEmProposta, self).__init__(*args, **kwargs)
         self.fields['apoio_tecnico'].widget.attrs['class'] = 'select2'
+        self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
+        self.fields['conta_transferencia'].queryset = perfil.empresa.contas_disponiveis.all()
     
     objeto = forms.CharField(widget = forms.Textarea, label="Objeto do Contrato", required=True)
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
@@ -793,8 +812,15 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
-    apoio_tecnico = forms.ModelChoiceField(queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None), label=u"Apoio Técnico", required=False)
-    conta_transferencia = forms.ModelChoiceField(queryset=ContaBancaria.objects.all(), label=u"Conta para Transferência", help_text="Obrigatório Somente se houver Transferência Eletrônica nas Parcelas", required=False)
+    apoio_tecnico = forms.ModelChoiceField(
+        queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None),
+        label=u"Apoio Técnico", required=False
+    )
+    conta_transferencia = forms.ModelChoiceField(
+            queryset=ContaBancaria.objects.all(),
+            label=u"Conta para Transferência",
+        help_text="Obrigatório Somente se houver Transferência Eletrônica nas Parcelas", required=False
+    )
 
 
 class UsarCartaoCredito(forms.Form):
@@ -833,6 +859,7 @@ def editar_proposta_converter(request, proposta_id):
         foro_inicial = None
     
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
+        perfil = request.user.perfilacessocomercial,
         initial={
             'objeto': proposta.objeto_proposto,
             'garantia': proposta.garantia_proposto,
@@ -880,7 +907,7 @@ def editar_proposta_converter(request, proposta_id):
                             cp['configurar_contrato-%s-modo_recebido' % p] = tipo
                             cp['configurar_contrato-%s-valor_cobrado' % p] = cada_parcela
                         form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
-                        configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
+                        configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST, perfil=request.user.perfilacessocomercial)
                         messages.info(request, 'Adicionando %s parcelas de %s para o dia %s' % (parcelas, cada_parcela, data))
                     else:
                         messages.error(request, u"Erro! Não existe mais Valor restante para parcelar no cartão")
@@ -889,9 +916,9 @@ def editar_proposta_converter(request, proposta_id):
                 cp = request.POST.copy()
                 cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ 1
                 form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
-                configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
+                configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST, perfil=request.user.perfilacessocomercial)
             elif 'converter-contrato' in request.POST:
-                configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST)
+                configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST, perfil=request.user.perfilacessocomercial)
                 form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
                 if form_configurar_contrato.is_valid() and configurar_contrato_form.is_valid():
                     # checa se total preenchido no formulario bate com valor proposto
@@ -980,8 +1007,16 @@ def editar_proposta_converter(request, proposta_id):
 class VincularPreClienteParaClienteForm(forms.Form):
     
     def __init__(self, *args, **kwargs):
+        perfil = kwargs.pop('perfil', None)
         super(VincularPreClienteParaClienteForm, self).__init__(*args, **kwargs)
         self.fields['cliente'].widget.attrs['class'] = 'select2'
+        # se super gerente, mostrar todos os clientes
+        if perfil.super_gerente:
+            self.fields['cliente'].queryset = Cliente.objects.filter(ativo=True)
+        else:
+            self.fields['cliente'].queryset = Cliente.objects.filter(
+                designado__user__perfilacessocomercial__empresa=perfil.empresa
+            )
     
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True))
 
@@ -989,10 +1024,19 @@ class VincularPreClienteParaClienteForm(forms.Form):
 class VincularPreClienteParaPreClienteForm(forms.Form):
     
     def __init__(self, *args, **kwargs):
+        perfil = kwargs.pop('perfil', None)
         self.precliente = kwargs.pop('precliente')
         super(VincularPreClienteParaPreClienteForm, self).__init__(*args, **kwargs)
         self.fields['precliente'].widget.attrs['class'] = 'select2'
-        self.fields['precliente'].queryset = PreCliente.objects.all().exclude(id=self.precliente.id)
+        if perfil.super_gerente:
+            self.fields['precliente'].queryset = PreCliente.objects.filter(
+                cliente_convertido=None
+                ).exclude(id=self.precliente.id)
+        else:
+            self.fields['precliente'].queryset = PreCliente.objects.filter(
+                designado__user__perfilacessocomercial__empresa=perfil.empresa,
+                cliente_convertido=None
+            ).exclude(id=self.precliente.id)
     
     precliente = forms.ModelChoiceField(queryset=None)
 
@@ -1003,8 +1047,8 @@ def precliente_ver(request, pre_cliente_id):
     form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
     if request.POST:
-        form_vincular_a_cliente = VincularPreClienteParaClienteForm(request.POST)
-        form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(request.POST, precliente=precliente)
+        form_vincular_a_cliente = VincularPreClienteParaClienteForm(request.POST, perfil=request.user.perfilacessocomercial)
+        form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(request.POST, precliente=precliente, perfil=request.user.perfilacessocomercial)
         if form_vincular_a_cliente.is_valid():
             # passa todas as propostas deste precliente para o cliente selecionado
             cliente_selecionado = form_vincular_a_cliente.cleaned_data.get('cliente')
@@ -1033,8 +1077,8 @@ def precliente_ver(request, pre_cliente_id):
             messages.success(request, "Pré Cliente %s Removido. Todas as propostas agora estão em %s" % (precliente_selecionado, precliente))
             return redirect(reverse("comercial:precliente_ver", args=[precliente.id] ))
     else:
-        form_vincular_a_cliente = VincularPreClienteParaClienteForm()
-        form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(precliente=precliente)
+        form_vincular_a_cliente = VincularPreClienteParaClienteForm(perfil=request.user.perfilacessocomercial)
+        form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(precliente=precliente, perfil=request.user.perfilacessocomercial)
     return render_to_response('frontend/comercial/comercial-precliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 # Pre Cliente
@@ -1113,6 +1157,13 @@ def precliente_converter(request, pre_cliente_id):
                 'cpf': proposta_referencia.precliente.cpf,
                 'cnpj': proposta_referencia.precliente.cnpj,
                 'origem': proposta_referencia.precliente.origem
+            }
+        else:
+            initial = {
+                'tipo': precliente.tipo,
+                'cpf': precliente.cpf,
+                'cnpj': precliente.cnpj,
+                'origem': precliente.origem,
             }
 
         form = AdicionarCliente(precliente=precliente, com_endereco=True, initial=initial )
@@ -1446,9 +1497,9 @@ class OrcamentoPrint:
             elements = []
             # logo empresa
             if perfil.empresa:
-                im = Image(perfil.empresa.logo.path)
+                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
             else:
-                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
+                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
             im.hAlign = 'LEFT'
             
             # id da proposta
@@ -1735,7 +1786,7 @@ def proposta_comercial_imprimir(request, proposta_id):
     
     #    pega o endreco principal
     try:
-        endereco_principal = proposta.cliente.enderecocliente_set.all()[0]
+        endereco_principal = proposta.cliente.enderecocliente_set.first()
     except:
         endereco_principal = None
     # rua
@@ -1745,16 +1796,16 @@ def proposta_comercial_imprimir(request, proposta_id):
                 endereco_principal.rua, endereco_principal.numero
             )
         # bairro
-        if not proposta.bairro_do_proposto and endereco_principal.bairro:
-            proposta.bairro_do_proposto = endereco_principal.bairro.nome
+        if not proposta.bairro_do_proposto and endereco_principal.bairro_texto:
+            proposta.bairro_do_proposto = endereco_principal.bairro_texto
 
         # CEP
         if not proposta.cep_do_proposto  and endereco_principal.cep:
             proposta.cep_do_proposto = endereco_principal.cep
 
         # cidade
-        if not proposta.cidade_do_proposto  and endereco_principal.bairro.cidade.nome:
-            proposta.cidade_do_proposto = endereco_principal.bairro.cidade.nome
+        if not proposta.cidade_do_proposto  and endereco_principal.cidade_texto:
+            proposta.cidade_do_proposto = endereco_principal.cidade_texto
 
         # telefone
         if not proposta.telefone_contato_proposto:
@@ -1881,11 +1932,15 @@ def adicionar_follow_up(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus(request):
-    if request.user.perfilacessocomercial.gerente:
+    if request.user.perfilacessocomercial.super_gerente:
         meus_contratos = ContratoFechado.objects.all().order_by('responsavel').exclude(status="arquivado")
-        #meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status')
     else:
-        meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status').exclude(status="arquivado")
+        if request.user.perfilacessocomercial.gerente:
+            meus_contratos = ContratoFechado.objects.all().order_by('responsavel').exclude(status="arquivado").filter(
+                responsavel__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            )
+        else:
+            meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status').exclude(status="arquivado")
     return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -1973,9 +2028,9 @@ class ContratoPrint:
             
             # logo empresa
             if perfil.empresa:
-                im = Image(perfil.empresa.logo.path)
+                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
             else:
-                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'),)
+                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
             im.hAlign = 'LEFT'
             
             # id do contrato
@@ -2904,14 +2959,18 @@ def relatorios_comercial_propostas_visitas(request):
         messages.error(request, "Intervalo de datas errado")
         erro = True
     if not erro:
+        fups = FollowUpDePropostaComercial.objects.filter(
+                Q(proposta__cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+                Q(proposta__precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+        )
         if de and ate:
-            fups = FollowUpDePropostaComercial.objects.filter(criado__range=(de,ate), visita=True)
+            fups = fups.filter(criado__range=(de,ate), visita=True)
         elif de and not ate:
             de = datetime.datetime.combine(de, datetime.time(00, 00))
-            fups = FollowUpDePropostaComercial.objects.filter(criado__gte=de, visita=True)
+            fups = fups.filter(criado__gte=de, visita=True)
         elif not de and ate:
             ate = datetime.datetime.combine(ate, datetime.time(23, 59))
-            fups = FollowUpDePropostaComercial.objects.filter(criado__lte=ate, visita=True)
+            fups = fups.filter(criado__lte=ate, visita=True)
 
     return render_to_response('frontend/comercial/comercial-relatorios-followups-visita.html', locals(), context_instance=RequestContext(request),)
 
@@ -3016,12 +3075,15 @@ def analise_de_contratos(request):
 class FormAnalisarContrato(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
+        perfil = kwargs.pop('perfil')
         super(FormAnalisarContrato, self).__init__(*args, **kwargs)
         ids_possiveis_responsaveis = PerfilAcessoComercial.objects.exclude(user__funcionario__periodo_trabalhado_corrente=None).values_list('user__funcionario__id')
-        self.fields['responsavel_comissionado'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        self.fields['responsavel_comissionado'].queryset = perfil.funcionarios_disponiveis()
         self.fields['responsavel_comissionado'].widget.attrs['class'] = 'select2'
         self.fields['responsavel'].widget.attrs['class'] = 'select2'
-        self.fields['responsavel'].queryset = Funcionario.objects.filter(pk__in=ids_possiveis_responsaveis)
+        self.fields['responsavel'].queryset = perfil.funcionarios_disponiveis()
+        self.fields['apoio_tecnico'].widget.attrs['class'] = 'select2'
+        self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
 
     class Meta:
         model = ContratoFechado
@@ -3031,7 +3093,7 @@ class FormAnalisarContrato(forms.ModelForm):
 def analise_de_contratos_analisar(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="emanalise")
     if request.POST:
-        form_analisar_contrato = FormAnalisarContrato(request.POST, instance=contrato)
+        form_analisar_contrato = FormAnalisarContrato(request.POST, instance=contrato, perfil=request.user.perfilacessocomercial)
         if form_analisar_contrato.is_valid():
             contrato = form_analisar_contrato.save()
             if request.POST.get('aterar-contrato'):
@@ -3050,7 +3112,7 @@ def analise_de_contratos_analisar(request, contrato_id):
                 messages.success(request, u"Sucesso! Contrato Analisado. Definido como Aguardando Assinatura")
             return redirect(reverse("comercial:analise_de_contratos"))
     else:
-        form_analisar_contrato = FormAnalisarContrato(instance=contrato)
+        form_analisar_contrato = FormAnalisarContrato(instance=contrato, perfil=request.user.perfilacessocomercial)
     return render_to_response('frontend/comercial/comercial-analise-de-contratos-analisar.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)

@@ -423,6 +423,7 @@ class EmpresaComercial(models.Model):
     bairro = models.CharField(max_length=300)
     cidade = models.CharField(max_length=300)
     estado = models.CharField("Estado", max_length=100,  blank=True, null=True, choices=STATE_CHOICES)
+    contas_disponiveis = models.ManyToManyField('financeiro.ContaBancaria', blank=True)
 
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):

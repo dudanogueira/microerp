@@ -31,7 +31,7 @@
 		{% for proposta in propostas_fechadas %}
 		<tr>
 			<th scope="row">
-				<input type="checkbox" name="seleciona_propostas_fechar" class="seleciona_propostas_fechar" value={{proposta.id}} id="check-{{proposta.id}}" checked>
+				<input type="checkbox" name="seleciona_propostas_fechar" class="seleciona_propostas_fechar" value={{proposta.id|unlocalize}} id="check-{{proposta.id|unlocalize}}" checked>
 				<label for="check-{{proposta.id}}">
 					#{{proposta.id}}
 				</label>

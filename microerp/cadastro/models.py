@@ -155,8 +155,8 @@ class Cliente(models.Model):
             if self.enderecocliente_set.filter(principal=True):
                 endereco = self.enderecocliente_set.filter(principal=True)[0]
             else:
-                endereco = self.enderecocliente_set.all()[0]
-            string = u"%s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro.cidade.nome, endereco.bairro.cidade.estado, endereco.cep)
+                endereco = self.enderecocliente_set.first()
+            string = u"%s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro_texto, endereco.uf_texto, endereco.cep)
         else: 
             string = None
         return string

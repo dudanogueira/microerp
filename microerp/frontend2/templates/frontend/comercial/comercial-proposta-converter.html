@@ -1,43 +1,39 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load bootstrap %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Converter Proposta  Comercial (#{{proposta.id}}) em Contrato</h1>
 
-<div class="well well-small">
-	<div class="row-fluid">
-		<div class="span4">
+<div class="">
+	<div class="row well well-sm">
+		<div class="col-md-4">
 			<h5>Forma de Pagamento Proposto:</h5>
 			<p>{{proposta.forma_pagamento_proposto}}</p>
 		</div>
 		
-		<div class="span4">
+		<div class="col-md-4">
 			<h4>Total Proposto</h4>
 			R$ <span id="total_proposto">{{proposta.valor_proposto}}</span>
 		</div>
 		
-		<div class="span4">
+		<div class="col-md-4">
 			{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
 		</div>
 		
 	</div>
 </div>
 
-<form method="post" class="form form-inline" id="form-converter" name="form-converter">
+<form method="post" id="form-converter" name="form-converter">
 	
 	{% csrf_token %}
 	
 	<div class="well well-small" id="configurar-contrato">
 		<h4>Configurações do Contrato</h4>
-		{% for item in configurar_contrato_form %}
-			<hr />
-			{{item.errors}}
-			{{item.label}}
-			{{item}}
-		{% endfor %}
+			{{configurar_contrato_form|bootstrap}}
 
 	</div>
 	
@@ -52,30 +48,22 @@
 					<h4>Parcela</h4>
 				</div>
 				<div class="span6">
-					{{form.observacao_recebido.errors}}
-					{{form.observacao_recebido.label}}
-					{{form.observacao_recebido}}
+					{{form.observacao_recebido|bootstrap}}
 				</div>
 			</div>
 		
-			<div class="row-fluid">
+			<div class="row">
 
-				<div class="span4">
-				{{form.data_cobranca.errors}}
-				{{form.data_cobranca.label}}
-				{{form.data_cobranca}}
+				<div class="col-md-4">
+				{{form.data_cobranca|bootstrap}}
 				</div>
 		
-				<div class="span4">
-					{{form.valor_cobrado.errors}}
-					{{form.valor_cobrado.label}}
-					{{form.valor_cobrado}}			
+				<div class="col-md-4">
+					{{form.valor_cobrado|bootstrap}}
 				</div>
 	
-				<div class="span4">
-					{{form.modo_recebido.errors}}
-					{{form.modo_recebido.label}}
-					{{form.modo_recebido}}
+				<div class="col-md-4">
+					{{form.modo_recebido|bootstrap}}
 				</div>
 		
 			</div>
@@ -86,37 +74,28 @@
 			
 			{% for form in form_configurar_contrato.forms %}
 			<div class="well">
-				<div class="row-fluid ">
-					<div class="span6">
+				<div class="row ">
+					<div class="col-md-6">
 						<h4>Parcela</h4>
 					</div>
-					<div class="span6">
-						{{form.observacao_recebido.errors}}
-						{{form.observacao_recebido.label}}
-						{{form.observacao_recebido}}
+					<div class="col-md-6">
+						{{form.observacao_recebido|bootstrap}}
 					</div>
 				</div>
 		
-				<div class="row-fluid">
+				<div class="row">
 
-					<div class="span4">
-					{{form.data_cobranca.errors}}
-					{{form.data_cobranca.label}}
-					{{form.data_cobranca}}
+					<div class="col-md-4">
+					{{form.data_cobranca|bootstrap}}
 					</div>
-		
-					<div class="span4">
-						{{form.valor_cobrado.errors}}
-						{{form.valor_cobrado.label}}
-						{{form.valor_cobrado}}			
+
+					<div class="col-md-4">
+						{{form.valor_cobrado|bootstrap}}
 					</div>
-	
-					<div class="span4">
-						{{form.modo_recebido.errors}}
-						{{form.modo_recebido.label}}
-						{{form.modo_recebido}}
+
+					<div class="col-md-4">
+						{{form.modo_recebido|bootstrap}}
 					</div>
-		
 				</div>
 			</div>
 			{% endfor %}
@@ -125,10 +104,10 @@
 
 	</div>
 	<hr />
-	<div class="btn-group">
+	<p class="btn-group">
 		<a type="submit" class="btn btn-info" name="Usar Parcelamento" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Usar Parcelamento</a>
 		<button type="submit" class="btn btn-success" name="converter-contrato" value="converter"><i class="fa fa-arrow-right"></i> Converter em Contrato</button> 
-	</div>
+	</p>
 	
 	
 	<!-- Modal -->
@@ -141,7 +120,7 @@
 	      </div>
 	      <div class="modal-body">
 				  {% csrf_token %}
-				  {{usar_cartao_credito.as_p}}
+				  {{usar_cartao_credito|bootstrap}}
 	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>

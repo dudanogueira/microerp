@@ -97,8 +97,9 @@ class LancamentoFinanceiroReceber(models.Model):
         
         # contrato aberto, valor_cobrado deve ser igual a soma
         # da mao de obra e materiais
-        if self.contrato.tipo == 'aberto' and self.valor_mao_de_obra and self.valor_materiais:
-            self.valor_cobrado = self.valor_mao_de_obra + self.valor_materiais
+        if self.contrato:
+            if self.contrato.tipo == 'aberto' and self.valor_mao_de_obra and self.valor_materiais:
+                self.valor_cobrado = self.valor_mao_de_obra + self.valor_materiais
     
     class Meta:
         unique_together = (('contrato', 'peso'),)

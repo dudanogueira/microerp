@@ -35,8 +35,17 @@
 
 <script>
 
-$('#id_telefone_fixo').mask('00-0000-0000');
-$('#id_telefone_celular').mask('00-0000-0000');
+var SPMaskBehavior = function (val) {
+  return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+},
+spOptions = {
+  onKeyPress: function(val, e, field, options) {
+	  field.mask(SPMaskBehavior.apply({}, arguments), options);
+	}
+};
+
+$('#id_telefone_fixo').mask(SPMaskBehavior, spOptions);
+$('#id_telefone_celular').mask(SPMaskBehavior, spOptions);
 $('#id_cep').mask('00.000-000');
 
 $( ".datepicker" ).datepicker({
@@ -94,16 +103,16 @@ function checa_exibicao_por_tipo(valor){
 	if (valor == "pf"){
 		esconde_lista(grupo_pj);
 		mostra_lista(grupo_pf);
-	
+
 	}else if(valor == "pj"){
 		esconde_lista(grupo_pf);
 		mostra_lista(grupo_pj);
-	
+
 	}else{
 		esconde_lista(grupo_pj);
 		esconde_lista(grupo_pf);
 	}
-	
+
 }
 
 $("#id_tipo").on("change", function(){
