@@ -26,11 +26,11 @@ class Migration(migrations.Migration):
             name='numero_instalacao',
             field=models.CharField(max_length=300, null=True, verbose_name='N\xfamero da Instala\xe7\xe3o', blank=True),
         ),
-        migrations.AddField(
-            model_name='precliente',
-            name='origem',
-            field=models.ForeignKey(verbose_name=b'Origem do Cliente', blank=True, to='cadastro.ClienteOrigem', null=True),
-        ),
+        #migrations.AddField(
+        #    model_name='precliente',
+        #    name='origem',
+        #    field=models.ForeignKey(verbose_name=b'Origem do Cliente', blank=True, to='cadastro.ClienteOrigem', null=True),
+        #),
         migrations.AddField(
             model_name='precliente',
             name='tipo',

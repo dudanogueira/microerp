@@ -86,7 +86,7 @@ class PreCliente(models.Model):
     cnpj = models.CharField(u"CNPJ", blank=True, null=True, max_length=255)
     cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
     numero_instalacao = models.CharField(u"Número da Instalação", blank=True, null=True, max_length=300)
-    origem_precliente = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
+    #origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # metadata
     sem_interesse = models.BooleanField(default=False)
     sem_interesse_motivo = models.TextField("Motivo do Desinteresse", blank=True,)
