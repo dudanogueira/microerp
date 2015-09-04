@@ -53,9 +53,35 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cep.min.js"></script>
 <script>
 $(document).ready(function() {
-	
+
+		$("#id_cep_do_proposto").parent().append('<br /><a id="buscar-cep" class="btn btn-small btn-primary"><i class="icon-refresh icon-white"></i> Buscar CEP</a><div id="loading" style="display:none">carregando...</div>');
+	$('#buscar-cep').click(function (e) {
+		$('#id_cep_do_proposto').cep({
+			load: function () {
+				$('#result').empty();
+				$('#loading').show();
+			},
+			complete: function () {
+				$('#loading').hide();
+			},
+			error: function (msg) {
+				$('#result').html(msg);
+			},
+			success: function (data) {
+				console.log(data);
+				$('#id_rua_do_proposto').val(data.tipoLogradouro + ' ' + data.logradouro)
+				$('#id_bairro_do_proposto').val(data.bairro)
+				$('#id_cidade_do_proposto').val(data.cidade)
+				$('#id_estado_do_proposto').val(data.estado)
+			}
+		});
+
+	});
+
+
 	$("#enviar-por-email").click(function(){
 		$(this).hide();
 	})

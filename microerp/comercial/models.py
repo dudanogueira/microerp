@@ -242,8 +242,8 @@ class PropostaComercial(models.Model):
     telefone_contato_proposto = models.CharField(blank=True, max_length=100)
     email_proposto = models.CharField(blank=True, max_length=100)
     objeto_proposto = models.TextField(blank=True)
-    descricao_items_proposto = models.TextField(blank=True)
-    items_nao_incluso = models.TextField(blank=True)
+    descricao_items_proposto = models.TextField(blank=True, verbose_name=u"Descrição dos Itens Proposto")
+    items_nao_incluso = models.TextField(blank=True, verbose_name=u"Itens Não Incluso")
     forma_pagamento_proposto = models.TextField(blank=True)
     garantia_proposto = models.TextField(blank=True)
     # definido perdido

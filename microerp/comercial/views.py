@@ -1253,7 +1253,7 @@ def propostas_comerciais_minhas(request):
             ).count()
     else:
         if request.user.perfilacessocomercial.super_gerente:
-            propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('-criado', 'precliente', 'cliente')
+            propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today())#.order_by('-criado', 'precliente', 'cliente')
             propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).count()
         else:
             propostas_abertas_validas = PropostaComercial.objects.filter(
@@ -1268,7 +1268,7 @@ def propostas_comerciais_minhas(request):
             ).count()
         
     designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
-    
+
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -1443,8 +1443,8 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
 
     class Meta:
         model = PropostaComercial
-        fields = 'nome_do_proposto', 'documento_do_proposto', 'rua_do_proposto', 'bairro_do_proposto', \
-        'cep_do_proposto', 'cidade_do_proposto', 'estado_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
+        fields = 'nome_do_proposto', 'documento_do_proposto', 'cep_do_proposto', 'rua_do_proposto', 'bairro_do_proposto', \
+        'cidade_do_proposto', 'estado_do_proposto', 'endereco_obra_proposto', 'representante_legal_proposto', \
         'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'items_nao_incluso', 'forma_pagamento_proposto', 'garantia_proposto',
 
 class OrcamentoPrint:
@@ -1570,7 +1570,7 @@ class OrcamentoPrint:
                 elements.append(Spacer(1, 24))
                 
                 # 1.1 - Descrição dos Itens
-                desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITEMS", styles['left_h2'])
+                desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITENS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
