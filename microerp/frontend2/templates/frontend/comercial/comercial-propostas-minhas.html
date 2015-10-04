@@ -57,7 +57,6 @@
 
 			{% endif %}
 
-
 			</p>
 		
 		<table class="table table-condensed table.stripped">
@@ -79,7 +78,7 @@
 							<span class="badge badge-important">Hoje!</span>
 					{% else %}
 						<span class="label label-success"> {{proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}}</span>
-							<small>{{proposta.data_expiracao|timeuntil}}</small>
+							<small>{{proposta.data_expiracao|timeuntil}}<br /><b>{{proposta.tipo}}</b></small>
 					{% endif %}
 				</td>
 				<td>R$ {{proposta.valor_proposto|intcomma}}</td>
@@ -401,12 +400,13 @@ $('#id_texto').on("keyup change", function(){
 });
 
 
-$('#tab-content-comercial-clientes').on("hover", ".popover-items", function (e) {
+$('body').on("hover", ".popover-items", function (e) {
+	alert();
 	$(this).popover("show");
 });
 
 
-$('').on("hover", ".tooltip-items", function (e) {
+$('body').on("hover", ".tooltip-items", function (e) {
 	$(this).tooltip("show");
 });
 

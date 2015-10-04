@@ -43,6 +43,9 @@ from comercial.models import TabelaDeParcelamento
 from comercial.models import ClasseTipoDeProposta
 from comercial.models import EmpresaComercial
 from financeiro.models import LancamentoFinanceiroReceber
+from comercial.models import DocumentoGerado
+from comercial.models import GrupoDocumento
+from comercial.models import ItemGrupoDocumento
 
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
@@ -112,6 +115,22 @@ class EmpresaComercialAdmin(admin.ModelAdmin):
     list_display = 'nome', 'nome_reduzido', 'principal'
     search_fields = 'nome',
 
+class GrupoDocumentoInline(admin.StackedInline):
+    model = GrupoDocumento
+    extra = 0
+
+class ItemGrupoDocumentoInline(admin.StackedInline):
+    model = ItemGrupoDocumento
+    extra = 0
+
+class DocumentoGeradoAdmin(admin.ModelAdmin):
+    inlines = [GrupoDocumentoInline,]
+    list_filter = 'modelo',
+
+class GrupoDocumentoAdmin(admin.ModelAdmin):
+    inlines = [ItemGrupoDocumentoInline,]
+    list_filter = 'documento__modelo',
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
@@ -132,3 +151,6 @@ admin.site.register(LinhaRecursoHumano)
 admin.site.register(TabelaDeParcelamento)
 admin.site.register(ClasseTipoDeProposta)
 admin.site.register(EmpresaComercial, EmpresaComercialAdmin)
+admin.site.register(DocumentoGerado, DocumentoGeradoAdmin)
+admin.site.register(GrupoDocumento, GrupoDocumentoAdmin)
+admin.site.register(ItemGrupoDocumento)

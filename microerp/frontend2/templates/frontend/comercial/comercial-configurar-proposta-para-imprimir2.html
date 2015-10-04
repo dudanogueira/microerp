@@ -1,0 +1,196 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load bootstrap %}
+
+<title>{%block title %}{{block.super}} - Comercial - Configurar Impressão de Proposta{% endblock %}</title>
+
+{% block content %}
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Propostas Comerciais</h1>
+<h2><i class="fa fa-print"></i> Configurar Impressão de Proposta</h2>
+
+<h4>Cliente: {{proposta.dono}}</h4>
+<h5>{{proposta}}</h5>
+
+{{proposta.texto_descricao_items}}
+
+<form method="POST" id="configurar-form" name="configurar-form">
+{%csrf_token %}
+<div id="configurar-contrato">
+	{{form_configura|bootstrap}}
+</div>
+
+<div class="btn-group">
+	<button type="submit" class="btn btn-primary"><i class="fa fa-print"></i> Gerar Impressão</button>
+	<button type="submit" class="btn btn-success" data-toggle="modal" data-target="#ModalEnviarPorEmail"><i class="fa fa-envelope"></i> Enviar por Email</button>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="ModalEnviarPorEmail" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Enviar por Email</h4>
+      </div>
+      <div class="modal-body">
+			  {% csrf_token %}
+			  {{enviar_proposta_email.as_p}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+        <button type="submit" class="btn btn-success" form="configurar-form" name="enviar-por-email" id="enviar-por-email" value="enviar-por-email" id="enviar-por-email"><i class="fa fa-envelope"></i> Enviar por Email</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+</form>
+
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cep.min.js"></script>
+<script>
+$(document).ready(function() {
+
+		$("#id_cep_do_proposto").parent().append('<br /><a id="buscar-cep" class="btn btn-small btn-primary"><i class="icon-refresh icon-white"></i> Buscar CEP</a><div id="loading" style="display:none">carregando...</div>');
+	$('#buscar-cep').click(function (e) {
+		$('#id_cep_do_proposto').cep({
+			load: function () {
+				$('#result').empty();
+				$('#loading').show();
+			},
+			complete: function () {
+				$('#loading').hide();
+			},
+			error: function (msg) {
+				$('#result').html(msg);
+			},
+			success: function (data) {
+				console.log(data);
+				$('#id_rua_do_proposto').val(data.tipoLogradouro + ' ' + data.logradouro)
+				$('#id_bairro_do_proposto').val(data.bairro)
+				$('#id_cidade_do_proposto').val(data.cidade)
+				$('#id_estado_do_proposto').val(data.estado)
+			}
+		});
+
+	});
+
+
+	$("#enviar-por-email").click(function(){
+		$(this).hide();
+	})
+	
+	
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	$('.popover_item').popover({
+			trigger: "hover",
+			placement: 'top'
+		});
+
+
+		{% if modelo_objeto.items %}
+		$("#id_objeto_proposto").after('<div style="float:right"><select id="opcao_modelo_objeto">{% for k,v in modelo_objeto.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_objeto" data-target="id_objeto_proposto">Substituir</button> <button class="modelo_objeto" data-target="id_objeto_proposto" data-adicionar="True">Acrescentar</button></div>');
+		{% endif %}
+	
+		{% if modelo_garantia.items %}
+		$("#id_garantia_proposto").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia_proposto">Substituir</button> <button class="modelo_garantia" data-target="id_garantia_proposto" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
+	
+		{% if modelo_itens_inclusos.items %}
+		$("#id_descricao_items_proposto").after('<div style="float:right"><select id="opcao_itens_inclusos">{% for k,v in modelo_itens_inclusos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_itens_inclusos" data-target="id_descricao_items_proposto">Substituir</button> <button class="modelo_itens_inclusos" data-target="id_descricao_items_proposto" data-adicionar="True">Acrescentar</button></div>');
+		{% endif %}
+	
+	
+		{% if modelo_itens_nao_inclusos.items %}
+		$("#id_items_nao_incluso").after('<div style="float:right"><select id="opcao_itens_nao_inclusos">{% for k,v in modelo_itens_nao_inclusos.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_itens_nao_inclusos" data-target="id_items_nao_incluso">Substituir</button> <button class="modelo_itens_nao_inclusos" data-target="id_items_nao_incluso" data-adicionar="True">Acrescentar</button></div>');
+		{% endif %}
+	
+	
+	
+	
+	
+	$('.btn-modal-add-follow-up').click(function(e){
+			
+			$("#descricao-modal-add-follow-up").html( $(this).data('title') )
+			$("#id_proposta").val($(this).data('proposta-id'))
+		});
+		
+	$('.carregar_follow_ups_modal').click(function(e){
+			$("#ModalExibirFollowUpsLabel").html($(this).data('exibir-modal-title'));
+			$("#ModalExibirFollowUpsBody").html($(this).data('follow-ups'))
+		});
+	
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_objeto").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_modelo_objeto").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}
+});
+
+
+$( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}	
+});
+
+$( "#configurar-contrato" ).on( "click", ".modelo_itens_inclusos", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_itens_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}
+	texto = $('#'+$(this).data('target')).val().replace(/<br\s*[\/]?>/gi, "\n");
+	$('#'+$(this).data('target')).val(texto)
+
+
+});
+
+$( "#configurar-contrato" ).on( "click", ".modelo_itens_nao_inclusos", function(e) {
+	e.preventDefault();
+	if ($(this).data('adicionar')){
+		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_itens_nao_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}else{
+		$('#'+$(this).data('target')).val($("#opcao_itens_nao_inclusos").val().replace(/<br\s*[\/]?>/gi, "\n"));
+	}
+	
+	texto = $('#'+$(this).data('target')).val().replace(/<br\s*[\/]?>/gi, "\n");
+	$('#'+$(this).data('target')).val(texto)
+});
+
+
+$("#id_endereco_obra_proposto").after('<div style="float:right"><button class="sugere-endereco" data-target="id_endereco_obra_proposto">Sugerir Endereço Já Cadastrado</button></div>');
+
+$( "#configurar-contrato" ).on( "click", ".sugere-endereco", function(e) {
+	e.preventDefault();
+	$('#'+$(this).data('target')).val(
+			$("#id_rua_do_proposto").val() + ', ' + 
+			$("#id_bairro_do_proposto").val() + ' - ' + 
+			$("#id_cep_do_proposto").val() + ' - ' + 
+			$("#id_cidade_do_proposto").val() + '-' +
+			$("#id_estado_do_proposto").val()
+	 );
+});
+
+
+
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

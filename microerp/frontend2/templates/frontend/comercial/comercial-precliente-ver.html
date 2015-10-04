@@ -139,7 +139,17 @@
 					{%endif %}
 					
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" data-probabilidade="{{proposta.probabilidade}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a
+							href="#modal-follow-up-add"
+							data-proposta-id="{{proposta.id|unlocalize}}"
+							data-probabilidade="{{proposta.probabilidade}}"
+							data-nova-data-reagendamento='{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}'
+							data-title='Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}'
+							data-action-url='{% url "comercial:adicionar_follow_up" proposta.id|unlocalize %}'
+							role="button"
+							class="btn btn-default btn-modal-add-follow-up"
+							data-toggle="modal">
+					<i class="fa fa-plus"></i></a>
 				</td>
 						<td>
 							<div class="btn-group">
@@ -207,6 +217,7 @@
 				<td>
 					{% if proposta.ultimo_followup %}
 					<a href="#modal-follow-up-exibir"
+					   	class="btn btn-default carregar_follow_ups_modal"
 						role="button" 
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
@@ -218,6 +229,7 @@
 							<hr />
 						{% endfor %}
 						"
+
 						class="btn popover_item carregar_follow_ups_modal"
 						data-toggle="popover"
 						data-title="<b>Follow Up <small>(há {{proposta.ultimo_followup.data|timesince}})</small></b>" data-html=True data-content="<strong>{{proposta.ultimo_followup.criado_por.funcionario}}</strong> : {{proposta.ultimo_followup.texto}}<br />
@@ -226,10 +238,11 @@
 						{{proposta.followupdepropostacomercial_set.count}}
 					</a> <i class="fa fa-exchange"></i>
 
-					
+
 					{%endif %}
+
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" class="btn btn-default btn-modal-add-follow-up" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 					
 				</td>
 						<td>
@@ -244,7 +257,7 @@
 									
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
 									
-									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn "><i class="fa fa-print"></i></a>
+									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn btn-default"><i class="fa fa-print"></i></a>
 								</div>
 								{% else %}
 								<small><i>solicite ao gerente</i></small>
@@ -343,7 +356,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Adicionar Follow Up</h4>
+        <h4 class="modal-title">Adicionar Follow Upa</h4>
       </div>
       <div class="modal-body">
         <p class="alert alert-info" id="descricao-modal-add-follow-up"></p>
@@ -466,7 +479,7 @@ $('.btn-modal-add-follow-up').click(function(e){
 		$("#modal-follow-up-add .errorlist").hide();
 		$("#id_reagenda_data_expiracao").attr('checked', false);
 		$("#id_visita").attr('checked', false);
-		$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+		$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'));
 });
 
 $('.carregar_follow_ups_modal').click(function(e){

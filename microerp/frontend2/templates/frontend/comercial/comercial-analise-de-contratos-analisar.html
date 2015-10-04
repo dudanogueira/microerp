@@ -7,7 +7,7 @@
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato #{{contrato.id}}</h1>
-<a href="{% url "comercial:propostas_comerciais_ver" contrato.propostacomercial.id %}" class="btn btn-primary">Resumo do Contrato</a>
+
 
 <div class="row">
 	
@@ -19,10 +19,10 @@
 		{{form_analisar_contrato|bootstrap}}
 
 			<p class="btn-group">
-			<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim"><i class="fa fa-pencil"></i> 	Alterar</button>
-			<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar Contrato</button>
-			<a data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar Contrato</a>
-			<a class="btn btn-default" href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" name="contrato-invalido" value="sim"><i class="fa fa-print"></i> Gerar PDF</a>
+			<button type="submit" class="btn btn-primary" name="aterar-contrato" value="sim"><i class="fa fa-save"></i> 	Alterar</button>
+			<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar</button>
+			<a data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar</a>
+			<a class="btn btn-default" href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" name="contrato-invalido" value="sim"><i class="fa fa-print"></i> PDF</a>
 			
 		</p>
 		
@@ -50,7 +50,7 @@
 	</div>
 	
 	<div class="col-md-6">
-		
+		<a href="{% url "comercial:propostas_comerciais_ver" contrato.propostacomercial.id %}" class="btn btn-primary"><i class="fa fa-dollar"></i> Memória de Cálculo</a>
 		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
 		<br />
 		<strong>Valor do Contrato: R$ {{contrato.valor}}</strong>
@@ -129,44 +129,51 @@
 				Orçamentos Vinculados: {% if contrato.propostacomercial.orcamentos_ativos.count %}
 					<span class="label label-success">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
 				{% else %}
-					<span class="label label-important">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
+					<span class="label label-danger">{{contrato.propostacomercial.orcamentos_ativos.count}}</span>
 				{% endif %}
 			</li>
-			
-			<li {% if contrato.garantia %} class="popover-items" data-trigger="hover" data-title="Garantia" data-content='{{contrato.garantia}}' {% endif %}>
-				Garantia: {% if contrato.garantia %}
-				<span class="badge badge-success"><i class="fa fa-check"></i>
-				{% else %}
-				<span class="label label-important">Não especificado</span>
+			{% if contrato.documento_gerado %}
+				{% for item in textos_contrato %}
+					<li  class="popover-items" data-trigger="hover" data-title="{{item.titulo_label}}" data-content='{{item.texto|safe}}' >
+						<span class=""><i class="fa fa-text-width"></i> <b>Texto</b></span>: {{item.titulo_label}}
+					</li>
+				{% endfor %}
+			{% else %}
+				<li {% if contrato.garantia %} class="popover-items" data-trigger="hover" data-title="Garantia" data-content='{{contrato.garantia}}' {% endif %}>
+					Garantia: {% if contrato.garantia %}
+					<span class="badge badge-success"><i class="fa fa-check"></i>
+					{% else %}
+					<span class="label label-important">Não especificado</span>
+					{% endif %}
+				</li>
+				<li {% if contrato.items_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Inclusos" data-content='{{contrato.items_incluso}}' {% endif %}>
+					Itens Incluso: {% if contrato.items_incluso %}
+					<span class="badge badge-success"><i class="fa fa-check"></i>
+					{% else %}
+					<span class="label label-important">Não especificado</span>
+					{% endif %}
+				</li>
+				<li {% if contrato.items_nao_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Não Inclusos" data-content='{{contrato.items_nao_incluso}}' {% endif %}>
+					Itens Não Incluso: {% if contrato.items_nao_incluso %}
+					<span class="badge badge-success"><i class="fa fa-check"></i>
+					{% else %}
+					<span class="label label-important">Não especificado</span>
+					{% endif %}
+				</li>
 				{% endif %}
-			</li>
-			<li {% if contrato.items_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Inclusos" data-content='{{contrato.items_incluso}}' {% endif %}>
-				Itens Incluso: {% if contrato.items_incluso %}
-				<span class="badge badge-success"><i class="fa fa-check"></i>
-				{% else %}
-				<span class="label label-important">Não especificado</span>
-				{% endif %}
-			</li>
-			<li {% if contrato.items_nao_incluso %}class="popover-items" data-trigger="hover" data-title="Itens Não Inclusos" data-content='{{contrato.items_nao_incluso}}' {% endif %}>
-				Itens Não Incluso: {% if contrato.items_nao_incluso %}
-				<span class="badge badge-success"><i class="fa fa-check"></i>
-				{% else %}
-				<span class="label label-important">Não especificado</span>
-				{% endif %}
-			</li>			
-			<li {% if contrato.cliente.enderecocliente_set.count %}class="popover-items" data-trigger="hover" data-title="Endereço" data-content='{{contrato.cliente.logradouro_completo}}' {% endif %}>
-				Endereços do Cliente: {% if contrato.cliente.enderecocliente_set.count %}
-				<span class="label label-success">{{contrato.cliente.enderecocliente_set.count}} Endereço{{contrato.cliente.enderecocliente_set.count|pluralize:"s"}}</span>
-				{% else %}
-				<span class="label label-important">Não possui</span>
-				{% endif %}
-			</li>
+
+				<li {% if contrato.cliente.enderecocliente_set.count %}class="popover-items" data-trigger="hover" data-title="Endereço" data-content='{{contrato.cliente.logradouro_completo}}' {% endif %}>
+					Endereços do Cliente: {% if contrato.cliente.enderecocliente_set.count %}
+					<span class="label label-success">{{contrato.cliente.enderecocliente_set.count}} Endereço{{contrato.cliente.enderecocliente_set.count|pluralize:"s"}}</span>
+					{% else %}
+					<span class="label label-important">Não possui</span>
+					{% endif %}
+				</li>
 		</ul>
 
 	</div>
 	
 </div>
-
 
 {% endblock %}
 
@@ -180,9 +187,9 @@ $(document).ready(function() {
     $("#menu-comercial-analise-de-contratos, #top-menu-comercial").addClass("active");
 	$('.popover-items').popover({
 			trigger: "hover",
-			placement: 'left'
+			placement: 'left',
+			html: true
 	});
-	
 });
 
 </script>

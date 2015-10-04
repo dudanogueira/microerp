@@ -29,6 +29,7 @@ from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente, Bairro
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
+from comercial.models import DocumentoGerado, ItemGrupoDocumento
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao, CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 from comercial.models import LinhaRecursoMaterial, LinhaRecursoHumano, LinhaRecursoLogistico, Orcamento, GrupoIndicadorDeProdutoProposto
 from financeiro.models import LancamentoFinanceiroReceber
@@ -46,19 +47,21 @@ from cadastro.views import AdicionarEnderecoClienteForm
 
 
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Image, Spacer, PageBreak, Table, TableStyle
-from reportlab.lib.units import inch, mm 
+from reportlab.lib.units import inch, mm, cm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from django.contrib.auth.models import User
 from reportlab.lib.enums import TA_JUSTIFY,TA_LEFT,TA_CENTER,TA_RIGHT
 from reportlab.lib import colors
+from reportlab.lib import utils
 
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.pdfgen import canvas
-
+from io import BytesIO
 
 #
 # FORMULARIOS
 #
+
 
 class ConfigurarImpressaoContrato(forms.Form):
     
@@ -151,6 +154,7 @@ class AdicionarPropostaForm(forms.ModelForm):
         super(AdicionarPropostaForm, self).__init__(*args, **kwargs)
         self.fields['valor_proposto'].localize = True
         self.fields['valor_proposto'].widget.is_localized = True
+        self.fields['tipo'].required = True
     
     
     class Meta:
@@ -833,9 +837,185 @@ class UsarCartaoCredito(forms.Form):
     tipo = forms.ChoiceField(choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = forms.IntegerField()
 
+
+class BasearContratoNoModelo(forms.ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        proposta = kwargs.pop('proposta', None)
+        modelo = kwargs.pop('modelo', None)
+        perfil = kwargs.pop('perfil', None)
+        super(BasearContratoNoModelo, self).__init__(*args, **kwargs)
+        self.fields['valor'].initial = proposta.valor_proposto
+        self.fields['responsavel'].initial = perfil.user.funcionario
+        # adiciona os campos editaveis do modelo
+        itens_editaveis = ItemGrupoDocumento.objects.filter(
+            (Q(texto_editavel=True)| Q(imagem_editavel=True)) & \
+            Q(grupo__documento=modelo)
+            ).order_by('grupo__peso', 'peso').distinct()
+        if perfil:
+            self.fields['responsavel'].queryset = perfil.funcionarios_disponiveis()
+            self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
+            self.fields['responsavel_comissionado'].queryset = perfil.funcionarios_disponiveis()
+        for textos_editaveis in itens_editaveis:
+            self.fields[textos_editaveis.chave_identificadora] = forms.CharField(widget=forms.Textarea)
+            self.fields[textos_editaveis.chave_identificadora].widget.attrs['class'] = 'tinymce'
+            self.fields[textos_editaveis.chave_identificadora].label=textos_editaveis.titulo
+            self.fields[textos_editaveis.chave_identificadora].required = True
+            try:
+                # se existe item da proposta com mesma chave, busca conteudo
+                item = ItemGrupoDocumento.objects.get(
+                    chave_identificadora=textos_editaveis.chave_identificadora,
+                    grupo__documento=proposta.documento_gerado
+                )
+                texto = item.texto
+            except ItemGrupoDocumento.DoesNotExist:
+                # caso nao exista, usar o conteudo do modelo
+                texto = textos_editaveis.texto
+            self.fields[textos_editaveis.chave_identificadora].initial = texto
+
+
+    class Meta:
+        model = ContratoFechado
+        fields = 'valor', 'categoria', 'forma_pagamento', 'responsavel', 'apoio_tecnico', 'responsavel_comissionado'
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def editar_proposta_converter_novo(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
+    if request.GET.get('escolhido', None):
+        modelo_escolhido = DocumentoGerado.objects.get(pk=request.GET.get('escolhido', None))
+    else:
+        # puxa o modelo do tipo contrato pro mesmo tipo de proposta
+        modelo_documento_contrato = DocumentoGerado.objects.filter(
+            modelo=True,
+            tipo_proposta=proposta.tipo,
+            tipo='contrato',
+            empresa_vinculada=request.user.perfilacessocomercial.empresa
+        )
+        if not modelo_documento_contrato:
+            messages.error(request, u"Erro de Parametrização. Não existe um modelo de Contrato para este tipo de Proposta: %s" % proposta.tipo)
+            return redirect(reverse("comercial:propostas_comerciais_minhas"))
+        return render_to_response('frontend/comercial/comercial-proposta-converter_novo.html', locals(), context_instance=RequestContext(request),)
+
+    ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
+    # exige cliente na proposta
+    if not proposta.cliente:
+        messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
+        return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
+
+    usar_cartao_credito = UsarCartaoCredito()
+
+    if request.POST:
+        modelo_escolhido = DocumentoGerado.objects.get(pk=request.POST.get('escolhido'))
+        if 'usar-cartao' in request.POST:
+            form_cartao = UsarCartaoCredito(request.POST)
+            form_contrato = BasearContratoNoModelo(request.POST, modelo=modelo_escolhido, proposta=proposta, perfil=request.user.perfilacessocomercial)
+            form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
+            if form_cartao.is_valid():
+                data = form_cartao.cleaned_data['data']
+                tipo = form_cartao.cleaned_data['tipo']
+                parcelas = form_cartao.cleaned_data['parcelas']
+                total_lancamentos = 0
+                for form in form_configurar_contrato.forms:
+                    if form not in form_configurar_contrato.deleted_forms:
+                        if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
+                            total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
+                total_restante = proposta.valor_proposto - total_lancamentos
+                if total_restante > 0:
+                    # nenhum lancamento inicial, será tudo no cartão
+                    cp = request.POST.copy()
+                    form_index_offset = len(form_configurar_contrato.forms)
+                    if total_lancamentos == 0:
+                        cp['configurar_contrato-TOTAL_FORMS'] = parcelas
+                        range_parcelas = range(parcelas)
+                    else:
+                        cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ parcelas
+                        range_parcelas = range(parcelas+form_index_offset)[form_index_offset:]
+                    cada_parcela = total_restante / parcelas
+                    for p in range_parcelas:
+                        data = data+datetime.timedelta(days=30)
+                        cp['configurar_contrato-%s-data_cobranca' % p] = data
+                        cp['configurar_contrato-%s-modo_recebido' % p] = tipo
+                        cp['configurar_contrato-%s-valor_cobrado' % p] = cada_parcela
+                    form_configurar_contrato = ConfigurarConversaoPropostaFormset(cp, prefix="configurar_contrato")
+                    configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST, perfil=request.user.perfilacessocomercial)
+                    messages.info(request, 'Adicionando %s parcelas de %s para o dia %s' % (parcelas, cada_parcela, data))
+                else:
+                    messages.error(request, u"Erro! Não existe mais Valor restante para parcelar no cartão")
+        if 'adicionar-parcela' in request.POST:
+            messages.info(request, u"Nova Parcela de Lançamento Financeiro a Receber Adicionada!")
+            cp = request.POST.copy()
+            cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ 1
+            configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(request.POST, perfil=request.user.perfilacessocomercial)
+        if 'converter' in request.POST:
+            form_contrato = BasearContratoNoModelo(request.POST, modelo=modelo_escolhido, perfil=request.user.perfilacessocomercial, proposta=proposta)
+            form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="configurar_contrato")
+            if form_contrato.is_valid():
+                total_lancamentos = 0
+                for form in form_configurar_contrato.forms:
+                    if form not in form_configurar_contrato.deleted_forms:
+                        if form.cleaned_data and form.cleaned_data.get('valor_cobrado'):
+                            total_lancamentos += form.cleaned_data.get('valor_cobrado', 0)
+                if float(total_lancamentos) == float(proposta.valor_proposto):
+                    # cria contrato
+                    novo_contrato = form_contrato.save(commit=False)
+                    novo_contrato.objeto = 'objeto presente no documento gerado'
+                    novo_contrato.status = 'emanalise'
+                    novo_contrato.cliente = proposta.cliente
+                    novo_contrato.save()
+                    novo_contrato.propostacomercial = proposta
+                    novo_contrato.save()
+                    # vincular contrato na proposta
+                    proposta.contrato_vinculado = novo_contrato
+                    proposta.probabilidade = 100
+                    proposta.status = "convertida"
+                    proposta.definido_convertido_em = datetime.datetime.now()
+                    proposta.definido_convertido_por = request.user.funcionario
+                    proposta.save()
+                    # registra lancamentos vinculando ao novo contrato
+                    i = 0
+                    for form in form_configurar_contrato.forms:
+                        if form.is_valid() and form not in form_configurar_contrato.deleted_forms:
+                            i += 1
+                            novo_lancamento = form.save(commit=False)
+                            novo_lancamento.contrato = novo_contrato
+                            novo_lancamento.peso = i
+                            novo_lancamento.save()
+
+                    # cria novo documento gerado
+                    documento = novo_contrato.cria_documento_gerado(modelo=modelo_escolhido)
+                    messages.success(request, u"Contrato %s Criado! Documento de Contrato Gerado" % (novo_contrato.pk))
+                    # atualiza dados que possuem no documento da proposta
+                    # puxa todos os campos editaveis do documento da proposta
+                    editaveis_da_proposta = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, texto_editavel=True)
+                    items_presentes_no_contrato = ItemGrupoDocumento.objects.filter(grupo__documento__contratofechado=novo_contrato)
+                    for item in items_presentes_no_contrato:
+                        # para cada item  editavel do contrato
+                        # busca o item no  formulario enviado
+                        try:
+                            texto_alterado = form_contrato.cleaned_data[str(item.chave_identificadora)]
+                            item.texto = texto_alterado
+                            item.save()
+                        except:
+                            pass
+                    # conversao concluida, envia pra view de contratos
+                    return redirect(reverse("comercial:contratos_meus"))
+                else:
+                    diferenca = float(proposta.valor_proposto) - float(total_lancamentos)
+                    messages.error(request, u"Erro! Valor de Lançamentos (R$ %s) é diferente do valor do Contrato (R$ %s). Diferença: R$ %s" % (total_lancamentos, proposta.valor_proposto, diferenca))
+    else:
+        form_contrato = BasearContratoNoModelo(modelo=modelo_escolhido, proposta=proposta, perfil=request.user.perfilacessocomercial)
+        messages.info(request, u"Modelo Escolhido: %s" % modelo_escolhido)
+        form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
+        usar_cartao_credito = UsarCartaoCredito()
+    return render_to_response('frontend/comercial/comercial-proposta-converter_novo.html', locals(), context_instance=RequestContext(request),)
+
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
+    # mantendo compatbilidade com sistema antigo
+    if proposta.documento_gerado:
+        return redirect(reverse("comercial:editar_proposta_converter_novo", args=[proposta.pk]))
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
     modelo_garantia = getattr(settings, 'MODELOS_GARANTIA_CONTRATO', None)
@@ -857,7 +1037,7 @@ def editar_proposta_converter(request, proposta_id):
         foro_inicial = modelo_foro.items()[0][1]
     else:
         foro_inicial = None
-    
+
     configurar_contrato_form = ConfigurarContratoBaseadoEmProposta(
         perfil = request.user.perfilacessocomercial,
         initial={
@@ -897,7 +1077,7 @@ def editar_proposta_converter(request, proposta_id):
                         if total_lancamentos == 0:
                             cp['configurar_contrato-TOTAL_FORMS'] = parcelas
                             range_parcelas = range(parcelas)
-                        else:                        
+                        else:
                             cp['configurar_contrato-TOTAL_FORMS'] = int(cp['configurar_contrato-TOTAL_FORMS'])+ parcelas
                             range_parcelas = range(parcelas+form_index_offset)[form_index_offset:]
                         cada_parcela = total_restante / parcelas
@@ -1002,6 +1182,8 @@ def editar_proposta_converter(request, proposta_id):
         # continuar processo de conversão
         messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
         return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
+
+
 
 
 class VincularPreClienteParaClienteForm(forms.Form):
@@ -1192,8 +1374,25 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
             proposta.lucro = getattr(settings, "LUCRO", 0)
             proposta.administrativo = getattr(settings, "ADMINISTRATIVO", 0)
             proposta.impostos = getattr(settings, "IMPOSTOS", 0)
-            # salva ae
             proposta.save()
+            # cria documento gerado da proposta com base em modelo
+            modelos_proposta = DocumentoGerado.objects.filter(
+                modelo=True,
+                tipo_proposta=proposta.tipo,
+                tipo='proposta',
+                empresa_vinculada=request.user.perfilacessocomercial.empresa
+            )
+            if not modelos_proposta:
+                modelos_proposta = DocumentoGerado.objects.filter(
+                    modelo=True,
+                    tipo_proposta=proposta.tipo,
+                    tipo='proposta',
+                    empresa_vinculada=None
+                )
+            if modelos_proposta:
+                proposta.cria_documento_gerado(modelo=modelos_proposta[0])
+            # salva ae
+
             # vincula proposta com a requisicao de origem
             if request.GET.get('requisicao_origem', None):
                 requisicao_proposta = RequisicaoDeProposta.objects.get(pk=request.GET.get('requisicao_origem', None))
@@ -1229,8 +1428,25 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
             proposta.lucro = getattr(settings, "LUCRO", 0)
             proposta.administrativo = getattr(settings, "ADMINISTRATIVO", 0)
             proposta.impostos = getattr(settings, "IMPOSTOS", 0)
-            # salva
             proposta.save()
+            # cria documento gerado da proposta com base em modelo
+            modelos_proposta = DocumentoGerado.objects.filter(
+                modelo=True,
+                tipo_proposta=proposta.tipo,
+                tipo='proposta',
+                empresa_vinculada=request.user.perfilacessocomercial.empresa
+            )
+            if not modelos_proposta:
+                modelos_proposta = DocumentoGerado.objects.filter(
+                    modelo=True,
+                    tipo_proposta=proposta.tipo,
+                    tipo='proposta',
+                    empresa_vinculada=None
+                )
+            if modelos_proposta:
+                proposta.cria_documento_gerado(modelo=modelos_proposta[0])
+            # salva
+
             messages.success(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
             return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
     else:
@@ -1253,7 +1469,7 @@ def propostas_comerciais_minhas(request):
             ).count()
     else:
         if request.user.perfilacessocomercial.super_gerente:
-            propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today())#.order_by('-criado', 'precliente', 'cliente')
+            propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('precliente', 'cliente')
             propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).count()
         else:
             propostas_abertas_validas = PropostaComercial.objects.filter(
@@ -1266,7 +1482,7 @@ def propostas_comerciais_minhas(request):
                 status='aberta', data_expiracao__lt=datetime.date.today(),
                 designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
             ).count()
-        
+
     designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
 
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
@@ -1758,9 +1974,214 @@ def proposta_comercial_reabrir(request, proposta_id):
         return redirect(reverse('comercial:home'))
         
 
+@user_passes_test(possui_perfil_acesso_comercial)
+def proposta_comercial_editar_item_documento(request, proposta_id, item_id):
+    if request.POST:
+        proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+        item = get_object_or_404(ItemGrupoDocumento, pk=item_id)
+        form = item.formulario(request=request)
+        if form.is_valid():
+            form.save()
+
+    return redirect(reverse('comercial:proposta_comercial_imprimir', args=[proposta_id]))
+
+
+
+# cria form que edita multiplos textos editaveis
+from django.forms.models import modelformset_factory
+
+TextosEditaveisFormBase = modelformset_factory(ItemGrupoDocumento, extra=0, fields=('texto', 'imagem'))
+
+# now we want to add a checkbox so we can do stuff to only selected items
+class TextosEditaveisForm(TextosEditaveisFormBase):
+  # this is where you can add additional fields to a ModelFormSet
+  # this is also where you can change stuff about the auto generated form
+  def __init__(self, *args, **kwargs):
+    super(TextosEditaveisForm, self).__init__(*args, **kwargs)
+    no_of_forms = len(self)
+    for i in range(0, no_of_forms):
+        self[i].fields['texto'].label = "Grupo %s Item %s - TEXTO: %s" % (self[i].instance.grupo.peso, self[i].instance.peso, self[i].instance.titulo_label())
+        self[i].fields['imagem'].label = "Grupo %s Item %s - IMAGEM: %s" % (self[i].instance.grupo.peso, self[i].instance.peso, self[i].instance.titulo_label())
+        if not self[i].instance.texto_editavel:
+            self[i].fields['texto'].widget = forms.HiddenInput()
+        if not self[i].instance.imagem_editavel:
+           self[i].fields['imagem'].widget = forms.HiddenInput()
+
+class DocumentoGeradoPrint:
+    """
+    Gera o orcamento impresso.
+    """
+
+    def __init__(self, buffer, pagesize):
+        self.buffer = buffer
+        if pagesize == 'A4':
+            self.pagesize = A4
+        elif pagesize == 'Letter':
+            self.pagesize = letter
+        self.width, self.height = self.pagesize
+
+    def _header_footer(self, canvas, doc):
+            # Save the state of our canvas so we can draw on it
+            canvas.saveState()
+            styles = getSampleStyleSheet()
+
+            # Footer
+            footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-00%s' % self.documento.versao, styles['Normal'])
+            footer.wrap(doc.width, doc.bottomMargin)
+            footer.drawOn(canvas, 30, 10)
+            # Release the canvas
+            canvas.restoreState()
+
+    def print_documento(self, documento, perfil=None):
+            self.documento = documento
+            self.perfil = perfil
+            buffer = self.buffer
+            doc = SimpleDocTemplate(buffer,
+                                    rightMargin=40,
+                                    leftMargin=40,
+                                    topMargin=10,
+                                    bottomMargin=70,
+                                    pagesize=self.pagesize)
+
+            # A large collection of style sheets pre-made for us
+            styles = getSampleStyleSheet()
+            styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
+            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=13, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
+            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
+            styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
+
+            # Our container for 'Flowable' objects
+            elements = []
+            # logo empresa
+            if perfil.empresa:
+                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+            else:
+                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
+            im.hAlign = 'LEFT'
+
+            # id da proposta
+            if documento.propostacomercial:
+                id_documento = Paragraph("Nº PROPOSTA: %s" % str(documento.propostacomercial.id), styles['right'])
+            else:
+                id_documento = Paragraph("Nº CONTRATO: %s" % str(documento.contratofechado.id), styles['right'])
+
+            imprime_logo = getattr(settings, 'IMPRIME_LOGO_PROPOSTA', True)
+            if imprime_logo:
+                data=[(im,id_documento)]
+            else:
+                data=[('',id_documento)]
+
+            table_logo = Table(data, colWidths=270, rowHeights=79)
+            table_logo.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'MIDDLE')]))
+            elements.append(table_logo)
+            elements.append(Spacer(1, 12))
+            # para cada grupo
+            for grupo in self.documento.grupodocumento_set.all():
+                # para cada item de cada grupo
+                for item in grupo.itemgrupodocumento_set.all():
+                    # objeto texto
+                    if item.titulo:
+                        desc_itens_titulo = Paragraph(item.titulo, styles['left_h2'])
+                        elements.append(desc_itens_titulo)
+                    if item.texto:
+                        texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
+                        elements.append(texto)
+                    if item.imagem:
+                        #img = utils.ImageReader(item.imagem.path)
+                        #iw, ih = img.getSize()
+                        #aspect = ih / float(iw)
+                        #im = Image(item.imagem.path,  width=19*cm, height=(19*cm * aspect))
+                        im = Image(item.imagem.path)
+                        elements.append(im)
+                    if item.quebra_pagina:
+                        elements.append(PageBreak())
+                    elements.append(Spacer(1, 10))
+
+                elements.append(Spacer(1, 12))
+
+            # build pdf
+            doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
+
+            # Get the value of the BytesIO buffer and write it to the response.
+            pdf = buffer.getvalue()
+            buffer.close()
+            return pdf
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    # mantem propostas antigas no esquema antigo
+    if not proposta.documento_gerado:
+        # redireciona pra view antiga
+        return redirect(reverse("comercial:proposta_comercial_imprimir2", args=[proposta.id]))
+
+
+    # puxa todos os itens dessa proposta que sao editaveis
+    itens_editaveis = ItemGrupoDocumento.objects.filter(
+        (Q(texto_editavel=True)| Q(imagem_editavel=True)) & \
+        Q(grupo__documento__propostacomercial=proposta)
+    ).order_by('grupo__peso', 'peso').distinct()
+    if proposta.cliente:
+         email_inicial = proposta.cliente.email
+    else:
+        email_inicial = None
+    # instancia formulario de envio por email
+    enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
+
+    if request.POST:
+        form_textos_editaveis = TextosEditaveisForm(request.POST, request.FILES, queryset=itens_editaveis)
+        if form_textos_editaveis.is_valid():
+            form_textos_editaveis.save()
+
+    else:
+        if request.GET.get('imprimir'):
+            messages.info(request, "Documento Impresso Gerado")
+            # Create the HttpResponse object with the appropriate PDF headers.
+            response = HttpResponse(content_type='application/pdf')
+            nome_arquivo_gerado = "proposta-%s.pdf" % proposta.id
+            response['Content-Disposition'] = 'attachment; filename="%s"' % nome_arquivo_gerado
+            buffer = BytesIO()
+            report = DocumentoGeradoPrint(buffer, 'Letter')
+            perfil = request.user.perfilacessocomercial
+            pdf = report.print_documento(proposta.documento_gerado, perfil=perfil)
+            response.write(pdf)
+            return response
+        form_textos_editaveis = TextosEditaveisForm(queryset=itens_editaveis)
+
+    # busca modelos pra esta proposta
+    modelos_proposta = DocumentoGerado.objects.filter(
+        modelo=True,
+        tipo_proposta=proposta.tipo,
+        tipo='proposta',
+        empresa_vinculada=request.user.perfilacessocomercial.empresa
+    )
+    if not modelos_proposta:
+        modelos_proposta = DocumentoGerado.objects.filter(
+            modelo=True,
+            tipo_proposta=proposta.tipo,
+            tipo='proposta',
+            empresa_vinculada=None
+        )
+    return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def proposta_comercial_imprimir_gerar_documento(request, proposta_id, documento_id):
+    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    modelo_documento = get_object_or_404(DocumentoGerado, pk=documento_id)
+    if proposta.documento_gerado:
+        proposta.documento_gerado.delete()
+        messages.info(request, "Documento Apagado")
+    proposta.cria_documento_gerado(modelo=modelo_documento)
+    messages.info(request, u"Documento Gerado")
+    return redirect(reverse('comercial:proposta_comercial_imprimir', args=[proposta_id]))
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def proposta_comercial_imprimir2(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
     if proposta.cliente:
         email_inicial = proposta.cliente.email
@@ -1769,7 +2190,7 @@ def proposta_comercial_imprimir(request, proposta_id):
     else:
         email_inicial = None
     enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
-    
+
     # tenta ao máximo auto completar os dados
     # nome
     if not proposta.nome_do_proposto:
@@ -1783,7 +2204,7 @@ def proposta_comercial_imprimir(request, proposta_id):
             proposta.documento_do_proposto = "CNPJ: %s" % proposta.cliente.cnpj
         if proposta.cliente and proposta.cliente.tipo == 'pf':
             proposta.documento_do_proposto = "CPF: %s" % proposta.cliente.cpf
-    
+
     #    pega o endreco principal
     try:
         endereco_principal = proposta.cliente.enderecocliente_set.first()
@@ -1811,7 +2232,7 @@ def proposta_comercial_imprimir(request, proposta_id):
         if not proposta.telefone_contato_proposto:
             if proposta.cliente:
                 if proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
-                    proposta.telefone_contato_proposto = "Fixo: %s, Celular: %s" % (proposta.cliente.telefone_fixo, proposta.cliente.telefone_celular) 
+                    proposta.telefone_contato_proposto = "Fixo: %s, Celular: %s" % (proposta.cliente.telefone_fixo, proposta.cliente.telefone_celular)
                 elif proposta.cliente.telefone_fixo and not proposta.cliente.telefone_celular:
                     proposta.telefone_contato_proposto = "Fixo: %s" % proposta.cliente.telefone_fixo
                 elif not proposta.cliente.telefone_fixo and proposta.cliente.telefone_celular:
@@ -1823,7 +2244,7 @@ def proposta_comercial_imprimir(request, proposta_id):
         # descricao de itens
         if not proposta.descricao_items_proposto and proposta.orcamentos_ativos():
             proposta.descricao_items_proposto = proposta.texto_descricao_items()
-    
+
     #proposta.save()
     # modelos de texto
     modelo_objeto = getattr(settings, 'MODELOS_OBJETO_CONTRATO', None)
@@ -1831,8 +2252,8 @@ def proposta_comercial_imprimir(request, proposta_id):
     # modelos de texto
     modelo_itens_inclusos = getattr(settings, 'MODELOS_ITENS_INCLUSOS', None)
     modelo_itens_nao_inclusos = getattr(settings, 'MODELOS_ITENS_NAO_INCLUSOS', None)
-    
-    
+
+
     dicionario_template_propostas = getattr(settings, 'DICIONARIO_DE_LOCAL_DE_PROPOSTA', {})
     form_configura = ConfigurarPropostaComercialParaImpressao(instance=proposta, gerente=request.user.perfilacessocomercial.gerente)
     if request.POST:
@@ -1841,11 +2262,11 @@ def proposta_comercial_imprimir(request, proposta_id):
             proposta = form_configura.save()
             proposta.save()
             # com tudo configurado, gera a proposta
-            from io import BytesIO
-            
+
+
             # nome do arquivo
             nome_arquivo_gerado = "proposta-%s.pdf" % proposta.id
-            
+
             # Create the HttpResponse object with the appropriate PDF headers.
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="%s"' % nome_arquivo_gerado
@@ -1855,7 +2276,7 @@ def proposta_comercial_imprimir(request, proposta_id):
                 perfil = form_configura.cleaned_data['vendedor'].user.perfilacessocomercial
             except:
                 perfil = request.user.perfilacessocomercial
-                
+
             pdf = report.print_proposta(proposta, perfil=perfil)
             response.write(pdf)
             if request.POST.get('enviar-por-email'):
@@ -1873,7 +2294,7 @@ def proposta_comercial_imprimir(request, proposta_id):
                 assunto = "%s - Proposta Comercial %s" % (getattr(settings, "NOME_EMPRESA", "NOME DA EMPRESA"), proposta.id)
                 conteudo = getattr(settings, "TEXTO_DO_EMAIL_COM_PROPOSTA_ANEXA", "Segue em anexo a proposta. ")
                 try:
-                    nome_do_proposto = form_configura.cleaned_data['representante_legal_proposto'] 
+                    nome_do_proposto = form_configura.cleaned_data['representante_legal_proposto']
                     nome_do_funcionario = request.user.funcionario.nome
                     conteudo = conteudo % {'nome_do_proposto': nome_do_proposto, 'nome_do_funcionario': nome_do_funcionario}
                     bbc = [i[0] for i in PerfilAcessoComercial.objects.filter(gerente=True).values_list('user__funcionario__email')]
@@ -1894,31 +2315,34 @@ def proposta_comercial_imprimir(request, proposta_id):
                         messages.info(request, u"Cópia Oculta enviada para: %s" % bbc)
                 except:
                     messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para os Gerentes!')
-                
+
                 return redirect(reverse("comercial:propostas_comerciais_minhas"))
             else:
                 return response
             # descobre o template
             return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
-    return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
+    return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir2.html', locals(), context_instance=RequestContext(request),)
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def adicionar_follow_up(request, proposta_id):
+    follow_up = False
     proposta = get_object_or_404(PropostaComercial, status="aberta", pk=proposta_id)
     if request.POST:
         form_adicionar_follow_up = FormAdicionarFollowUp(request.POST, perfil=request.user.perfilacessocomercial)
         if form_adicionar_follow_up.is_valid():
             follow_up = form_adicionar_follow_up.save(commit=False)
+            follow_up.proposta = proposta
             follow_up.criado_por = request.user.funcionario
             follow_up.save()
-            messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
         else:
             if request.POST.get('somente-texto'):
-                proposta.followupdepropostacomercial_set.create(texto=request.POST.get('texto'), criado_por=request.user.funcionario)
-                messages.info(request, u"Follow UP SOMENTE TEXTO adicionado à proposta #%s" % proposta.id)
-                
-            else:
-                messages.error(request, u"Erro! Formulário inválido! Follow Up Não Adicionado.")
+                follow_up, created = proposta.followupdepropostacomercial_set.create(texto=request.POST.get('texto'), criado_por=request.user.funcionario)
+                # avisa que follow up foi criado
+        if follow_up:
+            messages.success(request, u"Sucesso! Novo Follow Up Adicionado na proposta")
+        else:
+            messages.error(request, u"Erro! Follow Up Não adicionado.")
     # retorna para referrer ou view do cliente
     try:
         url = request.META['HTTP_REFERER']
@@ -2299,21 +2723,162 @@ class ContratoPrint:
             return pdf
 
 
+
+
+class ContratoPrintDocumento:
+    """
+    Imprime o contrato impresso.
+    """
+
+    def __init__(self, buffer, pagesize):
+        self.buffer = buffer
+        if pagesize == 'A4':
+            self.pagesize = A4
+        elif pagesize == 'Letter':
+            self.pagesize = letter
+        self.width, self.height = self.pagesize
+
+    def _header_footer(self, canvas, doc):
+            # Save the state of our canvas so we can draw on it
+            canvas.saveState()
+            styles = getSampleStyleSheet()
+
+            # Footer
+            footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-00%s' % self.documento.versao, styles['Normal'])
+            footer.wrap(doc.width, doc.bottomMargin)
+            footer.drawOn(canvas, 30, 10)
+            # Release the canvas
+            canvas.restoreState()
+
+    def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
+            self.contrato = contrato
+            self.documento = contrato.documento_gerado
+            self.perfil = perfil
+            self.espaco_assinaturas = 30
+            espaco_assinaturas = self.espaco_assinaturas
+            buffer = self.buffer
+
+            if imprime_logo:
+                margem_topo = 10
+            else:
+                margem_topo = 70
+
+            doc = SimpleDocTemplate(buffer,
+                                    rightMargin=40,
+                                    leftMargin=40,
+                                    topMargin=margem_topo,
+                                    bottomMargin=70,
+                                    pagesize=self.pagesize)
+
+            # A large collection of style sheets pre-made for us
+            styles = getSampleStyleSheet()
+            styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
+            styles.add(ParagraphStyle(name='centered_h1', alignment=TA_CENTER, fontSize=13, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
+            styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='left_h1_vermelho', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold", textColor = colors.red,))
+            styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT, fontSize=10))
+            styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
+
+            # Our container for 'Flowable' objects
+            elements = []
+            espaco_assinaturas = 30
+            # logo empresa
+            if perfil.empresa:
+                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+            else:
+                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
+            im.hAlign = 'LEFT'
+
+            # id do contrato
+            id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
+
+            if imprime_logo:
+                data=[(im,id_contrato)]
+                table = Table(data, colWidths=270, rowHeights=79)
+            else:
+                data=[('',id_contrato)]
+                table = Table(data, colWidths=270, rowHeights=20)
+            table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'BOTTOM')]))
+            elements.append(table)
+
+            # para cada grupo
+            for grupo in self.documento.grupodocumento_set.all():
+                # para cada item de cada grupo
+                for item in grupo.itemgrupodocumento_set.all():
+                    # objeto texto
+                    if item.titulo:
+                        desc_itens_titulo = Paragraph(item.titulo, styles['left_h2'])
+                        elements.append(desc_itens_titulo)
+                    if item.texto:
+                        texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
+                        elements.append(texto)
+                    if item.imagem:
+                        #img = utils.ImageReader(item.imagem.path)
+                        #iw, ih = img.getSize()
+                        #aspect = ih / float(iw)
+                        #im = Image(item.imagem.path,  width=19*cm, height=(19*cm * aspect))
+                        im = Image(item.imagem.path)
+                        elements.append(im)
+                    if item.quebra_pagina:
+                        elements.append(PageBreak())
+                    elements.append(Spacer(1, 10))
+
+                elements.append(Spacer(1, 12))
+
+            # TESTEMUNHA 1
+            #
+            elements.append(Spacer(1, self.espaco_assinaturas))
+            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
+            elements.append(testemunha_linha)
+            if testemunha1:
+                texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
+            else:
+                if contrato.responsavel_comissionado:
+                    texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
+                else:
+                    texto = "TESTEMUNHA 1"
+            testemunha_texto = Paragraph(unicode(texto), styles['left'])
+            elements.append(testemunha_texto)
+
+            # TESTEMUNHA 2
+            #
+            elements.append(Spacer(1, espaco_assinaturas))
+            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
+            elements.append(testemunha_linha)
+            if testemunha2:
+                texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
+            else:
+                texto = "TESTEMUNHA 2"
+            testemunha_texto = Paragraph(unicode(texto), styles['left'])
+            elements.append(testemunha_texto)
+            # build pdf
+            doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
+
+            # Get the value of the BytesIO buffer and write it to the response.
+            pdf = buffer.getvalue()
+            buffer.close()
+            return pdf
+
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_gerar_impressao(request, contrato_id):
     if request.user.perfilacessocomercial.gerente:
         contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
     else:
         contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status__in=["assinatura", "emaberto", "emanalise"])
-    from io import BytesIO
     # Create the HttpResponse object with the appropriate PDF headers.
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="CONTRATO-%s.pdf"' % contrato.id
 
     buffer = BytesIO()
-
-
-    report = ContratoPrint(buffer, 'Letter')
+    # manter compatibilidade com contratos sem documentos gerados
+    if contrato.documento_gerado:
+        report = ContratoPrintDocumento(buffer, 'Letter')
+    else:
+        report = ContratoPrint(buffer, 'Letter')
     if request.GET.get('testemunha1'):
         testemunha1 = Funcionario.objects.get(pk=int(request.GET.get('testemunha1')))
     else:
@@ -2345,13 +2910,22 @@ def contratos_gerar_impressao(request, contrato_id):
 class FormRevalidarContrato(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
+        esconde_textos = kwargs.pop('esconde_textos')
         super(FormRevalidarContrato, self).__init__(*args, **kwargs)
         self.fields['valor'].localize = True
         self.fields['valor'].widget.is_localized = True
-    
+        self.fields['documento_proposto_legal'] = BRCPFField()
+
+        if esconde_textos:
+            del self.fields['objeto']
+            del self.fields['garantia']
+            del self.fields['items_incluso']
+            del self.fields['items_nao_incluso']
+
     class Meta:
         model = ContratoFechado
-        fields = 'categoria', 'objeto', 'garantia', 'items_incluso', 'items_nao_incluso', 'valor', 'tipo',
+        fields = ('objeto', 'valor', 'garantia', 'categoria', 'items_incluso', 'items_nao_incluso', 'tipo', 'responsavel_comissionado', 'responsavel', 'nome_proposto_legal', 'documento_proposto_legal', 'apoio_tecnico', 'endereco_obra')
+        #fields = 'categoria', 'objeto', 'garantia', 'items_incluso', 'items_nao_incluso', 'valor', 'tipo',
         localized_fields = 'valor',
 
 
@@ -2370,28 +2944,43 @@ def contratos_meus_arquivar(request, contrato_id):
     contrato.save()
     return redirect(reverse("comercial:contratos_meus"))
 
-
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus_revalidar(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="invalido")
+    itens_editaveis = ItemGrupoDocumento.objects.filter(grupo__documento=contrato.documento_gerado, texto_editavel=True)
+    form_textos_editaveis = TextosEditaveisForm(queryset=itens_editaveis)
+    if contrato.documento_gerado:
+        esconde_textos = True
+    else:
+        esconde_textos = False
+
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, can_delete=True, form=LancamentoFinanceiroReceberComercialForm)
     if request.POST:
-        form_contrato = FormRevalidarContrato(request.POST, instance=contrato)
+        form_contrato = FormRevalidarContrato(request.POST, instance=contrato, esconde_textos=esconde_textos)
         form_configurar_contrato = ConfigurarConversaoPropostaFormset(request.POST, prefix="revalidar_contrato", instance=contrato)
-        if form_contrato.is_valid() and form_configurar_contrato.is_valid():
+        form_textos_editaveis = TextosEditaveisForm(request.POST, queryset=itens_editaveis)
+        if form_contrato.is_valid() and form_configurar_contrato.is_valid() and form_textos_editaveis.is_valid():
             total_lancamentos = 0
             for form in form_configurar_contrato.forms:
                 if form.cleaned_data:
-                    total_lancamentos += float(form.cleaned_data['valor_cobrado'])
+                    if not form.cleaned_data['DELETE']:
+                        total_lancamentos += float(form.cleaned_data['valor_cobrado'])
             if float(total_lancamentos) == float(contrato.valor):
                 contrato = form_contrato.save(commit=False)
+                # salva contrato em novo status
                 contrato.status = "emanalise"
                 contrato.save()
+                # salva textos
+                form_textos_editaveis.save()
+                # salva configuracao de lancamentos
                 form_configurar_contrato.save()
                 messages.success(request, u"Sucesso! Contrato Revalidado")
                 # envia email para gerentes do comercial
                 dest = []
-                for perfil in PerfilAcessoComercial.objects.filter(gerente=True):
+                # filtra por empresa
+                gerentes_minha_empresa = PerfilAcessoComercial.objects.filter(gerente=True, empresa=request.user.perfilacessocomercial.empresa)
+
+                for perfil in gerentes_minha_empresa:
                     dest.append(perfil.user.funcionario.email or perfil.user.email)
 
                 assunto = u'Contrato para Análise: #%s' % contrato.id
@@ -2419,10 +3008,11 @@ def contratos_meus_revalidar(request, contrato_id):
                 
                 return redirect(reverse("comercial:contratos_meus"))
             else:
-                messages.error(request, u"Erro. Valor de Lançamentos não confere com o valor do contrato.")
+                diferenca = float(contrato.valor) - float(total_lancamentos)
+                messages.error(request, u"Erro! Valor de Lançamentos (R$ %s) é diferente do valor do Contrato (R$ %s). Diferença: R$ %s" % (total_lancamentos, contrato.valor, diferenca))
             
     else:
-        form_contrato = FormRevalidarContrato(instance=contrato)
+        form_contrato = FormRevalidarContrato(instance=contrato,  esconde_textos=esconde_textos)
         form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="revalidar_contrato", instance=contrato)
 
     return render_to_response('frontend/comercial/comercial-contratos-meus-revalidar.html', locals(), context_instance=RequestContext(request),)
@@ -3066,10 +3656,15 @@ def relatorios_comercial_propostas_declinadas(request):
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos(request):
-    contratos_em_analise = ContratoFechado.objects.filter(
-        status="emanalise",
-        cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-    )
+    if request.user.perfilacessocomercial.super_gerente:
+        contratos_em_analise = ContratoFechado.objects.filter(
+            status="emanalise",
+        ).order_by('responsavel')
+    else:
+        contratos_em_analise = ContratoFechado.objects.filter(
+            status="emanalise",
+            cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
     return render_to_response('frontend/comercial/comercial-analise-de-contratos.html', locals(), context_instance=RequestContext(request),)
 
 class FormAnalisarContrato(forms.ModelForm):
@@ -3084,6 +3679,10 @@ class FormAnalisarContrato(forms.ModelForm):
         self.fields['responsavel'].queryset = perfil.funcionarios_disponiveis()
         self.fields['apoio_tecnico'].widget.attrs['class'] = 'select2'
         self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
+        self.fields['documento_proposto_legal'] =  BRCPFField()
+        if self.instance.documento_gerado:
+            self.fields['objeto'].widget = forms.HiddenInput()
+            self.fields['objeto'].initial = 'objeto do documento gerado'
 
     class Meta:
         model = ContratoFechado
@@ -3092,12 +3691,13 @@ class FormAnalisarContrato(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def analise_de_contratos_analisar(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="emanalise")
+    textos_contrato = ItemGrupoDocumento.objects.filter(grupo__documento__contratofechado=contrato)
     if request.POST:
         form_analisar_contrato = FormAnalisarContrato(request.POST, instance=contrato, perfil=request.user.perfilacessocomercial)
         if form_analisar_contrato.is_valid():
             contrato = form_analisar_contrato.save()
             if request.POST.get('aterar-contrato'):
-                messages.success(request, u"Sucesso! Contrato em Análise Alterado.")
+                messages.success(request, u"Sucesso! Contrato em Análise #%s  Alterado." % contrato.pk)
             elif request.POST.get('contrato-invalido'):
                 contrato.status ="invalido"
                 contrato.motivo_invalido = request.POST.get('motivo-invalido')

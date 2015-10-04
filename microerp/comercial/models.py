@@ -27,12 +27,14 @@ from utils import extenso_com_centavos
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 
 from django.db.models import Sum
 from localflavor.br.br_states import STATE_CHOICES
 
 from cadastro.models import Cliente, PreCliente
 from rh.models import Funcionario
+from django import forms
 
 import urllib2
 
@@ -90,23 +92,30 @@ CONTRATO_STATUS_DE_EXECUCAO_CHOICES = (
     ('comunicadofim', 'Fim do Contrato Comunicado'),
 )
 
+
+DOCUMENTO_GERADO_TIPO_CHOICES = (
+    ('contrato', u'Contrato'),
+    ('proposta', u'Proposta'),
+)
+
 class PropostaComercial(models.Model):
 
     def __unicode__(self):
-            if self.cliente:
-                proposto = 'cliente'
-                obj = self.cliente
-            else:
-                proposto = 'precliente'
-                obj = self.precliente
-            try:
-                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
-                valor_formatado = locale.currency(self.valor_proposto, grouping=True)
-            except:
-                valor_formatado = self.valor_proposto
-            
-            return u"Proposta #%s para %s %s de %s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, valor_formatado, self.probabilidade, self.criado_por)
-    
+        return "Proposta %s" % self.pk
+        if self.cliente:
+            proposto = 'cliente'
+            obj = self.cliente
+        else:
+            proposto = 'precliente'
+            obj = self.precliente
+        try:
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            valor_formatado = locale.currency(self.valor_proposto, grouping=True)
+        except:
+            valor_formatado = self.valor_proposto
+
+        return u"Proposta #%s para %s %s de %s com %s%% de probabilidade criado por %s" % (self.id, proposto, obj, valor_formatado, self.probabilidade, self.criado_por)
+
     def texto_descricao_items(self):
         texto = ''
         for orcamento in self.orcamentos_ativos():
@@ -210,9 +219,44 @@ class PropostaComercial(models.Model):
         for parcelamento in self.parcelamentos_possiveis.all():
             retorno.append((parcelamento, parcelamento.aplica_no_valor( self.consolidado() ) ) )
         return retorno            
-    
+
+    def cria_documento_gerado(self, modelo, tipo='proposta'):
+        '''cria/clona um documento gerado à partir de um modelo'''
+        documento = DocumentoGerado.objects.create(
+            nome = 'Documento Gerado para a Proposta #%s' % self.pk,
+            tipo_proposta=self.tipo,
+            tipo=tipo
+        )
+        # associa documento gerado com esta proposta
+        self.documento_gerado = documento
+        self.save()
+        # clona grupos e itens
+        for grupo_modelo in modelo.grupodocumento_set.all():
+            grupo_novo = documento.grupodocumento_set.create(
+                    peso=grupo_modelo.peso,
+            )
+            for item in grupo_modelo.itemgrupodocumento_set.all():
+                novo_item = grupo_novo.itemgrupodocumento_set.create(
+                    peso=item.peso,
+                    chave_identificadora=item.chave_identificadora,
+                    titulo=item.titulo,
+                    texto=item.texto,
+                    quebra_pagina=item.quebra_pagina,
+                    texto_editavel=item.texto_editavel,
+                )
+                if item.imagem:
+                    novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
+        return documento
+
+    def cria_contrato_pelo_modelo(self, modelo, responsavel, comissionado):
+        # cria o documento gerado do tipo contrato
+        documento_contrato = self.cria_documento_gerado(modelo=modelo, tipo='contrato')
+        # cria o contratofechado
+        contrato = ContratoFechado.objects.create()
+        # faz vinculacoes
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
+    documento_gerado = models.OneToOneField('DocumentoGerado', blank=True, null=True, on_delete=models.SET_NULL)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
     tipo = models.ForeignKey('TipoDeProposta', blank=True, null=True)
     tipos = models.ManyToManyField('TipoDeProposta', blank=True, related_name="proposta_por_tipos_set")
@@ -425,6 +469,81 @@ class EmpresaComercial(models.Model):
     estado = models.CharField("Estado", max_length=100,  blank=True, null=True, choices=STATE_CHOICES)
     contas_disponiveis = models.ManyToManyField('financeiro.ContaBancaria', blank=True)
 
+# DOCUMENTO GERADO (CONTRATO OU PROPOSTA)
+
+@deconstructible
+class ImagemDocumentoDir(object):
+
+    def __call__(self, instance, filename):
+        return os.path.join(
+            'documentos_gerados/', str(instance.grupo.documento.uuid), 'imagens/', filename
+          )
+
+documento_local_imagem = ImagemDocumentoDir()
+
+class   DocumentoGerado(models.Model):
+    def __unicode__(self):
+        if self.modelo:
+            return u"Modelo (%s): %s" % (self.get_tipo_display(), self.nome)
+        else:
+            return "%s" % self.nome
+
+    uuid = models.UUIDField(default=uuid.uuid4)
+    modelo = models.BooleanField(default=False)
+    tipo = models.CharField(blank=False, null=False, max_length=15, choices=DOCUMENTO_GERADO_TIPO_CHOICES, default='proposta')
+    tipo_proposta = models.ForeignKey('TipoDeProposta', blank=True, null=True)
+    nome = models.CharField(blank=True, null=True, max_length=150)
+    empresa_vinculada = models.ManyToManyField(EmpresaComercial, blank=True)
+    versao = models.IntegerField(default=1)
+
+
+class GrupoDocumento(models.Model):
+
+    def __unicode__(self):
+        return "Grupo %s do Documento %s" % (self.peso, self.documento)
+
+    peso = models.IntegerField()
+    documento = models.ForeignKey(DocumentoGerado)
+
+    class Meta:
+        unique_together = (('peso', 'documento'))
+        ordering = ['peso']
+
+class ItemGrupoDocumento(models.Model):
+
+    def __unicode__(self):
+        return "Chave: %s do Documento: %s" % (self.chave_identificadora, self.grupo.documento)
+
+    def formulario(self,request=None):
+        if request:
+            return EditarItemGrupoDocumentoForm(request.POST, request.FILES, instance=self)
+        else:
+            return EditarItemGrupoDocumentoForm(instance=self)
+
+    def titulo_label(self):
+        return self.titulo or self.titulo_exibir
+
+    peso = models.IntegerField()
+    grupo = models.ForeignKey(GrupoDocumento)
+    chave_identificadora = models.CharField(blank=False, null=False, max_length=30)
+    titulo = models.CharField(blank=True, null=True, max_length=150, help_text=u"Título para Impressão")
+    titulo_exibir = models.CharField(blank=True, null=True, max_length=150, help_text=u"Caso não exista um Título para impressão, usar este")
+    texto = models.TextField(blank=True, null=True)
+    texto_editavel = models.BooleanField(default=False)
+    imagem = models.ImageField(upload_to=documento_local_imagem, blank=True, null=True)
+    imagem_editavel = models.BooleanField(default=False)
+    quebra_pagina = models.BooleanField(default=False)
+
+
+    class Meta:
+        unique_together = (('peso', 'grupo'))
+
+class EditarItemGrupoDocumentoForm(forms.ModelForm):
+
+    class Meta:
+        fields = 'titulo', 'texto', 'imagem'
+        model = ItemGrupoDocumento
+
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):
     '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
@@ -492,8 +611,6 @@ class Orcamento(models.Model):
         for linha in self.linharecursohumano_set.all():
             custo += linha.quantidade * linha.cargo.fracao_hora_referencia
         return custo
-        
-            
 
     def recalcula_custo_total(self, save=True):
         self.custo_material = self.linharecursomaterial_set.aggregate(total=Sum('custo_total'))['total'] or 0
@@ -761,8 +878,38 @@ class ContratoFechado(models.Model):
                         produto=linha.produto, quantidade_requisitada=linha.quantidade
                     )
 
+    def cria_documento_gerado(self, modelo, tipo='contrato'):
+        '''cria/clona um documento gerado à partir de um modelo'''
+        documento = DocumentoGerado.objects.create(
+            nome = u'Documento Gerado para o Contrato #%s' % self.pk,
+            tipo_proposta=self.propostacomercial.tipo,
+            tipo=tipo
+        )
+        # associa documento gerado com esta proposta
+        self.documento_gerado = documento
+        self.save()
+        # clona grupos e itens
+        for grupo_modelo in modelo.grupodocumento_set.all():
+            grupo_novo = documento.grupodocumento_set.create(
+                peso=grupo_modelo.peso,
+            )
+            for item in grupo_modelo.itemgrupodocumento_set.all():
+                novo_item = grupo_novo.itemgrupodocumento_set.create(
+                    peso=item.peso,
+                    chave_identificadora=item.chave_identificadora,
+                    titulo=item.titulo,
+                    titulo_exibir=item.titulo_exibir,
+                    texto=item.texto,
+                    quebra_pagina=item.quebra_pagina,
+                    texto_editavel=item.texto_editavel,
+                )
+                if item.imagem:
+                    novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
+        return documento
+
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)
+    documento_gerado = models.OneToOneField(DocumentoGerado, blank=True, null=True, on_delete=models.SET_NULL)
     categoria = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
     objeto = models.TextField(blank=False)
     nome_proposto_legal = models.CharField(blank=True, max_length=100)
@@ -856,7 +1003,6 @@ class TabelaDeComissao(models.Model):
     valor_fim = models.DecimalField(max_digits=10, decimal_places=2)
     porcentagem = models.DecimalField(max_digits=10, decimal_places=2)
 
-
 class RequisicaoDeProposta(models.Model):
     
     def __unicode__(self):
@@ -892,7 +1038,6 @@ class SubGrupoIndicadorDeProdutoProposto(models.Model):
     
     nome = models.CharField(blank=True, max_length=100)
     grupo = models.ForeignKey('GrupoIndicadorDeProdutoProposto')
-
 
 # signals
 def proposta_comercial_post_save(signal, instance, sender, **kwargs):
@@ -976,7 +1121,6 @@ def atualiza_preco_linhas_humano(signal, instance, sender, **kwargs):
             resultado = 0
         instance.custo_total = resultado
 
-
 def atualiza_custo_total_orcamento(signal, instance, sender, **kwargs):
     instance.recalcula_custo_total(save=False)
 
@@ -1000,7 +1144,6 @@ def orcamento_post_save(signal, instance, sender, **kwargs):
         if float(instance.proposta.consolidado()) > float(instance.proposta.valor_proposto):
             instance.proposta.valor_proposto = float(instance.proposta.consolidado())
             instance.proposta.save()
-    
 
 # SIGNALS CONNECTION
 signals.pre_save.connect(proposta_comercial_pre_save, sender=PropostaComercial)

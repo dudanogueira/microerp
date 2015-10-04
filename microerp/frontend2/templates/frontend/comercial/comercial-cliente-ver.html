@@ -203,7 +203,15 @@
 					{%endif %}
 
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" data-probabilidade="{{proposta.probabilidade}}" data-probabilidade="{{proposta.probabilidade}}" 						data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"  data-title="Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a
+							href="#modal-follow-up-add"
+							data-proposta-id="{{proposta.id|unlocalize}}"
+							data-probabilidade="{{proposta.probabilidade}}"
+							data-probabilidade="{{proposta.probabilidade}}"
+							data-nova-data-reagendamento='{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}"'
+							data-title='Cliente: {{proposta.precliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}'
+							data-action-url='{% url "comercial:adicionar_follow_up" proposta.id %}'
+							role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 				</td>
 						<td>
 							<div class="btn-group">
@@ -291,7 +299,14 @@
 
 					{%endif %}
 					<!-- Button to trigger modal de follow up -->
-					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id}}" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
+					<a href="#modal-follow-up-add"
+					   data-proposta-id="{{proposta.id|unlocalize}}"
+					   data-title='Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}'
+					   data-probabilidade="{{proposta.probabilidade}}"
+					   data-nova-data-reagendamento='{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}'
+					   data-action-url='{% url "comercial:adicionar_follow_up" proposta.id %}'
+					   role="button"
+					   class="btn btn-default btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
 
 				</td>
 				<td>
@@ -299,7 +314,6 @@
 								{% if request.user.perfilacessocomercial.gerente %}
 								{# MENU DO GERENTE#}
 									<div class="btn-group">
-						        <a href="" class="btn btn-success"><i class="fa fa-thumbs-up"></i></a>
 
 							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 
@@ -518,6 +532,7 @@ $(document).ready(function() {
 });
 
 $("#ModalAdicionarEndereco").on("shown.bs.modal", function () {
+	$("#buscar-cep").remove();
 		$("#id_cep").parent().append('<br /><a id="buscar-cep" class="btn btn-small btn-primary"><i class="icon-refresh icon-white"></i> Buscar CEP</a><div id="loading" style="display:none">carregando...</div>');
 	$('#buscar-cep').click(function (e) {
 		$('#id_cep').cep({
@@ -557,6 +572,7 @@ $(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
 	$("#id_reagenda_data_expiracao").attr('checked', false);
 	$("#id_visita").attr('checked', false);
 	$("#form-adicionar-follow-up").attr('action', $(this).data('action-url'))
+	alert($(this).data('action-url'));
 });
 
 

@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load thumbnail %}
 
 <title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato{% endblock %}</title>
 
@@ -8,19 +9,23 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-search-plus"></i> Análises de Contrato</h1>
 	{% regroup contratos_em_analise by responsavel as contratos_em_analise_por_responsavel %}
 
-
 {% for lista in contratos_em_analise_por_responsavel %}
-<h3>{{lista.grouper}}</h3>
+<h3>{{lista.grouper}} {% if request.user.perfilacessocomercial.super_gerente %}
+					{% thumbnail lista.grouper.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
+    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+					{% endthumbnail %}
+				{% endif %}</h3>
 
 	{% for contrato in lista.list %}
 	<div class="row row-fluid well well-sm">
-		<div class="col-md-1">
-			<a class="btn btn-primary" href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">#{{contrato.id}}</a>
+		<div class="col-md-2">
+			<a class="btn btn-primary" href="{% url "comercial:analise_de_contratos_analisar" contrato.id %}">Analisar #{{contrato.id}} <i class="fa fa-arrow-right"></i></a>
 		</div>
 
-		<div class="col-md-11">
+		<div class="col-md-10">
 				{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
 				Responsável: {{contrato.responsavel}}, Comissionado: {{contrato.responsavel_comissionado}}. <span class="label label-info">Criado em: {{contrato.criado|date:"SHORT_DATETIME_FORMAT"}}</span>
+
 		</div>
 
 	</div>
