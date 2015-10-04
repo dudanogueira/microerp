@@ -486,7 +486,7 @@ class   DocumentoGerado(models.Model):
         if self.modelo:
             return u"Modelo (%s): %s" % (self.get_tipo_display(), self.nome)
         else:
-            return "%s" % self.nome
+            return u"%s" % self.nome
 
     uuid = models.UUIDField(default=uuid.uuid4)
     modelo = models.BooleanField(default=False)
@@ -500,7 +500,7 @@ class   DocumentoGerado(models.Model):
 class GrupoDocumento(models.Model):
 
     def __unicode__(self):
-        return "Grupo %s do Documento %s" % (self.peso, self.documento)
+        return u"Grupo %s do Documento %s" % (self.peso, self.documento)
 
     peso = models.IntegerField()
     documento = models.ForeignKey(DocumentoGerado)
@@ -512,7 +512,7 @@ class GrupoDocumento(models.Model):
 class ItemGrupoDocumento(models.Model):
 
     def __unicode__(self):
-        return "Chave: %s do Documento: %s" % (self.chave_identificadora, self.grupo.documento)
+        return u"Chave: %s do Documento: %s" % (self.chave_identificadora, self.grupo.documento)
 
     def formulario(self,request=None):
         if request:
