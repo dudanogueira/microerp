@@ -36,8 +36,8 @@
             <div class="timeline-badge">
                 <div class=" image-cropper">
 
-                {% if followup.proposta.designado.foto %}
-                    {% thumbnail followup.proposta.designado.foto "100x100" format="PNG" as im %}
+                {% if followup.criado_por.funcionario.foto %}
+                    {% thumbnail followup.criado_por.funcionario.foto "100x100" format="PNG" as im %}
                     <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"><br />
 
                     {% endthumbnail %}
@@ -48,7 +48,7 @@
 
             </div>
             <div class="badge-title">
-                {{followup.proposta.designado.nome_reduzido}}
+                {{followup.criado_por.nome_reduzido}}
             </div>
             </div>
 
