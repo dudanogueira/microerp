@@ -543,6 +543,7 @@ class ItemGrupoDocumento(models.Model):
 
     class Meta:
         unique_together = (('peso', 'grupo'))
+        ordering = (('peso'))
 
 class EditarItemGrupoDocumentoForm(forms.ModelForm):
 

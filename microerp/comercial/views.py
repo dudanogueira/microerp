@@ -1337,6 +1337,7 @@ def precliente_converter(request, pre_cliente_id):
                 return redirect(reverse('comercial:cliente_ver', args=[cliente_novo.id]))
     else:
         initial = {}
+        # TODO: se a proposta tiver documento gerado, puxar t
         if proposta_referencia:
             initial={
                 'email': proposta_referencia.email_proposto,
@@ -2844,6 +2845,7 @@ class ContratoPrintDocumento:
                 # para cada item de cada grupo
                 for item in grupo.itemgrupodocumento_set.all():
                     # objeto texto
+                    # TODO: Colocar centralizado se item.titulo_centralizado
                     if item.titulo:
                         desc_itens_titulo = Paragraph(item.titulo, styles['left_h2'])
                         elements.append(desc_itens_titulo)
