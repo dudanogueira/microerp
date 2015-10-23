@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import patterns, include, url
 
+from rest_framework import routers
+#from comercial.apiviews import *
+
+
 # urls do Cadastro
 urlpatterns = patterns('',
     url(r'^$', 'comercial.views.home', name='home'),
@@ -72,6 +76,9 @@ urlpatterns = patterns('',
     # comissoes - gerencia
     url(r'^gerencia/comissoes/$', 'comercial.views.gerencia_comissoes', name='gerencia_comissoes'),
     url(r'^gerencia/comissoes/novo/fechamento/$', 'comercial.views.gerencia_comissoes_novo_fechamento', name='gerencia_comissoes_novo_fechamento'),
-    
+    # angular
+    url(r'^a/$', 'comercial.views.home_angular', name='home_angular'),
 )
+
+
 

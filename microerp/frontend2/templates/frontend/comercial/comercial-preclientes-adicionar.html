@@ -15,6 +15,7 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
+<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cep.min.js"></script>
 <script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
 <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.mask.js"></script>
 <link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
@@ -39,12 +40,47 @@ $(document).ready(function() {
     $("#menu-comercial-cliente-pre-cliente, #top-menu-comercial").addClass("active");
     $('#id_cpf').mask('000.000.000-00');
     $('#id_cnpj').mask('00.000.000/0000-00');
+	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
+	var SPMaskBehavior = function (val) {
+		return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+	}
+	spOptions = {
+		onKeyPress: function(val, e, field, options) {
+			field.mask(SPMaskBehavior.apply({}, arguments), options);
+		}
+	};
+
+	$('#id_telefone_fixo').mask('(00) 0000-0000');
+	$('#id_telefone_celular').mask(SPMaskBehavior, spOptions);
 
     esconde_lista(grupo_pj);
     esconde_lista(grupo_pf);
     {% if form_add_precliente.errors %}
 		checa_exibicao_por_tipo($("#id_tipo").val());
 	{% endif %}
+	$("#id_cep").parent().append('<br /><a id="buscar-cep" class="btn btn-small btn-primary"><i class="icon-refresh icon-white"></i> Buscar CEP</a><div id="loading" style="display:none">carregando...</div>');
+	$('#buscar-cep').click(function (e) {
+		$('#id_cep').cep({
+			load: function () {
+				$('#result').empty();
+				$('#loading').show();
+			},
+			complete: function () {
+				$('#loading').hide();
+			},
+			error: function (msg) {
+				$('#result').html(msg);
+			},
+			success: function (data) {
+				console.log(data);
+				$('#id_rua').val(data.tipoLogradouro + ' ' + data.logradouro)
+				$('#id_bairro_texto').val(data.bairro)
+				$('#id_cidade_texto').val(data.cidade)
+				$('#id_uf_texto').val(data.estado)
+			}
+		});
+
+	});
 
 });
 

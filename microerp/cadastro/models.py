@@ -77,6 +77,10 @@ class PreCliente(models.Model):
     def propostas_perdidas(self):
         return self.propostacomercial_set.filter(status__in=("perdida", "perdida_aguardando"))
 
+    def logradouro_completo(self):
+        string = u"%s, %s, %s - %s - %s, CEP: %s" % (self.rua, self.numero, self.bairro_texto, self.cidade_texto, self.uf_texto, self.cep)
+        return string
+
     cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
@@ -87,6 +91,17 @@ class PreCliente(models.Model):
     cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
     numero_instalacao = models.CharField(u"Número da Instalação", blank=True, null=True, max_length=300)
     origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
+    # telefones
+    telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
+    telefone_celular = models.CharField(blank=True, null=True, max_length=100)
+    # endereco
+    bairro_texto = models.CharField("Bairro", max_length=100,  blank=True, null=True)
+    cidade_texto = models.CharField("Cidade", max_length=100,  blank=True, null=True)
+    uf_texto = models.CharField("Estado", max_length=100,  blank=True, null=True, choices=STATE_CHOICES)
+    cep = models.CharField(blank=True, max_length=100, verbose_name=u"CEP")
+    rua = models.CharField(blank=True, max_length=500, verbose_name=u"Rua")
+    numero = models.CharField(blank=True, max_length=100, verbose_name=u"Número")
+    complemento = models.CharField(blank=True, max_length=200, verbose_name=u"Complemento")
     # metadata
     sem_interesse = models.BooleanField(default=False)
     sem_interesse_motivo = models.TextField("Motivo do Desinteresse", blank=True,)
@@ -186,6 +201,32 @@ class Cliente(models.Model):
                 raise
                 print "ERRO AO CRIAR O GEOPONTO PARA %s" % self
                 pass
+
+    def sugerir_texto_contratante(self):
+        if self.tipo == "pj":
+            texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, Telefone Fixo: %s, Telefone Fixo: %s, Email: %s''' % (
+                unicode(self.nome),
+                unicode(self.cnpj or "CNPJ: "+("_" * 30) ),
+                unicode("Representante Legal: "+("_" * 30) ),
+                unicode("Documento Representante Legal (CPF): "+("_" * 30) ),
+                unicode(self.logradouro_completo() or u"Endereço: "+("_" * 30)),
+                unicode(self.telefone_fixo or ("_" * 30)),
+                unicode(self.telefone_celular or ("_" * 30)),
+                unicode(self.email or ("_" * 30)),
+            )
+        else:
+            #self.cliente.tipo =="pf"
+            texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado no endereço %s, Telefone Fixo: %s, Telefone Celular: %s, Email: %s''' % (
+
+                unicode(self.nome),
+                unicode(self.cpf or "_" * 30 ),
+                unicode(self.rg or "_" * 30  ),
+                unicode(self.logradouro_completo() or "_" * 90),
+                unicode(self.telefone_fixo or ("_" * 30)),
+                unicode(self.telefone_celular or ("_" * 30)),
+                unicode(self.email or ("_" * 30)),
+            )
+        return texto
 
     def propostas_abertas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())

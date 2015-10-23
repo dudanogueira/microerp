@@ -1,0 +1,179 @@
+{% load sekizai_tags %}
+{% load check_installed %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--<link rel="icon" href="../../favicon.ico"> -->
+
+    <title>{% block title %}{{nome_sistema}}{% endblock %}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="{{STATIC_URL}}frontend/css/navbar-static-top.css" rel="stylesheet">
+	<link href="{{STATIC_URL}}frontend/css/style.css" rel="stylesheet">
+	<link rel="stylesheet" href="{{STATIC_URL}}/frontend/css/font-awesome.min.css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% render_block "css" %}
+  </head>
+  <body>
+<!-- Static navbar -->
+    <nav class="navbar navbar-inverse navbar-static-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <span class="navbar-brand" ><i class="fa fa-th"></i> {{nome_sistema}}</span>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+			
+			{% include "frontend/global-top-menu.html" %}
+			
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+
+    <div class="container-fluid">
+      <div class="row-fluid" id="main-content">
+        <div class="col-md-3" id="menu-lateral">
+            <div class="pagination-centered text-center" id="logo-empresa">
+            {% if logo_empresa %}
+                <img src="{{logo_empresa}}" width="250px">
+            {% endif %}
+						
+						
+            </div>
+            
+            {% if mostra_menu_principal_lateral and request.user.is_authenticated  %}
+            <div class="well sidebar-nav principal">
+              <ul class="nav nav-pills nav-stacked">
+                <li class="nav-header"><i class="fa fa-home fa-3x"></i> Principal</li>
+                <li id="main-home"><a href="{% url "home" %}"><i class="fa fa-th"></i> Meu Painel</a></li>
+                {% if request.user.funcionario %}
+
+                {% if "solicitacao"|is_installed_app %}
+                
+                <li id="main-home-minhas-solicitacoes"><a href="{% url "minhas_solicitacoes" %}"><i class="fa fa-bell {% if request.user.funcionario.solicitacoes_total %}icon-animated-bell{% endif %}"></i> Solicitações {% if request.user.funcionario.solicitacoes_total %}<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>{%endif%}</a></li>
+                {% endif %}
+                
+                {% endif %}
+              </ul>              
+            </div><!--/.well -->
+            {% endif %}
+            
+            <div class="auxiliar-menu">
+            {% block auxiliar-menu %}
+                        
+            {% endblock %}
+            </div>  
+            
+        
+        </div><!--/span-->
+		
+		
+		
+        <div class="col-md-9" id="content">
+				
+				{% if ambiente_testes %}
+					<div class="alert alert-danger">
+						<h4> <i class="fa fa-warning"></i> AMBIENTE DE TESES</h4>
+					</div>
+				{% endif %}
+				
+				
+			
+    		{% if messages %}
+    		<div id="alertas">
+    		    {% for message in messages %}
+                    {% if message.tags == "error" %}
+    				<div class="alert alert-danger" role="alert">
+                    {% else %}
+                    <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">
+                    {% endif %}
+    				  <a class="close" data-dismiss="alert">×</a>
+                      {% if message.tags == "error" %}
+    				  <i class="fa fa-times-circle-o"></i>
+                      {% endif %}
+                      {% if message.tags == "info" %}
+    				  <i class="fa fa-comment"></i>
+                      {% endif %}
+                      {% if message.tags == "success" %}
+    				  <i class="fa fa-check-circle"></i>
+                      {% endif %}
+                      {% if message.tags == "warning" %}
+    				  <i class="fa fa-warning"></i>
+                      {% endif %}
+                      
+                       {{ message|safe }}
+    				</div>
+    		    {% endfor %}
+    		</div>
+    		{% endif %}
+            
+            {% block content %}
+          <div class="row-fluid">
+            <div class="span4">
+
+              <h2>Heading</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn" href="#">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Heading</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn" href="#">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Heading</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn" href="#">View details &raquo;</a></p>
+            </div><!--/span-->
+          </div><!--/row-->
+          <div class="row-fluid">
+            <div class="span4">
+              <h2>Heading</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn" href="#">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Heading</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn" href="#">View details &raquo;</a></p>
+            </div><!--/span-->
+            <div class="span4">
+              <h2>Heading</h2>
+              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
+              <p><a class="btn" href="#">View details &raquo;</a></p>
+            </div><!--/span-->
+          </div><!--/row-->
+          {% endblock %}
+        </div><!--/span-->
+      </div><!--/row-->
+
+
+    </div><!--/.fluid-container-->
+    <script src="{{STATIC_URL}}js/angular.min.js"></script>
+    <script src="{{STATIC_URL}}js/angular-route.min.js"></script>
+    {% render_block "js" %}
+    <script>
+
+    </script>
+    
+  </body>
+</html>

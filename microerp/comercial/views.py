@@ -86,6 +86,8 @@ class PreClienteAdicionarForm(forms.ModelForm):
         self.fields['designado'].empty_label = "Nenhum"
         self.fields['designado'].required = True
         self.fields['tipo'].required = True
+        self.fields['telefone_fixo'] = BRPhoneNumberField(required=False)
+        self.fields['telefone_celular'] = BRPhoneNumberField(required=False)
         if sugestao:
             self.fields['nome'].initial = sugestao
         if not perfil.gerente:
@@ -146,7 +148,7 @@ class PreClienteAdicionarForm(forms.ModelForm):
 
     class Meta:
         model = PreCliente
-        fields = 'nome', 'tipo', 'cpf', 'cnpj', 'numero_instalacao', 'contato', 'dados', 'origem', 'designado'
+        fields = 'nome', 'tipo', 'cpf', 'cnpj', 'numero_instalacao', 'telefone_fixo', 'telefone_celular', 'cep', 'rua', 'numero', 'bairro_texto', 'cidade_texto', 'uf_texto', 'complemento', 'dados', 'origem', 'designado'
 
 class AdicionarPropostaForm(forms.ModelForm):
     
@@ -320,6 +322,11 @@ def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
 #
 # VIEWS
 #
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url='/')
+def home_angular(request):
+    return render_to_response('frontend/comercial/comercial-angular_home.html', locals(),
+                              context_instance=RequestContext(request), )
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def home(request):
@@ -872,6 +879,9 @@ class BasearContratoNoModelo(forms.ModelForm):
                 # caso nao exista, usar o conteudo do modelo
                 texto = textos_editaveis.texto
             self.fields[textos_editaveis.chave_identificadora].initial = texto
+            # se existe item da proposta com chave contratante, sugerir conteudo
+            if textos_editaveis.chave_identificadora == 'contratante':
+                self.fields[textos_editaveis.chave_identificadora].initial = proposta.cliente.sugerir_texto_contratante()
 
 
     class Meta:
@@ -1346,7 +1356,17 @@ def precliente_converter(request, pre_cliente_id):
                 'cpf': precliente.cpf,
                 'cnpj': precliente.cnpj,
                 'origem': precliente.origem,
+                'telefone_fixo': precliente.telefone_fixo,
+                'telefone_celular': precliente.telefone_celular,
+                'cep': precliente.cep,
+                'rua': precliente.rua,
+                'numero': precliente.numero,
+                'bairro_texto': precliente.bairro_texto,
+                'cidade_texto': precliente.cidade_texto,
+                'uf_texto': precliente.uf_texto,
+                'complemento': precliente.complemento,
             }
+            #a
 
         form = AdicionarCliente(precliente=precliente, com_endereco=True, initial=initial )
     return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
@@ -1391,7 +1411,13 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
                 )
             if modelos_proposta:
                 proposta.cria_documento_gerado(modelo=modelos_proposta[0])
-            # salva ae
+                # Auto Preenche Endereco da Obra
+                item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
+                if proposta.precliente:
+                    item.texto = precliente.logradouro_completo()
+                if proposta.cliente:
+                    item.texto = cliente.logradouro_completo()
+                item.save()
 
             # vincula proposta com a requisicao de origem
             if request.GET.get('requisicao_origem', None):
@@ -1445,6 +1471,10 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
                 )
             if modelos_proposta:
                 proposta.cria_documento_gerado(modelo=modelos_proposta[0])
+                # Auto Preenche Endereco da Obra
+                item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
+                item.texto = precliente.logradouro_completo()
+                item.save()
             # salva
 
             messages.success(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
@@ -2050,6 +2080,7 @@ class DocumentoGeradoPrint:
             styles.add(ParagraphStyle(name='left', alignment=TA_LEFT))
             styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='centered_h2', alignment=TA_CENTER, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
@@ -2085,11 +2116,12 @@ class DocumentoGeradoPrint:
                 for item in grupo.itemgrupodocumento_set.all():
                     # objeto texto
                     if item.titulo:
-                        desc_itens_titulo = Paragraph(item.titulo, styles['left_h2'])
+                        if item.titulo_centralizado:
+                            estilo = 'centered_h2'
+                        else:
+                            estilo = 'left_h2'
+                        desc_itens_titulo = Paragraph(item.titulo, styles[estilo])
                         elements.append(desc_itens_titulo)
-                    if item.texto:
-                        texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
-                        elements.append(texto)
                     if item.imagem:
                         #img = utils.ImageReader(item.imagem.path)
                         #iw, ih = img.getSize()
@@ -2097,6 +2129,10 @@ class DocumentoGeradoPrint:
                         #im = Image(item.imagem.path,  width=19*cm, height=(19*cm * aspect))
                         im = Image(item.imagem.path)
                         elements.append(im)
+                    if item.texto:
+                        texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
+                        elements.append(texto)
+
                     if item.quebra_pagina:
                         elements.append(PageBreak())
                     elements.append(Spacer(1, 10))
@@ -2119,7 +2155,6 @@ def proposta_comercial_imprimir(request, proposta_id):
     if not proposta.documento_gerado:
         # redireciona pra view antiga
         return redirect(reverse("comercial:proposta_comercial_imprimir2", args=[proposta.id]))
-
 
     # puxa todos os itens dessa proposta que sao editaveis
     itens_editaveis = ItemGrupoDocumento.objects.filter(

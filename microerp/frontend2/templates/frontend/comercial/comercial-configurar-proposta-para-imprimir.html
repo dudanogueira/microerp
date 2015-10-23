@@ -74,7 +74,7 @@
 
 
 						{% if item.titulo %}
-						<h2>{{item.titulo}}</h2>
+						<h2 {% if item.titulo_centralizado %}class="text-center"{% endif %}>{{item.titulo_label}}</h2>
 						{% endif %}
 						{% if item.texto %}
 						<p>{{item.texto|safe|linebreaks}}</p>
@@ -130,8 +130,6 @@
 	</div>
 
 </div>
-
-
 
 
 {% endblock %}

@@ -521,12 +521,18 @@ class ItemGrupoDocumento(models.Model):
             return EditarItemGrupoDocumentoForm(instance=self)
 
     def titulo_label(self):
-        return self.titulo or self.titulo_exibir
+        if self.titulo:
+            return self.titulo
+        if self.titulo_exibir:
+            return self.titulo_exibir
+        else:
+            return "chave: %s" % self.chave_identificadora
 
     peso = models.IntegerField()
     grupo = models.ForeignKey(GrupoDocumento)
     chave_identificadora = models.CharField(blank=False, null=False, max_length=30)
     titulo = models.CharField(blank=True, null=True, max_length=150, help_text=u"Título para Impressão")
+    titulo_centralizado = models.BooleanField(default=False)
     titulo_exibir = models.CharField(blank=True, null=True, max_length=150, help_text=u"Caso não exista um Título para impressão, usar este")
     texto = models.TextField(blank=True, null=True)
     texto_editavel = models.BooleanField(default=False)
@@ -899,6 +905,7 @@ class ContratoFechado(models.Model):
                     chave_identificadora=item.chave_identificadora,
                     titulo=item.titulo,
                     titulo_exibir=item.titulo_exibir,
+                    titulo_centralizado=item.titulo_centralizado,
                     texto=item.texto,
                     quebra_pagina=item.quebra_pagina,
                     texto_editavel=item.texto_editavel,

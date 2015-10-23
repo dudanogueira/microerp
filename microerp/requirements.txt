@@ -24,3 +24,4 @@ stevedore==1.5.0
 Werkzeug==0.10.4
 workdays==1.4
 xlrd==0.9.3
+djangorestframework==3.2.4
