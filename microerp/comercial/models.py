@@ -490,6 +490,7 @@ class   DocumentoGerado(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4)
     modelo = models.BooleanField(default=False)
+    imprime_logo = models.BooleanField(default=True)
     tipo = models.CharField(blank=False, null=False, max_length=15, choices=DOCUMENTO_GERADO_TIPO_CHOICES, default='proposta')
     tipo_proposta = models.ForeignKey('TipoDeProposta', blank=True, null=True)
     nome = models.CharField(blank=True, null=True, max_length=150)
@@ -890,7 +891,8 @@ class ContratoFechado(models.Model):
         documento = DocumentoGerado.objects.create(
             nome = u'Documento Gerado para o Contrato #%s' % self.pk,
             tipo_proposta=self.propostacomercial.tipo,
-            tipo=tipo
+            tipo=tipo,
+            imprime_logo=modelo.imprime_logo
         )
         # associa documento gerado com esta proposta
         self.documento_gerado = documento

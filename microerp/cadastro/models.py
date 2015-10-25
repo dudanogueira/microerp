@@ -192,7 +192,6 @@ class Cliente(models.Model):
         lat, lng = self.buscar_geoponto(self.logradouro_completo_busca())
         if lat and lng:
             # geoponto ok, criando referencia cliente
-            # TODO melhorar aqui, nem todos os projetos precisam de GEOREF
             try:
                 if self.referenciageograficacliente_set.count() == 0:
                     ponto = fromstr("POINT(%s %s)" % (lng, lat))

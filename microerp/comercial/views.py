@@ -1337,8 +1337,9 @@ def precliente_converter(request, pre_cliente_id):
                 return redirect(reverse('comercial:cliente_ver', args=[cliente_novo.id]))
     else:
         initial = {}
-        # TODO: se a proposta tiver documento gerado, puxar t
-        if proposta_referencia:
+        # se proposta tiver documento gerado, puxar do precliente
+        # pois o precliente ja possui mais dados.
+        if proposta_referencia and not proposta_referencia.documento_gerado:
             initial={
                 'email': proposta_referencia.email_proposto,
                 'rua': proposta_referencia.rua_do_proposto,
@@ -2101,7 +2102,7 @@ class DocumentoGeradoPrint:
             else:
                 id_documento = Paragraph("Nº CONTRATO: %s" % str(documento.contratofechado.id), styles['right'])
 
-            imprime_logo = getattr(settings, 'IMPRIME_LOGO_PROPOSTA', True)
+            imprime_logo = getattr(self.documento, 'imprime_logo', False)
             if imprime_logo:
                 data=[(im,id_documento)]
             else:
@@ -2139,6 +2140,69 @@ class DocumentoGeradoPrint:
                     elements.append(Spacer(1, 10))
 
                 elements.append(Spacer(1, 12))
+                            # texto validade
+                if documento.propostacomercial:
+                    validade = "Essa proposta é válida até %s e foi emitida em %s" % \
+                    ( documento.propostacomercial.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
+                    texto = Paragraph(validade, styles['justify'])
+                    elements.append(texto)
+                    # TEXTO ESQUERDA FINAL
+            if perfil.user.funcionario:
+                responsavel_proposta = perfil.user.funcionario
+            else:
+                responsavel_proposta = proposta.designado
+
+
+
+
+            if perfil and perfil.imagem_assinatura:
+                # space
+                elements.append(Spacer(1, 12))
+
+                try:
+                    im = Image(perfil.imagem_assinatura.path, width=2*inch,height=1*inch,kind='proportional')
+                    im.hAlign = 'LEFT'
+                    elements.append(im)
+                except:
+                    pass
+
+                texto_esquerda_final = "Atenciosamente,<br /><b>%s</b>" % responsavel_proposta
+
+                if perfil.user.funcionario.sexo == "m":
+                    texto_esquerda_final += "<br />Consultor de Vendas<br />"
+                else:
+                    texto_esquerda_final += "<br />Consultora de Vendas<br />"
+
+                if perfil.user.funcionario.email or perfil.user.email:
+                    texto_esquerda_final += "Email: %s<br />" % perfil.user.funcionario.email or perfil.user.email
+
+                if perfil.telefone_celular and perfil.telefone_fixo:
+                    texto_esquerda_final += "%s / %s" % (perfil.telefone_celular, perfil.telefone_fixo)
+
+
+                elif perfil.telefone_fixo and not perfil.telefone_celular:
+                    texto_esquerda_final += "%s" % perfil.telefone_fixo
+                else:
+                    texto_esquerda_final += "%s" % perfil.telefone_celular
+
+                # space
+                elements.append(Spacer(1, 12))
+
+                texto_esquerda_final_p = Paragraph(texto_esquerda_final, styles['left'])
+
+                telefone_empresa = getattr(settings, 'TELEFONE_EMPRESA', None)
+
+                # TEXTO DIREITA FINAL
+                texto_direita_final = """
+                Aceito por <br /><br /> ____________________________________________<br /><br />
+                Em ___________ de _____________________ de %s.""" % (datetime.date.today().strftime("%Y"))
+
+                texto_direita_final_p = Paragraph(texto_direita_final, styles['left'])
+
+                data=[(texto_esquerda_final_p,texto_direita_final_p)]
+                table = Table(data, colWidths=270, rowHeights=79)
+
+                elements.append(table)
 
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
@@ -2631,7 +2695,6 @@ class ContratoPrint:
             total_p = Paragraph(total_texto.replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
-            
                 
             #
             # CLÁUSULA 4ª – DOS PRAZOS
@@ -2814,6 +2877,7 @@ class ContratoPrintDocumento:
             styles.add(ParagraphStyle(name='left_h1', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='left_h1_vermelho', alignment=TA_LEFT, fontSize=13, fontName="Helvetica-Bold", textColor = colors.red,))
             styles.add(ParagraphStyle(name='left_h2', alignment=TA_LEFT, fontSize=10, fontName="Helvetica-Bold"))
+            styles.add(ParagraphStyle(name='centered_h2', alignment=TA_CENTER, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT, fontSize=10))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
@@ -2845,14 +2909,18 @@ class ContratoPrintDocumento:
                 # para cada item de cada grupo
                 for item in grupo.itemgrupodocumento_set.all():
                     # objeto texto
-                    # TODO: Colocar centralizado se item.titulo_centralizado
                     if item.titulo:
-                        desc_itens_titulo = Paragraph(item.titulo, styles['left_h2'])
+                        if item.titulo_centralizado:
+                            estilo = 'centered_h2'
+                        else:
+                            estilo = 'left_h2'
+                        desc_itens_titulo = Paragraph(item.titulo, styles[estilo])
                         elements.append(desc_itens_titulo)
                     if item.texto:
                         texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
                         elements.append(texto)
                     if item.imagem:
+                        elements.append(Spacer(1, 10))
                         #img = utils.ImageReader(item.imagem.path)
                         #iw, ih = img.getSize()
                         #aspect = ih / float(iw)
