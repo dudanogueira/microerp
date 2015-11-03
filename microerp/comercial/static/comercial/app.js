@@ -1,5 +1,5 @@
-var ComercialApp = angular.module('ComercialApp', ["ngRoute", "ui.bootstrap"]);
+var ComercialApp = angular.module('ComercialApp', ["ngRoute", "ui.bootstrap", "angular.filter"]);
 
 angular.module("ComercialApp").value("config", {
-	baseUrl: "/api/v1"
+	baseUrl: "/comercial/api/"
 });

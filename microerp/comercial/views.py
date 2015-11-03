@@ -859,6 +859,8 @@ class BasearContratoNoModelo(forms.ModelForm):
             (Q(texto_editavel=True)| Q(imagem_editavel=True)) & \
             Q(grupo__documento=modelo)
             ).order_by('grupo__peso', 'peso').distinct()
+        # remove os lancamentos e parcelamentos da exibição
+        itens_editaveis = itens_editaveis.exclude(chave_identificadora__in=('parcelamentos', 'lancamentos'))
         if perfil:
             self.fields['responsavel'].queryset = perfil.funcionarios_disponiveis()
             self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
@@ -882,6 +884,8 @@ class BasearContratoNoModelo(forms.ModelForm):
             # se existe item da proposta com chave contratante, sugerir conteudo
             if textos_editaveis.chave_identificadora == 'contratante':
                 self.fields[textos_editaveis.chave_identificadora].initial = proposta.cliente.sugerir_texto_contratante()
+            if textos_editaveis.chave_identificadora == 'contratado':
+                self.fields[textos_editaveis.chave_identificadora].initial = proposta.cliente.sugerir_texto_contratado()
 
 
     class Meta:
@@ -891,6 +895,11 @@ class BasearContratoNoModelo(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter_novo(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
+        # exige cliente na proposta
+    if not proposta.cliente:
+        messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
+        return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
+
     if request.GET.get('escolhido', None):
         modelo_escolhido = DocumentoGerado.objects.get(pk=request.GET.get('escolhido', None))
     else:
@@ -907,10 +916,6 @@ def editar_proposta_converter_novo(request, proposta_id):
         return render_to_response('frontend/comercial/comercial-proposta-converter_novo.html', locals(), context_instance=RequestContext(request),)
 
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
-    # exige cliente na proposta
-    if not proposta.cliente:
-        messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
-        return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
 
     usar_cartao_credito = UsarCartaoCredito()
 
@@ -999,6 +1004,10 @@ def editar_proposta_converter_novo(request, proposta_id):
                     editaveis_da_proposta = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, texto_editavel=True)
                     items_presentes_no_contrato = ItemGrupoDocumento.objects.filter(grupo__documento__contratofechado=novo_contrato)
                     for item in items_presentes_no_contrato:
+                        # preenche o campo de parcela, caso exista
+                        if item.chave_identificadora in ('parcelamentos', 'lancamentos'):
+                            item.texto = novo_contrato.sugere_texto_lancamentos_abertos()
+                            item.save()
                         # para cada item  editavel do contrato
                         # busca o item no  formulario enviado
                         try:
@@ -1193,9 +1202,6 @@ def editar_proposta_converter(request, proposta_id):
         messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
         return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
 
-
-
-
 class VincularPreClienteParaClienteForm(forms.Form):
     
     def __init__(self, *args, **kwargs):
@@ -1231,7 +1237,6 @@ class VincularPreClienteParaPreClienteForm(forms.Form):
             ).exclude(id=self.precliente.id)
     
     precliente = forms.ModelChoiceField(queryset=None)
-
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def precliente_ver(request, pre_cliente_id):
@@ -1373,7 +1378,6 @@ def precliente_converter(request, pre_cliente_id):
         form = AdicionarCliente(precliente=precliente, com_endereco=True, initial=initial )
     return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
 
-
 # propostas comerciais
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_ver(request, proposta_id):
@@ -1415,11 +1419,12 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
                 proposta.cria_documento_gerado(modelo=modelos_proposta[0])
                 # Auto Preenche Endereco da Obra
                 item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
-                if proposta.precliente:
+                if proposta.precliente and item:
                     item.texto = precliente.logradouro_completo()
-                if proposta.cliente:
+                if proposta.cliente and item:
                     item.texto = cliente.logradouro_completo()
-                item.save()
+                if item:
+                    item.save()
 
             # vincula proposta com a requisicao de origem
             if request.GET.get('requisicao_origem', None):
@@ -1541,7 +1546,6 @@ def propostas_comerciais_minhas_expiradas_ajax(request):
     designados_propostas_expiradas = propostas_abertas_expiradas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
     return render_to_response('frontend/comercial/comercial-propostas-minhas-expiradas-ajax.html', locals(), context_instance=RequestContext(request),)
     
-
 #
 # VIEWS EXTERNAS / MODULOS
 #
@@ -3788,6 +3792,13 @@ class FormAnalisarContrato(forms.ModelForm):
         if self.instance.documento_gerado:
             self.fields['objeto'].widget = forms.HiddenInput()
             self.fields['objeto'].initial = 'objeto do documento gerado'
+            self.fields['nome_proposto_legal'].widget = forms.HiddenInput()
+            self.fields['nome_proposto_legal'].required = False
+            self.fields['nome_proposto_legal'].initial = 'objeto do documento gerado'
+            self.fields['documento_proposto_legal'].widget = forms.HiddenInput()
+            self.fields['documento_proposto_legal'].required = False
+            self.fields['endereco_obra'].widget = forms.HiddenInput()
+            self.fields['endereco_obra'].required = False
 
     class Meta:
         model = ContratoFechado

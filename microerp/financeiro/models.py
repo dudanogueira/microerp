@@ -146,7 +146,9 @@ class LancamentoFinanceiroReceber(models.Model):
             return True
         else:
             return False
-    
+
+
+
     contrato = models.ForeignKey('comercial.ContratoFechado', blank=True, null=True)
     peso = models.IntegerField(blank=False, null=False, default=1)
     situacao = models.CharField(blank=False, default="a", choices=LANCAMENTO_SITUACAO_CHOICES, max_length=1)

@@ -454,12 +454,21 @@ class EmpresaComercial(models.Model):
     def __unicode__(self):
         return self.nome_reduzido
 
+    def logradouro_completo(self):
+        string = u"%s %s %s. %s - %s, %s CEP: %s" % (self.logradouro, self.complemento, self.numero, self.bairro, self.cidade, self.estado, self.cep)
+        return string
+
     logo = models.ImageField(upload_to=logo_empresa_local_imagem, blank=True, null=True)
     uuid = models.UUIDField(default=uuid.uuid4)
     nome = models.CharField(max_length=300)
     nome_reduzido = models.CharField(max_length=300)
+    responsavel_legal = models.CharField(max_length=300, blank=True, null=True)
+    responsavel_legal_cpf = models.CharField(max_length=300, blank=True, null=True)
     principal = models.BooleanField()
     cnpj = models.CharField(max_length=300)
+    telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
+    telefone_celular = models.CharField(blank=True, null=True, max_length=100)
+    email = models.EmailField(blank=True, null=True)
     logradouro = models.CharField(max_length=300)
     numero = models.IntegerField()
     complemento = models.CharField(max_length=300, blank=True, null=True)
@@ -778,7 +787,34 @@ class ContratoFechado(models.Model):
     
     def ultimo_followup(self):
         return self.followupdecontrato_set.last()
-    
+
+
+    def lancamentos_abertos(self):
+        return self.lancamentofinanceiroreceber_set.filter(situacao='a')
+
+    def sugere_texto_lancamentos_abertos(self):
+        textos = []
+        for lancamento in self.lancamentos_abertos():
+            if lancamento.observacao_recebido:
+                textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s. Observações: %s" % \
+                             (
+                                 lancamento.peso,
+                                 lancamento.valor_cobrado,
+                                 lancamento.data_cobranca,
+                                 lancamento.get_modo_recebido_display(),
+                                 lancamento.observacao_recebido
+                            )
+                        )
+                textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s." % \
+                         (
+                             lancamento.peso,
+                             lancamento.valor_cobrado,
+                             lancamento.data_cobranca,
+                             lancamento.get_modo_recebido_display(),
+                        )
+                    )
+        return "\n".join(textos)
+
     def proposta_id(self):
         return self.propostacomercial.id
     
@@ -857,7 +893,27 @@ class ContratoFechado(models.Model):
                 unicode(self.cliente.email or ("_" * 30)),
             )
         return texto
-    
+
+    def sugerir_texto_contratado(self, empresa=None):
+        if not empresa:
+            # puxar vinculado do usuário
+            try:
+                empresa = self.responsavel.user.perfilacessocomercial.empresa
+            except EmpresaComercial.DoesNotExist:
+                return None
+
+        texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, Telefone Fixo: %s, Telefone Fixo: %s, Email: %s''' % (
+            unicode(empresa.nome),
+            unicode(empresa.cnpj or "CNPJ: "+("_" * 30) ),
+            unicode(empresa.responsavel_legal or "Representante Legal: "+("_" * 30) ),
+            unicode(empresa.responsavel_legal_cpf or "Documento Representante Legal (CPF): "+("_" * 30) ),
+            unicode(empresa.logradouro_completo() or u"Endereço: "+("_" * 30)),
+            unicode(empresa.telefone_fixo or ("_" * 30)),
+            unicode(empresa.telefone_celular or ("_" * 30)),
+            unicode(empresa.email or ("_" * 30)),
+            )
+        return texto
+
     def form_configurar_impressao_contrato(self):
         from views import ConfigurarImpressaoContrato
         form = ConfigurarImpressaoContrato(contrato=self)
@@ -916,6 +972,9 @@ class ContratoFechado(models.Model):
                 if item.imagem:
                     novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
         return documento
+
+    def gera_texto_lancamentos(self):
+        pass
 
     cliente = models.ForeignKey('cadastro.Cliente')
     tipo = models.ForeignKey('TipodeContratoFechado', blank=True, null=True)

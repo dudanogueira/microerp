@@ -1,6 +1,72 @@
-<div class="input-group">
-      <input type="text" class="form-control" placeholder="Buscar Clientes" ng-model="busca">
+<form class="input-group"  ng-submit="BuscaPreClientes()">
+      <input type="text" class="form-control" placeholder="Buscar Clientes" ng-model="q" >
       <span class="input-group-btn">
-        <button class="btn btn-default" type="button">Buscar!</button>
+        <button class="btn btn-default" type="submit" >Buscar!</button>
       </span>
-</div><!-- /input-group -->
+</form><!-- /input-group -->
+
+<table class="table table-hover table-striped table-condensed" ng-if="clientes.length">
+    <thead>
+    <caption>
+        <h4 class="alert alert-success" >{{filtrado.length}} Clientes</h4>
+        <select ng-show="clientes" ng-model="designados" ng-options="cliente.designado.nome for cliente in clientes | unique: 'designado.nome'">
+    <option value="">-- Todos os Vendedores --</option>
+</select>
+
+    </caption>
+    <tr>
+        <th>Cliente</th>
+        <th>Responsável</th>
+        <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+
+
+    <tr ng-repeat='cliente in filtrado = (clientes | filter: { "designado":{"nome":designados.designado.nome } })' >
+        <td>
+            <span class="label label-warning" ng-if="cliente.tipo == 'pf'">{{cliente.tipo | uppercase}}</span>
+		    <span class="label label-success" ng-if="cliente.tipo == 'pj'">{{cliente.tipo | uppercase}}</span>
+            {{cliente.nome}}
+        </td>
+        <td>{{cliente.designado.nome}}</td>
+        <td></td>
+    </tr>
+
+    </tbody>
+</table>
+
+
+<table class="table table-hover table-striped table-condensed" ng-if="preclientes.length">
+    <thead>
+    <caption><h4 class="alert alert-warning">{{filtrado.length}} Pré Clientes</h4>
+        <select ng-show="preclientes" ng-model="predesignados" ng-options="precliente.designado.nome for precliente in preclientes | unique: 'designado.nome'">
+            <option value="">-- Todos os Vendedores --</option>
+        </select>
+    </caption>
+    <tr>
+        <th>Pré Cliente</th>
+        <th>Responsável</th>
+        <th>Dados</th>
+        <th width="25%">Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+
+    <tr ng-repeat='cliente in filtrado = (preclientes | filter: { "designado":{"nome":predesignados.designado.nome } })'>
+        <td>
+            <span class="label label-warning" ng-if="cliente.tipo == 'pf'">{{cliente.tipo | uppercase}}</span>
+		    <span class="label label-success" ng-if="cliente.tipo == 'pj'">{{cliente.tipo | uppercase}}</span>
+            {{cliente.nome}}
+        </td>
+        <td>{{cliente.designado.nome}}</td>
+        <td>{{cliente.dados}}
+            <strong>Contato:</strong> {{cliente.contato}}</td>
+        <td>
+            <a href="#/precliente/{{cliente.id}}" class="btn btn-primary"><i class="fa fa-eye"></i></a>
+        </td>
+    </tr>
+
+
+    </tbody>
+</table>

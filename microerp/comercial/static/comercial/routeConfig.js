@@ -7,6 +7,15 @@ angular.module("ComercialApp").config(function ($routeProvider) {
 		templateUrl: "/static/comercial/views/pre_clientes.html",
 		controller: "PreClientesCtrl",
 	});
+	$routeProvider.when("/precliente/:id", {
+		templateUrl: "/static/comercial/views/pre_cliente_detalhe.html",
+		controller: "PreClienteDetalheCtrl",
+		resolve: {
+			precliente: function (ComercialAPI, $route){
+				return ComercialAPI.getPreCliente($route.current.params.id)
+			}
+		}
+	});
 
 	$routeProvider.otherwise({redirectTo: "/"});
 });

@@ -2,8 +2,8 @@
 from django.conf.urls import patterns, include, url
 
 from rest_framework import routers
-#from comercial.apiviews import *
-
+from comercial.apiviews import *
+from rest_framework import routers
 
 # urls do Cadastro
 urlpatterns = patterns('',
@@ -80,5 +80,14 @@ urlpatterns = patterns('',
     url(r'^a/$', 'comercial.views.home_angular', name='home_angular'),
 )
 
+# Routers provide an easy way of automatically determining the URL conf.
+router = routers.DefaultRouter()
+router.register(r'followups', FollowUpDePropostaComercialViewSet, base_name="comercial/api")
+router.register(r'cliente', ClienteViewSet, base_name="comercial/api")
+router.register(r'precliente', PreClienteViewSet, base_name="comercial/api")
+
+urlpatterns += [
+    url(r'^api/', include(router.urls)),
+]
 
 

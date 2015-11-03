@@ -227,6 +227,27 @@ class Cliente(models.Model):
             )
         return texto
 
+    def sugerir_texto_contratado(self, empresa=None):
+            if not empresa:
+                # puxar vinculado do usuário
+                try:
+                    empresa = self.designado.user.perfilacessocomercial.empresa
+                except EmpresaComercial.DoesNotExist:
+                    return None
+
+            texto = u'''%s, CNPJ %s, Responsável Legal: %s, Documento do Responsável Legal: %s, Endereço: %s, Telefone Fixo: %s, Telefone Celular: %s, Email: %s''' % (
+                unicode(empresa.nome),
+                unicode(empresa.cnpj or "CNPJ: "+("_" * 30) ),
+                unicode(empresa.responsavel_legal or ""+("_" * 30) ),
+                unicode(empresa.responsavel_legal_cpf or ""+("_" * 30) ),
+                unicode(empresa.logradouro_completo() or u"Endereço: "+("_" * 30)),
+                unicode(empresa.telefone_fixo or ("_" * 30)),
+                unicode(empresa.telefone_celular or ("_" * 30)),
+                unicode(empresa.email or ("_" * 30)),
+                )
+            return texto
+
+
     def propostas_abertas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())
     
