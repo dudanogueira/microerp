@@ -1,9 +1,11 @@
 <form class="input-group"  ng-submit="BuscaPreClientes()">
       <input type="text" class="form-control" placeholder="Buscar Clientes" ng-model="q" >
       <span class="input-group-btn">
-        <button class="btn btn-default" type="submit" >Buscar!</button>
+        <button class="btn btn-default" type="submit" >Buscar! </button>
       </span>
 </form><!-- /input-group -->
+
+<i class="fa fa-spinner fa-pulse fa-4x" ng-show="carregando"></i>
 
 <table class="table table-hover table-striped table-condensed" ng-if="clientes.length">
     <thead>
