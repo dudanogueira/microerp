@@ -337,7 +337,7 @@
 		<h4 class="alert alert-success">Propostas Convertidas {{cliente.propostas_convertidas.count}}</h4>
 		<ul>
 		{% for proposta in cliente.propostas_convertidas %}
-			<li><strong>Proposta #{{proposta.id}}</strong> <i class="fa fa-arrow-right"></i> <strong>Contrato #{{proposta.contrato_vinculado.id}}</strong> - R${{proposta.contrato_vinculado.valor}} - Responsável: {{proposta.contrato_vinculado.responsavel}}, Comissionado: {{proposta.contrato_vinculado.responsavel_comissionado}}</li>
+			<li><strong>Proposta #{{proposta.id}}</strong> <i class="fa fa-arrow-right"></i> <strong>Contrato #{{proposta.contrato_vinculado.id}}</strong> - R${{proposta.contrato_vinculado.valor}} - Responsável: {{proposta.contrato_vinculado.responsavel}}, Comissionado: {{proposta.contrato_vinculado.responsavel_comissionado}} <a class="btn btn-primary" href="{% url "comercial:contratos_gerar_impressao" proposta.contrato_vinculado.id %}"><i class="fa fa-print"></i></a></li>
 		{% endfor %}
 		</ul>
 		{% endif %}

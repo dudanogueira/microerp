@@ -225,7 +225,8 @@ class PropostaComercial(models.Model):
         documento = DocumentoGerado.objects.create(
             nome = 'Documento Gerado para a Proposta #%s' % self.pk,
             tipo_proposta=self.tipo,
-            tipo=tipo
+            tipo=tipo,
+            imprime_logo=modelo.imprime_logo
         )
         # associa documento gerado com esta proposta
         self.documento_gerado = documento

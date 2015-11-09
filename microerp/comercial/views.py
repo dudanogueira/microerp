@@ -1425,6 +1425,14 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
                     item.texto = cliente.logradouro_completo()
                 if item:
                     item.save()
+                # auto preenche Prezado
+                item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='prezado').first()
+                if proposta.precliente and item:
+                    item.texto = "Prezado(a) %s" % proposta.precliente.nome
+                if proposta.cliente and item:
+                    item.texto = "Prezado(a) %s" % proposta.cliente.nome
+                if item:
+                    item.save()
 
             # vincula proposta com a requisicao de origem
             if request.GET.get('requisicao_origem', None):
@@ -1482,6 +1490,14 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
                 item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
                 item.texto = precliente.logradouro_completo()
                 item.save()
+                # auto preenche Prezado
+                item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='prezado').first()
+                if proposta.precliente and item:
+                    item.texto = "Prezado(a) %s" % proposta.precliente.nome
+                if proposta.cliente and item:
+                    item.texto = "Prezado(a) %s" % proposta.cliente.nome
+                if item:
+                    item.save()
             # salva
 
             messages.success(request, "Sucesso! Proposta Adicionada para Pré Cliente.")
@@ -2154,10 +2170,11 @@ class DocumentoGeradoPrint:
             if perfil.user.funcionario:
                 responsavel_proposta = perfil.user.funcionario
             else:
-                responsavel_proposta = proposta.designado
-
-
-
+                # id da proposta
+                if documento.propostacomercial:
+                    responsavel_proposta = documento.propostacomercial.designado
+                else:
+                    responsavel_proposta = documento.contratofechado.responsavel
 
             if perfil and perfil.imagem_assinatura:
                 # space
@@ -2777,7 +2794,7 @@ class ContratoPrint:
             # REPRESENTANTE LEGAL EMPRESA
             #
             elements.append(Spacer(1, espaco_assinaturas))
-            representante_linha = Paragraph(str("_"*500), styles['justify'])
+            representante_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(representante_linha)
             representante_empresa = getattr(settings, "REPRESENTATE_LEGAL_EMPRESA", "Settings: REPRESENTATE_LEGAL_EMPRESA - Texto descrevendo Representante Legal da Empresa")    
             representante_p = Paragraph(str(representante_empresa), styles['left'])
@@ -2786,7 +2803,7 @@ class ContratoPrint:
             # CLIENTE / PROPOSTO LEGAL
             #
             elements.append(Spacer(1, espaco_assinaturas))
-            cliente_linha = Paragraph(str("_"*500), styles['justify'])
+            cliente_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(cliente_linha)
             representante_p = Paragraph(unicode(contrato.sugerir_texto_contratante()), styles['left'])
             elements.append(representante_p)
@@ -2794,7 +2811,7 @@ class ContratoPrint:
             # TESTEMUNHA 1
             #
             elements.append(Spacer(1, espaco_assinaturas))
-            testemunha_linha = Paragraph(str("_"*500), styles['justify'])
+            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(testemunha_linha)
             if testemunha1:
                 texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
@@ -2809,7 +2826,7 @@ class ContratoPrint:
             # TESTEMUNHA 2
             #
             elements.append(Spacer(1, espaco_assinaturas))
-            testemunha_linha = Paragraph(str("_"*500), styles['justify'])
+            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(testemunha_linha)
             if testemunha2:
                 texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
