@@ -246,7 +246,10 @@ class PropostaComercial(models.Model):
                     texto_editavel=item.texto_editavel,
                 )
                 if item.imagem:
-                    novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
+                    try:
+                        novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
+                    except:
+                        pass
         return documento
 
     def cria_contrato_pelo_modelo(self, modelo, responsavel, comissionado):

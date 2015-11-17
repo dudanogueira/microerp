@@ -17,3 +17,6 @@ fi
 if [ ! -d /etc/puppet/modules/mysql ];
     then puppet module install puppetlabs-mysql --version 3.4.0
 fi
+
+locale-gen en_US en_US.UTF-8 pt_BR.UTF-8
+dpkg-reconfigure locales

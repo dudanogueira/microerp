@@ -95,6 +95,7 @@ class ContratoFechadoAdmin(admin.ModelAdmin):
     search_fields = 'cliente__nome', 'id'
     inlines = [LancamentoFinanceiroReceberInline]
     actions = [lancar_contrato,]
+    date_hierarchy = 'criado'
 
 class TipodeContratoFechadoAdmin(admin.ModelAdmin):
     pass

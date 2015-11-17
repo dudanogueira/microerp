@@ -235,11 +235,10 @@ class Cliente(models.Model):
                 except EmpresaComercial.DoesNotExist:
                     return None
 
-            texto = u'''%s, CNPJ %s, Responsável Legal: %s, Documento do Responsável Legal: %s, Endereço: %s, Telefone Fixo: %s, Telefone Celular: %s, Email: %s''' % (
+            texto = u'''%s, CNPJ %s, Responsável Legal: %s, Endereço: %s, Telefone Fixo: %s, Telefone Celular: %s, Email: %s''' % (
                 unicode(empresa.nome),
                 unicode(empresa.cnpj or "CNPJ: "+("_" * 30) ),
                 unicode(empresa.responsavel_legal or ""+("_" * 30) ),
-                unicode(empresa.responsavel_legal_cpf or ""+("_" * 30) ),
                 unicode(empresa.logradouro_completo() or u"Endereço: "+("_" * 30)),
                 unicode(empresa.telefone_fixo or ("_" * 30)),
                 unicode(empresa.telefone_celular or ("_" * 30)),

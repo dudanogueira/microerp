@@ -1536,7 +1536,7 @@ def propostas_comerciais_minhas(request):
                 designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
             ).count()
 
-    designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
+    designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome')).order_by('designado__nome')
 
     return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
 
@@ -2871,6 +2871,7 @@ class ContratoPrintDocumento:
             canvas.restoreState()
 
     def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
+
             self.contrato = contrato
             self.documento = contrato.documento_gerado
             self.perfil = perfil
@@ -2963,9 +2964,9 @@ class ContratoPrintDocumento:
                 texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
             else:
                 if contrato.responsavel_comissionado:
-                    texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
+                    texto = u"TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
                 else:
-                    texto = "TESTEMUNHA 1"
+                    texto = u"TESTEMUNHA 1"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
 
@@ -2975,18 +2976,42 @@ class ContratoPrintDocumento:
             testemunha_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(testemunha_linha)
             if testemunha2:
-                texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
+                texto = u"TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
             else:
-                texto = "TESTEMUNHA 2"
+                texto = u"TESTEMUNHA 2"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
+
+            # REPRESENTANTE LEGAL EMPRESA
+            #
+
+            elements.append(Spacer(1, espaco_assinaturas))
+            representante_linha = Paragraph(str("_"*90), styles['justify'])
+            elements.append(representante_linha)
+            empresa = self.contrato.responsavel.user.perfilacessocomercial.empresa
+            representante_empresa = u"REPRESENTANTE LEGAL DA EMPRESA: %s - CPF: %s" % (empresa.responsavel_legal, empresa.responsavel_legal_cpf)
+            representante_p = Paragraph(representante_empresa, styles['left'])
+            elements.append(representante_p)
+            # CONTRATANTE
+            #
+            elements.append(Spacer(1, espaco_assinaturas))
+            representante_linha = Paragraph(str("_"*90), styles['justify'])
+            elements.append(representante_linha)
+            representante_empresa = u"CONTRATANTE: %s" % (self.contrato.cliente.sugerir_texto_contratante())
+            representante_p = Paragraph(representante_empresa, styles['left'])
+            elements.append(representante_p)
+
+
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
+
 
             # Get the value of the BytesIO buffer and write it to the response.
             pdf = buffer.getvalue()
             buffer.close()
             return pdf
+
+
 
 
 @user_passes_test(possui_perfil_acesso_comercial)
