@@ -520,8 +520,8 @@ class GrupoDocumento(models.Model):
     documento = models.ForeignKey(DocumentoGerado)
 
     class Meta:
-        unique_together = (('peso', 'documento'))
-        ordering = ['peso']
+        #unique_together = (('peso', 'documento'))
+        ordering = ['peso', ]
 
 class ItemGrupoDocumento(models.Model):
 
@@ -556,8 +556,8 @@ class ItemGrupoDocumento(models.Model):
 
 
     class Meta:
-        unique_together = (('peso', 'grupo'))
-        ordering = ['peso']
+        #unique_together = (('peso', 'grupo'))
+        ordering = ['peso', 'chave_identificadora']
 
 class EditarItemGrupoDocumentoForm(forms.ModelForm):
 
