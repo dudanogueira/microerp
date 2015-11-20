@@ -2553,7 +2553,7 @@ class ContratoPrint:
                                     rightMargin=40,
                                     leftMargin=40,
                                     topMargin=margem_topo,
-                                    bottomMargin=70,
+                                    bottomMargin=10,
                                     pagesize=self.pagesize)
             
             # A large collection of style sheets pre-made for us

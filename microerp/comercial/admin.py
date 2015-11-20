@@ -68,6 +68,7 @@ class LinhaRecursoLogisticoInlineAdmin(admin.StackedInline):
 class PropostaComercialAdmin(admin.ModelAdmin):
     list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada', 'contrato_id'
     list_filter = 'probabilidade', 'data_expiracao', 'status'
+    search_fields = 'cliente__nome', 'precliente__nome'
     list_display_links = list_display
     inlines = [FollowUpPropostaInlineAdmin, LinhaRecursoLogisticoInlineAdmin]
 
