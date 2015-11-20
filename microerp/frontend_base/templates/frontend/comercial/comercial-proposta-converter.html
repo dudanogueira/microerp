@@ -175,7 +175,8 @@ $(document).ready(function() {
 	{% endif %}
 	
 	{% if modelo_garantia.items %}
-	$("#id_garantia").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia">Substituir</button> <button class="modelo_garantia" data-target="id_garantia" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
+	$("#id_garantia").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia">Substituir</button> <button class="modelo_garantia" data-target="id_garantia" data-adicionar="True">Acrescentar</button></div>');
+	{% endif %}
 	
 	
 	{% if modelo_normas.items %}
