@@ -441,7 +441,7 @@ def clientes(request):
         preclientes_sem_proposta = PreCliente.objects.filter(
                 propostacomercial=None, cliente_convertido=None,
                 sem_interesse=False,
-        ).order_by('nome')
+        ).order_by('criado')
         # mostra todas as requsicoes
         requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
     elif not request.user.perfilacessocomercial.super_gerente and request.user.perfilacessocomercial.gerente:
@@ -450,7 +450,7 @@ def clientes(request):
             propostacomercial=None, cliente_convertido=None,
             sem_interesse=False,
             designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-        ).order_by('nome')
+        ).order_by('criado')
         # mostra requisicoes da empresa empresa
         requisicoes_propostas = RequisicaoDeProposta.objects.filter(
                 atendido=False,
@@ -463,7 +463,7 @@ def clientes(request):
             sem_interesse=False,
             designado=request.user.funcionario,
             designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-        ).order_by('nome')
+        ).order_by('criado')
         # mostra somente meus clientes com requisicao de proposta
 
     if request.POST.get('btn-aplicar-filtro', None):

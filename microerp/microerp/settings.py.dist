@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """This file is part of the microerp project.
 
-This program is free software: you can redistribute it and/or modify it 
+This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or (at your
 option) any later version.
@@ -69,7 +69,7 @@ DEFAULT_FROM_EMAIL = 'CONTA DE ENVIO <usuario@email.com>'
 LOGIN_REDIRECT_URL = '/'
 
 # APLICATIVO DE FRONTEND
-APP_DE_FRONTEND = 'frontend_base'
+APP_DE_FRONTEND = 'frontend2'
 
 # ISTO MOSTRA PRO DJANGO ONDE BUSCAR O __unicode__ padrao do Account.User
 USER_UNICODE_ATTRIBUTE = 'funcionario'
