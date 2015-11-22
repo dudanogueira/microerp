@@ -326,6 +326,7 @@ class TipoDeProposta(models.Model):
 
     nome = models.CharField(blank=True, max_length=100)
     classe = models.ForeignKey(ClasseTipoDeProposta, blank=True, null=True)
+    tipo_contrato_mapeado = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
 
 class FollowUpDePropostaComercial(models.Model):
 

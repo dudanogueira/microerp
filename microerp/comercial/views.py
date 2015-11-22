@@ -853,6 +853,9 @@ class BasearContratoNoModelo(forms.ModelForm):
         perfil = kwargs.pop('perfil', None)
         super(BasearContratoNoModelo, self).__init__(*args, **kwargs)
         self.fields['valor'].initial = proposta.valor_proposto
+        if proposta.tipo.tipo_contrato_mapeado:
+            self.fields['categoria'].initial = proposta.tipo.tipo_contrato_mapeado.id
+        self.fields['categoria'].required = True
         self.fields['responsavel'].initial = perfil.user.funcionario
         # adiciona os campos editaveis do modelo
         itens_editaveis = ItemGrupoDocumento.objects.filter(
@@ -3086,6 +3089,7 @@ class FormRevalidarContrato(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus_definir_assinado(request, contrato_id):
+    # TODO: guardar a data de assinatura do contrato
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
     contrato.status = "emaberto"
     contrato.data_assinatura = datetime.datetime.now()
