@@ -64,7 +64,7 @@ from io import BytesIO
 
 
 class ConfigurarImpressaoContrato(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         contrato = kwargs.pop('contrato')
         super(ConfigurarImpressaoContrato, self).__init__(*args, **kwargs)
@@ -151,23 +151,23 @@ class PreClienteAdicionarForm(forms.ModelForm):
         fields = 'nome', 'tipo', 'cpf', 'cnpj', 'numero_instalacao', 'telefone_fixo', 'telefone_celular', 'cep', 'rua', 'numero', 'bairro_texto', 'cidade_texto', 'uf_texto', 'complemento', 'dados', 'origem', 'designado'
 
 class AdicionarPropostaForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(AdicionarPropostaForm, self).__init__(*args, **kwargs)
         self.fields['valor_proposto'].localize = True
         self.fields['valor_proposto'].widget.is_localized = True
         self.fields['tipo'].required = True
-    
-    
+
+
     class Meta:
         model = PropostaComercial
         fields = 'probabilidade', 'valor_proposto', 'tipo'
         localized_fields = 'valor_proposto',
 
 class AdicionarSolicitacaoForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
-        cliente = kwargs.pop('cliente')    
+        cliente = kwargs.pop('cliente')
         precliente = kwargs.pop('precliente')
         super(AdicionarSolicitacaoForm, self).__init__(*args, **kwargs)
         self.fields['contato'].label = "Contato / Reclamante"
@@ -184,7 +184,7 @@ class AdicionarSolicitacaoForm(forms.ModelForm):
         else:
             self.fields['cliente'].widget = forms.HiddenInput()
             self.fields['precliente'].widget = forms.HiddenInput()
-    
+
     class Meta:
         model = Solicitacao
         fields = 'descricao', 'cliente', 'precliente', 'contato', 'tipo',
@@ -192,13 +192,13 @@ class AdicionarSolicitacaoForm(forms.ModelForm):
 
 
 class AdicionarCliente(forms.ModelForm):
-    
+
     def clean_telefone_fixo(self):
         telefone_fixo = self.cleaned_data['telefone_fixo']
         if not telefone_fixo:
             raise forms.ValidationError("Preencha este campo")
         return telefone_fixo
-    
+
     def clean_cpf(self):
         tipo = self.cleaned_data.get('tipo', None)
         cpf = self.cleaned_data.get('cpf', None)
@@ -214,13 +214,13 @@ class AdicionarCliente(forms.ModelForm):
             if cliente:
                 raise ValidationError(u"Já existe um cliente com este CPF!")
         return cpf
-    
+
     #def clean_inscricao_estadual(self):
     #    tipo = self.cleaned_data.get('tipo', None)
     #    inscricao_estadual = self.cleaned_data.get('inscricao_estadual', None)
     #    if tipo == 'pj' and not inscricao_estadual:
     #        raise ValidationError(u'Embora Válido, não é aceito um CNPJ com %s' % '000000000000000')
-        
+
     def clean_cnpj(self):
         tipo = self.cleaned_data.get('tipo', None)
         cnpj = self.cleaned_data.get('cnpj', None)
@@ -233,14 +233,14 @@ class AdicionarCliente(forms.ModelForm):
                     raise ValidationError(u"Número do CNPJ Inválido!")
             except:
                 raise ValidationError(u"Número do CNPJ Inválido!")
-            
+
             # checa se já existe CPF no banco de dados
             cliente = Cliente.objects.filter(cnpj=cnpj)
             if cliente:
                 raise ValidationError(u"Já existe um cliente com este CNPJ!")
-            
+
         return cnpj
-    
+
     def __init__(self, *args, **kwargs):
         precliente = kwargs.pop('precliente')
         gerente = kwargs.pop('gerente', False)
@@ -262,9 +262,9 @@ class AdicionarCliente(forms.ModelForm):
             self.fields['uf_texto'] = forms.ChoiceField(choices=STATE_CHOICES)
             #self.fields['cpf'] = forms.IntegerField()
             self.fields['complemento'] = forms.CharField(required=False)
-            
-            
-    
+
+
+
     class Meta:
         model = Cliente
         fields = 'nome', 'tipo', 'fantasia', 'cnpj', 'inscricao_estadual', \
@@ -272,7 +272,7 @@ class AdicionarCliente(forms.ModelForm):
         'contato', 'email', 'telefone_fixo', 'telefone_celular', 'fax',
 
 class FormAdicionarFollowUp(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         perfil = kwargs.pop('perfil')
         super(FormAdicionarFollowUp, self).__init__(*args, **kwargs)
@@ -288,7 +288,7 @@ class FormAdicionarFollowUp(forms.ModelForm):
     class Meta:
         model = FollowUpDePropostaComercial
         fields = 'proposta', 'texto', 'probabilidade', 'reagenda_data_expiracao', 'data_expiracao', 'visita', 'visita_por'
-    
+
     def clean_data_expiracao(self):
         data = self.cleaned_data['data_expiracao']
         reagenda_data_expiracao = self.cleaned_data['reagenda_data_expiracao']
@@ -333,7 +333,7 @@ def home(request):
     # widget cliente
     #ultimos followups
     ultimos_followups = request.user.perfilacessocomercial.ultimos_followups()
-        
+
     preclientes_sem_proposta = request.user.perfilacessocomercial.preclientes_sem_proposta().count()
 
     requisicoes_propostas = request.user.perfilacessocomercial.requisicao_de_proposta().count()
@@ -341,7 +341,7 @@ def home(request):
 
 
 class DefinePreClienteSemInteresseForm(forms.ModelForm):
-    
+
     def clean(self):
         cleaned_data=super(DefinePreClienteSemInteresseForm, self).clean()
         opcao = cleaned_data.get('sem_interesse_opcao')
@@ -497,14 +497,14 @@ def cliente_ver(request, cliente_id):
     return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
 
 class FormEditarProposta(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(FormEditarProposta, self).__init__(*args, **kwargs)
-        
+
         if (kwargs['instance'].cliente and kwargs['instance'].cliente.tipo != "pj") or kwargs['instance'].precliente :
             del self.fields['nome_do_proposto']
             del self.fields['documento_do_proposto']
-        
+
         self.fields['valor_proposto'].localize = True
         self.fields['valor_proposto'].widget.is_localized = True
         self.fields['parcelamentos_possiveis'].widget.attrs['class'] = 'select2'
@@ -512,26 +512,26 @@ class FormEditarProposta(forms.ModelForm):
         self.fields['tipo'].label = "Tipo Principal"
         self.fields['tipos'].label = 'Tipos dessa Proposta'
         self.fields['tipos'].widget.attrs['class'] = 'select2'
-    
+
     def clean_valor_proposto(self):
         data = self.cleaned_data['valor_proposto']
         minimo = self.instance.consolidado()
         if data < minimo:
             raise ValidationError(u"Erro! Valor abaixo do mínimo %s" % minimo)
         return data
-    
+
     class Meta:
         model = PropostaComercial
         fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo', 'tipos', 'parcelamentos_possiveis'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         super(FormSelecionaOrcamentoModelo, self).__init__(*args, **kwargs)
         self.fields['modelo'].widget.attrs['class'] = 'select2'
         self.fields['modelo'].queryset = Orcamento.objects.filter(Q(modelo=True, ativo=True, promocao=False) | Q(modelo=True, ativo=True, promocao=True, inicio_promocao__lte=datetime.date.today(), fim_promocao__gte=datetime.date.today()))
-    
+
     modelo = forms.ModelMultipleChoiceField(queryset=None, required=True)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -551,7 +551,7 @@ def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
             messages.info(request, u"Nova Linha de Mão de Obra adicionada")
             cp = request.POST.copy()
             form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
-            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ 1            
+            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ 1
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
             form_orcamento = OrcamentoForm(cp, instance=orcamento)
         elif 'alterar-orcamento' in request.POST:
@@ -567,8 +567,8 @@ def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
                 return redirect(reverse('comercial:editar_proposta', args=[orcamento.proposta.id]))
             else:
                 form_orcamento = OrcamentoForm(request.POST, instance=orcamento)
-        
-                
+
+
     else:
         form_editar_linhas_material = OrcamentoMaterialFormSet(instance=orcamento, prefix="orcamento-material")
         form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
@@ -583,7 +583,7 @@ def editar_proposta_reajustar_orcamento(request, proposta_id, orcamento_id):
         messages.warning(request, u"Atenção! Houve Reajuste de uma das linhas do Orçamento %s!" % orcamento)
     else:
         messages.success(request, u"Não houveram reajustes de preço para o Orçamento %s" % orcamento)
-    
+
     return redirect(reverse("comercial:editar_proposta", args=[orcamento.proposta.id]))
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -615,13 +615,13 @@ def editar_proposta_ativar_orcamento(request, proposta_id, orcamento_id):
 
 
 class LinhaRecursoLogisticoForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(LinhaRecursoLogisticoForm, self).__init__(*args, **kwargs)
         self.fields['tipo'].required = True
         self.fields['custo_total'].localize = True
         self.fields['custo_total'].widget.is_localized = True
-    
+
     class Meta:
         model = LinhaRecursoLogistico
         fields = 'tipo', 'custo_total', 'descricao'
@@ -661,7 +661,7 @@ def editar_proposta(request, proposta_id):
 
                     if modelo.promocao or modelo.tabelado:
                         novo_orcamento.custo_total = modelo.custo_total
-                        
+
                     novo_orcamento.modelo = False
                     novo_orcamento.proposta = proposta
                     novo_orcamento.save()
@@ -681,7 +681,7 @@ def editar_proposta(request, proposta_id):
                         linha.save()
                 # retorna
                 return redirect(reverse("comercial:editar_proposta", args=[proposta.id,]))
-                    
+
         if request.POST.get('adicionar-orcamento-btn'):
             adicionar_orcamento_form = OrcamentoForm(request.POST)
             if adicionar_orcamento_form.is_valid():
@@ -733,7 +733,7 @@ def editar_proposta_fechar(request, proposta_id):
             else:
                 proposta.status = 'perdida_aguardando'
                 messages.info(request, "Sucesso! Proposta Fechada e Aguardando para Aprovação de Fechamento")
-                    
+
             proposta.definido_perdido_por = request.user.funcionario
             proposta.definido_perdido_em = datetime.datetime.now()
             proposta.save()
@@ -787,13 +787,13 @@ class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
         self.fields['valor_cobrado'].localize = True
         self.fields['valor_cobrado'].widget.is_localized = True
         self.fields['valor_cobrado'].widget.attrs['class'] = 'valor_parcela'
-    
+
     def clean_data_cobranca(self):
         data = self.cleaned_data['data_cobranca']
         if data < datetime.date.today():
             raise forms.ValidationError("Erro! Data de Cobrança deve ser maior que data atual")
         return data
-    
+
     class Meta:
         model = LancamentoFinanceiroReceber
         fields = ("data_cobranca", 'valor_cobrado', 'modo_recebido', 'observacao_recebido')
@@ -802,14 +802,14 @@ class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
 class ConfigurarContratoBaseadoEmProposta(forms.Form):
     '''Formulario usado pra alterar as informacoes que serao importadas
     pro contrato com base na proposta'''
-    
+
     def __init__(self, *args, **kwargs):
         perfil = kwargs.pop('perfil', None)
         super(ConfigurarContratoBaseadoEmProposta, self).__init__(*args, **kwargs)
         self.fields['apoio_tecnico'].widget.attrs['class'] = 'select2'
         self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
         self.fields['conta_transferencia'].queryset = perfil.empresa.contas_disponiveis.all()
-    
+
     objeto = forms.CharField(widget = forms.Textarea, label="Objeto do Contrato", required=True)
     items_incluso = forms.CharField(widget = forms.Textarea, label="Itens Inclusos", required=True)
     items_nao_incluso = forms.CharField(widget = forms.Textarea, label=u"Itens Não Inclusos", required=True)
@@ -819,7 +819,7 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
     foro = forms.CharField(widget = forms.Textarea, label=u"Foro", required=True)
     endereco_obra = forms.CharField(widget = forms.Textarea, label=u"Endereço da Obra", required=True)
-    
+
     #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
@@ -835,11 +835,11 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
 
 
 class UsarCartaoCredito(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         super(UsarCartaoCredito, self).__init__(*args, **kwargs)
         self.fields['data'].widget.attrs['class'] = 'datepicker'
-    
+
     data = forms.DateField(initial=datetime.date.today())
     tipo = forms.ChoiceField(choices=CONTRATO_FORMA_DE_PAGAMENTO_CHOICES)
     parcelas = forms.IntegerField()
@@ -860,15 +860,19 @@ class BasearContratoNoModelo(forms.ModelForm):
             Q(grupo__documento=modelo)
             ).order_by('grupo__peso', 'peso').distinct()
         # remove os lancamentos e parcelamentos da exibição
-        itens_editaveis = itens_editaveis.exclude(chave_identificadora__in=('parcelamentos', 'lancamentos'))
+        # pois eles serao autocompletados na conversao conforme configuracao de
+        # parcelas
+        itens_editaveis = itens_editaveis.exclude(
+            chave_identificadora__in=('parcelamentos', 'lancamentos')
+        )
         if perfil:
             self.fields['responsavel'].queryset = perfil.funcionarios_disponiveis()
             self.fields['apoio_tecnico'].queryset = perfil.funcionarios_disponiveis()
             self.fields['responsavel_comissionado'].queryset = perfil.funcionarios_disponiveis()
         for textos_editaveis in itens_editaveis:
             self.fields[textos_editaveis.chave_identificadora] = forms.CharField(widget=forms.Textarea)
+            self.fields[textos_editaveis.chave_identificadora].label=textos_editaveis.titulo_label()
             self.fields[textos_editaveis.chave_identificadora].widget.attrs['class'] = 'tinymce'
-            self.fields[textos_editaveis.chave_identificadora].label=textos_editaveis.titulo
             self.fields[textos_editaveis.chave_identificadora].required = True
             try:
                 # se existe item da proposta com mesma chave, busca conteudo
@@ -1203,7 +1207,7 @@ def editar_proposta_converter(request, proposta_id):
         return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
 
 class VincularPreClienteParaClienteForm(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         perfil = kwargs.pop('perfil', None)
         super(VincularPreClienteParaClienteForm, self).__init__(*args, **kwargs)
@@ -1215,12 +1219,12 @@ class VincularPreClienteParaClienteForm(forms.Form):
             self.fields['cliente'].queryset = Cliente.objects.filter(
                 designado__user__perfilacessocomercial__empresa=perfil.empresa
             )
-    
+
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.filter(ativo=True))
 
 
 class VincularPreClienteParaPreClienteForm(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         perfil = kwargs.pop('perfil', None)
         self.precliente = kwargs.pop('precliente')
@@ -1235,7 +1239,7 @@ class VincularPreClienteParaPreClienteForm(forms.Form):
                 designado__user__perfilacessocomercial__empresa=perfil.empresa,
                 cliente_convertido=None
             ).exclude(id=self.precliente.id)
-    
+
     precliente = forms.ModelChoiceField(queryset=None)
 
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -1543,7 +1547,7 @@ def propostas_comerciais_minhas(request):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas_expiradas_ajax(request):
 
-    
+
     if not request.user.perfilacessocomercial.gerente:
         propostas_abertas_expiradas = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).filter(
             Q(cliente__designado=request.user.funcionario) | Q(precliente__designado=request.user.funcionario) | Q(designado=request.user.funcionario)
@@ -1561,7 +1565,7 @@ def propostas_comerciais_minhas_expiradas_ajax(request):
 
     designados_propostas_expiradas = propostas_abertas_expiradas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
     return render_to_response('frontend/comercial/comercial-propostas-minhas-expiradas-ajax.html', locals(), context_instance=RequestContext(request),)
-    
+
 #
 # VIEWS EXTERNAS / MODULOS
 #
@@ -1584,13 +1588,13 @@ def solicitacao_adicionar(request):
     return render_to_response('frontend/comercial/comercial-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
 
 class FiltraTabelaDePrecos(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         super(FiltraTabelaDePrecos, self).__init__(*args, **kwargs)
         self.fields['buscar'].widget.attrs['class'] = 'input-xxlarge'
-    
+
     buscar = forms.CharField(required=True, label='')
-    
+
 @user_passes_test(possui_perfil_acesso_comercial)
 def tabela_de_precos(request):
     if request.POST:
@@ -1604,14 +1608,14 @@ def tabela_de_precos(request):
     return render_to_response('frontend/comercial/comercial-consultar-tabela-precos.html', locals(), context_instance=RequestContext(request),)
 
 class FormEscolherClientesEPreClientes(forms.Form):
-    
-    
+
+
     def __init__(self, *args, **kwargs):
         super(FormEscolherClientesEPreClientes, self).__init__(*args, **kwargs)
         self.fields['clientes'].widget.attrs['class'] = 'select2'
         self.fields['preclientes'].widget.attrs['class'] = 'select2'
-    
-    
+
+
     clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.filter(ativo=True))
     preclientes = forms.ModelMultipleChoiceField(required=False, queryset=PreCliente.objects.filter(cliente_convertido=None))
 
@@ -1625,7 +1629,7 @@ def designacoes(request):
     return render_to_response('frontend/comercial/comercial-designacoes.html', locals(), context_instance=RequestContext(request),)
 
 class ConfirmarDesignacao(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         clientes = kwargs.pop('clientes', None)
         preclientes = kwargs.pop('preclientes', None)
@@ -1642,8 +1646,8 @@ class ConfirmarDesignacao(forms.Form):
         if preclientes:
             self.fields['preclientes'].queryset = PreCliente.objects.filter(cliente_convertido=None)
             self.fields['preclientes'].initial = preclientes
-            
-        
+
+
     designado = forms.ModelChoiceField(required=True, queryset=None, label="Novo Designado", empty_label=None)
     clientes = forms.ModelMultipleChoiceField(required=False, queryset=Cliente.objects.filter(ativo=True))
     preclientes = forms.ModelMultipleChoiceField(required=False, queryset=PreCliente.objects.filter(cliente_convertido=None))
@@ -1677,7 +1681,7 @@ def designacoes_confirmar(request):
         return redirect(reverse("comercial:designacoes"))
 
 class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         gerente = kwargs.pop('gerente', False)
         super(ConfigurarPropostaComercialParaImpressao, self).__init__(*args, **kwargs)
@@ -1688,7 +1692,7 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
             else:
                 vendedor = self.instance.precliente.designado
             self.fields['vendedor'].initial = vendedor
-        # 
+        #
         self.fields['nome_do_proposto'].required = True
         self.fields['rua_do_proposto'].required = True
         self.fields['bairro_do_proposto'].required = True
@@ -1699,8 +1703,8 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         self.fields['objeto_proposto'].required = True
         self.fields['descricao_items_proposto'].required = True
         self.fields['items_nao_incluso'].required = True
-        
-    
+
+
     def clean(self):
         cleaned_data = super(ConfigurarPropostaComercialParaImpressao, self).clean()
         representante_legal = cleaned_data.get("representante_legal_proposto")
@@ -1716,7 +1720,7 @@ class ConfigurarPropostaComercialParaImpressao(forms.ModelForm):
         'telefone_contato_proposto', 'email_proposto', 'objeto_proposto', 'descricao_items_proposto', 'items_nao_incluso', 'forma_pagamento_proposto', 'garantia_proposto',
 
 class OrcamentoPrint:
-    """ 
+    """
     Gera o orcamento impresso.
     """
 
@@ -1727,21 +1731,21 @@ class OrcamentoPrint:
         elif pagesize == 'Letter':
             self.pagesize = letter
         self.width, self.height = self.pagesize
-    
+
     def _header_footer(self, canvas, doc):
             # Save the state of our canvas so we can draw on it
             canvas.saveState()
             styles = getSampleStyleSheet()
- 
+
             # Footer
             footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-001', styles['Normal'])
             footer.wrap(doc.width, doc.bottomMargin)
             footer.drawOn(canvas, 30, 10)
             # Release the canvas
             canvas.restoreState()
-    
+
     def print_proposta(self, proposta, tipo='servico', perfil=None):
-        
+
             buffer = self.buffer
             doc = SimpleDocTemplate(buffer,
                                     rightMargin=40,
@@ -1749,7 +1753,7 @@ class OrcamentoPrint:
                                     topMargin=10,
                                     bottomMargin=70,
                                     pagesize=self.pagesize)
-            
+
             # A large collection of style sheets pre-made for us
             styles = getSampleStyleSheet()
             styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
@@ -1769,10 +1773,10 @@ class OrcamentoPrint:
             else:
                 im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
             im.hAlign = 'LEFT'
-            
+
             # id da proposta
             id_proposta = Paragraph("Nº PROPOSTA: %s" % str(proposta.id), styles['right'])
-            
+
             imprime_logo = getattr(settings, 'IMPRIME_LOGO_PROPOSTA', True)
             if imprime_logo:
                 data=[(im,id_proposta)]
@@ -1782,49 +1786,49 @@ class OrcamentoPrint:
             table_logo = Table(data, colWidths=270, rowHeights=79)
             table_logo.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'MIDDLE')]))
             elements.append(table_logo)
-            
+
             if tipo == 'servico':
                 # descricao
                 id_desc_p = Paragraph("PROPOSTA COMERCIAL", styles['centered_h1'])
                 elements.append(id_desc_p)
-                
+
                 # space
                 elements.append(Spacer(1, 24))
-                
+
                 # AC
                 texto_endereco = u"%s, <strong>Bairro</strong>: %s, <strong>CEP</strong>: %s, <strong>Cidade</strong>: %s, <strong>Estado</strong>: %s" % \
                     (proposta.rua_do_proposto, proposta.bairro_do_proposto, proposta.cep_do_proposto, proposta.cidade_do_proposto, proposta.estado_do_proposto)
                 texto = u"<b>Cliente</b>: %s<br />\
             	<b>Telefone</b>: %s<br />\
             	<b>Endereço do Cliente</b>: %s <br />"% (
-                        proposta.nome_do_proposto, proposta.telefone_contato_proposto, 
+                        proposta.nome_do_proposto, proposta.telefone_contato_proposto,
                         texto_endereco
                     )
                 contratante_p = Paragraph(texto, styles['justify'])
                 elements.append(contratante_p)
-                
+
                 if proposta.email_proposto:
                     texto = u"<b>Email</b>: %s<br />" % proposta.email_proposto
                     contratante_p = Paragraph(texto, styles['justify'])
                     elements.append(contratante_p)
-                
+
                 if proposta.endereco_obra_proposto:
                     # space
                     elements.append(Spacer(1, 12))
                     texto = u"<b>Endereço da Obra</b>: %s<br />" % proposta.endereco_obra_proposto
                     endereco_obra_texto = Paragraph(texto, styles['justify'])
-                    elements.append(endereco_obra_texto)                
-                
+                    elements.append(endereco_obra_texto)
+
                 # space
                 elements.append(Spacer(1, 24))
-                
+
                 texto_introducao_proposta = getattr(settings, 'TEXTO_INTRODUCAO_PROPOSTA_COMERCIAL', 'TEXTO INTRODUÇÃO PROPOSTA COMERCIAL')
                 texto_introducao_proposta_p = Paragraph(texto_introducao_proposta, styles['justify'])
                 elements.append(texto_introducao_proposta_p)
 
                 # space
                 elements.append(Spacer(1, 24))
-                
+
                 # 1 - DO OBJETO
                 do_objeto_titulo = Paragraph("1 - DO OBJETO", styles['left_h2'])
                 elements.append(do_objeto_titulo)
@@ -1833,57 +1837,57 @@ class OrcamentoPrint:
                 # objeto texto
                 texto_objeto_p = Paragraph(proposta.objeto_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_objeto_p)
-                
+
                 # space
                 elements.append(Spacer(1, 24))
-                
+
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1 - DESCRIÇÃO DOS ITENS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
-                
+
                 # objeto texto
                 # 1.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("1.1.1 - ITENS INCLUSOS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
-                
-                
+
+
                 texto_desc_itens_p = Paragraph(proposta.descricao_items_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
-                
+
                 # space
                 elements.append(Spacer(1, 12))
-                
-                
+
+
                 # 1.2 - Descrição dos Itens Não Inclusos
                 desc_itens_titulo = Paragraph("1.1.2 - ITENS NÃO INCLUSOS", styles['left_h2'])
                 elements.append(desc_itens_titulo)
                 # space
                 elements.append(Spacer(1, 12))
-                
+
                 # objeto texto
                 texto_desc_itens_p = Paragraph(proposta.items_nao_incluso.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto_desc_itens_p)
                 # space
                 elements.append(Spacer(1, 12))
-                
-                                
+
+
                 # 2 - Do valor e formas de pagamento
                 titulo = Paragraph("2 - DOS VALORES", styles['left_h2'])
                 elements.append(titulo)
                 # space
                 elements.append(Spacer(1, 12))
-                
-                
+
+
                 locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
                 valor_formatado = locale.currency(proposta.valor_proposto, grouping=True)
                 texto = "O valor global da proposta é de <strong>%s</strong> (<em>%s</em>)" % (valor_formatado, proposta.valor_extenso())
                 texto_p = Paragraph(texto, styles['justify'])
                 elements.append(texto_p)
-                
+
 
                 # space
                 elements.append(Spacer(1, 24))
@@ -1891,63 +1895,63 @@ class OrcamentoPrint:
                 # 2.1 - Descrição dos Itens
                 desc_itens_titulo = Paragraph("2.1 - FORMAS DE PAGAMENTO", styles['left_h2'])
                 elements.append(desc_itens_titulo)
-                
+
                 # space
                 elements.append(Spacer(1, 12))
-                
+
                 # objeto texto
                 texto = Paragraph(proposta.forma_pagamento_proposto.replace('\n', '<br />'), styles['justify'])
                 elements.append(texto)
-                
+
                 # space
                 elements.append(Spacer(1, 24))
-                
+
                 # 3 - VALIDADE
                 titulo = Paragraph("3 - VALIDADE", styles['left_h2'])
                 elements.append(titulo)
-                
+
                 # space
                 elements.append(Spacer(1, 12))
-                
+
                 # texto validade
                 validade = "Essa proposta é válida até %s e foi emitida em %s" % \
                 ( proposta.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
                 texto = Paragraph(validade, styles['justify'])
                 elements.append(texto)
-                
+
                 # space
                 elements.append(Spacer(1, 24))
-                
+
             # TEXTO ESQUERDA FINAL
             if perfil.user.funcionario:
                 responsavel_proposta = perfil.user.funcionario
             else:
                 responsavel_proposta = proposta.designado
-            
 
-            
-            
+
+
+
             if perfil and perfil.imagem_assinatura:
                 # space
                 elements.append(Spacer(1, 12))
-                
+
                 try:
                     im = Image(perfil.imagem_assinatura.path, width=2*inch,height=1*inch,kind='proportional')
                     im.hAlign = 'LEFT'
                     elements.append(im)
                 except:
                     pass
-            
+
             texto_esquerda_final = "Atenciosamente,<br /><b>%s</b>" % responsavel_proposta
-            
+
             if perfil.user.funcionario.sexo == "m":
                 texto_esquerda_final += "<br />Consultor de Vendas<br />"
             else:
                 texto_esquerda_final += "<br />Consultora de Vendas<br />"
-                
+
             if perfil.user.funcionario.email or perfil.user.email:
                 texto_esquerda_final += "Email: %s<br />" % perfil.user.funcionario.email or perfil.user.email
-            
+
             if perfil.telefone_celular and perfil.telefone_fixo:
                 texto_esquerda_final += "%s / %s" % (perfil.telefone_celular, perfil.telefone_fixo)
 
@@ -1956,27 +1960,27 @@ class OrcamentoPrint:
                 texto_esquerda_final += "%s" % perfil.telefone_fixo
             else:
                 texto_esquerda_final += "%s" % perfil.telefone_celular
-            
+
             # space
             elements.append(Spacer(1, 12))
-			
+
             texto_esquerda_final_p = Paragraph(texto_esquerda_final, styles['left'])
-            
+
             telefone_empresa = getattr(settings, 'TELEFONE_EMPRESA', None)
-            
-            
+
+
             # TEXTO DIREITA FINAL
-            
+
             texto_direita_final = """__________________________________________________<br />
             <br />
 			Proposta aceita por %s<br /><br />
 			Em ___________ de _____________________ de %s.""" % (proposta.representante_legal_proposto, datetime.date.today().strftime("%Y"))
-            
+
             texto_direita_final_p = Paragraph(texto_direita_final, styles['left'])
-            
+
             data=[(texto_esquerda_final_p,texto_direita_final_p)]
             table = Table(data, colWidths=270, rowHeights=79)
-            
+
             elements.append(texto_esquerda_final_p)
             # space
             elements.append(Spacer(1, 20))
@@ -1985,21 +1989,21 @@ class OrcamentoPrint:
                 elements.append(texto_telefone_empresa)
                 # space
                 elements.append(Spacer(1, 20))
-                
-            
-            
+
+
+
             elements.append(texto_direita_final_p)
-                
+
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
- 
+
             # Get the value of the BytesIO buffer and write it to the response.
             pdf = buffer.getvalue()
             buffer.close()
             return pdf
 
 class FormEnviarPropostaEmail(forms.Form):
-    
+
     email = forms.CharField(help_text="Para mais emails: email1, email2, email3")
 
 
@@ -2022,9 +2026,9 @@ def proposta_comercial_reabrir(request, proposta_id):
     proposta.followupdepropostacomercial_set.create(texto="Reaberto de Proposta #%s" % id_original, criado_por=request.user.funcionario)
     if request.GET['next']:
         return redirect(request.GET['next'])
-    else: 
+    else:
         return redirect(reverse('comercial:home'))
-        
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_editar_item_documento(request, proposta_id, item_id):
@@ -2472,7 +2476,7 @@ def adicionar_follow_up(request, proposta_id):
             url = reverse("comercial:cliente_ver", args=[proposta.cliente.id])
         else:
             url = reverse("comercial:propostas_comerciais_minhas")
-    
+
     return(redirect(url))
 
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -2493,11 +2497,11 @@ class NumberedCanvas(canvas.Canvas):
     def __init__(self, *args, **kwargs):
         canvas.Canvas.__init__(self, *args, **kwargs)
         self._saved_page_states = []
- 
+
     def showPage(self):
         self._saved_page_states.append(dict(self.__dict__))
         self._startPage()
- 
+
     def save(self):
         """add page info to each page (page x of y)"""
         num_pages = len(self._saved_page_states)
@@ -2506,15 +2510,15 @@ class NumberedCanvas(canvas.Canvas):
             self.draw_page_number(num_pages)
             canvas.Canvas.showPage(self)
         canvas.Canvas.save(self)
- 
+
     def draw_page_number(self, page_count):
         self.setFont("Helvetica", 7)
         # Change the position of this to wherever you want the page number to be
         self.drawRightString(200 * mm, 15 * mm + (0.2 * inch),
                              u"Página %d de %d" % (self._pageNumber, page_count))
- 
+
 class ContratoPrint:
-    """ 
+    """
     Imprime o contrato impresso.
     """
 
@@ -2525,37 +2529,37 @@ class ContratoPrint:
         elif pagesize == 'Letter':
             self.pagesize = letter
         self.width, self.height = self.pagesize
-    
+
     def _header_footer(self, canvas, doc):
             # Save the state of our canvas so we can draw on it
             canvas.saveState()
             styles = getSampleStyleSheet()
- 
+
             # Footer
             footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-001', styles['Normal'])
             footer.wrap(doc.width, doc.bottomMargin)
             footer.drawOn(canvas, 30, 10)
             # Release the canvas
             canvas.restoreState()
-    
+
     def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
-            
-        
+
+
             buffer = self.buffer
-            
+
             if imprime_logo:
                 margem_topo = 10
             else:
                 margem_topo = 70
-                
-            
+
+
             doc = SimpleDocTemplate(buffer,
                                     rightMargin=40,
                                     leftMargin=40,
                                     topMargin=margem_topo,
                                     bottomMargin=70,
                                     pagesize=self.pagesize)
-            
+
             # A large collection of style sheets pre-made for us
             styles = getSampleStyleSheet()
             styles.add(ParagraphStyle(name='centered', alignment=TA_CENTER))
@@ -2567,20 +2571,20 @@ class ContratoPrint:
             styles.add(ParagraphStyle(name='right', alignment=TA_RIGHT, fontSize=10))
             styles.add(ParagraphStyle(name='right_h2', alignment=TA_RIGHT, fontSize=10, fontName="Helvetica-Bold"))
             styles.add(ParagraphStyle(name='justify', alignment=TA_JUSTIFY))
-            
+
             # Our container for 'Flowable' objects
             elements = []
-            
+
             # logo empresa
             if perfil.empresa:
                 im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
             else:
                 im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
             im.hAlign = 'LEFT'
-            
+
             # id do contrato
             id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
-            
+
             if imprime_logo:
                 data=[(im,id_contrato)]
                 table = Table(data, colWidths=270, rowHeights=79)
@@ -2590,48 +2594,48 @@ class ContratoPrint:
 
             table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'BOTTOM')]))
             elements.append(table)
-            
 
-            
+
+
             # descricao
             id_contrato_p = Paragraph("CONTRATO DE PRESTAÇÃO DE SERVIÇOS.", styles['centered_h1'])
             elements.append(id_contrato_p)
-            
+
             # mostra mensagem de status, menos se for emaberto ou lancado
             if contrato.status not in ('assinatura', 'emaberto', 'lancado'):
                 # space
                 elements.append(Spacer(1, 40))
-                
+
                 id_contrato_status_p = Paragraph(u"STATUS DO CONTRATO: %s" % contrato.get_status_display() , styles['left_h1_vermelho'])
                 elements.append(id_contrato_status_p)
-                
+
                 elements.append(Spacer(1, 40))
-                
-                
-            
+
+
+
             # space
             elements.append(Spacer(1, 20))
-            
+
             # CONTRATANTE DESC
             contratante_text = contrato.sugerir_texto_contratante()
             contratante_p = Paragraph("<b>CONTRATANTE</b>: %s" % contratante_text, styles['justify'])
             elements.append(contratante_p)
-            
+
             # space
             elements.append(Spacer(1, 12))
-            
+
             # CONTRATADA DESC
             contratada_texto = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Settings: TEXTO_CONTRATO_CONTRATADA - Texto descrevendo a empresa")
             contratada_p = Paragraph("<b>CONTRATADA</b>: %s" % contratada_texto, styles['justify'])
             elements.append(contratada_p)
-            
+
             if contrato.endereco_obra:
                 # space
-                elements.append(Spacer(1, 12))                        
+                elements.append(Spacer(1, 12))
                 # ENDERECO DA OBRA
                 endereco_obra_p = Paragraph(u"<b>ENDEREÇO DA OBRA</b>: %s" % contrato.endereco_obra, styles['justify'])
                 elements.append(endereco_obra_p)
-            
+
             # space
             elements.append(Spacer(1, 12))
             #
@@ -2641,7 +2645,7 @@ class ContratoPrint:
             elements.append(clausula_1_p)
             # space
             elements.append(Spacer(1, 12))
-            
+
             objeto_p = Paragraph(unicode(contrato.objeto).replace("\n", "<br />"), styles['justify'])
             elements.append(objeto_p)
             # space
@@ -2664,10 +2668,10 @@ class ContratoPrint:
             # itens N incluso texto
             itens_n_inclusos_p = Paragraph(unicode(contrato.items_nao_incluso).replace("\n", "<br />"), styles['justify'])
             elements.append(itens_n_inclusos_p)
-            
+
             # space
             elements.append(Spacer(1, 20))
-            
+
             #
             # CLAUSULA 2 - NORMAS DE EXECUÇÃO
             #
@@ -2681,9 +2685,9 @@ class ContratoPrint:
                 normas_execucao_texto = str(getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Settings: TEXTO_NORMAS_EXECUCAO - Texto descrevendo as normas de execução do contrato"))
             normas_execucao_p = Paragraph(normas_execucao_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(normas_execucao_p)
-            
+
             elements.append(Spacer(1, 12))
-            
+
             #
             # CLAUSULA 3 - FORMAS DE PAGAMENTO
             #
@@ -2707,16 +2711,16 @@ class ContratoPrint:
                 lancamento_p = Paragraph(unicode(lancamento_text).replace("\n", "<br />"), styles['justify'])
                 elements.append(lancamento_p)
                 elements.append(Spacer(1, 12))
-            
+
             import locale
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
             valor_formatado = locale.currency(contrato.valor, grouping=True)
-            
+
             total_texto = u"Total: %s (%s)" % (valor_formatado.decode('utf-8'), contrato.valor_extenso().decode('utf-8'))
             total_p = Paragraph(total_texto.replace("\n", "<br />"), styles['left_h2'])
             elements.append(total_p)
             elements.append(Spacer(1, 12))
-                
+
             #
             # CLÁUSULA 4ª – DOS PRAZOS
             #
@@ -2724,12 +2728,12 @@ class ContratoPrint:
             elements.append(clausula_4_p)
             # space
             elements.append(Spacer(1, 12))
-            
+
             if contrato.prazo_execucao:
                 prazos_texto = unicode(contrato.prazo_execucao)
             else:
                 prazos_texto = str(getattr(settings, "TEXTO_HTML_PRAZOS", "Settings: TEXTO_HTML_PRAZOS - Texto descrevendo as normas de execução do contrato"))
-            
+
             prazos_p = Paragraph(prazos_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(prazos_p)
             elements.append(Spacer(1, 12))
@@ -2742,15 +2746,15 @@ class ContratoPrint:
             elements.append(clausula_5_p)
             # space
             elements.append(Spacer(1, 12))
-            # 
+            #
             if contrato.rescisao:
                 rescisao_texto = unicode(contrato.rescisao)
             else:
                 rescisao_texto = str(getattr(settings, "TEXTO_HTML_RESCISAO", "Settings: TEXTO_HTML_RESCISAO - Texto descrevendo as normas de Execucao"))
             rescisao_p = Paragraph(rescisao_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(rescisao_p)
-            
-            
+
+
             elements.append(Spacer(1, 12))
             #
             #
@@ -2760,11 +2764,11 @@ class ContratoPrint:
             elements.append(clausula_6_p)
             elements.append(Spacer(1, 12))
             # space
-            # 
+            #
             garantia_p = Paragraph(unicode(contrato.garantia).replace("\n", "<br />"), styles['justify'])
             elements.append(garantia_p)
             elements.append(Spacer(1, 12))
-            
+
             #
             #
             #  CLÁUSULA 7ª – DO FORO
@@ -2772,7 +2776,7 @@ class ContratoPrint:
             clausula_6_p = Paragraph(u"CLÁUSULA 7ª – DO FORO", styles['left_h1'])
             elements.append(clausula_6_p)
             # space
-            # 
+            #
             if contrato.foro:
                 foro_texto = unicode(contrato.foro)
             else:
@@ -2780,26 +2784,26 @@ class ContratoPrint:
             foro_p = Paragraph(foro_texto.replace("\n", "<br />"), styles['justify'])
             elements.append(foro_p)
             elements.append(Spacer(1, 12))
-            
+
             ## cidade do contrato
             elements.append(Spacer(1, 12))
             cidade = getattr(settings, "CIDADE_CONTRATO", "Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
             cidade_texto = "%s, %s" % (cidade, datetime.date.today().strftime("%d de %B de %Y"))
             cidade_p = Paragraph(str(cidade_texto).replace("\n", "<br />"), styles['right'])
             elements.append(cidade_p)
-            
-            
+
+
             espaco_assinaturas = 30
-            
+
             # REPRESENTANTE LEGAL EMPRESA
             #
             elements.append(Spacer(1, espaco_assinaturas))
             representante_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(representante_linha)
-            representante_empresa = getattr(settings, "REPRESENTATE_LEGAL_EMPRESA", "Settings: REPRESENTATE_LEGAL_EMPRESA - Texto descrevendo Representante Legal da Empresa")    
+            representante_empresa = getattr(settings, "REPRESENTATE_LEGAL_EMPRESA", "Settings: REPRESENTATE_LEGAL_EMPRESA - Texto descrevendo Representante Legal da Empresa")
             representante_p = Paragraph(str(representante_empresa), styles['left'])
             elements.append(representante_p)
-            
+
             # CLIENTE / PROPOSTO LEGAL
             #
             elements.append(Spacer(1, espaco_assinaturas))
@@ -2807,7 +2811,7 @@ class ContratoPrint:
             elements.append(cliente_linha)
             representante_p = Paragraph(unicode(contrato.sugerir_texto_contratante()), styles['left'])
             elements.append(representante_p)
-            
+
             # TESTEMUNHA 1
             #
             elements.append(Spacer(1, espaco_assinaturas))
@@ -2815,14 +2819,14 @@ class ContratoPrint:
             elements.append(testemunha_linha)
             if testemunha1:
                 texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
-            else:                
+            else:
                 if contrato.responsavel_comissionado:
                     texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
                 else:
                     texto = "TESTEMUNHA 1"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
-            
+
             # TESTEMUNHA 2
             #
             elements.append(Spacer(1, espaco_assinaturas))
@@ -2830,13 +2834,13 @@ class ContratoPrint:
             elements.append(testemunha_linha)
             if testemunha2:
                 texto = "TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
-            else:                
+            else:
                 texto = "TESTEMUNHA 2"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
- 
+
             # Get the value of the BytesIO buffer and write it to the response.
             pdf = buffer.getvalue()
             buffer.close()
@@ -3046,20 +3050,20 @@ def contratos_gerar_impressao(request, contrato_id):
     pdf = report.print_contrato(contrato, testemunha1=testemunha1, testemunha2=testemunha2, imprime_logo=imprime_logo, perfil=request.user.perfilacessocomercial)
     response.write(pdf)
     return response
-    
-    
+
+
     texto_contratada = getattr(settings, "TEXTO_CONTRATO_CONTRATADA", "Texto descrevendo a empresa")
-    texto_normas_execucao = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Texto descrevendo as normas de execução do contrato")    
-    texto_juros_valor_contrato = getattr(settings, "TEXTO_CONTRATO_JUROS_VALORES", "Texto descrevendo a forma de juros e multas regidos por este contrato")    
+    texto_normas_execucao = getattr(settings, "TEXTO_NORMAS_EXECUCAO", "Texto descrevendo as normas de execução do contrato")
+    texto_juros_valor_contrato = getattr(settings, "TEXTO_CONTRATO_JUROS_VALORES", "Texto descrevendo a forma de juros e multas regidos por este contrato")
     texto_contrato_dos_prazos = getattr(settings, "TEXTO_HTML_PRAZOS", "Texto descrevendo as informações sobre Prazos")
     texto_contrato_rescisao = getattr(settings, "TEXTO_HTML_RESCISAO", "Texto descrevendo as informações sobre Rescisão")
     texto_contrato_foro = getattr(settings, "TEXTO_HTML_FORO", "Texto descrevendo as informações sobre o Foro")
     nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
-    
+
     return render_to_response('frontend/comercial/comercial-contratos-gerar-impressao.html', locals(), context_instance=RequestContext(request),)
 
 class FormRevalidarContrato(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         esconde_textos = kwargs.pop('esconde_textos')
         super(FormRevalidarContrato, self).__init__(*args, **kwargs)
@@ -3084,6 +3088,7 @@ class FormRevalidarContrato(forms.ModelForm):
 def contratos_meus_definir_assinado(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
     contrato.status = "emaberto"
+    contrato.data_assinatura = datetime.datetime.now()
     contrato.save()
     return redirect(reverse("comercial:contratos_meus"))
 
@@ -3135,7 +3140,7 @@ def contratos_meus_revalidar(request, contrato_id):
                     dest.append(perfil.user.funcionario.email or perfil.user.email)
 
                 assunto = u'Contrato para Análise: #%s' % contrato.id
-                
+
                 current_site_domain = Site.objects.get_current().domain
                 template = loader.get_template('template_de_email/comercial/novo-contrato-em-analise.html')
                 c = Context(
@@ -3146,7 +3151,7 @@ def contratos_meus_revalidar(request, contrato_id):
                     )
                 conteudo = template.render(c)
                 email = EmailMessage(
-                        assunto, 
+                        assunto,
                         conteudo,
                         'SISTEMA',
                         dest,
@@ -3156,12 +3161,12 @@ def contratos_meus_revalidar(request, contrato_id):
                     messages.success(request, u'Sucesso! Uma mensagem de email foi enviado para os Gerentes!')
                 except:
                     messages.error(request, u'Atenção! Não foi enviado uma mensagem por email para os Gerentes!')
-                
+
                 return redirect(reverse("comercial:contratos_meus"))
             else:
                 diferenca = float(contrato.valor) - float(total_lancamentos)
                 messages.error(request, u"Erro! Valor de Lançamentos (R$ %s) é diferente do valor do Contrato (R$ %s). Diferença: R$ %s" % (total_lancamentos, contrato.valor, diferenca))
-            
+
     else:
         form_contrato = FormRevalidarContrato(instance=contrato,  esconde_textos=esconde_textos)
         form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="revalidar_contrato", instance=contrato)
@@ -3170,7 +3175,7 @@ def contratos_meus_revalidar(request, contrato_id):
 
 
 class FormAdicionaModelo(forms.ModelForm):
-    
+
     class Meta:
         model = Orcamento
         fields = 'descricao',
@@ -3194,9 +3199,9 @@ def orcamentos_modelo_novo(request):
 
 
 class ListaProduto(forms.Form):
-    
+
     produto = forms.ChoiceField(widget=forms.HiddenInput())
-    
+
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo(request):
@@ -3208,7 +3213,7 @@ def orcamentos_modelo(request):
     return render_to_response('frontend/comercial/comercial-orcamentos-modelo.html', locals(), context_instance=RequestContext(request),)
 
 class OrcamentoForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(OrcamentoForm, self).__init__(*args, **kwargs)
         self.fields['proposta'].widget = forms.HiddenInput()
@@ -3221,7 +3226,7 @@ class OrcamentoForm(forms.ModelForm):
 
 
 class ModeloOrcamentoForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(ModeloOrcamentoForm, self).__init__(*args, **kwargs)
         self.fields['descricao'].widget.attrs['class'] = "input-xxlarge"
@@ -3237,7 +3242,7 @@ class ModeloOrcamentoForm(forms.ModelForm):
 
 
 class LinhaOrcamentoMaterialForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(LinhaOrcamentoMaterialForm, self).__init__(*args, **kwargs)
         self.fields['produto'].widget = forms.HiddenInput()
@@ -3249,7 +3254,7 @@ class LinhaOrcamentoMaterialForm(forms.ModelForm):
         fields = 'quantidade', 'produto'
 
 class LinhaOrcamentoMaterialModeloForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(LinhaOrcamentoMaterialModeloForm, self).__init__(*args, **kwargs)
         self.fields['produto'].widget = forms.HiddenInput()
@@ -3268,7 +3273,7 @@ class LinhaOrcamentoMaterialModeloForm(forms.ModelForm):
 
 
 class LinhaOrcamentoHumanoForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(LinhaOrcamentoHumanoForm, self).__init__(*args, **kwargs)
         self.fields['cargo'].widget = forms.HiddenInput()
@@ -3281,7 +3286,7 @@ class LinhaOrcamentoHumanoForm(forms.ModelForm):
 
 
 class LinhaOrcamentoHumanoModeloForm(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         super(LinhaOrcamentoHumanoModeloForm, self).__init__(*args, **kwargs)
         self.fields['cargo'].widget = forms.HiddenInput()
@@ -3289,7 +3294,7 @@ class LinhaOrcamentoHumanoModeloForm(forms.ModelForm):
         self.fields['quantidade'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
         self.fields['custo_total'].widget.attrs['class'] = 'recalcula_quantidade_quando_muda input-mini'
 
-        
+
 
     class Meta:
         model = LinhaRecursoHumano
@@ -3299,21 +3304,21 @@ class LinhaOrcamentoHumanoModeloForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_editar(request, modelo_id):
-    
+
     orcamento = get_object_or_404(Orcamento, pk=modelo_id)
     OrcamentoMaterialFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoMaterial, extra=1, can_delete=True, form=LinhaOrcamentoMaterialModeloForm)
     OrcamentoRecursoHumanoFormSet = forms.models.inlineformset_factory(Orcamento, LinhaRecursoHumano, extra=1, can_delete=True, form=LinhaOrcamentoHumanoModeloForm)
     if request.POST:
-        
+
 
         if 'adicionar_linha_material' in request.POST:
-            
+
             try:
                 quantidade_material_adicionar = int(request.POST.get('quantidade_material', 1))
             except:
                 quantidade_material_adicionar = int(1)
-            
-            
+
+
             messages.info(request, u"Nova Linha de Materiais adicionada")
             cp = request.POST.copy()
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
@@ -3322,24 +3327,24 @@ def orcamentos_modelo_editar(request, modelo_id):
             form_orcamento = OrcamentoForm(cp, instance=orcamento)
 
         if 'adicionar_linha_humano' in request.POST:
-            
+
             try:
                 quantidade_humano_adicionar = int(request.POST.get('quantidade_humano', 1))
             except:
                 quantidade_humano_adicionar = int(1)
-            
-            
+
+
             messages.info(request, u"Nova Linha de Mão de Obra adicionada")
             cp = request.POST.copy()
             form_editar_linhas_material = OrcamentoMaterialFormSet(cp, instance=orcamento, prefix='orcamento-material')
-            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ quantidade_humano_adicionar   
+            cp['orcamento-humano-TOTAL_FORMS'] = int(cp['orcamento-humano-TOTAL_FORMS'])+ quantidade_humano_adicionar
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(cp, instance=orcamento, prefix='orcamento-humano')
             form_orcamento = OrcamentoForm(cp, instance=orcamento)
-        
-        
-        
-        
-        
+
+
+
+
+
         elif 'alterar-orcamento' in request.POST:
             form_editar_linhas_material = OrcamentoMaterialFormSet(request.POST, instance=orcamento, prefix="orcamento-material")
             form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(request.POST, instance=orcamento, prefix="orcamento-humano")
@@ -3357,8 +3362,8 @@ def orcamentos_modelo_editar(request, modelo_id):
                     return redirect(reverse('comercial:orcamentos_modelo_editar', args=[orcamento.id]))
             else:
                 form_orcamento = ModeloOrcamentoForm(request.POST, instance=orcamento)
-        
-                
+
+
     else:
         form_editar_linhas_material = OrcamentoMaterialFormSet(instance=orcamento, prefix="orcamento-material")
         form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
@@ -3393,7 +3398,7 @@ def orcamentos_modelo_apagar(request, modelo_id):
     return redirect(reverse("comercial:orcamentos_modelo"))
 
 class SelecionaAnoIndicadorComercial(forms.Form):
-    
+
     def __init__(self, *args, **kwargs):
         super(SelecionaAnoIndicadorComercial, self).__init__(*args, **kwargs)
         anos = PropostaComercial.objects.dates('criado', 'year', order='DESC')
@@ -3413,7 +3418,7 @@ def indicadores_do_comercial(request):
     except:
         raise
         ano = datetime.date.today().year
-    
+
     # pre clientes criados
     total_preclientes_criados = []
     # pre clientes convertidos
@@ -3422,7 +3427,7 @@ def indicadores_do_comercial(request):
     total_propostas_criadas = []
     # propostas convertidas
     total_propostas_convertidas = []
-    # propostas 
+    # propostas
     # propostas fechadas
     total_propostas_perdidas = []
 
@@ -3491,7 +3496,7 @@ def indicadores_do_comercial(request):
     propostas_abertas_nao_expiradas_contagem = propostas_abertas_nao_expiradas.count()
     propostas_abertas_nao_expiradas_por_criador = propostas_abertas_nao_expiradas.values('criado_por__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_nao_expiradas_por_responsavel = propostas_abertas_nao_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
-    propostas_abertas_nao_expiradas_total = propostas_abertas_nao_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']    
+    propostas_abertas_nao_expiradas_total = propostas_abertas_nao_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']
 
     # propostas abertas expiradas
     propostas_abertas_expiradas = PropostaComercial.objects.filter(
@@ -3504,7 +3509,7 @@ def indicadores_do_comercial(request):
     propostas_abertas_expiradas_por_criador = propostas_abertas_expiradas.values('criado_por__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_expiradas_por_responsavel = propostas_abertas_expiradas.values('designado__nome').annotate(Count('id'), Sum('valor_proposto'))
     propostas_abertas_expiradas_total = propostas_abertas_expiradas.aggregate(Sum('valor_proposto'))['valor_proposto__sum']
-    
+
     # Grupo Indicador de Produtos em Propostas Convertidas
     total_grupo_indicadores_propostas_convertidas = {}
     for grupo in GrupoIndicadorDeProdutoProposto.objects.all():
@@ -3519,7 +3524,7 @@ def indicadores_do_comercial(request):
             ).aggregate(Sum('quantidade'))
             grupo_month_set.append(quantidades['quantidade__sum'] or 0)
         total_grupo_indicadores_propostas_convertidas[grupo.nome] = grupo_month_set
-    
+
     total_grupo_indicadores_propostas_convertidas = OrderedDict(sorted(total_grupo_indicadores_propostas_convertidas.items(), key=lambda t: t[0]))
 
     # Grupo Indicador de Produtos em Propostas Perdidas
@@ -3542,22 +3547,22 @@ def indicadores_do_comercial(request):
     form_seleciona_ano = SelecionaAnoIndicadorComercial(initial={'ano': ano})
     resultados = True
     ano = str(ano)
-        
+
     # Grupo de Indicador com Propostas Abertas Não Expiradas
     grupos_indicadores_produtos_orcamento_aberto_nao_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__gte=datetime.date.today()).exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
 
     # Grupo de Indicador com Propostas Abertas Expiradas
     grupos_indicadores_produtos_orcamento_aberto_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__lt=datetime.date.today()).exclude(produto__grupo_indicador=None).values('produto__grupo_indicador__nome').annotate(Sum('quantidade'))
-    
+
     # SubGrupo de Indicador com Propostas ABertas Não expiradas
     sub_grupos_indicadores_produtos_orcamento_aberto_nao_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__gte=datetime.date.today()).exclude(produto__sub_grupo_indicador=None).values('produto__sub_grupo_indicador__nome', 'produto__sub_grupo_indicador__grupo__nome').annotate(Sum('quantidade'))
-    
+
     # SubGrupo de Indicador com Propostas ABertas Expiradas
     sub_grupos_indicadores_produtos_orcamento_aberto_expirado = LinhaRecursoMaterial.objects.filter(orcamento__proposta__status="aberta", orcamento__proposta__data_expiracao__lt=datetime.date.today()).exclude(produto__sub_grupo_indicador=None).values('produto__sub_grupo_indicador__nome', 'produto__sub_grupo_indicador__grupo__nome').annotate(Sum('quantidade'))
-    
+
     # Modelo de Orcamento com Propostas Abertas
     modelos = Orcamento.objects.filter(modelo=True)
-    
+
     # Modelo de Orcamento Tabelado em Propostas Abertas
     total_propostas_gerados_tabelado_abertas = {}
     for modelo in Orcamento.objects.filter(modelo=True, tabelado=True).all():
@@ -3575,7 +3580,7 @@ def indicadores_do_comercial(request):
             grupo_month_set.append(quantidades)
         total_propostas_gerados_tabelado_abertas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_tabelado_abertas = OrderedDict(sorted(total_propostas_gerados_tabelado_abertas.items(), key=lambda t: t[0]))
-    
+
     # Modelo de Orcamento Tabelado em Propostas Fechada
     total_propostas_gerados_tabelado_fechadas = {}
     for modelo in Orcamento.objects.filter(modelo=True, tabelado=True).all():
@@ -3593,8 +3598,8 @@ def indicadores_do_comercial(request):
             grupo_month_set.append(quantidades)
         total_propostas_gerados_tabelado_fechadas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_tabelado_fechadas = OrderedDict(sorted(total_propostas_gerados_tabelado_fechadas.items(), key=lambda t: t[0]))
-    
-    
+
+
     # Modelo de Orcamento Promocional em Proposta Aberta
     total_propostas_gerados_promocionais_abertas = {}
     for modelo in Orcamento.objects.filter(modelo=True, promocao=True).all():
@@ -3612,7 +3617,7 @@ def indicadores_do_comercial(request):
             grupo_month_set.append(quantidades)
         total_propostas_gerados_promocionais_abertas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_promocionais_abertas = OrderedDict(sorted(total_propostas_gerados_promocionais_abertas.items(), key=lambda t: t[0]))
-    
+
     # Modelo de Orcamento Promocional em Proposta Fechada
     total_propostas_gerados_promocionais_fechadas = {}
     for modelo in Orcamento.objects.filter(modelo=True, promocao=True).all():
@@ -3632,8 +3637,8 @@ def indicadores_do_comercial(request):
             grupo_month_set.append(quantidades)
         total_propostas_gerados_promocionais_fechadas[modelo.descricao] = grupo_month_set
     total_propostas_gerados_promocionais_fechadas = OrderedDict(sorted(total_propostas_gerados_promocionais_fechadas.items(), key=lambda t: t[0]))
-    
-    
+
+
     return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -3680,7 +3685,7 @@ def relatorios_comercial_propostas_por_periodo_e_vendedor(request):
         propostas = propostas.order_by('designado')
     except:
         pass
-        
+
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-por-dia.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -3732,7 +3737,7 @@ def relatorios_comercial_probabilidade(request):
         propostas = propostas.order_by('tipo')
     elif agrupador == "funcionario":
         propostas = propostas.order_by('designado')
-    
+
     return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -3747,12 +3752,12 @@ def relatorios_comercial_propostas_e_followups(request):
                 Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
                 Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
         )
-    
+
     if agrupador == "tipo":
         propostas = propostas.order_by('tipo')
     elif agrupador == "funcionario":
         propostas = propostas.order_by('designado')
-        
+
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-followups.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -3794,14 +3799,14 @@ def relatorios_comercial_propostas_declinadas(request):
                 Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
                 Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
         )
-        
+
         if agrupador == "tipo":
             propostas = propostas.order_by('tipo')
         elif agrupador == "funcionario":
             propostas = propostas.order_by('designado')
-        
-    
-            
+
+
+
     return render_to_response('frontend/comercial/comercial-relatorios-propostas-declinadas.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -3819,7 +3824,7 @@ def analise_de_contratos(request):
     return render_to_response('frontend/comercial/comercial-analise-de-contratos.html', locals(), context_instance=RequestContext(request),)
 
 class FormAnalisarContrato(forms.ModelForm):
-    
+
     def __init__(self, *args, **kwargs):
         perfil = kwargs.pop('perfil')
         super(FormAnalisarContrato, self).__init__(*args, **kwargs)
@@ -3861,7 +3866,7 @@ def analise_de_contratos_analisar(request, contrato_id):
                 contrato.motivo_invalido = request.POST.get('motivo-invalido')
                 contrato.save()
                 messages.success(request, u"Sucesso! Contrato Analisado. Definido como Inválido")
-                
+
             elif request.POST.get('contrato-valido'):
                 contrato.status = "assinatura"
                 contrato.data_validacao = datetime.datetime.now()

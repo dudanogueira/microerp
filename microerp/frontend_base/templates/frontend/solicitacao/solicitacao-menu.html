@@ -1,9 +1,0 @@
-<div class="well sidebar-nav">
-  <ul class="nav nav-list">
-    <li class="nav-header"><i class="fa fa-bell-alt fa-3x"></i> Solicitações</li>
-    <li id="menu-solicitacao-home"><a href="{% url "solicitacao:home" %}"><i class="fa fa-th"></i> Início</a></li>
-    {% if request.user.perfilacessosolicitacao.gerente  %}
-    <li id="menu-solicitacao-despachar"><a href="{% url "solicitacao:despachar" %}"><i class="fa fa-bullhorn"></i> Despachar {% if solicitacao %}> ID#{{solicitacao.id}}{% else %}{% if solicitacoes_aberta.count %}<span class="badge badge-info">{{solicitacoes_aberta.count}}</badge>{% endif %}{% endif %}</a></li>
-    {% endif %}
-  </ul>
-</div><!--/.well -->

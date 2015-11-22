@@ -378,7 +378,7 @@ the specific language governing permissions and limitations under the Apache Lic
                         if (requestNumber < requestSequence) {
                             return;
                         }
-                        // TODO - replace query.page with query so users have access to term, page, etc.
+                        // TODO:20 - replace query.page with query so users have access to term, page, etc.
                         var results = options.results(data, query.page);
                         query.callback(results);
                     }
@@ -460,7 +460,7 @@ the specific language governing permissions and limitations under the Apache Lic
         };
     }
 
-    // TODO javadoc
+    // TODO:50 javadoc
     function tags(data) {
         var isFunc = $.isFunction(data);
         return function (query) {
@@ -2011,7 +2011,7 @@ the specific language governing permissions and limitations under the Apache Lic
         prepareOpts: function () {
             var opts = this.parent.prepareOpts.apply(this, arguments);
 
-            // TODO validate placeholder is a string if specified
+            // TODO:110 validate placeholder is a string if specified
 
             if (opts.element.get(0).tagName.toLowerCase() === "select") {
                 // install sthe selection initializer

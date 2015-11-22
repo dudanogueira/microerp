@@ -116,7 +116,7 @@
 	      </div>
 	      <div class="modal-body">
 				  {% csrf_token %}
-				  {{usar_cartao_credito.as_p}}
+				  {{usar_cartao_credito|bootstrap}}
 	      </div>
 	      <div class="modal-footer">
 	        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
@@ -154,10 +154,10 @@ $(document).ready(function() {
 	{% if modelo_objeto.items %}
 	$("#id_objeto").after('<div style="float:right"><select id="opcao_modelo_objeto">{% for k,v in modelo_objeto.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_objeto" data-target="id_objeto">Substituir</button> <button class="modelo_objeto" data-target="id_objeto" data-adicionar="True">Acrescentar</button></div>');
 	{% endif %}
-	
+
 	{% if modelo_garantia.items %}
 	$("#id_garantia").after('<div style="float:right"><select id="opcao_modelo_garantia">{% for k,v in modelo_garantia.items %}<option value="{{v}}">{{k}}</option>{% endfor %}</select><br /><button class="modelo_garantia" data-target="id_garantia">Substituir</button> <button class="modelo_garantia" data-target="id_garantia" data-adicionar="True">Acrescentar</button></div>');	{% endif %}
-	
+
 });
 
 $( "#configurar-contrato" ).on( "click", ".modelo_objeto", function(e) {
@@ -175,7 +175,7 @@ $( "#configurar-contrato" ).on( "click", ".modelo_garantia", function(e) {
 		$('#'+$(this).data('target')).val($('#'+$(this).data('target')).val() + '\n' + $("#opcao_modelo_garantia").val());
 	}else{
 		$('#'+$(this).data('target')).val($("#opcao_modelo_garantia").val());
-	}	
+	}
 });
 
 

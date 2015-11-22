@@ -65,6 +65,9 @@
 							{% if item.texto_editavel %}
 								<span class="label label-danger"><i class="fa fa-file-text"></i> texto editável</span>
 							{% endif %}
+							{% if item.possui_variavel %}
+							<span class="label label-warning"><i class="fa fa-asterisk"></i> Este Item Possui Variável que deve ser alterada</span>
+							{% endif %}
 							{% if item.imagem_editavel %}
 								<span class="label label-warning"><i class="fa fa-file-image-o"></i> imagem editável</span>
 							{% endif %}

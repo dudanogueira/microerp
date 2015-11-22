@@ -302,7 +302,7 @@ $.extend( $.ui, {
 			return true;
 		}
 
-		// TODO: determine which cases actually cause this to happen
+		// TODO:30 determine which cases actually cause this to happen
 		// if the element doesn't have the scroll set, see if it's possible to
 		// set the scroll
 		el[ scroll ] = 1;
@@ -408,7 +408,7 @@ $.widget = function( name, base, prototype ) {
 		})();
 	});
 	constructor.prototype = $.widget.extend( basePrototype, {
-		// TODO: remove support for widgetEventPrefix
+		// TODO:80 remove support for widgetEventPrefix
 		// always use the name + a colon as the prefix, e.g., draggable:start
 		// don't prefix for widgets that aren't DOM-based
 		widgetEventPrefix: existingConstructor ? basePrototype.widgetEventPrefix : name
@@ -573,7 +573,7 @@ $.Widget.prototype = {
 		this.element
 			.unbind( this.eventNamespace )
 			// 1.9 BC for #7810
-			// TODO remove dual storage
+			// TODO:70 remove dual storage
 			.removeData( this.widgetName )
 			.removeData( this.widgetFullName )
 			// support: jquery <1.6.3
@@ -931,7 +931,7 @@ $.extend(Datepicker.prototype, {
 	//Keep track of the maximum number of rows displayed (see #7043)
 	maxRows: 4,
 
-	// TODO rename to "widget" when switching to widget factory
+	// TODO:90 rename to "widget" when switching to widget factory
 	_widgetDatepicker: function() {
 		return this.dpDiv;
 	},

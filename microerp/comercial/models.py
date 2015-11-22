@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """This file is part of the microerp project.
 
-This program is free software: you can redistribute it and/or modify it 
+This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or (at your
 option) any later version.
@@ -119,9 +119,9 @@ class PropostaComercial(models.Model):
     def texto_descricao_items(self):
         texto = ''
         for orcamento in self.orcamentos_ativos():
-            texto += "%s\n" % orcamento.descricao 
+            texto += "%s\n" % orcamento.descricao
         return texto
-    
+
     def expirada(self):
         if datetime.date.today() >= self.data_expiracao:
             return True
@@ -136,29 +136,29 @@ class PropostaComercial(models.Model):
 
     def dono(self):
         return self.cliente or "Pré Cliente: %s" % self.precliente
-    
+
     def sugere_data_reagendamento_expiracao(self):
         if self.data_expiracao > datetime.date.today():
             return self.data_expiracao + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
         else:
             return datetime.date.today() + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
-    
+
     def orcamentos_ativos(self):
         return self.orcamento_set.filter(ativo=True)
-    
+
     def orcamentos_inativos(self):
         return self.orcamento_set.filter(ativo=False)
-    
+
     def consolidado(self):
         '''soma todos os valores de orcamentos ativos presentes'''
         soma = self.custo_logistica_com_margem() + self.custo_orcamentos_com_margem() + self.custo_tabelados() + self.custo_promocional()
         return soma or 0
-    
+
     def consolidado_liquido(self):
         '''soma todos os valores de orcamentos ativos presentes'''
         soma = self.custo_logistica() + self.custo_orcamentos() + self.custo_tabelados() + self.custo_promocional()
         return soma or 0
-         
+
     def contrato_id(self):
         return self.pk
 
@@ -174,18 +174,18 @@ class PropostaComercial(models.Model):
 
     def valor_extenso(self):
         return extenso_com_centavos(str(self.valor_proposto))
-    
+
     def custo_logistica(self):
         valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum'] or 0
         return float(valor_custo_logistica)
-        
+
     def custo_logistica_com_margem(self):
         valor_custo_logistica = self.linharecursologistico_set.aggregate(Sum("custo_total"))['custo_total__sum'] or 0
         total_margem = self.taxa_margem()
         valor_margem =  (float(total_margem) * float(valor_custo_logistica)) / 100.0
         novo_valor = float(valor_custo_logistica) + float(valor_margem)
         return float(novo_valor) or 0
-    
+
     def custo_orcamentos(self):
         '''valor calculado'''
         valor_custo_orcamentos = self.orcamento_set.filter(ativo=True, tabelado=False, promocao=False).aggregate(Sum("custo_total"))['custo_total__sum'] or 0
@@ -198,7 +198,7 @@ class PropostaComercial(models.Model):
     def custo_promocional(self):
         valor_custo_promocionais = self.orcamento_set.filter(ativo=True, tabelado=False, promocao=True).aggregate(Sum("custo_total"))['custo_total__sum'] or 0
         return float(valor_custo_promocionais) or 0
-    
+
     def custo_orcamentos_com_margem(self):
         valor_custo_orcamentos = self.custo_orcamentos()
         # aplica margem
@@ -206,19 +206,19 @@ class PropostaComercial(models.Model):
         valor_margem =  (total_margem * float(valor_custo_orcamentos)) / 100.0
         novo_valor = float(valor_custo_orcamentos) + float(valor_margem)
         return float(novo_valor) or 0
-    
+
     def taxa_margem(self):
         lucro = self.lucro
         administrativo = self.administrativo
         impostos = self.impostos
         total_margem = float(lucro) + float(administrativo) + float(impostos)
-        return float(total_margem) or 0    
-    
+        return float(total_margem) or 0
+
     def parcelamentos_aplicados(self):
         retorno = []
         for parcelamento in self.parcelamentos_possiveis.all():
             retorno.append((parcelamento, parcelamento.aplica_no_valor( self.consolidado() ) ) )
-        return retorno            
+        return retorno
 
     def cria_documento_gerado(self, modelo, tipo='proposta'):
         '''cria/clona um documento gerado à partir de um modelo'''
@@ -312,32 +312,32 @@ class PropostaComercial(models.Model):
 class ClasseTipoDeProposta(models.Model):
     def __unicode__(self):
         return self.nome
-    
+
     nome = models.CharField(blank=False, max_length=100)
-    
+
 
 class TipoDeProposta(models.Model):
-    
+
     def __unicode__(self):
         if self.classe:
             return '%s - %s' % (self.classe.nome, self.nome)
         else:
             return self.nome
-    
+
     nome = models.CharField(blank=True, max_length=100)
     classe = models.ForeignKey(ClasseTipoDeProposta, blank=True, null=True)
 
 class FollowUpDePropostaComercial(models.Model):
-    
+
     def __unicode__(self):
         return u"Follow Up da Proposta #%s" % self.proposta.id
-    
+
     def data(self):
         return self.criado
-        
+
     class Meta:
         ordering = ['-criado']
-    
+
     proposta = models.ForeignKey('PropostaComercial')
     texto = models.TextField(blank=False)
     reagenda_data_expiracao = models.BooleanField("Reagenda Nova Data de Expiração", default=False)
@@ -550,6 +550,7 @@ class ItemGrupoDocumento(models.Model):
     titulo_exibir = models.CharField(blank=True, null=True, max_length=150, help_text=u"Caso não exista um Título para impressão, usar este")
     texto = models.TextField(blank=True, null=True)
     texto_editavel = models.BooleanField(default=False)
+    possui_variavel = models.BooleanField(default=False, help_text=u"Este item possui valores que precisam ser alterados.")
     imagem = models.ImageField(upload_to=documento_local_imagem, blank=True, null=True)
     imagem_editavel = models.BooleanField(default=False)
     quebra_pagina = models.BooleanField(default=False)
@@ -568,7 +569,7 @@ class EditarItemGrupoDocumentoForm(forms.ModelForm):
 # ORCAMENTO / REQUISICAO DE RECURSOS
 class Orcamento(models.Model):
     '''Recurso que pode ser estoque.Produto e rh.Funcionario'''
-    
+
     def __unicode__(self):
         try:
             locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
@@ -594,7 +595,7 @@ class Orcamento(models.Model):
         if self.promocao:
             if self.fim_promocao == None or self.inicio_promocao == None:
                 raise ValidationError("Quando o Orçamento for promoção o início e fim da promoção é obrigatório.")
-    
+
     def reajusta_custo(self):
         '''Atualiza o custo de todas as linhas e geral'''
         reajustou = False
@@ -618,7 +619,7 @@ class Orcamento(models.Model):
                 linha.custo_total = custo_total
                 linha.save()
                 custo_total += decimal.Decimal(linha.custo_total)
-            
+
             self.custo_total = custo_total
             self.save()
         return reajustou
@@ -640,7 +641,7 @@ class Orcamento(models.Model):
             self.custo_total = self.custo_material + self.custo_humano
         if save:
             self.save()
-    
+
     def custo_material_com_margem(self):
         valor_custo_total = self.custo_material
         # aplica margem
@@ -648,7 +649,7 @@ class Orcamento(models.Model):
         valor_margem =  (total_margem * float(valor_custo_total)) / 100.0
         novo_valor = float(valor_custo_total) + float(valor_margem)
         return float(novo_valor) or 0
-    
+
     def custo_humano_com_margem(self):
         valor_custo_total = self.custo_humano
         # aplica margem
@@ -656,7 +657,7 @@ class Orcamento(models.Model):
         valor_margem =  (total_margem * float(valor_custo_total)) / 100.0
         novo_valor = float(valor_custo_total) + float(valor_margem)
         return float(novo_valor) or 0
-        
+
     def custo_total_com_margem(self):
         valor_custo_total = self.custo_total
         # aplica margem
@@ -664,7 +665,7 @@ class Orcamento(models.Model):
         valor_margem =  (total_margem * float(valor_custo_total)) / 100.0
         novo_valor = float(valor_custo_total) + float(valor_margem)
         return float(novo_valor) or 0
-    
+
     def interpreta_notacao(self, notacao):
         notacao = notacao.replace(' ', '')
         notacao_split = notacao.split(',')
@@ -678,14 +679,14 @@ class Orcamento(models.Model):
             except:
                 raise
                 pass
-    
+
     def gera_notacao(self):
         retorno = []
         for linha in self.linharecursomaterial_set.all().order_by('produto__codigo'):
             node = "%s-%s" % (linha.produto.codigo, linha.quantidade)
             retorno.append(node)
         return ",".join(retorno)
-        
+
 
     descricao = models.CharField(u"Descrição", blank=True, max_length=100)
     proposta = models.ForeignKey('PropostaComercial', blank=True, null=True)
@@ -701,7 +702,7 @@ class Orcamento(models.Model):
     promocao_originaria = models.ForeignKey("self", limit_choices_to={'promocao': True}, blank=True, null=True, related_name="promocoes_originadas")
     #
     ativo = models.BooleanField(default=True)
-    
+
     # custos
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     custo_material = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -713,10 +714,10 @@ class Orcamento(models.Model):
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class LinhaRecursoMaterial(models.Model):
-    
+
     class Meta:
         ordering = (('produto__codigo'),)
-    
+
 
     orcamento = models.ForeignKey('Orcamento')
     produto = models.ForeignKey('estoque.Produto')
@@ -741,7 +742,7 @@ class TipoRecursoLogistico(models.Model):
 
     def __unicode__(self):
         return self.nome
-    
+
     nome = models.CharField(blank=True, max_length=100)
 
 class LinhaRecursoLogistico(models.Model):
@@ -754,7 +755,7 @@ class LinhaRecursoLogistico(models.Model):
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class TabelaDeParcelamento(models.Model):
-    
+
     def __unicode__(self):
         if self.parcelas == 1:
             return u"À vista"
@@ -762,33 +763,33 @@ class TabelaDeParcelamento(models.Model):
             return "%sX" % (self.parcelas)
         else:
             return "Entrada de %s%% + %sX" % (self.entrada, self.parcelas)
-    
+
     class Meta:
         ordering = (['parcelas',])
-        
+
     def clean(self):
         if self.parcelas == 1 and self.entrada != 0:
             raise ValidationError(u"Erro! Quando for 1 parcela somente, não poderá ter entrada.")
-    
+
     def aplica_no_valor(self, valor):
         # a vista
         retorno = valor
         margem_inversa = 1 - float(self.juros) / 100
         retorno = float(valor) / float(margem_inversa)
         return "%.2f" % retorno
-    
+
     parcelas = models.IntegerField(blank=False, null=False)
     juros = models.DecimalField(max_digits=3, decimal_places=2, blank=False, null=False, default=0)
     entrada = models.IntegerField(blank=False, null=False, default=0, verbose_name=u"Entrada (%)")
 
 class CategoriaContratoFechado(models.Model):
-    
+
     def __unicode__(self):
         return self.nome
     nome = models.CharField(blank=True, max_length=200)
 
 class ContratoFechado(models.Model):
-    
+
     def ultimo_followup(self):
         return self.followupdecontrato_set.last()
 
@@ -800,7 +801,7 @@ class ContratoFechado(models.Model):
         textos = []
         for lancamento in self.lancamentos_abertos():
             if lancamento.observacao_recebido:
-                textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s. Observações: %s" % \
+                textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s. Observação: %s" % \
                              (
                                  lancamento.peso,
                                  lancamento.valor_cobrado,
@@ -809,6 +810,7 @@ class ContratoFechado(models.Model):
                                  lancamento.observacao_recebido
                             )
                         )
+            else:
                 textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s." % \
                          (
                              lancamento.peso,
@@ -821,7 +823,7 @@ class ContratoFechado(models.Model):
 
     def proposta_id(self):
         return self.propostacomercial.id
-    
+
     def lancar(self, request=None):
         '''lancar o contrato'''
         if self.status  == 'emaberto':
@@ -854,11 +856,11 @@ class ContratoFechado(models.Model):
             ultimo_peso = 0
         proximo_peso = int(ultimo_peso) + 1
         return proximo_peso
-    
+
     def __unicode__(self):
         return u"Contrato #%d  com %s do tipo %s no valor %s (%dx) a começar no dia %s. Situação: %s. Categoria: %s. Responsável: %s, Comissionado: %s" % \
             (self.id, self.cliente, self.get_tipo_display(), self.valor, self.parcelas, self.previsao_inicio_execucao, self.get_status_display(), self.categoria, self.responsavel, self.responsavel_comissionado)
-    
+
     def total_valor_cobrado_lancamentos(self):
         return self.lancamentofinanceiroreceber_set.all().aggregate(Sum('valor_cobrado'))
 
@@ -871,7 +873,7 @@ class ContratoFechado(models.Model):
         except:
             ultimo_lancamento = None
         return ultimo_lancamento
-    
+
     def sugerir_texto_contratante(self):
         if self.cliente.tipo == "pj":
             texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, Telefone Fixo: %s, Telefone Fixo: %s, Email: %s''' % (
@@ -887,7 +889,7 @@ class ContratoFechado(models.Model):
         else:
             #self.cliente.tipo =="pf"
             texto = u'''%s, CPF: %s, RG nº %s, residente e domiciliado no endereço %s, Telefone Fixo: %s, Telefone Celular: %s, Email: %s''' % (
-            
+
                 unicode(self.cliente.nome),
                 unicode(self.cliente.cpf or "_" * 30 ),
                 unicode(self.cliente.rg or "_" * 30  ),
@@ -922,7 +924,7 @@ class ContratoFechado(models.Model):
         from views import ConfigurarImpressaoContrato
         form = ConfigurarImpressaoContrato(contrato=self)
         return form
-    
+
     def valor_extenso(self):
         return extenso_com_centavos(str(self.valor))
 
@@ -1029,6 +1031,7 @@ class ContratoFechado(models.Model):
     observacoes = models.TextField(blank=True)
     # Datas
     data_validacao = models.DateTimeField(blank=True, null=True)
+    data_assinatura = models.DateTimeField(blank=True, null=True)
     funcionario_validador = models.ForeignKey('rh.Funcionario', verbose_name=u"Funcionário que Validou", related_name="contrato_validado_set", blank=True, null=True)
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
@@ -1041,10 +1044,10 @@ class TipodeContratoFechado(models.Model):
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class FechamentoDeComissao(models.Model):
-    
+
     def valor_total(self):
         return self.contratos.exclude(status="cancelado").aggregate(Sum('valor'))['valor__sum'] or 0
-    
+
     def comissao_tabelada(self, valor=None):
         if valor == None:
             valor = self.valor_total()
@@ -1053,18 +1056,18 @@ class FechamentoDeComissao(models.Model):
         except:
             comissao = 0
         return comissao
-    
+
     def comissao_calculada(self):
         valor = self.valor_total()
         valor_calculado = (valor * self.comissao_tabelada(valor)) / 100
         return valor_calculado
-    
+
     comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="fechamento_comissao__set")
     contratos = models.ManyToManyField('ContratoFechado', blank=False, null=False)
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
-    criado_por = models.ForeignKey('rh.Funcionario',  blank=True, null=True, related_name="fechamento_comissao_criado_set")    
+    criado_por = models.ForeignKey('rh.Funcionario',  blank=True, null=True, related_name="fechamento_comissao_criado_set")
 
 class LancamentoDeFechamentoComissao(models.Model):
     fechamento = models.ForeignKey('FechamentoDeComissao')
@@ -1077,13 +1080,13 @@ class TabelaDeComissao(models.Model):
     porcentagem = models.DecimalField(max_digits=10, decimal_places=2)
 
 class RequisicaoDeProposta(models.Model):
-    
+
     def __unicode__(self):
         if self.atendido:
             return u"Requisição de Proposta ATENDIDO para %s" % self.cliente
         else:
             return u"Requisição de Proposta ABERTA para %s" % self.cliente
-    
+
     cliente = models.ForeignKey('cadastro.Cliente')
     descricao = models.TextField(blank=False)
     atendido = models.BooleanField(default=False)
@@ -1097,18 +1100,18 @@ class RequisicaoDeProposta(models.Model):
 
 class GrupoIndicadorDeProdutoProposto(models.Model):
     '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''
-    
+
     def __unicode__(self):
         return self.nome
-    
+
     nome = models.CharField(blank=False, max_length=100)
 
 class SubGrupoIndicadorDeProdutoProposto(models.Model):
     '''Esse modelo se é vinculada por cada produto para se calcular os indicadores de produtos vendidos'''
-    
+
     def __unicode__(self):
         return "%s - %s" % (self.grupo, self.nome)
-    
+
     nome = models.CharField(blank=True, max_length=100)
     grupo = models.ForeignKey('GrupoIndicadorDeProdutoProposto')
 
@@ -1118,7 +1121,7 @@ def proposta_comercial_post_save(signal, instance, sender, **kwargs):
       # somente criados
       if not kwargs.get('created'):
               return False
-      
+
       instance.probabilidade_inicial = instance.probabilidade
       instance.save()
 

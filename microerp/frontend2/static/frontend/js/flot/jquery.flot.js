@@ -1499,7 +1499,7 @@ Licensed under the MIT license.
             var minMargin = options.grid.minBorderMargin,
                 axis, i;
 
-            // check stuff from the plot (FIXME: this should just read
+            // check stuff from the plot (FIXME:40 this should just read
             // a value from the series, otherwise it's impossible to
             // customize)
             if (minMargin == null) {
@@ -2435,7 +2435,7 @@ Licensed under the MIT license.
 
             var lw = series.lines.lineWidth,
                 sw = series.shadowSize;
-            // FIXME: consider another form of shadow when filling is turned on
+            // FIXME:10 consider another form of shadow when filling is turned on
             if (lw > 0 && sw > 0) {
                 // draw shadow as a thick and thin line with transparency
                 ctx.lineWidth = sw;
@@ -2606,7 +2606,7 @@ Licensed under the MIT license.
             if (lineWidth > 0 && (drawLeft || drawRight || drawTop || drawBottom)) {
                 c.beginPath();
 
-                // FIXME: inline moveTo is buggy with excanvas
+                // FIXME:30 inline moveTo is buggy with excanvas
                 c.moveTo(left, bottom);
                 if (drawLeft)
                     c.lineTo(left, top);
@@ -2642,7 +2642,7 @@ Licensed under the MIT license.
             ctx.save();
             ctx.translate(plotOffset.left, plotOffset.top);
 
-            // FIXME: figure out a way to add shadows (for instance along the right edge)
+            // FIXME:20 figure out a way to add shadows (for instance along the right edge)
             ctx.lineWidth = series.bars.lineWidth;
             ctx.strokeStyle = series.color;
 
