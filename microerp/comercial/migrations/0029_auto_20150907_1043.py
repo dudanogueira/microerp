@@ -11,9 +11,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name='documentogerado',
+            name='tipo',
+        ),
+        migrations.AddField(
             model_name='documentogerado',
             name='tipo',
             field=models.ForeignKey(blank=True, to='comercial.TipoDeProposta', null=True),
-        ),
+        )
     ]
