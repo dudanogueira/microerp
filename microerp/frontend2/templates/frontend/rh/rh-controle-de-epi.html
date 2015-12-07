@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - RH -> Controle de EPI{% endblock %}</title>
 
@@ -14,18 +15,18 @@
 			<li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
 		</ul>
 	</div>
-	
+
 	<div class="span4">
 		<a href="{% url "rh:controle_de_epi_adicionar" %}" class="btn btn-primary">Novo Controle</a>
 	</div>
 </div>
 
 <div id="controle-epi-content" class="tab-content">
-	
-	
+
+
 	<div class="tab-pane fade in active" id="pendentes">
 		<h2>Sem o Arquivo Impresso e Assinado</h2>
-		
+
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
 				<tr>
@@ -44,9 +45,9 @@
 					<td>
 						<p class='btn-group'>
 							<a href="{% url "rh:controle_de_epi_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
-									
+
 							<a href="{% url "rh:controle_de_epi_vincular_arquivo" controle.id %}" class="btn btn-primary"><i class="fa fa-file"></i> </a>
-									
+
 						</p>
 					</td>
 				</tr>
@@ -60,10 +61,10 @@
 				{% endfor %}
 			</tbody>
 		</table>
-		
+
 		<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
 		{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
-		
+
 		{% for linha in linhas_group_list %}
 		<div class="well well-small">
 			<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
@@ -96,17 +97,17 @@
 		</div>
 		{% endfor %}
 	</div>
-	
+
 	<div class="tab-pane fade in" id="filtrar">
 		<form method="POST" action="#tab_filtrar">
 			{% csrf_token %}
 			{{form_filtra_epi}}
 			<button type="submit" class="btn btn-primary" name="filtrar-controleepi-btn">Filtrar</button>
 		</form>
-		
+
 		{% if controles_do_funcionario %}
 		{% for controle in controles_do_funcionario %}
-			
+
 		<hr />
 		{% if not controle.arquivo_impresso_assinado %}
 		<div class"row-fluid">
@@ -126,7 +127,7 @@
 				<br />
 				<a class="btn btn-info" href="{{controle.arquivo_impresso_assinado.url}}">Arquivo Assinado</a>
 			</div>
-		</div>	
+		</div>
 		{% endif %}
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
@@ -167,8 +168,8 @@
 			</tbody>
 		</table>
 				{% endfor %}
-				{% endif %}		
-		
+				{% endif %}
+
 	</div>
 
 </div>
@@ -177,13 +178,14 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
 
 <script>
 $(document).ready(function() {
 	$("#menu-rh-controle-de-epi, #top-menu-rh").addClass("active");
-	
+
 });
 
 
@@ -192,7 +194,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -200,11 +202,11 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('#navtab-status-controle-epi').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 

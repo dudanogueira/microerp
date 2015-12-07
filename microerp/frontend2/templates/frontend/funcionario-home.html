@@ -1,24 +1,24 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
 {% block content %}
-
 {% if request.user.is_authenticated %}
     {% if request.user.funcionario%}
     <h1><i class="fa fa-th"></i> <i class="fa fa-home"></i> Olá {{request.user.funcionario}}</h1>
-    
+
     {# Bloco de Banco de Horas e Férias#}
     <div class="row">
-        
+
         <div class="col-md-6">
             {% if rh_usa_banco_de_horas %}
             <div class="alert alert-{{request.user.funcionario.banco_de_horas_situacao}}">
                 <i class="fa fa-clock-o fa-4x pull-left"></i>
                 <h2>Banco de Horas</h2>
-        
+
                 <p><strong>Saldo</strong>: {% if request.user.funcionario.banco_de_horas_saldo > 0 %}+{%endif%}{{request.user.funcionario.banco_de_horas_saldo|floatformat:1}}
                     {% if request.user.funcionario.banco_de_horas_ultimo_lancamento %}
                      <strong>Último lançamento</strong>: {{request.user.funcionario.banco_de_horas_ultimo_lancamento.criado|date:"SHORT_DATETIME_FORMAT"}}
@@ -31,33 +31,33 @@
              {% thumbnail request.user.funcionario.foto "100x100" crop="center" as im %}
                 <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
             {% endthumbnail %}
-			
+
 			{% endif %}
         </div>
 
         <div class="col-md-6">
             <div class="alert alert-info">
                 <i class="fa fa-picture-o fa-4x pull-left"></i>
-                    <h2>Férias</h2>   
+                    <h2>Férias</h2>
                 {% for ferias in request.user.funcionario.ferias_dias_autorizados %}
                     <p>Autorizado: de <strong>{{ferias.inicio|date:"SHORT_DATE_FORMAT"}}</strong> a <strong>{{ferias.fim|date:"SHORT_DATE_FORMAT"}}</strong></p>
                     {% empty %}
                     <p>Nenhum período autorizado</p>
                 {% endfor %}
             </div>
-            
+
         </div>
-                
+
     </div>
-    
+
 	{% if request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
 	<div class="alert alert-danger">
     	<i class="fa fa-user-md fa-4x pull-left"></i>
 		<h2>Exames Médicos</h2>
         <ul>
         {% for exame in request.user.funcionario.periodo_trabalhado_corrente.rotinaexamemedico_set.all %}
-        
-        
+
+
             <li>{{exame.get_tipo_display}}
                 {% if exame.data %}
                 <i class="fa fa-time"></i><strong>{{exame.data|date:"SHORT_DATETIME_FORMAT"}}</strong>
@@ -68,10 +68,10 @@
                 <em><span class="badge badge-success"><i class="fa fa-check"></i> realizado</span> há {{exame.data|timesince}}</em>
                 {% else %}
                 <em><span class="badge badge-success"><i class="fa fa-time"></i> em {{exame.data|timeuntil}}</span></em>
-                
+
                 {%endif%}
             </li>
-            
+
         {% endfor %}
         </ul>
     </div>
@@ -79,9 +79,9 @@
     {% else %}
 
     <h2 class="alert alert-important">Este usuário não possui Funcionário</h2>
-    
+
     {% endif %}
-    
+
 {% else %}
 <form action="{% url "login" %}" method="post">{% csrf_token %}
 	{{form.as_p}}
@@ -100,6 +100,3 @@ $(document).ready(function() {
 
 
 {% endblock %}
-
-
-

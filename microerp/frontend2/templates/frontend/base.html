@@ -1,4 +1,5 @@
 {% load sekizai_tags %}
+{% load staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -12,10 +13,10 @@
     <title>{% block title %}Microerp{% endblock %}</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static "frontend/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="{{STATIC_URL}}frontend/css/navbar-static-top.css" rel="stylesheet">
+    <link href="{% static "frontend/css/navbar-static-top.css" %}" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -27,11 +28,11 @@
 
   <body>
 		{% block content %}
-		
+
 		{% endblock %}
-		
+
 		{% render_block "js" %}
         {% render_block "extrajs" %}
-        
+
     </body>
 </html>

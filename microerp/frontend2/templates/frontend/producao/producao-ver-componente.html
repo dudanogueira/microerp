@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
@@ -25,7 +26,7 @@
 	<li class="active"><a href="#valores" data-toggle="tab">Informações</a></li>
 	<li><a href="#participacao" data-toggle="tab">Participações
 
-		
+
 		<span class="badge badge-important">
 			{% if componente.total_unico_participacoes %}
 				{{componente.total_unico_participacoes}}
@@ -37,19 +38,19 @@
 
 	</a></li>
 	<li><a href="#fornecimento" data-toggle="tab">Fornecedores
-		
+
 		<span class="badge badge-success">
 			{% if fornecedores.count %}
 				{{fornecedores.count}}
 			{% else %}
-				0	
+				0
 			{% endif %}
 		</span>
 
-      
+
 	</a></li>
 	<li><a href="#fabricacao" data-toggle="tab">Fabricantes
-		
+
 		<span class="badge badge-info">
 			{% if fabricantes.count %}
 				{{fabricantes.count}}
@@ -67,10 +68,10 @@
 				0
 			{% endif %}
 		</span>
-      
+
 	</a></li>
-	<li><a href="#arquivos" data-toggle="tab">Documentos Técnicos 
-		
+	<li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
+
 		<span class="badge">
 			{% if componente.arquivoanexocomponente_set.count %}
 				{{componente.arquivoanexocomponente_set.count}}
@@ -78,17 +79,17 @@
 				0
 			{% endif %}
 		</span>
-	</a></li> 
+	</a></li>
 </ul>
 
 <div id="myTabContent" class="tab-content">
-    
+
 	<div class="tab-pane fade in active" id="valores">
-            
+
 		<div class="row-fluid">
-                
+
 			<div class="span6">
-                    
+
 				<div class="well well-small">
 					<h4>Geral</h4>
 					<strong>Descrição:</strong> {{componente.descricao}}<br />
@@ -109,9 +110,9 @@
 						Último Part Number Fornecedor:
 					{% endif %}
 				</div>
-        
 
-                    
+
+
 			</div>
 			<div class="span6">
 				<div class="well well-small">
@@ -139,9 +140,9 @@
 						<td>Nenhum Lançamento em Estoque.</td>
 					</tr>
 					{% endfor %}
-					
-					
-					
+
+
+
 
 					</tbody>
 				</table>
@@ -150,29 +151,29 @@
 						{% csrf_token %}
 						<input type="hidden" name="componente" value="{{componente.id}}">
 						<input type="hidden" name="estoque" value="">
-            
+
 						<button type="submit" name="consulta-estoque" value="consultar" class="btn btn-primary"><i class="fa fa-search"> Consultar</i> </button>
-            
+
 
 					</form>
-				</p>    
-                        
+				</p>
+
 			</div>
 		</div>
-		
+
 		<h4>Histórico de Valores Lançados</h4>
 		<div class="row-fluid">
 			<div class="span12">
 				<h6>Gráfico R$ X Lançamento</h6>
 					<canvas id="canvas" height="300px" width="700px"></canvas>
 				</div>
-    
+
 			</div>
-            
+
 		</div>
-		
+
 	</div>
-        
+
 	<div class="tab-pane fade in" id="fornecimento">
 		<h2>Fornecedores - Somatória Unidades Fornecidas</h2>
 		{% for fornecedor in fornecedores %}
@@ -180,11 +181,11 @@
 		{% empty %}
 		Nenhum Item Fornecido
 		{% endfor %}
-            
+
 		<h2>Lançamentos Fornecidos</h2>
-		
-		
-		
+
+
+
 		<table class="table table-condensed table-hover table-striped table-rounded">
 			<thead>
 				<tr>
@@ -211,31 +212,31 @@
 						<td>{% ifequal lancamento.nota.tipo "i" %}USD {{lancamento.valor_unitario}}{% else %}R$ {{lancamento.valor_unitario}}{% endifequal %}</td>
 						<td>{% ifequal lancamento.nota.tipo "i" %}USD {{lancamento.valor_unitario_final}}{% else %}R$ {{lancamento.valor_unitario_final}}{% endifequal %}</td>
 						<td>{{lancamento.nota.lancado_por.funcionario}}</td>
-						
+
 					</tr>
-					
-					
+
+
 				{% endfor %}
 			</tbody>
 		</table>
-		
-		
-		
 
-            
+
+
+
+
 	</div>
-        
+
 	<div class="tab-pane fade in" id="fabricacao">
 		<h2>Fabricantes - Unidades fabricadas</h2>
 		{% for fabricante in fabricantes %}
 		<span class="badge badge-info"> {{forloop.counter}} </span> <strong>{% if fabricante.fabricante__nome %}{{fabricante.fabricante__nome}}{% else %}Desconhecido{% endif %}</strong>: {{fabricante.total}} {{componente.get_medida_display}}{{fabricante.total|pluralize}}<br />
 		{% empty %}
 		Nenhuma Fabricação Indicada em Lançamento
-            
+
 		{% endfor %}
-            
+
 	</div>
-        
+
 	<div class="tab-pane fade in" id="participacao">
 		<h2>Participação como Componente de Produtos</h2>
 		<table class="table table-condensed table-hover table-rounded">
@@ -265,17 +266,17 @@
 					<td></td>
 					<td></td>
 					<td></td>
-					
+
 					<td><span class="badge badge-success">Total: <strong>{{componente.total_participacao_avulsa_produto}}</span></strong>
 					</td>
 				</tr>
 			</tbody>
 		</table>
-            
+
 		<h2>Participação como PADRÃO por Sub Produto</h2>
 		<button id="carregar-matriz-componente-padrao-por-subproduto" class="btn btn-info">carregar/atualizar matriz</button>
 		<div id="participacao_como_padrao_por_subproduto">
-			
+
 		</div>
 
 		<h2>Participação como PADRÃO em Linha de Sub Produto</h2>
@@ -299,7 +300,7 @@
 					<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
 					<td>{{participacao.linha.subproduto.nome}}</td>
 					<td>{{participacao.linha.subproduto.descricao}}</td>
-					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>												
+					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
 					<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
 					<td>{% if participacao.padrao %}
 						<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
@@ -338,14 +339,14 @@
 				<tr>
 					<td>            <span class="badge badge-important"> {{forloop.counter}} </span>
 					</td>
-					
+
 					<td><a href="{% url "producao:ver_subproduto" participacao.linha.subproduto.id %}#linhas-componente">{{participacao.linha.subproduto.part_number}}</a></td>
 <td>{{participacao.linha.subproduto.nome}}</td>
-												
-					
+
+
 					<td>{{participacao.linha.subproduto.descricao}}</td>
 					<td><span class="badge badge-warning">{{participacao.quantidade}} {{participacao.componente.medida}}</span></td>
-					
+
 					<td><a href="{% url "producao:editar_linha_subproduto"  participacao.linha.subproduto.id participacao.linha.id %}">#{{participacao.linha.id}}</a></td>
 					<td>{% if participacao.padrao %}
 						<span class="badge badge-success"><i class="fa fa-check"></i> Padrão</span>
@@ -366,37 +367,37 @@
 			</tbody>
 		</table>
 	</div>
-        
+
 	<div class="tab-pane fade in" id="memoria">
 
 
 			<h2>Memória de Relacionamento com Fornecedores</h2>
-			
+
 			<div class="row-fluid">
 				<div class="span6">
-					
+
 			{% if request.user.perfilacessoproducao.gerente %}
 			<p>
 				<a href="{% url "producao:adicionar_memoria_componente" componente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar à Memória</a>
 			</p>
 			{% endif %}
-			
+
 				</div>
-				
+
 				<div class="span6">
 					<p>
 						<small>* Part Number Fornecedor<br />
 							* * Part Number Fabricante
-						</small> 
+						</small>
 					</p>
 				</div>
-				
-			
-			
+
+
+
 		</div>
-			
-			
-			
+
+
+
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
@@ -423,15 +424,15 @@
 					</td>
 					</tr>
 					{% endfor %}
-		
+
 				</tbody>
 			</table>
 
-        
+
 	</div>
-        
+
 	<div class="tab-pane fade in" id="arquivos">
-            
+
 			<h2>Imagem</h2>
 			<div class="row-fluid">
 				<div class="span6">
@@ -443,22 +444,22 @@
 					</a>
 					{% endif %}
 				</div>
-                
+
 				<div class="span6">
 					{% if request.user.perfilacessoproducao.gerente %}
 					<form method="POST" class="well form-horizontal" action="#arquivos" enctype="multipart/form-data">
 						{% csrf_token %}
 						{{form_imagem.as_p}}
 						<button class="btn btn-primary" name="anexar-imagem" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Alterar / Anexar Imagem</button>
-                
+
 					</form>
 					{% endif %}
-                    
-                    
+
+
 				</div>
 			</div>
-            
-            
+
+
 			<h2>Documentos Técnicos</h2>
 
 			{% if request.user.perfilacessoproducao.gerente %}
@@ -466,7 +467,7 @@
 				{% csrf_token %}
 				{{form_anexos.as_p}}
 				<button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Anexar Arquivo</button>
-                
+
 			</form>
 			{% endif %}
 			<hr />
@@ -476,37 +477,37 @@
 			Nenhum arquivo anexo.
 			{% endfor %}
 		</div>
-        
+
 	</div>
 
 	{% endblock %}
 
 	{% block auxiliar-menu %}
 	{% addtoblock "js" %}
-	<script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
+	<script src="{% static "frontend/js/Chart.min.js" %}"></script>
 	<script>
 	$(document).ready(function() {
 		$("#menu-producao-componentes, #top-menu-producao").addClass("active");
 		$("#busca_componente").focus()
 		var activeTab = $('[href=' + location.hash + ']');
 		activeTab && activeTab.tab('show');
-    
+
 	});
-	
+
 	$("#carregar-matriz-componente-padrao-por-subproduto").on("click", function(e){
 		e.preventDefault();
 		$('#participacao_como_padrao_por_subproduto').html("<i class='fa fa-spinner fa-spin fa-large fa-3x'></i>");
 		$('#participacao_como_padrao_por_subproduto').load('{% url "producao:matriz_componente_padrao_por_subproduto" componente.id %}');
-		
+
 	})
-	
-	
+
+
 	// Javascript to enable link to tab
 	var hash = document.location.hash;
 	var prefix = "tab_";
 	if (hash) {
 	    $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-	} 
+	}
 
 	// Change hash for page-reload
 	$('.nav-tabs a').on('shown', function (e) {
@@ -514,14 +515,14 @@
 	});
 
 	$('#navtab-componente').on("click", 'ul.nav.nav-tabs li a', function(e){
-		e.preventDefault();	
+		e.preventDefault();
 		var href = this.hash;
 		window.location.hash = href.replace("#", "#" + "tab_");
 		var pane = $(this);
-		pane.tab('show');		
+		pane.tab('show');
 	})
-	
-	
+
+
 	</script>
 
 
@@ -540,7 +541,7 @@
 			]
 		},
 		]
-		
+
 	}
 
 	var myLine = new Chart(document.getElementById("canvas").getContext("2d")).Line(lineChartData);

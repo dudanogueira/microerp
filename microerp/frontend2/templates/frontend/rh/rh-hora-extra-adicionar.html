@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 {% block content %}
 <h1>Funcionário: {{funcionario}}</h1>
@@ -30,7 +31,7 @@
             </tr>
        </thead>
 			<tbody>
-					
+
 					{% for autorizacao in funcionario.periodo_trabalhado_corrente.autorizacaohoraextra_set.all %}
 				<tr>
 					<td>#{{autorizacao.id}}</td>
@@ -54,8 +55,8 @@
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 
 <script>

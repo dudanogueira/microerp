@@ -1,20 +1,20 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
-
+{% load staticfiles %}
 <title>{%block title %}{{block.super}} - Início{% endblock %}</title>
 
 {% block content %}
     {% addtoblock "js" %}
-        <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-tab.js"></script>
+        <script src="{% static "frontend/bootstrap/js/bootstrap-tab.js" %}"></script>
     {% endaddtoblock %}
 
     <h1><i class="icon-th"></i> <i class="icon icon-envelope"></i> Meus Recados</h1>
-    
+
     <ul class="nav nav-tabs" id="myTab">
       <li class="active"><a href="#recebidos">Recebidos</a></li>
       <li><a href="#enviados">Enviados</a></li>
     </ul>
- 
+
     <div class="tab-content">
       <div class="tab-pane active" id="recebidos">
           {% include "frontend/cadastro/includes/cadastro-listar-recados.html" %}
@@ -27,8 +27,8 @@
           </ul>
       </div>
     </div>
-    
-    
+
+
 
 
 {% endblock %}

@@ -4,6 +4,7 @@
 {% load bootstrap %}
 {% load humanize %}
 {% load bootstrap %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -23,9 +24,9 @@
 </div>
 
 <div class="row">
-	
+
 	<div class="col-md-6">
-		
+
 		<h3>#{{proposta.id|intcomma}}</h3> 			{% if proposta.cliente %}
 
 				{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
@@ -42,7 +43,7 @@
 		</p>
 		</form>
 	</div>
-	
+
 	<div class="col-md-6">
 
 		<div class="well well-small">
@@ -58,24 +59,24 @@
 			</ul>
 			{% endif %}
 			</form>
-			
-			
-			
-		
+
+
+
+
 			<p class="btn-group">
 				<button data-toggle="tooltip" title="Alterar" data-placement="top" type="submit" class="btn btn-danger btn-large tooltip-items" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-save"></i></button>
 				{% if proposta.orcamentos_ativos %}
 				<a data-toggle="tooltip" title="Imprimir" data-placement="top" href="{% url "comercial:editar_proposta_imprimir_orcamentos_da_proposta" proposta.id %}" class="btn btn-info btn-large tooltip-items"><i class="fa fa-print"></i></a>
 				{% endif %}
 				<a data-toggle="modal" data-target="#ModalMemoriaDeCalculo" title="Memória de Cálculo" data-placement="top" href="" class="tooltip-items btn btn-warning btn-large"><i class="fa fa-dollar"></i></a>
-				
+
 				<a title="Configurar Impressão" data-placement="top" href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="tooltip-items btn btn-primary btn-large"><i class="fa fa-file"></i><i class="fa fa-arrow-right"></i><i class="fa fa-print"></i></a>
-				
-				
+
+
 			</p>
 		</div>
 
-		
+
 	</div>
 </div>
 		<a href="" class="btn btn-primary" data-toggle="modal" data-target="#ModalAdicionaNovoOrcamento"><i class="fa fa-plus"></i> Adicionar Orçamento</a>
@@ -95,16 +96,16 @@
 					{% if orcamento_ativo.promocao %}
 					<small class="label label-info"><i class="fa fa-clock-o"></i> <strong>De</strong> {{orcamento_ativo.inicio_promocao|date:"SHORT_DATE_FORMAT"}} <strong>a</strong> {{orcamento_ativo.fim_promocao|date:"SHORT_DATE_FORMAT"}} </small>
 					{% endif %}
-					
+
 				</div>
-				
+
 			</div>
-			
+
 			<div class="col-md-2">
 				{% if orcamento_ativo.promocao %}
 				<i class="fa fa-asterisk fa-2x"></i>
 				<small>promoção</small>
-				
+
 				{% else %}
 
 					{% if orcamento_ativo.tabelado %}
@@ -117,27 +118,27 @@
 
 				{% endif %}
 			</div>
-				
+
 		</div>
-		
-		
+
+
 	</div>
 	<div class="col-md-4">
 		<p class="btn-group">
 			{% if orcamento_ativo.promocao or orcamento_ativo.tabelado %}
-			
+
 				<a data-toggle="tooltip" title="Ver" data-placement="top" href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-primary tooltip-items"><i class="fa fa-eye"></i></a>
-				
+
 			{% else %}
 			<a data-toggle="tooltip" title="Editar" data-placement="top" href="{% url "comercial:editar_proposta_editar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-warning tooltip-items"><i class="fa fa-pencil"></i></a>
 			{% endif %}
-			
+
 			<a data-toggle="tooltip" title="Inativar" data-placement="top" href="{% url "comercial:editar_proposta_inativar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-danger tooltip-items"><i class="fa fa-thumbs-down"></i></a>
 			{% if not orcamento_ativo.promocao  %}
 			<a data-toggle="tooltip" title="Reajustar" data-placement="top" href="{% url "comercial:editar_proposta_reajustar_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-success tooltip-items"><i class="fa fa-refresh"></i></a>
 			{% endif %}
 			<a data-toggle="tooltip" title="Imprimir" data-placement="top"  href="{% url "comercial:editar_proposta_imprimir_orcamento" orcamento_ativo.proposta.id orcamento_ativo.id %}" class="btn btn-info tooltip-items"><i class="fa fa-print"></i></a>
-			
+
 		</p>
 	</div>
 </div>
@@ -178,18 +179,18 @@
 				<b>Tipo</b><br />
 				{{form.tipo}}
 			</div>
-			
+
 			<div class="col-md-4">
 				<b>Custo</b><br />
 				{{form.custo_total}}
 			</div>
-			
+
 			<div class="col-md-4">
 				<b>Descrição</b><br />
 				{{form.descricao}}
 				{{form.id}}
 			</div>
-			
+
 		</div>
 		<hr />
 	{% endfor %}
@@ -230,7 +231,7 @@
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="myModalLabel">Memória de Cálculo</h4>
       </div>
-	  
+
 	  <table class="table table-bordered">
 	        <thead>
 	          <tr>
@@ -260,20 +261,20 @@
 				<td>R$ {{proposta.custo_tabelados|floatformat:2}}</td>
 				<td>R$ {{proposta.custo_tabelados|floatformat:2}}</td>
 	          </tr>
-			  
+
 			  <tr class="alert-info">
 				  <td>Consolidado</td>
 				  <td>R$ {{proposta.consolidado_liquido|floatformat:2}}</td>
 				  <td><strong>R$  {{proposta.consolidado|floatformat:2}}</strong></td>
 			  </tr>
-			  
-			  
-			  
+
+
+
 	        </tbody>
 	      </table>
-			
-	  	
-	  
+
+
+
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
       </div>
@@ -286,15 +287,15 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 
 <script>
 $(document).ready(function() {
-	
+
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
 	$( ".datepicker" ).datepicker({
 		inline: true,
@@ -303,11 +304,11 @@ $(document).ready(function() {
 
 	{% if adicionar_orcamento_form.errors %}
 		$('#ModalAdicionaNovoOrcamento').modal('show');
-	{% endif %}	
-	
+	{% endif %}
+
 	$('.popover-items').popover();
 
-	
+
 
 });
 </script>

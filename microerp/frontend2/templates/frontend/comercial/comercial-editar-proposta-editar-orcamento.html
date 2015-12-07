@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial - Editar Orçamento de Proposta{% endblock %}</title>
 
@@ -13,13 +14,13 @@
 	{% csrf_token %}
 	{{form_editar_linhas_material.management_form}}
 	{{form_editar_linhas_humano.management_form}}
-	
+
 <div class="row row-fluid">
 	<div  class="col-md-8">
 		{{form_orcamento.as_p}}
 		{{form.errors}}
 	</div>
-		
+
 	<div  class="col-md-4">
 
       	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar</a>
@@ -56,7 +57,7 @@
 				{% endif %}
 
 			</div>
-		
+
 			<div class="col-md-3">
 				{% if orcamento.promocao or orcamento.tabelado %}
 						{% if form.instance.quantidade %}
@@ -69,7 +70,7 @@
 				{{form.id}}
 				{% endif %}
 			</div>
-		
+
 			<div class="col-md-3">
 				{% if not orcamento.promocao and not orcamento.tabelado %}
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
@@ -81,7 +82,7 @@
 					{% endif %}
 				{% endif %}
 			</div>
-		
+
 		</div>
 		{% if orcamento.promocao or orcamento.tabelado %}
 		{% if not forloop.last %}
@@ -89,13 +90,13 @@
 		{% endif %}
 		{% endif %}
 		{% endfor %}
-		
+
 		{% if not orcamento.promocao and not orcamento.tabelado %}
 		<p><br />
 		<button class="btn btn-primary" name="adicionar_linha_material" value="adicionar"><i class="fa fa-plus"></i> Adicionar Material</button>
 		</p>
 		{% endif %}
-		
+
 	</div>
 
 	<div class="tab-pane fade in" id="orcamento-linhas-mao-de-obra">
@@ -110,26 +111,26 @@
 				{{form.cargo.label}}
 				{{form.cargo}}
 				{{form.cargo.errors}}
-				
+
 				{% endif %}
 			</div>
-		
+
 			<div class="col-md-3">
 				{% if orcamento.promocao or orcamento.tabelado %}
 				{% if form.instance.quantidade %}
 					{{form.instance.quantidade}} hora{{form.instance.quantidade|pluralize}}
 				{% endif %}
 				{% else %}
-				
+
 				{{form.quantidade.label}}
 				{{form.quantidade}}
 				{{form.quantidade.errors}}
 				{{form.id}}
-				
-				
+
+
 				{% endif %}
 			</div>
-		
+
 			<div class="col-md-3">
 				{% if not orcamento.promocao and not orcamento.tabelado %}
 				{{form.DELETE}} <i class="fa fa-trash-o"></i>
@@ -141,22 +142,22 @@
 				{% endif %}
 				{% endif %}
 			</div>
-		
+
 		</div>
 		{% if not forloop.last %}
 			<hr />
 		{% endif %}
-		
+
 		{% endfor %}
-		
+
 		{% if not orcamento.promocao and not orcamento.tabelado %}
 		<p><br />
 		<button class="btn btn-primary" name="adicionar_linha_humano" value="adicionar"><i class="fa fa-plus"></i> Adicionar Mão de Obra</button>
 		</p>
 		{% endif %}
-		
+
 	</div>
-	
+
 </div>
 
 
@@ -166,15 +167,15 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 
 $(".select2-ajax-humano").select2({
 	placeholder: "",
 	minimumInputLength: 3,
-	ajax: { 
+	ajax: {
 		url: "{% url "ajax_consulta_cargo" %}?mostra_preco=sim",
 		type: 'GET',
 		dataType: 'json',
@@ -193,7 +194,7 @@ $(".select2-ajax-humano").select2({
 	    if (id!=="") {
 	       $.ajax("{% url "ajax_consulta_cargo" %}?mostra_preco=sim&id="+id, {
 	       dataType: "json"
-	       }).done(function(data) { 
+	       }).done(function(data) {
 					 callback(data);
 					 $(".recalcula_quantidade_quando_muda").trigger("change");
 				 });
@@ -206,7 +207,7 @@ $(".select2-ajax-humano").select2({
 $(".select2-ajax-material").select2({
 	placeholder: "",
 	minimumInputLength: 3,
-	ajax: { 
+	ajax: {
 		url: "{% url "ajax_consulta_produto" %}?mostra_preco=sim",
 		type: 'GET',
 		dataType: 'json',
@@ -225,7 +226,7 @@ $(".select2-ajax-material").select2({
 	    if (id!=="") {
 	       $.ajax("{% url "ajax_consulta_produto" %}?mostra_preco=sim&id="+id, {
 	       dataType: "json"
-	       }).done(function(data) { 
+	       }).done(function(data) {
 					 callback(data);
 					 $(".recalcula_quantidade_quando_muda").trigger("change");
 				 });
@@ -241,7 +242,7 @@ function calcula_linha_material(id){
 	quantidade = $(quantidade_id).val()
 	produto_id = "#id_orcamento-material-"+id+"-produto"
 	if ($(produto_id).select2('data')){
-		
+
 		valor_produto = $(produto_id).select2('data')['preco']
 		preco_final = parseFloat(valor_produto) * parseFloat(quantidade)
 		if (!preco_final){
@@ -269,7 +270,7 @@ function calcula_linha_humano(id){
 	quantidade = $(quantidade_id).val()
 	produto_id = "#id_orcamento-humano-"+id+"-cargo"
 	if ($(produto_id).select2('data')){
-		
+
 		valor_produto = $(produto_id).select2('data')['preco']
 		preco_final = parseFloat(valor_produto) * parseFloat(quantidade)
 		if (!preco_final){
@@ -284,7 +285,7 @@ function calcula_linha_humano(id){
 				valor_total += Number($(this).html());
 			}
 		})
-		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));	
+		$(".total-geral").html("R$ " + parseFloat(valor_total).toFixed(2));
 	}
 
 }
@@ -315,8 +316,8 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
 	//total = $(".select2-ajax-material").length - 1;
 	//$("#s2id_id_orcamento-material-"+total+"-produto").select2('focus').select2('open');
 	//$( ":checkbox" ).attr('tabindex', -1);
-	
-	
+
+
 })
 
 // Javascript to enable link to tab
@@ -324,7 +325,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -332,11 +333,11 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('#navtab-orcamento-linhas').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 

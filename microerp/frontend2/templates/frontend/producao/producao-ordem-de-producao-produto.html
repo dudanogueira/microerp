@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Ordem de Produção de Produto{% endblock %}</title>
 
@@ -14,10 +15,10 @@
 		<button href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</button>
 		</p>
 		{% endif %}
-	
-	
+
+
 	<div class="row-fluid">
-		
+
 		<div class="span3">
 			<strong>Total Produzido</strong>: <span class="badge badge-success">{{produto.total_produzido}}</span><br />
 		</div>
@@ -29,20 +30,20 @@
 		</div>
 
 		<div class="span6">
-			{% if producao_liberada %}	
-			
+			{% if producao_liberada %}
+
 			{% if request.user.perfilacessoproducao.gerente %}
 			<a class="btn btn-danger" href="{% url "producao:ordem_de_producao_produto_confirmar" produto_id quantidade_solicitada %}">Confirmar Produção!</a>
 			{% else %}
 			<h1>Somente o Gerente pode ordenar a produção!</h1>
 			{% endif %}
-			
+
 			{% else %}
 			{% if calculado %}
 				<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="fa fa-search"></i> Produção Não Liberada. Nova Consulta</a>
-			
+
 			{% else %}
-			
+
 			<form method="POST" class="nomargin">
 				{% csrf_token %}
 				<button class="btn btn-primary" name="verificar-producao" value="verificar">
@@ -50,19 +51,19 @@
 				</button>
 			</form>
 			{% endif %}
-			
+
 			{% endif %}
-				
-				
-				
+
+
+
 		</div>
 
-		
+
 	</div>
 
-	
+
 	{% if calculado %}
-	<div id="calculado">		 
+	<div id="calculado">
 		<h3>Sub Produtos Agregados</h3>
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
@@ -73,7 +74,7 @@
 					<th>Disponível em Estoque</th>
 					<th>Tipo de Teste</th>
 				</tr>
-			</thead>		
+			</thead>
 			<tbody>
 					{% for linha in quantidades_agregados %}
 					{{subproduto_agregado.0}}
@@ -86,7 +87,7 @@
 					">
 						<td>
 							{{linha.0.subproduto.part_number}}
-							{% if not linha.0.subproduto.tipo_de_teste %} 				
+							{% if not linha.0.subproduto.tipo_de_teste %}
 							{{linha.0.subproduto.get_componentes}}
 							{% endif %}
 						</td>
@@ -101,10 +102,10 @@
 							{{linha.0.subproduto.get_tipo_de_teste_display}}
 						</td>
 					</tr>
-			{% endfor %}				
-			</tbody>	
+			{% endfor %}
+			</tbody>
 		</table>
-		
+
 		<h3>Componentes</h3>
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
@@ -137,17 +138,17 @@
 							{{linha.2}} {{linha.0.componente.medida}}
 						</td>
 					</tr>
-			{% endfor %}				
-			</tbody>	
+			{% endfor %}
+			</tbody>
 		</table>
-		
 
 
-	</div>		
+
+	</div>
 	{% else %}
 		<div id="configurar">
-			
-			
+
+
 			<h2>Sub Produtos Agregados</h2>
 		  <table class="table table-condensed table-hover table-rounded">
 		      <thead>
@@ -160,17 +161,17 @@
 		          </tr>
 		      </thead>
 		      <tbody>
-				
-				
+
+
 						{% for linha in produto.linhasubprodutodoproduto_set.all %}
 						<tr class="{% if linha.quantidade > linha.subproduto.total_disponivel %}
-						
+
 								alert alert-danger
 								{% else %}
 								alert alert-info
 								{% endif %}">
 							<td>
-						
+
 								{{forloop.counter}}</td>
 							<td>{{linha.subproduto.part_number}} {{linha.subproduto.get_componentes}}</td>
 							<td>{{linha.quantidade}}</td>
@@ -178,12 +179,12 @@
 							<td>{{linha.subproduto.get_tipo_de_teste_display}}</td>
 						</tr>
 						{% endfor %}
-				
+
 					</tbody>
 			</table>
-	
+
 			<h2>Linhas de Componentes</h2>
-			
+
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
 					<tr>
@@ -202,46 +203,47 @@
 						<td>{{linha.componente.descricao}}</td>
 						<td>{{linha.quantidade}} {{linha.componente.medida}}</td>
 						<td>{{linha.componente.posicao_no_estoque_produtor}} {{linha.componente.medida}}</td>
-						
+
 					</tr>
 					{% empty %}
 					<tr>Nenhum Componente</tr>
-			
+
 					{% endfor %}
 				</tbody>
 			</table>
-			
-			
-	
-	
-	
+
+
+
+
+
 		</div>
 	{% endif %}
 	{% comment %}
 	{% if get_componentes %}<strong>Notação de Produção</strong>: {{get_componentes}}<br />{% endif %}
 	{% endcomment %}
-	
+
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
 
 <script>
 $(document).ready(function() {
     $("#menu-producao-ordem-de-producao, #top-menu-producao").addClass("active");
     var activeTab = $('[href=' + location.hash + ']');
     activeTab && activeTab.tab('show');
-		
+
 		$("#esconder-linhas-ok").click(function(e){
 			e.preventDefault();
 			$(".linhaok").toggle();
 		});
-		
+
 		$(".linhaok").toggle();
-		
-		
+
+
 });
 
 $(document).on("click", "#imprimir", function(e){
@@ -252,7 +254,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
-	
+
 });
 
 

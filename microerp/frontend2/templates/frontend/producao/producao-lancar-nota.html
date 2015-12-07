@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Lançar Nota{% endblock %}</title>
 
@@ -17,9 +18,9 @@
 </ul>
 
 <div id="tab-content-ordem-producao" class="tab-content">
-	
+
 	<div class="tab-pane fade in active" id="entrada-de-notas">
-		
+
 		{% if request.user.perfilacessoproducao.gerente %}
 		<div id="escolha-tipo">
 		    {% if not tipo %}
@@ -33,7 +34,7 @@
 				    <a href="?tipo=nfe" class="btn btn-success"><i class="fa fa-paperclip"></i> Nota Fiscal Eletrônica (XML)</a>
 						<a href="{% url "producao:adicionar_nota" %}" class="btn btn-info"><i class="fa fa-user"></i> Nota Manual</a>
 				    </p>
-				</div>	
+				</div>
 			</div>
 			<hr />
 		    {% else %}
@@ -61,20 +62,20 @@
 							<strong>Status</strong>:<br/>
 							{{filtro_notas_form.status.errors}}
 							{{filtro_notas_form.status}}
-			
+
 						</div>
 						<div class="span4">
 							<strong>Fornecedor</strong>:<br/>
 							{{filtro_notas_form.fornecedor.errors}}
 							{{filtro_notas_form.fornecedor}}
 						</div>
-				
+
 						<div class="span2">
 							Início:<br/>
 							{{filtro_notas_form.inicio.errors}}
 							{{filtro_notas_form.inicio}}
 						</div>
-				
+
 						<div class="span2">
 							Fim:<br/>
 							{{filtro_notas_form.fim.errors}}
@@ -83,9 +84,9 @@
 						<div class="span1">
 							<br />
 							<button type="submit" class="btn btn-primary" name="filtrar-notas-fiscais-btn" value="filtrar">Filtrar</button>
-					
+
 						</div>
-	
+
 					</div>
 				</form>
 			</div>
@@ -120,8 +121,8 @@
 										{% endifequal %}
 								</td>
 							</tr>
-						{% endfor %}		
-						
+						{% endfor %}
+
 							<tr>
 								<td></td>
 								<td></td>
@@ -131,7 +132,7 @@
 								<td></td>
 								<td></td>
 							</tr>
-			
+
 					</tbody>
 				</thead>
 			</table>
@@ -140,14 +141,14 @@
 			{% endif %}
 		{% endif %}
 	</div>
-	
+
 	<div class="tab-pane fade in" id="visualizador-de-notas">
-		<h4>Por Dia 
+		<h4>Por Dia
 			<a data-target="dados-por-dia" href="" class="btn btn-primary carregar-dados" data-periodo="dia" data-tipo="tabela" id="tabela-por-dia"><i class="fa fa-table"></i> Carregar Tabela</a>
 			<a data-target="dados-por-dia" href="" data-periodo="dia" data-tipo="grafico" class="btn btn-primary carregar-dados"><i class="fa fa-bar-chart-o"></i> Carregar Gráfico</a>
 		</h4>
 		<div id="dados-por-dia">
-			
+
 		</div>
 
 
@@ -156,10 +157,10 @@
 </h4>
 
 	<div id="dados-por-mes">
-	
+
 	</div>
 
-		
+
 	</div>
 
 </div>
@@ -169,13 +170,14 @@
 {% endblock %}
 
 {% block auxiliar-menu %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.js"></script>
-<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.categories.js"></script>
-<script src="{{STATIC_URL}}frontend/js/flot/jquery.flot.time.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+<script src="{% static "frontend/js/flot/jquery.flot.js" %}"></script>
+<script src="{% static "frontend/js/flot/jquery.flot.categories.js" %}"></script>
+<script src="{% static "frontend/js/flot/jquery.flot.time.js" %}"></script>
 
 {% addtoblock "js" %}
 <script>
@@ -200,7 +202,7 @@ $(".carregar-dados").on("click", function(e){
 		function( data ) {
 			$("#"+target).html(data);
 	});
-	
+
 
 })
 
@@ -209,7 +211,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -217,11 +219,11 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 </script>

@@ -10,24 +10,24 @@
 	<div class="col-md-8">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-tachometer"></i> Relatórios</h1>
 		<h1>FollowUps Com Visita</h1>
-		
+
 		{% if de and ate %}
 			Entre <strong>{{de|date:"SHORT_DATE_FORMAT"}}</strong> e <strong>{{ate|date:"SHORT_DATE_FORMAT"}}</strong>
 		{% endif %}
-		
+
 		{% if de and not ate %}
 			À partir de <strong>{{de|date:"SHORT_DATE_FORMAT"}}</strong>
 		{% endif %}
-		
+
 		{% if ate and not de %}
 			Até <strong>{{ate|date:"SHORT_DATE_FORMAT"}}</strong>
 		{% endif %}
-		
+
 
 	</div>
 	<div class="col-md-4" id="filtro-relatorios">
 		<form class="form form-inline">
-			
+
 		De <input type="text" name="de" value="{{de|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br /> a <br /><input type="text" name="ate" value="{{ate|date:"SHORT_DATE_FORMAT"}}" class="datepicker"><br />
 
 		<button type="submit" value="70">Filtrar</button>
@@ -48,23 +48,23 @@
 			{% else %}
 				{% include "frontend/comercial/botao-precliente.html" with precliente=fup.proposta.precliente %}
 			{% endif %}
-		
+
 		<i class="fa fa-comment"></i> {{fup.texto}}<br />
 		<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %} <small class='label label-danger'>Nova Expiração: {{fup.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} <small class='label label-warning'>{{fup.probabilidade}}%</small>
 
-		
+
 		{% if fup.proposta.definido_perdido_em %}
 		<div class="alert alert-danger">
 			<strong>Motivo</strong>: {{fup.proposta.definido_perdido_motivo}}, <strong>Data</strong>: {{proposta.definido_perdido_em|date:"SHORT_DATETIME_FORMAT"}}, <strong>Por</strong>: {{fup.proposta.definido_perdido_por}}. <span class="label label-important">{{fup.proposta.get_status_display}}</span>
 		</div>
 		{% endif %}
-		
+
 		{% if fup.proposta.definido_convertido_em %}
 		<div class="alert alert-success">
 			<strong>Convertido por</strong>: {{fup.proposta.definido_convertido_por}}, <strong>Data</strong>: {{fup.proposta.definido_convertido_em|date:"SHORT_DATETIME_FORMAT"}},  <span class="label label-success">{{fup.proposta.get_status_display}}</span>
 		</div>
 		{% endif %}
-		
+
 
 	</div>
 	{% endfor %}
@@ -78,8 +78,8 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
@@ -89,7 +89,7 @@ $(document).ready(function() {
 		inline: true,
 		dateFormat: "dd/mm/yy"
 	});
-	
+
 });
 
 </script>

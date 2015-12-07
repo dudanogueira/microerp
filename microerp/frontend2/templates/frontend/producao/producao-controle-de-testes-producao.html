@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Controle de Testes{% endblock %}</title>
 
@@ -12,11 +13,11 @@
 		<li class=""><a href="#falha-tipo-perda" data-toggle="tab"><i class="fa fa-chain-broken"></i> Falhas de Perda</a></li>
 		<li class=""><a href="#falha-tipo-reparo" data-toggle="tab"><i class="fa fa-wrench"></i> Falhas de Reparo</a></li>
 		<li class=""><a href="#indicadores" data-toggle="tab"><i class="fa fa-wrench"></i> Indicadores</a></li>
-		
+
 	</ul>
-	
+
 	<div id="myTabContent" class="tab-content">
-		
+
 		<div class="tab-pane fade in active" id="lancamento-de-falha">
 			<div class="row-fluid">
 				<div class="span6">
@@ -25,7 +26,7 @@
 				</div>
 				<div class="span6">
 					<a href="{% url "producao:controle_de_testes_producao_lancar_falha" %}" class="btn btn-primary"><i class="fa fa-rocket"></i> Lançar Falha</a>
-					
+
 				</div>
 			</div>
 			<div id="testes-de-perda">
@@ -60,9 +61,9 @@
 					</tbody>
 				</table>
 			</div>
-			
+
 		</div>
-			
+
 		<div class="tab-pane fade in" id="falha-tipo-perda">
 			<div class="row-fluid">
 				<div class="span6">
@@ -71,10 +72,10 @@
 				<div class="span6">
 					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}?tipo=perda"><i class="fa fa-plus"></i> Adicionar Falha</a>
 					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
-					
+
 				</div>
 			</div>
-			
+
 			<div id="testes-de-perda">
 				<table class="table table-condensed table-hover table-rounded">
 					<thead>
@@ -92,13 +93,13 @@
 							<td>{{falha.descricao}}</td>
 						</tr>
 						{% endfor %}
-					
+
 					</tbody>
 				</table>
 			</div>
-			
+
 		</div>
-				
+
 		<div class="tab-pane fade in" id="falha-tipo-reparo">
 			<div class="row-fluid">
 				<div class="span6">
@@ -107,9 +108,9 @@
 				<div class="span6">
 					<a class="btn btn-primary adicionar-falha-btn" href="{% url "producao:controle_de_testes_producao_adicionar_falha" %}?tipo=reparo"><i class="fa fa-plus"></i> Adicionar Falha</a>
 					<a class="btn btn-success" id="imprimir"><i class="fa fa-print"></i> Imprimir</a>
-					
+
 				</div>
-			</div>			
+			</div>
 			<div id="testes-de-perda">
 				<table class="table table-condensed table-hover table-rounded">
 					<thead>
@@ -127,23 +128,23 @@
 							<td>{{falha.descricao}}</td>
 						</tr>
 						{% endfor %}
-					
+
 					</tbody>
 				</table>
 			</div>
-			
-			
+
+
 		</div>
-		
+
 		<div class="tab-pane fade in" id="indicadores">
 			<div id="filtro-container">
 				<h4>Indicadores</h4>
 				<form method="POST" id="filtrar-por-subproduto">
 						{% csrf_token %}
-						
-						
+
+
 					<div class="row-fluid">
-				
+
 						<div class="span2">
 							{{form_filtrar_falha.inicio.label}}<br />
 							{{ form_filtrar_falha.inicio.errors }}
@@ -155,19 +156,19 @@
 						{{ form_filtrar_falha.fim.errors }}
 						{{form_filtrar_falha.fim}}
 						</div>
-				
+
 						<div class="span4">
 						{{form_filtrar_falha.subproduto.label}}<br />
 						{{form_filtrar_falha.subproduto.erros}}
 						{{form_filtrar_falha.subproduto}}
 						</div>
-						
+
 						<div class="span4">
 						{{form_filtrar_falha.funcionario.label}}<br />
 						{{form_filtrar_falha.funcionario.erros}}
 						{{form_filtrar_falha.funcionario}}
 						</div>
-						
+
 
 					</div>
 					<button id="filtrar-indicadores-btn" name="filtrar-indicadores-btn" value="filtrar" class="btn btn-primary"><i class="fa fa-filter"></i> Filtrar</button>
@@ -180,9 +181,9 @@
 				{% for subprodutodic in lista_dicionario_retorno %}
 				<div class="well well-small">
 					<h4>{{subprodutodic.subproduto}}</h4>
-					
+
 					<div class="row-fluid">
-			
+
 						<div class="span3">
 							<h4>Quantitativo</h4>
 							<strong>Total de Perda</strong>: {% if subprodutodic.total_por_tipo_perda.total %}{{subprodutodic.total_por_tipo_perda.total}}{% else %}0{% endif %}<br />
@@ -191,11 +192,11 @@
 							<strong>Total de Reparo</strong>: {% if subprodutodic.total_por_tipo_reparo.total %} {{subprodutodic.total_por_tipo_reparo.total}}{% else %}0{% endif %}<br />
 							<strong>Total Func. S/ Reparar:</strong> {% if subprodutodic.total_funcional_direto.total %}{{subprodutodic.total_funcional_direto.total}}{% else %}0{% endif %}<br />
 							<strong>Total Testado</strong>: {% if subprodutodic.total_testado.total %}{{subprodutodic.total_testado.total}}{% else %}0{% endif %}<br />
-							
-							
-							
+
+
+
 						</div>
-						
+
 						<div class="span3">
 							<h4>Indicadores</h4>
 							 <strong>Indicador de Perda</strong>: {{subprodutodic.indicador_perda|floatformat:1}} %<br />
@@ -204,11 +205,11 @@
 							  <br />
 							 <strong>Indicador de Reparo</strong>: {{subprodutodic.indicador_reparo|floatformat:1}} %<br />
 							 <strong>Indicador Func. S/ Reparar</strong>: {{subprodutodic.indicador_funcional_direto|floatformat:1}} %<br />
-							 
-							
+
+
 						</div>
-						
-						
+
+
 						<div class="span6">
 							<h4>Legenda</h4>
 							<strong>Indicador de Perda</strong> = Total de Perda / Total Testado<br />
@@ -217,7 +218,7 @@
 							<strong>Indicador Func. S/ Reparar</strong> = Total Func. S/ Reparar / Total Funcional<br />
 						</div>
 					</div>
-					
+
 					<hr />
 					<h5>Resultado de Falhas de Reparo:</h5>
 				<table class="table table-condensed table-hover table-rounded">
@@ -276,28 +277,29 @@
 				{% endfor %}
 				{% endif %}
 
-			
-			
+
+
 		</div>
-		
+
 	</div>
 
 
-	
+
 {% endblock %}
 
 {% block auxiliar-menu %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 {% addtoblock "js" %}
 
 <script>
 $(document).ready(function() {
     $("#menu-producao-controle-de-testes, #top-menu-producao").addClass("active");
-				
+
 });
 
 
@@ -306,7 +308,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -314,18 +316,18 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 $('.datepicker').each(function() {
    $(this).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"
-    
+
 		});
 });
 

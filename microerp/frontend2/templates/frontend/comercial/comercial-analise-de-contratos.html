@@ -2,6 +2,7 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato{% endblock %}</title>
 
@@ -38,8 +39,8 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 $(document).ready(function() {

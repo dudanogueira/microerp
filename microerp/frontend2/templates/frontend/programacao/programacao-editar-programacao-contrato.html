@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Editar Programação de Contrato{% endblock %}</title>
 
@@ -18,12 +19,12 @@
 
 
 <div id="programacao-contrato" class="tab-content">
-	
+
 	<!-- ATIVIDADES -->
 	<div class="tab-pane fade in active" id="atividades">
 		<a class="btn btn-primary" href="{% url "programacao:editar_programacao_contrato_adicionar_tarefa" contrato.id %}"><i class="fa fa-plus"></i> Tarefas</a>
 	</div>
-	
+
 	<!-- PRAZOS E INFORMAÇÕES -->
 	<div class="tab-pane fade in" id="prazos-info">
 		{% if request.user.perfilacessocomercial.gerente %}
@@ -45,8 +46,9 @@
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
 
 
 
@@ -54,7 +56,7 @@
 <script>
 $(document).ready(function() {
 	$("#menu-programacao-home, #top-menu-programacao").addClass("active");
-	
+
 });
 
 

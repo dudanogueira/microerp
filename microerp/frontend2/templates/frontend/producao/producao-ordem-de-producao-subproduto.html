@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Ordem de Produção de SubProduto{% endblock %}</title>
 
@@ -14,17 +15,17 @@
 		<button href="" id="imprimir" class="btn btn-primary"><i class="fa fa-print"></i> imprimir</button>
 		</p>
 		{% endif %}
-	
-	
+
+
 	<div class="row-fluid">
-		
+
 		<div class="span3">
 			{% if subproduto.tipo_de_teste %}
 			<strong>Total Montado</strong>: <span class="badge">{{subproduto.total_montado}}</span><br />
 			<strong>Total Testando</strong>: <span class="badge badge-info">{{subproduto.total_testando}}</span><br />
 			<strong>Total Funcional</strong>: <span class="badge badge-success">{{subproduto.total_funcional}}</span><br />
 			{% endif %}
-			
+
 		</div>
 
 		<div class="span3">
@@ -32,9 +33,9 @@
 					<h4>{{quantidade_solicitada}} Unidades</h4>
 				</div>
 				<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
-					
+
 		</div>
-		
+
 		<div class="span6">
 	{% if producao_liberada %}
 		{% if request.user.perfilacessoproducao.gerente %}
@@ -42,13 +43,13 @@
 			{% csrf_token %}
 
 			<input type="hidden" name="configuracao" class="form" value="{{conf}}">
-			{{form_configurador_producao_subproduto}} 
+			{{form_configurador_producao_subproduto}}
 			<button class="btn btn-danger" type="submit"><i class="fa fa-thumbs-up"></i> Confirmar </button>
 		</form>
 		{% else %}
 		<h1>Somente o gerente pode ordenar produção!</h1>
 		{% endif %}
-	
+
 	{% else %}
 	{% if calculado %}
 	<a class="btn btn-primary" href="{% url "producao:ordem_de_producao" %}"><i class="fa fa-search"></i> Produção Não Liberada. Nova Consulta</a>
@@ -59,12 +60,12 @@
 	{% endif %}
 	<br /><strong>Tipo de Teste: {{subproduto.get_tipo_de_teste_display}}</strong>
 	{% endif %}
-	
+
 
 		</div>
 	</div>
 
-	
+
 	{% if calculado %}
 	<div id="calculado">
 		{% if quantidades_agregados %}
@@ -78,7 +79,7 @@
 					<th>Disponível em Estoque</th>
 					<th>Tipo de Teste</th>
 				</tr>
-			</thead>		
+			</thead>
 			<tbody>
 					{% for linha in quantidades_agregados %}
 					{{subproduto_agregado.0}}
@@ -95,7 +96,7 @@
 						</td>
 						<td>{{linha.0.quantidade}}</td>
 						<td>
-							{{linha.1|floatformat:0}} 
+							{{linha.1|floatformat:0}}
 						</td>
 						<td>
 							{{linha.2}}
@@ -104,11 +105,11 @@
 							{{linha.0.subproduto_agregado.get_tipo_de_teste_display}}
 						</td>
 					</tr>
-			{% endfor %}				
-			</tbody>	
+			{% endfor %}
+			</tbody>
 		</table>
 		{% endif %}
-		
+
 		<h3>Componentes</h3>
 		<table class="table table-condensed table-hover table-rounded">
 			<thead>
@@ -143,14 +144,14 @@
 						</td>
 						<td>{{linha.4}}</td>
 					</tr>
-			{% endfor %}				
-			</tbody>	
+			{% endfor %}
+			</tbody>
 		</table>
-	</div>		
+	</div>
 	{% else %}
 		<div id="configurar">
-			
-			
+
+
 			{% if subproduto.linhasubprodutos_agregados.all %}
 			<h2>Sub Produtos Agregados</h2>
 		  <table class="table table-condensed table-hover table-rounded">
@@ -164,18 +165,18 @@
 		          </tr>
 		      </thead>
 		      <tbody>
-				
-				
+
+
 						{% for linha in subproduto.linhasubprodutos_agregados.all %}
 						<tr class="{% if linha.quantidade > linha.subproduto_agregado.total_disponivel %}
-						
+
 								alert alert-danger
 								{% else %}
 								alert alert-info
 								{% endif %}"
 		>
 							<td>
-						
+
 								{{forloop.counter}}</td>
 							<td>{{linha.subproduto_agregado.part_number}}</td>
 							<td>{{linha.quantidade}}</td>
@@ -183,22 +184,22 @@
 							<td>{{linha.subproduto_agregado.get_tipo_de_teste_display}}</td>
 						</tr>
 						{% endfor %}
-				
+
 					</tbody>
 			</table>
 			{% endif %}
-	
+
 			<h2>Linhas de Componentes Com Alternativo</h2>
-			
+
 			<form method="post" name="configurador_produto" id="configurador_produto" class="form-inline">
 				{% csrf_token %}
 				<div id="select2medio">
 				{{form_configurador_subproduto.as_p}}
 				</div>
 			</form>
-			
-					
-			<h2>Linhas de Componentes Sem Alternativo</h2>			
+
+
+			<h2>Linhas de Componentes Sem Alternativo</h2>
 		  <table class="table table-condensed table-hover table-rounded">
 		      <thead>
 		          <tr>
@@ -210,7 +211,7 @@
 		          </tr>
 		      </thead>
 		      <tbody>
-			
+
 						{% for linha in linhas_sem_alternativo %}
 						<tr>
 							<td>#{{linha.id}}</td>
@@ -218,13 +219,13 @@
 							<td>{{linha.opcao_padrao.componente.descricao}}</td>
 							<td>{{linha.opcao_padrao.quantidade}} {{linha.opcao_padrao.componente.medida}}</td>
 							<td>{{linha.opcao_padrao.componente.posicao_no_estoque_produtor}} {{linha.opcao_padrao.componente.medida}}</td>
-							
+
 						</tr>
 						{% endfor %}
 					</tbody>
 			</table>
-	
-	
+
+
 		</div>
 	{% endif %}
 	{% comment %}
@@ -233,17 +234,17 @@
 	<strong>Notação de Produção Completa Não Agrupada</strong>: {{get_componentes_nao_agrupados}}<br />
 	{% endif %}
 	{% endcomment %}
-	
+
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/datepicker.css" rel="stylesheet">
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
+<link href="{% load static "frontend/css/datepicker.css" %}" rel="stylesheet">
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
@@ -252,13 +253,13 @@ $(document).ready(function() {
 			e.preventDefault();
 			$(".linhaok").toggle();
 		});
-		
+
 		$(".linhaok").toggle();
-		
+
 		$( ".datepicker" ).datepicker({
 			inline: true,
 	        dateFormat: "dd/mm/yy"
-        
+
 		});
 });
 
@@ -271,7 +272,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
-	
+
 });
 
 </script>

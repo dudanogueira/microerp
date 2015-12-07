@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Ver Sub Produtos{% endblock %}</title>
 
@@ -40,18 +41,18 @@
         <a href="#sub-produtos-agregados" data-toggle="tab">
             Sub Produtos
             <span class="badge badge-success">{{subproduto.linhasubprodutos_agregados.count}}</span>
-            
+
         </a>
     </li>
     <li><a href="#arquivos" data-toggle="tab">Documentos Técnicos
         <span class="badge badge">{{subproduto.documentotecnicosubproduto_set.count}}</span>
 
-        
-    
-    
+
+
+
     </a></li>
     <li><a href="#relatorios" data-toggle="tab">Relatórios</a></li>
-    
+
 </ul>
 
 <div id="myTabContent" class="tab-content">
@@ -65,10 +66,10 @@
                 <strong>Descrição</strong>: {{subproduto.descricao}}<br /><br />
 								<p>
                 <strong>Somatório do Custo de Componentes:</strong> <span class="label label-info">R$ {{subproduto.custo_total_linhas|floatformat:2}}</span><br />
-								
+
  							 <strong>Somatório do Custo de Sub Produtos:</strong>                <span class="label label-success">R$ {{subproduto.valor_custo_total_dos_sub_produtos_agregados|floatformat:2}}</span><br />
 
-                <strong>Somatório Total de Custos</strong>: <span class="label">R$ {{subproduto.valor_total_de_custo|floatformat:2}}</span> 
+                <strong>Somatório Total de Custos</strong>: <span class="label">R$ {{subproduto.valor_total_de_custo|floatformat:2}}</span>
 							</p>
                 <strong>Total dos Componentes Internacionais em Dólar</strong>: USD {{subproduto.custo_dolar_componentes_internacionais|floatformat:2}}<br />
 
@@ -84,12 +85,12 @@
 						</tr>
 					</thead>
 					<tbody>
-							
+
 							<tr>
 								<td>Montado</td>
 								<td><span class="badge">{{subproduto.total_montado}}</span></td>
 								<td>
-									
+
 									<!-- Button to trigger modal -->
 									<span class="btn-group"><a role="button" href="#adicionar-montado" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-montado" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span> <a href="#enviar-para-teste" data-max-control="{{subproduto.total_montado}}" role="button" class="btn btn-info" data-toggle="modal"><i class="fa fa-arrow-down"></i> Enviar para Testes</a>
 
@@ -110,7 +111,7 @@
 									    <button form="form-enviar-para-teste" class="btn btn-info" name="enviar-subproduto-teste-btn" value="enviado"><i class="fa fa-arrow-down"></i> Enviar para Testes</button>
 									  </div>
 									</div>
-									
+
 									<!-- Modal Adicionar Montado -->
 									<div id="adicionar-montado" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 									  <div class="modal-header">
@@ -146,15 +147,15 @@
 									    <button form="form-remover-montado" class="btn btn-success" name="remove-subproduto-montado-btn" value="remover"><i class="fa fa-minus"></i> Remover Montado</button>
 									  </div>
 									</div>
-									
-									
+
+
 								</td>
 							</tr>
 							<tr>
 								<td>Em Teste</td>
 								<td><span class="badge badge-info">{{subproduto.total_testando}}</span></td>
 								<td>
-									
+
 									<!-- Button to trigger modal -->
 									<span class="btn-group"><a role="button" href="#adicionar-testando" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-testando" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span> <a href="#enviar-para-funcional" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-arrow-down"></i> Enviar para Funcional</a>
 
@@ -212,17 +213,17 @@
 									  </div>
 									</div>
 
-									
-									
+
+
 								</td>
 							</tr>
 							<tr>
 								<td>Funcional</td>
 								<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
 								<td>
-									
+
 									<span class="btn-group"><a role="button" href="#adicionar-funcional" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-funcional" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
-									
+
 									<!-- Modal Adicionar Funcional -->
 									<div id="adicionar-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 									  <div class="modal-header">
@@ -240,7 +241,7 @@
 									    <button form="form-adicionar-funcional" class="btn btn-success" name="adiciona-subproduto-funcional-btn" value="adicionar"><i class="fa fa-plus"></i> Adicionar Funcional</button>
 									  </div>
 									</div>
-									
+
 									<!-- Modal Remover Funcional -->
 									<div id="remover-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 									  <div class="modal-header">
@@ -258,11 +259,11 @@
 									    <button form="form-remover-funcional" class="btn btn-success" name="remove-subproduto-funcional-btn" value="remover"><i class="fa fa-minus"></i> Remover Funcional</button>
 									  </div>
 									</div>
-									
-									
+
+
 								</td>
 							</tr>
-							
+
 					</tbody>
 				</table>
 					</div>
@@ -277,13 +278,13 @@
 								</tr>
 							</thead>
 							<tbody>
-							
+
 								<tr>
 									<td>Funcional</td>
 									<td><span class="badge badge-success">{{subproduto.total_funcional}}</span></td>
 									<td>
 										<span class="btn-group"><a role="button" href="#adicionar-funcional" class=" btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i></a><a role="button" href="#remover-funcional" class=" btn btn-danger" data-toggle="modal"><i class="fa fa-minus"></i></a></span>
-										
+
 										<!-- Modal Adicionar Funcional -->
 										<div id="adicionar-funcional" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 											<div class="modal-header">
@@ -318,13 +319,13 @@
 												<button form="form-remover-funcional" class="btn btn-success" name="remove-subproduto-funcional-btn" value="remover"><i class="fa fa-minus"></i> Remover Funcional</button>
 											</div>
 										</div>
-										
-										
+
+
 									</td>
 								</tr>
-							
-							
-							
+
+
+
 							</tbody>
 						</table>
 					</div>
@@ -338,21 +339,21 @@
             <div clas="span6">
                 {% if subproduto.imagem %}
                 <a href="{{subproduto.imagem.url}}">
-                    
+
                     {% thumbnail subproduto.imagem "200" crop="center" as im %}
                     <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
                     {% endthumbnail %}
 
                 </a>
                 {% endif %}
-                
+
             </div>
         </div>
 
     </div>
-		
+
     <div class="tab-pane fade in" id="participacao">
-			<h4>Participação Como Sub Produto de Outros Sub Produtos</h4>	
+			<h4>Participação Como Sub Produto de Outros Sub Produtos</h4>
 			{% if participacao_subprodutos %}
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
@@ -379,7 +380,7 @@
 			{% else %}
 				<small>Nenhuma Participação</small>
 			{% endif %}
-			<h4>Participação Como Sub Produto de Outros Produtos</h4>	
+			<h4>Participação Como Sub Produto de Outros Produtos</h4>
 			{% if agregado_em_produto %}
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
@@ -408,12 +409,12 @@
 			{% else %}
 			<small>Nenhuma Participação</small>
 			{% endif %}
-			
-			
+
+
 	</div>
-    
+
     <div class="tab-pane fade in" id="linhas-componente">
-        
+
         <h2>Linhas de Componente do Sub Produto</h2>
         <div class="row-fluid">
 
@@ -421,7 +422,7 @@
 		        {% if request.user.perfilacessoproducao.gerente %}
         		<Br />
 		        <a href="{% url "producao:adicionar_linha_subproduto" subproduto.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
-        
+
 		        {% endif %}
 			</div>
 			<form method="POST">
@@ -444,7 +445,7 @@
 						<i class="fa fa-filter"></i> Filtrar
 				</button>
 			</div>
-			</form>	
+			</form>
 		</div>
 
         <table class="table table-condensed table-hover table-rounded">
@@ -480,7 +481,7 @@
                     <td>
                         <span class="badge badge-info">{{opcao_padrao.linha.opcaolinhasubproduto_set.count}}</span>
                     </td>
-										
+
                     <td>
                         {{opcao_padrao.linha.opcao_padrao.componente.descricao}}
                     </td>
@@ -489,7 +490,7 @@
                         {{opcao_padrao.quantidade}} {{opcao_padrao.componente.medida}}
 						</span>
                     </td>
-					
+
 					<td>R$ {{opcao_padrao.componente.preco_medio_unitario|floatformat:2}}</td>
                     <td>
                         <span class="label">R$ {{opcao_padrao.linha.valor_custo_da_linha|floatformat:2}}</span>
@@ -507,11 +508,11 @@
                             {% else %}
                             <a href="{% url "producao:editar_linha_subproduto" subproduto.id opcao_padrao.linha.id %}" class="btn">
                                 <i class="fa fa-eye-open"></i>
-                            </a>                   
+                            </a>
                             {% endif %}
 							</div>
 					</td>
-				</tr>           
+				</tr>
                   {% empty %}
                   <tr>
                       <td>
@@ -524,7 +525,7 @@
 					{% if subproduto.possui_tags %}
 						<td></td>
 					{% endif %}
-					  
+
 					  <td></td>
 					  <td></td>
 					  <td></td>
@@ -537,16 +538,16 @@
 
             </tbody>
 		</table>
-   
+
 	</div>
-    
+
     <div class="tab-pane fade in" id="sub-produtos-agregados">
-        
-        <h2>Sub Produtos Agregados</h2>            
-                
+
+        <h2>Sub Produtos Agregados</h2>
+
         <!-- Button to trigger modal -->
         <a href="#modal-agregar-subproduto" role="button" class="btn btn-success" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Linha de Sub Produto</a>
- 
+
         <!-- Modal Agregar Sub produto -->
         <div id="modal-agregar-subproduto" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-header">
@@ -554,19 +555,19 @@
                 <h3 id="myModalLabel">Agregar Sub Produto</h3>
             </div>
             <div class="modal-body">
-                
+
                 <form method="POST" action="#sub-produtos-agregados">
-                    {% csrf_token %}   
-                  
-                    {{form_agregar_subproduto.as_p}} 
-                
-                
+                    {% csrf_token %}
+
+                    {{form_agregar_subproduto.as_p}}
+
+
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">X Fechar</button>
                     <button class="btn btn-success" name='agregar-subproduto-btn' value="agregar"><i class="fa fa-plus"></i> Agregar Sub Produto</button>
                 </form>
-                
+
             </div>
         </div>
 
@@ -616,7 +617,7 @@
     </div>
 
     <div class="tab-pane fade in" id="arquivos">
-        
+
         <h2>Imagem</h2>
         <div class="row-fluid">
             <div class="span6">
@@ -628,7 +629,7 @@
                 </a>
                 {% endif %}
             </div>
-            
+
             <div class="span6">
                 {% if request.user.perfilacessoproducao.gerente %}
                 <form method="POST" class="form-horizontal well" action="#arquivos" enctype="multipart/form-data">
@@ -648,7 +649,7 @@
                 {% csrf_token %}
                 {{form_anexos.as_p}}
                 <button class="btn btn-primary" name="anexar-documento" value="anexar" type="submit"><i class="fa fa-paperclip"></i> Anexar Arquivo</button>
-    
+
             </form>
             {% endif %}
             <hr />
@@ -662,23 +663,24 @@
             {% empty %}
             Nenhum arquivo anexo.
             {% endfor %}
-        
+
     </div>
 
 	<div class="tab-pane fade in" id="relatorios">
  		 <p class="btn-group">
  			 <a class="btn btn-large btn-primary" href="{% url "producao:ver_subproduto_relatorios_composicao" subproduto.id %}"><i class='fa fa-print'></i> Impressão da Composição deste Sub Produto</a>
  		 </p>
-			
-		</div>	
+
+		</div>
 </div>
 {% endblock %}
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
@@ -686,7 +688,7 @@ $(document).ready(function() {
     {% if form_agregar_subproduto.errors %}
     $('#modal-agregar-subproduto').modal('show');
     {% endif %}
-		
+
     {% if form_enviar_para_teste.errors %}
     $('#enviar-para-teste').modal('show');
     {% endif %}
@@ -711,8 +713,8 @@ $(document).ready(function() {
     {% if form_remove_testes.errors %}
     $('#remover-testando').modal('show');
     {% endif %}
-		
-		
+
+
     {% if form_adiciona_funcional.errors %}
     $('#adicionar-funcional').modal('show');
     {% endif %}
@@ -720,14 +722,14 @@ $(document).ready(function() {
     {% if form_remove_funcional.errors %}
     $('#remover-funcional').modal('show');
     {% endif %}
-		
-		
+
+
 		$( ".datepicker" ).datepicker({
 			inline: true,
 	        dateFormat: "dd/mm/yy"
-        
+
 		});
-		
+
 
 });
 
@@ -736,7 +738,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -744,11 +746,11 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('#navtab-subproduto').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 </script>

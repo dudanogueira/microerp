@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Registro de Teste{% endblock %}</title>
 
@@ -18,7 +19,7 @@
     <div id="collapse{{produto.id}}" class="accordion-body collapse in">
       <div class="accordion-inner">
         <h4>Componentes</h4>
-				
+
       	<table class="table table-condensed table-hover table-rounded">
           <thead>
               <tr>
@@ -35,10 +36,10 @@
 								<td>{{linha.componente.descricao}}</td>
 							</tr>
 						{% endfor %}
-												
+
 					</tbody>
 				</table>
-				
+
 				<h4>Sub Produtos</h4>
 				<div class="accordion" id="accordion-subproduto-{{produto.id}}">
 					{% for linha in produto.linhasubprodutodoproduto_set.all %}
@@ -56,7 +57,7 @@
 				    </div>
 				  </div>
 					{% endfor %}
-					
+
 				</div>
 
       </div>
@@ -70,14 +71,14 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 $(document).ready(function() {
     $("#menu-producao-arvore-de-produto, #top-menu-producao").addClass("active");
 	});
-	
+
 
 $(document).on("click", ".accordion-toggle", function(e){
 
@@ -86,7 +87,7 @@ $(document).on("click", ".accordion-toggle", function(e){
   {
 		$($this.attr('data-target')).load($this.attr('data-href'));
   }
-	
+
 });
 
 
@@ -94,7 +95,7 @@ $(document).on("click", ".carregar-url", function(e){
 	e.preventDefault()
 	var $this = $(this);
 	$($this.attr('target')).load($this.attr('data-url'));
-	
+
 });
 
 </script>

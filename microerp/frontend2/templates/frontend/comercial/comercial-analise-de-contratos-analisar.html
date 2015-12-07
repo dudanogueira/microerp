@@ -2,6 +2,7 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load bootstrap %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial - Gerencia: Análises de Contrato {{contrato.id}}{% endblock %}</title>
 
@@ -10,9 +11,9 @@
 
 
 <div class="row">
-	
+
 	<div class="col-md-6">
-		
+
 		<form method="post">
 		{% csrf_token %}
 
@@ -23,9 +24,9 @@
 			<button type="submit" class="btn btn-success" name="contrato-valido" value="sim"><i class="fa fa-check"></i> Validar</button>
 			<a data-toggle="modal" data-target="#myModal" class="btn btn-danger" name="contrato-invalido" value="sim"><i class="fa fa-thumbs-down"></i> Invalidar</a>
 			<a class="btn btn-default" href="{% url "comercial:contratos_gerar_impressao" contrato.id %}" name="contrato-invalido" value="sim"><i class="fa fa-print"></i> PDF</a>
-			
+
 		</p>
-		
+
 		<!-- Modal -->
 		<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		  <div class="modal-dialog">
@@ -44,30 +45,30 @@
 		    </div><!-- /.modal-content -->
 		  </div><!-- /.modal-dialog -->
 		</div><!-- /.modal -->
-		
+
 		</form>
-	
+
 	</div>
-	
+
 	<div class="col-md-6">
 		<a href="{% url "comercial:propostas_comerciais_ver" contrato.propostacomercial.id %}" class="btn btn-primary"><i class="fa fa-dollar"></i> Memória de Cálculo</a>
 		{% include "frontend/comercial/botao-cliente.html" with cliente=contrato.cliente %}
 		<br />
 		<strong>Valor do Contrato: R$ {{contrato.valor}}</strong>
-		
+
 		<h4>Lançamentos Configurados</h4>
 		<ul>
 			{% for lancamento in contrato.lancamentofinanceiroreceber_set.all %}
 				<li><strong>{{lancamento.data_cobranca|date:"SHORT_DATE_FORMAT"}}</strong> - R${{lancamento.valor_cobrado}} <em><small>{{lancamento.modo_recebido}}</small></em></li>
 			{% empty %}
-			Nenhum Lançamento				
+			Nenhum Lançamento
 			{% endfor %}
 		</ul>
 
 		{% if contrato.propostacomercial.orcamento_set.all %}
 		<hr />
 		<h4>Orçamentos Vinculados</h4>
-		
+
 		<h6>Valor Consolidado: R$ {{contrato.propostacomercial.consolidado}}</h6>
 		<ul>
 		{% for orcamento in contrato.propostacomercial.orcamentos_ativos.all %}
@@ -99,9 +100,9 @@
 						  </tr>
 						  {% endfor %}
 						  </tbody>
-						  
+
 					  </table>
-					  
+
 			      </div>
 			      <div class="modal-footer">
 			        <button type="button" class="btn btn-default btn-danger" data-dismiss="modal">X Fechar</button>
@@ -109,9 +110,9 @@
 			    </div>
 			  </div>
 			</div>
-			
+
 		</li>
-			
+
 		{% endfor %}
 		</ul>
 		{% endif %}
@@ -172,15 +173,16 @@
 		</ul>
 
 	</div>
-	
+
 </div>
 
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
 
 <script>
 $(document).ready(function() {

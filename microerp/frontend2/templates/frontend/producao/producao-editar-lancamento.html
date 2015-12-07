@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
@@ -14,21 +15,21 @@
         <button type="submit" class='btn btn-primary'><i class="fa fa-pencil"></i> Alterar este Lançamento</button>
     </p>
 </form>
-    
+
 
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 $(document).ready(function() {
     /* Adiciona Botão Adicionar Componente */
     $("select#id_componente").after('<a href="{% url "producao:listar_componentes" %}" class="btn btn-primary"><i class="fa fa-plus"></i></a>');
     $("select#id_fabricante").after('<a href="{% url "producao:adicionar_fabricantes_fornecedores" %}" class="btn btn-primary"><i class="fa fa-plus"></i></a>');
-    
+
 	$("#menu-producao-lancar-nota, #top-menu-producao").addClass("active");
     $(".nopoint").keyup(function() {
             $(this).val($(this).val().replace(/[.]/g, ""));

@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Arvore de Produto{% endblock %}</title>
 
@@ -30,7 +31,7 @@
 		</div>
 		<div id="collapse{{produto.id}}" class="accordion-body collapse">
 			<div class="accordion-inner">
-				
+
 				{% if produto.linhacomponenteavulsodoproduto_set.all %}
 				<table class="table table-condensed table-hover table-rounded">
 					<thead>
@@ -60,13 +61,13 @@
 							<td>{{linha.ipp|floatformat:2}} %</td>
 						</tr>
 						{% endfor %}
-												
+
 					</tbody>
 				</table>
 				{% else %}
 				<i>Nenhum Componente</i>
 				{% endif %}
-				
+
 				<div class="accordion" id="accordion-subproduto-{{produto.id}}">
 					{% for linha in produto.linhasubprodutodoproduto_set.all %}
 					<div class="accordion-group">
@@ -85,11 +86,11 @@
 					{% empty %}
 					<i>Nenhum Sub Produto</i>
 					{% endfor %}
-					
+
 				</div>
-				
-      	
-				
+
+
+
 
 			</div>
 		</div>
@@ -103,15 +104,16 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-collapse.js"></script>
-bootstrap-collapse.js
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<script src="{% static "frontend/bootstrap/js/bootstrap-collapse.js" %}"></script>
+
 <script>
 $(document).ready(function() {
 	$("#menu-producao-arvore-de-produto, #top-menu-producao").addClass("active");
 });
-	
+
 
 $(document).on("click", ".accordion-toggle", function(e){
 	e.preventDefault();
@@ -121,7 +123,7 @@ $(document).on("click", ".accordion-toggle", function(e){
 		$($this.attr('data-target')).load($this.attr('data-href'));
 		//alert($this.attr('data-target'));
 	}
-	
+
 });
 
 $(document).on("click", "#imprimir", function(e){
@@ -132,7 +134,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
-	
+
 });
 
 

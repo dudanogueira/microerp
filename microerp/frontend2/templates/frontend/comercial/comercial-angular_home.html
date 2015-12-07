@@ -1,7 +1,7 @@
 {% extends "frontend/frontend-base-angular.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
-
+{% load staticfiles %}
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
@@ -18,12 +18,12 @@
 {% block auxiliar-menu %}
 
 {% addtoblock "js" %}
-<script src="{{STATIC_URL}}js/angular-filter.min.js"></script>
-<script src="{{STATIC_URL}}comercial/app.js"></script>
-<script src="{{STATIC_URL}}comercial/controllers.js"></script>
-<script src="{{STATIC_URL}}comercial/routeConfig.js"></script>
-<script src="{{STATIC_URL}}comercial/services.js"></script>
-<script src="{{STATIC_URL}}js/ui-bootstrap.min.js"></script>
+<script src="{% static "js/angular-filter.min.js" %}"></script>
+<script src="{% static "comercial/app.js" %}"></script>
+<script src="{% static "comercial/controllers.js" %}"></script>
+<script src="{% static "comercial/routeConfig.js" %}"></script>
+<script src="{% static "comercial/services.js" %}"></script>
+<script src="{% static "js/ui-bootstrap.min.js" %}"></script>
 {% endaddtoblock %}
 
 {% include "frontend/comercial/comercial-angular_menu.html" %}

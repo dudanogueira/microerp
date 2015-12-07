@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Ver Sub Produtos{% endblock %}</title>
 
@@ -21,7 +22,7 @@
 {% block auxiliar-menu %}
 
 {% addtoblock "js" %}
-<script src="{{ STATIC_URL }}frontend/js/jquery.limit.js"></script>
+<script src="{% static "frontend/js/jquery.limit.js" %}"></script>
 <script>
 $(document).ready(function() {
 	$("#menu-producao-subprodutos, #top-menu-producao").addClass("active");

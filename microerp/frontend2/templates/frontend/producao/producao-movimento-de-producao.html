@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Movimento de Produção{% endblock %}</title>
 
@@ -13,9 +14,9 @@
 		<li class=""><a href="#conversao-sub-produto" data-toggle="tab">Conversão de Sub Produto</a></li>
 		<li class=""><a href="#movimentacao-produto" data-toggle="tab">Movimentação de Produto</a></li>
     <li class=""><a href="#movimentacao-sub-produto" data-toggle="tab">Movimentação de Sub Produtos</a></li>
-	</ul>	
-	
-	
+	</ul>
+
+
 	<form method="POST" class="filtra-produto form form-inline">
 		{% csrf_token %}
 		<div class="row-fluid">
@@ -26,11 +27,11 @@
 			<div class="span2">
 				{{form_filtro_movimento.fim.label}}:<br />{{form_filtro_movimento.fim}}
 			</div>
-			
+
 			<div class="span4">
 				{{form_filtro_movimento.registros.label}}:<br />{{form_filtro_movimento.registros}}
 			</div>
-			
+
 
 			<div class="span4">
 					{{form_filtro_movimento.funcionario.errors}}
@@ -43,26 +44,26 @@
 					{{form_filtro_movimento.subproduto.errors}}
 				{{form_filtro_movimento.subproduto.label}}:<br />{{form_filtro_movimento.subproduto}}
 			</div>
-			
+
 			<div class="span6">
 					{{form_filtro_movimento.produto.errors}}
 				{{form_filtro_movimento.produto.label}}:<br />{{form_filtro_movimento.produto}}
 			</div>
 		</div>
-			
+
 		<button type="submit" class="btn btn-primary" name="filtrar-movimento-produtos-btn" value="filtrar"><i class="fa fa-filter"></i> Filtrar</button> <button name="clear"  value="clear" href="." class="btn btn-info">Limpar Filtro</button>
 
 	</form>
-	
-	
+
+
 	<div id="myTabContent" class="tab-content">
 
 			<div class="tab-pane fade in active" id="producao-produto">
 				<h2>Ordem de Produção do Produto *</h2>
-				
+
 				<small>* Registros gerados somente através do processo de <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a>.</small>
-				
-				
+
+
 				<div id="ordem-de-producao-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -94,19 +95,19 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
 				</div>
 			</div>
-			
+
 			<div class="tab-pane fade in" id="producao-sub-produto">
 				<h2>Ordem de Produção Sub Produto *</h2>
-				
+
 				<small>* Registros gerados somente através do processo de <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a>.</small>
-				
-		
-				
+
+
+
 				<div id="ordem-de-producao-sub-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -138,16 +139,16 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
 				</div>
 			</div>
-			
+
 			<div class="tab-pane fade in" id="conversao-sub-produto">
 				<h2>Conversão de Sub Produto*</h2>
 				<small>* Conversão de Sub Produto A para Sub Produto B</small>
-				
+
 				<div id="ordem-de-producao-sub-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -170,7 +171,7 @@
 								<td><a href="{% url "producao:ver_produto" ordem.subproduto_original.id %}">{{ordem.subproduto_original.nome}}</a></td>
 								<td><a href="{% url "producao:ver_produto" ordem.subproduto_destino.id %}">{{ordem.subproduto_destino.part_number}}</a></td>
 								<td><a href="{% url "producao:ver_produto" ordem.subproduto_destino.id %}">{{ordem.subproduto_destino.nome}}</a></td>
-								
+
 								<td><span class="badge badge-warning">{{ordem.quantidade}} und</span></td>
 								<td>{{ordem.criado_por.funcionario}}</td>
 								<td>{{ordem.criado|date:"SHORT_DATE_FORMAT"}}</td>
@@ -187,21 +188,21 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
 				</div>
-				
+
 			</div>
-			
-			
+
+
 			<div class="tab-pane fade in" id="movimentacao-produto">
 				<h2>Movimentação de Produto*</h2>
-				
+
 				<small>* Registros gerados através dos processos de movimentações manuais dos produtos.</small>
-				
-			
-				
+
+
+
 				<div id="movimentacao-produto">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -239,17 +240,17 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
 				</div>
 			</div>
-	
+
 	    <div class="tab-pane fade in" id="movimentacao-sub-produto">
-        
+
 				<h2>Envio de Sub Produto Montado para Teste</h2>
 				<div id="envio-de-subproduto-montado-para-teste">
-					
+
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
 							<tr>
@@ -281,12 +282,12 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
-					
+
 				</div>
-				
+
 				<h2>Envio de Sub Produto Testado para Funcional</h2>
 				<div id="envio-de-subproduto-testado-para-funcional">
 					<table class="table table-condensed table-hover table-rounded">
@@ -320,15 +321,15 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
-					
+
 				</div>
-				
+
 				<h2>Movimentação de Sub Produto</h2>
 				<small>* Registros gerados através dos processos de movimentações manuais dos sub produtos.</small>
-				
+
 				<div id="envio-de-subproduto-testado-para-funcional">
 					<table class="table table-condensed table-hover table-rounded">
 						<thead>
@@ -352,7 +353,7 @@
 								<td>{{movimento.subproduto.nome}}</td>
 								<td><span class="badge badge-warning" >{{movimento.quantidade_movimentada}} und</span></td>
 								<td>{{movimento.get_operacao_display}}</td>
-								
+
 								<td>{{movimento.quantidade_anterior}} -> {{movimento.quantidade_nova}}</td>
 								<td>{{movimento.get_situacao_display}}</td>
 								<td>{{movimento.criado|date:"SHORT_DATE_FORMAT"}}</td>
@@ -368,45 +369,47 @@
 								<td></td>
 								<td></td>
 							</tr>
-						
+
 						</tbody>
 					</table>
-					
+
 				</div>
 
 	    </div>
 		</div>
-	
 
-	
+
+
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
-	
+
 		var activeTab = $('[href=' + location.hash + ']');
 		activeTab && activeTab.click();
-	
+
     $("#menu-producao-movimento-de-producao, #top-menu-producao").addClass("active");
-		
-				
+
+
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
 	        dateFormat: "dd/mm/yy"
-        
+
 				});
 		});
-		
+
 		$('.tooltip_item').tooltip()
-		
+
 });
 
 $(document).on("click", "#imprimir", function(e){
@@ -423,7 +426,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -431,11 +434,11 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 </script>

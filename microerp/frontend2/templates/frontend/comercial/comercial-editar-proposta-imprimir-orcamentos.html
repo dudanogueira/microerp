@@ -1,7 +1,9 @@
 {% extends "frontend/base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
+
 {% block content %}
-<link href="{{STATIC_URL}}frontend/css/font-awesome.min.css" rel="stylesheet" />
+<link href="{% static "frontend/css/font-awesome.min.css" %}" rel="stylesheet" />
 <title>{%block title %}{{block.super}} - Comercial -> Imprimir Orçamento{% endblock %}</title>
 <div class="container">
 <div class="row-fluid">
@@ -12,14 +14,14 @@
 		<h1>Proposta ID#{{proposta.id}}</h1>
 		<h3>{% if proposta.precliente %}{{proposta.precliente}}{% else %}{{proposta.cliente}}{% endif %}</h3>
 	</div>
-	
+
 	{% for orcamento in proposta.orcamentos_ativos %}
-	
+
 	<h2>Orçamento (#{{orcamento.id}}): {{orcamento.descricao}}
 		{% if orcamento.promocao %}
 				<i class="fa fa-asterisk "></i>
 				<small>promoção</small>
-				
+
 				{% else %}
 
 					{% if orcamento.tabelado %}
@@ -75,13 +77,13 @@
 			{% else %}
 				<td><strong> R$ {{orcamento.custo_total}}</strong></td>
 			{% endif %}
-			
+
 		</tr>
 		</tbody>
 	</table>
-	
+
 	{% endfor %}
-	
+
 	{% if proposta.linharecursologistico_set.all %}
 	<h2>Recurso Logístico</h2>
 	<table class="table table-condensed table-bordered table-rounded">
@@ -89,7 +91,7 @@
 			<tr>
 				<th>Tipo de Recurso</th>
 				<th>Descrição</th>
-				<th>Valor</th>				
+				<th>Valor</th>
 			</tr>
 		</thead>
 		</tbody>
@@ -97,7 +99,7 @@
 			<tr>
 				<td>{{linha.tipo}}</td>
 				<td>{{linha.descricao}}</td>
-				<td>{{linha.custo_total}}</td>				
+				<td>{{linha.custo_total}}</td>
 			</tr>
 		{% endfor %}
 		<tr>
@@ -113,18 +115,18 @@
 <div class="row-fluid">
 	<div class="col-md-6">
 	</div>
-	
+
 	<div class="col-md-6">
 		<h4>Total Geral: R$ {{proposta.consolidado_liquido}} + {{proposta.taxa_margem}}% = R$ {{proposta.consolidado}}</h4>
 	</div>
 </div>
-	
 
-	
+
+
 </div>
-	
 
-	
-	
+
+
+
 
 {% endblock %}

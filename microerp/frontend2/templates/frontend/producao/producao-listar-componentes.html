@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Editar Nota Fiscal{% endblock %}</title>
 
@@ -11,11 +12,11 @@
   <p class="btn-group">
     <!-- Modal Adicionar Componente -->
     <a href="#modal-add-componente" role="button" class="btn btn-primary" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Componente</a>
-    
+
     <!-- Modal Adicionar Tipo -->
     <a href="#adicionar-tipo-componente" role="button" class="btn-success btn" data-toggle="modal"><i class="fa fa-plus"></i> Adicionar Tipo</a>
 </p>
-    
+
 <!-- Modal do Tipo -->
 <div id="adicionar-tipo-componente" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
@@ -73,8 +74,8 @@
 <p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
     {% endfor %}
 	{% endif %}
-		
-		
+
+
 		{% if componentes_inativos %}
 		<hr />
 		<div class="well well-small alert alert-danger">Componentes Inativos</div>
@@ -82,7 +83,7 @@
 		<p><a href="{% url "producao:ver_componente"  componente.id %}"><i class="fa fa-stop"></i> {{componente}}</a></p>
 		{% endfor %}
 		{% endif %}
-		
+
 
 
 
@@ -90,24 +91,24 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 $(document).ready(function() {
-    
+
 	$("#menu-producao-componentes, #top-menu-producao").addClass("active");
     $("#busca_componente").focus()
     {% if tipo_componente_form.errors %}
         $('#adicionar-tipo-componente').modal('show')
     {% endif %}
-	$('#id_slug').bind('keyup blur',function(){ 
+	$('#id_slug').bind('keyup blur',function(){
 	    $(this).val( $(this).val().replace(/[^a-zA-Z]/g,'') );
 		this.value = this.value.toUpperCase();
 	}
 );
-    
-    
+
+
 });
 </script>
 {% endaddtoblock %}

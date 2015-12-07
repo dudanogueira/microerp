@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
@@ -32,9 +33,9 @@
                     <i class="icon icon-white icon-plus"></i> Adicionar Recado
                 </a>
             </div>
-                
+
 			<div class="row-fluid">
-				
+
 				<div class="col-md-6">
 		            <h3>Contatos</h3>
 		            <div class="well well-small">
@@ -43,9 +44,9 @@
 		                <p><span class="label label-info">Celular</span>  <strong>{{funcionario.telefone_celular}}</strong></p>
 		                <p><span class="label label-info">Recados</span>  <strong>{{funcionario.telefone_recado}}</strong></p>
 		            </div>
-					
+
 				</div>
-				
+
 				<div class="col-md-6">
 		            <h3>Endereço</h3>
 		            <div class="well well-small">
@@ -54,14 +55,14 @@
 		                <p><span class="label label-info">Cidade - Estado</span>  <strong>{{funcionario.bairro.cidade}}</strong></p>
 		                <p><span class="label label-info">CEP</span>  <strong>{{funcionario.cep}}</strong></p>
 		            </div>
-					
+
 				</div>
-				
-				
+
+
 			</div>
-				  
-				  
-                
+
+
+
 
       </div>
     </div>
@@ -74,7 +75,7 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-collapse.js"></script>
+<script src="{% static "frontend/bootstrap/js/bootstrap-collapse.js" %}"></script>
 <script>
 $(document).ready(function() {
     $("#menu-cadastro-funcionarios-list, #top-menu-cadastro").addClass("active");

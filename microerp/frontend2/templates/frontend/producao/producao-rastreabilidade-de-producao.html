@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Rastreabilidade da Produção{% endblock %}</title>
 
@@ -14,17 +15,17 @@
 		<li class=""><a href="#lancamentos-apagados" data-toggle="tab"> <i class="fa fa-trash-o"></i> Apagados</a></li>
 	  <li class=""><a href="#configurar" data-toggle="tab"><i class="fa fa-cogs"></i> Configurar Testes</a></li>
 		<li class=""><a href="#checar-quantitativos" data-toggle="tab" class="ajaxtab" data-url="{% url "producao:rastreabilidade_de_producao_checar_quantitativos" %}"><i class="fa fa-search"></i> Checar Quantitativos</a></li>
-		
+
 	</ul>
-	
+
 	<div id="myTabContent" class="tab-content">
-		
+
 		<div class="tab-pane fade in active" id="associar-dados">
 			<div class="row-fluid">
 				<div class="span6">
 					<h2>Associar Dados</h2>
 				</div>
-			
+
 				<div class="span6">
 					<p class="btn-group">
 					<a href="{% url "producao:rastreabilidade_de_producao_adicionar" %}" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</a>
@@ -59,7 +60,7 @@
 								</td>
 							</tr>
 							{% endfor %}
-					
+
 						</tbody>
 					</table>
 				</div>
@@ -70,13 +71,13 @@
 				</div>
 				{% endfor %}
 		</div>
-		
+
 		<div class="tab-pane fade in" id="lancamentos-disponiveis">
 			<div class="row-fluid">
 				<div class="span6">
 					<h2>Lançamentos Disponíveis</h2>
 				</div>
-			
+
 				<div class="span6">
 					<p class="btn-group">
 					<button form="vender_selecionados" type="submit"  class="btn btn-primary"><i class="fa fa-dollar"></i> Vender Selecionados</button>
@@ -84,7 +85,7 @@
 				</p>
 				</div>
 			</div>
-			
+
 			{% regroup lancamentos_disponiveis_valores by produto__part_number as lancamentos_disponiveis_group_list %}
 			<form method="GET" action="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" name="vender_selecionados" id="vender_selecionados">
 			{% for lancamento in lancamentos_disponiveis_group_list %}
@@ -110,7 +111,7 @@
 								<td><a data-toggle="tooltip" title="Alterar Dados" href="{% url "producao:rastreabilidade_de_producao_associar_lancamento" lancamento.id %}" class="btn btn-primary tooltip_item" data-direction="left"><i class="fa fa-barcode"></i></a></td>
 							</tr>
 							{% endfor %}
-					
+
 						</tbody>
 					</table>
 				</div>
@@ -124,9 +125,9 @@
 			</form>
 
 		</div>
-		
+
 		<div class="tab-pane fade in" id="lancamentos-vendidos">
-			
+
 			<div class="row-fluid">
 				<div class="span6">
 					<h2>Lançamentos Vendidos</h2>
@@ -143,46 +144,46 @@
 			<form method="POST">
 				{% csrf_token %}
 				<div class="row-fluid">
-				
+
 					<div class="span3">
 					{{form_filtrar_lancamentos_vendidos.serial_number.label}}<br />
 					{{form_filtrar_lancamentos_vendidos.serial_number.errors}}
-					{{form_filtrar_lancamentos_vendidos.serial_number}}					
+					{{form_filtrar_lancamentos_vendidos.serial_number}}
 					</div>
-				
+
 					<div class="span3">
 						{{form_filtrar_lancamentos_vendidos.nota_fiscal.label}}<br />
 						{{form_filtrar_lancamentos_vendidos.nota_fiscal.errors}}
-						{{form_filtrar_lancamentos_vendidos.nota_fiscal}}					
-						
+						{{form_filtrar_lancamentos_vendidos.nota_fiscal}}
+
 					</div>
-				
+
 					<div class="span2">
 						{{form_filtrar_lancamentos_vendidos.cliente.label}}<br />
 						{{form_filtrar_lancamentos_vendidos.cliente.errors}}
-						{{form_filtrar_lancamentos_vendidos.cliente}}					
-						
+						{{form_filtrar_lancamentos_vendidos.cliente}}
+
 					</div>
-				
+
 					<div class="span2">
 						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio.label}}<br />
 						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio.errors}}
-						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio}}					
-						
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_inicio}}
+
 					</div>
-					
+
 					<div class="span2">
 						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim.label}}<br />
 						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim.errors}}
-						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim}}					
-						
+						{{form_filtrar_lancamentos_vendidos.data_de_venda_fim}}
+
 					</div>
-					
+
 				</div>
-				
+
 				<button type="submit" class="btn btn-primary" name="filtra-lancamentos-vendidos-btn" name="filtra-lancamentos-vendidos-btn" value="filtrar" >Filtrar</button>
 			</form>
-			
+
 			{% regroup lancamentos_vendidos_valores by produto__part_number as lancamentos_vendidos_group_list %}
 			{% for lancamento in lancamentos_vendidos_group_list %}
 			<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
@@ -215,7 +216,7 @@
 							</td>
 						</tr>
 						{% endfor %}
-				
+
 					</tbody>
 				</table>
 			</div>
@@ -225,58 +226,58 @@
 				Execute uma <a href="{% url "producao:ordem_de_producao" %}">Ordem de Produção</a> de um Produto<br />
 			</div>
 			{% endfor %}
-			
+
 
 		</div>
-		
+
 		<div class="tab-pane fade in" id="lancamentos-apagados">
 			<h2>Lançamentos Apagados</h2>
 			{% if not apagados_filtro %}
 					* mostrando os Lançamentos de {{inicio_range|date:"SHORT_DATE_FORMAT"}} a {{fim_range|date:"SHORT_DATE_FORMAT"}}
 			{% endif %}
-			
-			
+
+
 			<form method="POST">
 				{% csrf_token %}
 				<div class="row-fluid">
-				
+
 					<div class="span3">
 					{{form_filtrar_lancamentos_apagados.serial_number.label}}<br />
 					{{form_filtrar_lancamentos_apagados.serial_number.errors}}
-					{{form_filtrar_lancamentos_apagados.serial_number}}					
+					{{form_filtrar_lancamentos_apagados.serial_number}}
 					</div>
-				
+
 					<div class="span3">
 						{{form_filtrar_lancamentos_apagados.nota_fiscal.label}}<br />
 						{{form_filtrar_lancamentos_apagados.nota_fiscal.errors}}
-						{{form_filtrar_lancamentos_apagados.nota_fiscal}}					
-						
+						{{form_filtrar_lancamentos_apagados.nota_fiscal}}
+
 						</div>
-				
+
 					<div class="span2">
 						{{form_filtrar_lancamentos_apagados.cliente.label}}<br />
 						{{form_filtrar_lancamentos_apagados.cliente.errors}}
-						{{form_filtrar_lancamentos_apagados.cliente}}					
-						
+						{{form_filtrar_lancamentos_apagados.cliente}}
+
 					</div>
-				
+
 					<div class="span2">
 						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio.label}}<br />
 						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio.errors}}
-						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio}}					
-						
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_inicio}}
+
 					</div>
-					
+
 					<div class="span2">
 						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim.label}}<br />
 						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim.errors}}
-						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim}}					
+						{{form_filtrar_lancamentos_apagados.data_de_apagado_fim}}
 					</div>
 				</div>
-				
+
 				<button type="submit" class="btn btn-primary" name="filtra-lancamentos-apagados-btn" name="filtra-lancamentos-apagados-btn" value="filtrar" >Filtrar</button>
 			</form>
-			
+
 			{% regroup lancamentos_apagados_valores by produto__part_number as lancamentos_apagados_group_list %}
 			{% for lancamento in lancamentos_apagados_group_list %}
 			<h4>{{ lancamento.grouper }} - {{lancamento.list.0.produto__nome}}</h4>
@@ -309,27 +310,27 @@
 							</td>
 						</tr>
 						{% endfor %}
-				
+
 					</tbody>
 				</table>
 			</div>
 			{% endfor %}
 
 		</div>
-		
+
 		<div class="tab-pane fade in" id="configurar">
 			<h2>Configurar Testes</h2>
 				{% for produto in produtos_ativos %}
 				<p>{% if produto.subprodutos_testaveis.count %}<span class="badge badge badge-success">Configurado</span>{% else %}<span class="badge badge badge-important">Não Configurado</span>{% endif %} <a href="{% url "producao:rastreabilidade_de_producao_configurar" produto.id %}"><i class="fa fa-windows"></i> {{produto}}</a></p>
-				
+
 				{% endfor %}
 		</div>
 
 		<div class="tab-pane fade in" id="checar-quantitativos">
 		</div>
-		
+
 	</div>
-	
+
 	<!-- Modal -->
 	<div id="modal-apagar-lancamento" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 	  <div class="modal-header">
@@ -347,29 +348,30 @@
 	    <button class="btn btn-danger" type="submit" form="remover_lancamentos" name="apagar-lancamentos-btn" value="apagar"><i class="fa fa-minus"></i> Apagar</button>
 	  </div>
 	</div>
-	
+
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
-		
-				
+
+
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
 	        dateFormat: "dd/mm/yy"
-        
+
 				});
 		});
-		
+
 });
 
 $(document).on("click", "#imprimir", function(e){
@@ -379,7 +381,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
-		
+
 });
 
 $('.nav-tabs').on("click", '.ajaxtab', function(e){
@@ -394,7 +396,7 @@ $('.nav-tabs').on("click", '.ajaxtab', function(e){
 		$(href).load(url);
 		$(href).html("<i class='fa fa-spinner fa fa-spin fa fa-large fa fa-3x'></i>");
 	}
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 // Javascript to enable link to tab
@@ -402,7 +404,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -410,20 +412,20 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('.nav-tabs').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 $('.tooltip_item').tooltip()
 
 //check on div click
 $("input[type='checkbox']").change(function() {
 	if (this.checked){
-		$(this).closest("tr").attr('class', 'alert alert-info'); 
+		$(this).closest("tr").attr('class', 'alert alert-info');
 	}else{
-		$(this).closest("tr").attr('class', ''); 
+		$(this).closest("tr").attr('class', '');
 	}
 });
 

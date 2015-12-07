@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - RH>Funcionários{% endblock %}</title>
 
@@ -66,14 +67,14 @@
         <li><a href="{% url "rh:ver_funcionario" funcionario.id %}">{{funcionario}}</a></li>
     {% endfor %}
     </ul>
-    
+
 </div>
 
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap-collapse.js"></script>
+<script src="{% static "frontend/bootstrap/js/bootstrap-collapse.js" %}"></script>
 <script>
 $(document).ready(function() {
 	$("#menu-rh-funcionarios, #top-menu-rh").addClass("active");

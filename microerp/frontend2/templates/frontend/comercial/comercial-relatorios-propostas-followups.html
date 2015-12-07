@@ -2,6 +2,7 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load soma_valor_propostas_lista %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial - Relatórios{% endblock %}</title>
 
@@ -13,10 +14,10 @@
 	</div>
 	<div class="col-md-4" id="filtro-relatorios">
 		<form class="form form-inline">
-			
+
 		<input type="integer" name="followup_n" value="{{followup_n}}"><br />
-		
-		
+
+
 		Agrupar por:
 		 <input type="radio" name="agrupador" value="tipo" id="agrupador" {% if agrupador == "tipo" %}checked{% endif %}> <label for="agrupador">Tipo</label>
 		 <input type="radio" name="agrupador" value="funcionario" id="funcionario" {% if agrupador == "funcionario" %}checked{% endif %}> <label for="funcionario">Funcionário</label><br />
@@ -82,8 +83,8 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
@@ -93,7 +94,7 @@ $(document).ready(function() {
 		inline: true,
 		dateFormat: "dd/mm/yy"
 	});
-	
+
 });
 
 </script>

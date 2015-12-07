@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - RH>Exames Médicos - Relatório de Custos{% endblock %}</title>
 
@@ -62,14 +63,14 @@ Relatório de: {{data_referencia|date:"F"}} de {{data_referencia|date:"Y"}}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 
 $(document).ready(function() {
     $("#menu-rh-exames-medicos, #top-menu-rh").addClass("active");
-	
+
 	$('.datepicker').each(function() {
 	   $(this).datepicker({
 		inline: true,

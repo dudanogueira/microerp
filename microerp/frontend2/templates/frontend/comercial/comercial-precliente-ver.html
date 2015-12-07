@@ -4,19 +4,20 @@
 {% load phonenumber_br %}
 {% load humanize %}
 {% load l10n %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
 
 <div class="row-fluid">
-	
+
 	<div class="col-md-6">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Ficha do Pré Cliente</h1>
 	</div>
-	
+
 	<div class="col-md-6">
-		<h1>{{precliente.nome}}</h1> 
+		<h1>{{precliente.nome}}</h1>
 	</div>
 
 </div>
@@ -27,7 +28,7 @@
     <li class=""><a href="#propostas" data-toggle="tab"><i class="fa fa-file-o"></i> Propostas <span class="label label-warning">{{precliente.propostas_abertas.count}}</span> <span class="label label-success">{{precliente.propostas_convertidas.count}}</span> <span class="label label-danger">{{precliente.propostas_perdidas.count}}</span>
 		<span class="label label-default">{{precliente.propostas_expiradas.count}}</span>
 	</a></li>
-	
+
 
 </ul>
 
@@ -37,7 +38,7 @@
     <a class="btn btn-info tooltip-items" data-placement="right" data-toggle="tooltip" title="Converter"  href="{% url "comercial:precliente_converter" precliente.id %}"><i class='fa fa-magic'></i> Converter</a>
 
 	</p>
-	
+
 	<div class="tab-pane fade in active" id="informacoes-gerais">
 		<div class="row">
 
@@ -55,12 +56,12 @@
 			</div>
 		</div>
 		<hr />
-		
-		
+
+
 		<div class="row-fluid">
-			
+
 			<div class="col-md-6">
-				
+
 				<div class="well well-small">
 					<h3>Vincular a Cliente</h3>
 					<form method="POST">
@@ -69,14 +70,14 @@
 					<button type="submit" class="btn btn-primary"><i class="fa fa-link"></i>  Vincular</button>
 					</form>
 				</div>
-				
-			
+
+
 			</div>
 
 
 			<div class="col-md-6">
-				
-				
+
+
 				<div class="well well-small">
 					<h3>Vincular a Pré Cliente</h3>
 					<form method="POST">
@@ -85,17 +86,17 @@
 					<button type="submit" class="btn btn-primary"><i class="fa fa-link"></i> Vincular</button>
 					</form>
 				</div>
-			
+
 			</div>
-	
+
 		</div>
-		
-		
+
+
 	</div>
-		
-	
+
+
 	<div class="tab-pane fade in" id="propostas">
-		
+
 		{% with precliente as cliente %}
 		{% if cliente.propostas_abertas.count %}
 		<h4 class="alert alert-warning">Propostas Abertas: {{cliente.propostas_abertas.count}}</h4>
@@ -126,11 +127,11 @@
 				<td>
 					{% if proposta.ultimo_followup %}
 					<a href="#modal-follow-up-exibir"
-						role="button" 
+						role="button"
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
-						
+
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
 							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
 							<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='label label-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
@@ -145,7 +146,7 @@
 						{{proposta.followupdepropostacomercial_set.count}}
 					</a> <i class="fa fa-exchange"></i>
 					{%endif %}
-					
+
 					<!-- Button to trigger modal de follow up -->
 					<a
 							href="#modal-follow-up-add"
@@ -161,10 +162,10 @@
 				</td>
 						<td>
 							<div class="btn-group">
-								
+
 								{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
 								{# MENU DO GERENTE#}
-								
+
 				   							<div class="btn-group">
 				   	        <a href="{% url "comercial:editar_proposta_converter" proposta.id %}" class="btn btn-success tooltip-items"
 				   			data-placement="top" data-toggle="tooltip" title="Converter Proposta em Contrato"
@@ -181,13 +182,13 @@
 				   			><i class="fa fa-print"></i></a>
 				   						</div>
 								{% else %}
-								
+
 								{% endif %}
 
-								
+
 							</div>
-			
-								
+
+
 
 				</td>
 			</tr>
@@ -195,7 +196,7 @@
 			{% endfor %}
 		</table>
 		{% endif %}
-		
+
 		{% if cliente.propostas_expiradas.count %}
 		<h4 class="well well-small">Propostas Expiradas: {{cliente.propostas_expiradas.count}}</h4>
 		<table class="table table-condensed table.stripped">
@@ -226,11 +227,11 @@
 					{% if proposta.ultimo_followup %}
 					<a href="#modal-follow-up-exibir"
 					   	class="btn btn-default carregar_follow_ups_modal"
-						role="button" 
+						role="button"
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
-						
+
 						{% for fup in proposta.followupdepropostacomercial_set.all %}
 							<strong>{{fup.criado_por.funcionario}}</strong>: <i class='fa fa-comment'></i> {{fup.texto}} <small class='label label-warning'>{{fup.probabilidade}}%</small>
 							<small class='label label-info'>{{fup.data|date:"SHORT_DATE_FORMAT"}} (há {{fup.data|timesince}})</small> {% if fup.reagenda_data_expiracao %}<small class='label label-danger'>Nova Expiração: {{fup.proposta.data_expiracao|date:"SHORT_DATE_FORMAT"}} </small>{% endif %} {% if fup.visita %}<small class='label label-success'><i class='fa fa-child'></i> Visita: {{fup.visita_por}} </small>{% endif %}
@@ -251,10 +252,10 @@
 
 					<!-- Button to trigger modal de follow up -->
 					<a href="#modal-follow-up-add" data-proposta-id="{{proposta.id|unlocalize}}" class="btn btn-default btn-modal-add-follow-up" data-title="Cliente: {{proposta.cliente.nome}}. Valor: R$ {{proposta.valor_proposto|floatformat:2}}. Criado em {{proposta.criado|date:"SHORT_DATE_FORMAT"}}" data-probabilidade="{{proposta.probabilidade}}" data-nova-data-reagendamento="{{proposta.sugere_data_reagendamento_expiracao|date:"SHORT_DATE_FORMAT"}}" data-action-url="{% url "comercial:adicionar_follow_up" proposta.id %}" role="button" class="btn btn-modal-add-follow-up" data-toggle="modal"><i class="fa fa-plus"></i></a>
-					
+
 				</td>
 						<td>
-								
+
 								{% if request.user.perfilacessocomercial.gerente %}
 								{# MENU DO GERENTE#}
 									<div class="btn-group">
@@ -262,14 +263,14 @@
 
 							        <a href="{% url "comercial:editar_proposta_fechar" proposta.id %}" class="btn btn-danger"><i class="fa fa-thumbs-down"></i></a>
 
-									
+
 							        <a href="{% url "comercial:editar_proposta" proposta.id%}" class="btn btn-warning"><i class="fa fa-dollar"></i></a>
-									
+
 									<a href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="btn btn-default"><i class="fa fa-print"></i></a>
 								</div>
 								{% else %}
 								<small><i>solicite ao gerente</i></small>
-								{% endif %}								
+								{% endif %}
 
 				</td>
 			</tr>
@@ -285,7 +286,7 @@
 		{% endfor %}
 		</ul>
 		{% endif %}
-		
+
 		{% if cliente.propostas_perdidas.count %}
 		<h4 class="alert alert-danger">Propostas Perdidas: {{cliente.propostas_perdidas.count}}</h4>
 		<table class="table table-condensed table.stripped">
@@ -314,7 +315,7 @@
 				<td>
 					{% if proposta.ultimo_followup %}
 					<a href="#modal-follow-up-exibir"
-						role="button" 
+						role="button"
 						data-toggle="modal"
 						data-exibir-modal-title="Follow Ups da Proposta #{{proposta.id}}"
 						data-follow-ups="
@@ -332,29 +333,29 @@
 						 <i class="fa fa-exchange"></i> {{proposta.followupdepropostacomercial_set.count}}
 					</a>
 					{%endif %}
-					
-					
+
+
 						<a data-placement="top" data-toggle="tooltip" title="Reabrir Proposta" class="btn btn-warning tooltip-items" href="{% url "comercial:proposta_comercial_reabrir" proposta.id %}?next={{ request.get_full_path|urlencode }}#tab_propostas"><i class="fa fa-unlock-alt"></i></a> <a class="btn btn-primary" href="{% url "comercial:propostas_comerciais_ver" proposta.id %}">Ver Proposta <i class="fa fa-arrow-right"></i></a>
-					
+
 				</td>
 			</tr>
    		 	{% empty %}
 			{% endfor %}
 		</table>
 		{% endif %}
-		
+
 		{% endwith %}
-		
-		
-		
+
+
+
 	</div>
-	
+
 	{% if precliente.sem_interesse %}
 	<hr />
 	<div class="alert alert-danger">Marcado como Sem Interesse em {{precliente.sem_interesse_data|date:"SHORT_DATETIME_FORMAT"}} {% if precliente.sem_interesse_opcao %}<strong>Opção</strong> {{precliente.sem_interesse_opcao}}{% endif %} {% if precliente.sem_interesse_motivo %}<strong>Motivo</strong> {{precliente.sem_interesse_motivo}}{% endif %}</div>
 	{% endif %}
-	
-	
+
+
 </div>
 
 <!-- Modal Adiciona FollowUp -->
@@ -440,10 +441,10 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 
 <script>
@@ -458,16 +459,16 @@ $(document).ready(function() {
 	$("#menu-comercial-clientes, #top-menu-comercial").addClass("active");
 	$("#btn-adicionar-follow-up").hide();
 	$("#data-expiracao-modal-container").hide();
-	
+
     {% if form_adicionar_follow_up.errors %}
 		$('#modal-follow-up-add').modal('show');
-    {% endif %}	
-	
+    {% endif %}
+
 	{% if form_adicionar_endereco.errors %}
 		$('#ModalAdicionarEndereco').modal('show');
-	{% endif %}	
-	
-	
+	{% endif %}
+
+
 	$('.popover_item').popover({
 			trigger: "hover",
 			placement: 'top'
@@ -481,7 +482,7 @@ $('.btn-modal-add-follow-up').click(function(e){
 		$("#id_texto").val('');
 		$("#id_probabilidade").val($(this).data('probabilidade'));
 		$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
-		$("#btn-adicionar-follow-up").hide();			
+		$("#btn-adicionar-follow-up").hide();
 	    $("#data-expiracao-modal-container").hide();
 		$("#visita-por-modal-container").hide();
 		$("#modal-follow-up-add .errorlist").hide();
@@ -501,7 +502,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -509,18 +510,18 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('#ficha-precliente').on("click", 'li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 
 
 $('#id_texto').on("keyup change", function(){
     if( $.trim($(this).val()) ){
-		
+
     	$("#btn-adicionar-follow-up").show()
     }else{
     	$("#btn-adicionar-follow-up").hide()

@@ -5,6 +5,7 @@
 {% load bootstrap %}
 {% load l10n %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
@@ -12,11 +13,11 @@
 {% block content %}
 
 <div class="row">
-	
+
 	<div class="col-md-6">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-user"></i> Ficha do Cliente</h1>
 	</div>
-	
+
 	<div class="col-md-6 text-right">
 		<h1>{{cliente.nome}} <span class="label label-info">{{cliente.get_tipo_display|upper}}</span>
 			{% if request.user.perfilacessocomercial.super_gerente and cliente.designado %}
@@ -36,42 +37,42 @@
 </ul>
 
 <div class="row" id="sub-menu-ficha-cliente">
-	
+
 	<div class="col-md-4">
 
 		<a href="{% url "comercial:clientes" %}{%if cliente_q %}?cliente={{cliente_q}}{% endif %}"><i class="fa fa-arrow-left"></i> Retornar </a>
 	</div>
-	
+
 	<div class="col-md-4">
 		<span class="label label-success">Responsável: {{cliente.designado}}</span><br />
 	</div>
-	
+
 	<div class="col-md-4">
 		{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
-		
+
 		<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
 		{% if not cliente.id_referencia %}
 			<a href=""><i class="fa fa-pencil"></i></a>
 		{% endif %}
-		
+
 		{% else %}
 		<small>Sem Permissão para Gerar Proposta</small>
-		
+
 		{% endif %}
 
-		 
+
 	</div>
 
 </div>
 
 
 <div id="ficha-cliente" class="tab-content">
-	
+
 	<div class="tab-pane fade in active" id="informacoes-gerais">
 		<div class="row-fluid">
-	
+
 			<div class="col-md-6">
-		
+
 				<h4>Geral</h4>
 				<div class="well well-small">
 				{% ifequal cliente.tipo "pf" %}
@@ -94,9 +95,9 @@
 					<strong>Origem</strong>: {{cliente.origem}}<br />
 				{% endifequal %}
 				</div>
-		
+
 			</div>
-	
+
 			<div class="col-md-6">
 				<h4>Contatos</h4>
 				<div class="well well-small">
@@ -106,7 +107,7 @@
 					<strong>Celular</strong>: {{cliente.telefone_celular}}<br />
 					<strong>Fax</strong>: {{cliente.fax}}<br />
 				</div>
-		
+
 			</div>
 		</div>
 
@@ -137,9 +138,9 @@
 		    </div>
 		  </div>
 		</div>
-		
 
-		
+
+
 		<div id="enderecos">
 			{% for endereco in cliente.enderecocliente_set.all %}
 				<div class="well well-small {% if endereco.principal %}alert alert-success{%endif%}">
@@ -148,7 +149,7 @@
 				</div>
 			{% endfor %}
 		</div>
-		
+
 	</div>
 
 	<div class="tab-pane fade in" id="propostas">
@@ -400,7 +401,7 @@
 		{% endif %}
 
 		{% endwith %}
-		
+
 	</div>
 
 </div>
@@ -489,13 +490,13 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.cep.min.js"></script>
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-<script type="text/javascript" src="{{ STATIC_URL }}js/jquery.mask.js"></script>
+<script type="text/javascript" src="{% static "js/jquery.cep.min.js" %}"></script>
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+<script type="text/javascript" src="{% static "js/jquery.mask.js" %}"></script>
 
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 
 <script>
@@ -513,11 +514,11 @@ $(document).ready(function() {
 	$("#menu-comercial-clientes, #top-menu-comercial").addClass("active");
 	$("#btn-adicionar-follow-up").hide();
 	$("#data-expiracao-modal-container").hide();
-	
+
     {% if form_adicionar_follow_up.errors %}
 		$('#modal-follow-up-add').modal('show');
-    {% endif %}	
-	
+    {% endif %}
+
 	{% if form_adicionar_endereco.errors %}
 		$('#ModalAdicionarEndereco').modal('show');
 	{% endif %}
@@ -565,7 +566,7 @@ $(".tab-content").on("click", ".btn-modal-add-follow-up", function (e){
 	$("#id_texto").val('');
 	$("#id_probabilidade").val($(this).data('probabilidade'));
 	$("#id_data_expiracao").val($(this).data('nova-data-reagendamento'));
-	$("#btn-adicionar-follow-up").hide();			
+	$("#btn-adicionar-follow-up").hide();
     $("#data-expiracao-modal-container").hide();
 	$("#visita-por-modal-container").hide();
 	$("#modal-follow-up-add .errorlist").hide();
@@ -590,7 +591,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -600,7 +601,7 @@ $('.nav-tabs a').on('shown', function (e) {
 
 $('#id_texto').on("keyup change", function(){
     if( $.trim($(this).val()) ){
-		
+
     	$("#btn-adicionar-follow-up").show()
     }else{
     	$("#btn-adicionar-follow-up").hide()

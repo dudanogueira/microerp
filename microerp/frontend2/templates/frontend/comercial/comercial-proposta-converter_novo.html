@@ -2,6 +2,7 @@
 {% load sekizai_tags %}
 {% load check_installed %}
 {% load bootstrap %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial - Converter em Novo Contrato{% endblock %}</title>
 {% block content %}
@@ -140,11 +141,14 @@
 		height : 250,
 
 });</script>
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<script src="{{ STATIC_URL }}js/jquery.formset.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+<script src="{% static "js/jquery.formset.js" %}"></script>
+
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+
 
 <script>
 

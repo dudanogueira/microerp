@@ -1,3 +1,5 @@
+{% load staticfiles %}
+
 {% comment %}
 Status: {{status}}<br />
 Fornecedor: {{fornecedor}}<br />
@@ -22,17 +24,17 @@ Periodo: {{periodo}}
 		<td>R${{item.soma|floatformat:2}}</td>
 		{% endfor %}
 	</tr>
-	
+
 </table>
 {% else %}
 
 <canvas id="canvas-dia" height="300px" width="700px"></canvas>
 
-<script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
+<script src="{% static "frontend/js/Chart.min.js" %}"></script>
 <script>
 
 var lineChartData = {
-	
+
 	labels : [{% for item in total_notas_por_dia %}"{{item.data_entrada|date:"SHORT_DATE_FORMAT"}}",{% endfor %}
 	],
 	datasets : [
@@ -46,7 +48,7 @@ var lineChartData = {
 		]
 	},
 	]
-	
+
 }
 
 var myLine = new Chart(document.getElementById("canvas-dia").getContext("2d")).Line(lineChartData);
@@ -72,7 +74,7 @@ var myLine = new Chart(document.getElementById("canvas-dia").getContext("2d")).L
 		<td>R$ {{item.soma|floatformat:2}}</td>
 		{% endfor %}
 	</tr>
-	
+
 </table>
 
 
@@ -80,11 +82,11 @@ var myLine = new Chart(document.getElementById("canvas-dia").getContext("2d")).L
 
 <canvas id="canvas-mes" height="300px" width="700px"></canvas>
 
-<script src="{{STATIC_URL}}frontend/js/Chart.min.js"></script>
+<script src="{% static "frontend/js/Chart.min.js" %}"></script>
 <script>
 
 var lineChartData = {
-	
+
 	labels : [{% for item in total_notas_por_mes %}"{{item.month|date:"M/y"}}",{% endfor %}
 	],
 	datasets : [
@@ -98,7 +100,7 @@ var lineChartData = {
 		]
 	},
 	]
-	
+
 }
 
 var myLine = new Chart(document.getElementById("canvas-mes").getContext("2d")).Line(lineChartData);

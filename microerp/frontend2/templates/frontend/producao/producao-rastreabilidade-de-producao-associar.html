@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Rastreabilidade da Produção - Associar Serial a Lançamento de Produção de Produto{% endblock %}</title>
 
@@ -11,7 +12,7 @@
 	<form method="POST">
 		{% csrf_token %}
 		{{testes_de_lancamento_form.management_form}}
-		
+
 		{% if not lancamento_associa_form.instance.serial_number %}
 		<p>
 	    {{ lancamento_associa_form.serial_number.errors }}
@@ -29,16 +30,16 @@
 		    {{ lancamento_associa_form.funcionario_que_montou.errors }}
 		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_que_montou.label}}</label>
 		    {{ lancamento_associa_form.funcionario_que_montou }}
-				
+
 			</div>
-			
+
 			<div class="span6">
 		    {{ lancamento_associa_form.data_montagem.errors }}
 		    <label for="id_serial_number">{{lancamento_associa_form.data_montagem.label}}</label>
 		    {{ lancamento_associa_form.data_montagem }}
-				
+
 			</div>
-			
+
 		</div>
 
 		<h4>Início do Teste</h4>
@@ -47,16 +48,16 @@
 		    {{ lancamento_associa_form.funcionario_inicio_teste.errors }}
 		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_inicio_teste.label}}</label>
 		    {{ lancamento_associa_form.funcionario_inicio_teste }}
-				
+
 			</div>
-			
+
 			<div class="span6">
 		    {{ lancamento_associa_form.inicio_teste.errors }}
 		    <label for="id_serial_number">{{lancamento_associa_form.inicio_teste.label}}</label>
 		    {{ lancamento_associa_form.inicio_teste }}
-				
+
 			</div>
-			
+
 		</div>
 
 		<h4>Execução do Teste</h4>
@@ -66,16 +67,16 @@
 		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_relalizou_teste.label}}</label>
 		    {{ lancamento_associa_form.funcionario_relalizou_teste }}
 			</div>
-			
+
 			<div class="span6">
 		    {{ lancamento_associa_form.realizacao_procedimento_de_teste.errors }}
 		    <label for="id_serial_number">{{lancamento_associa_form.realizacao_procedimento_de_teste.label}}</label>
 		    {{ lancamento_associa_form.realizacao_procedimento_de_teste }}
-				
+
 			</div>
-			
+
 		</div>
-		
+
 		<h4>Finalização do Teste</h4>
 		<div class="row-fluid">
 			<div class="span6">
@@ -83,27 +84,27 @@
 		    <label for="id_serial_number">{{lancamento_associa_form.funcionario_finalizou_teste.label}}</label>
 		    {{ lancamento_associa_form.funcionario_finalizou_teste }}
 			</div>
-			
+
 			<div class="span6">
 		    {{ lancamento_associa_form.fim_teste.errors }}
 		    <label for="id_serial_number">{{lancamento_associa_form.fim_teste.label}}</label>
 		    {{ lancamento_associa_form.fim_teste }}
-				
+
 			</div>
-			
+
 		</div>
-		
+
 		<hr />
 		<p class="well well-small">
-			
+
 	    {{ lancamento_associa_form.observacoes.errors }}
 	    <label for="id_serial_number">{{lancamento_associa_form.observacoes.label}}</label>
 	    {{ lancamento_associa_form.observacoes }}
-			
-			
+
+
 		</p>
 
-		
+
 		{% if lancamento.linhatestelancamentoprodproduto_set.count %}
 		<h2>Registros de teste</h2>
 		{% for form in testes_de_lancamento_form.forms %}
@@ -115,49 +116,52 @@
 				    {{ form.funcionario_que_montou.errors }}
 				    <label for="id_funcionario_que_montou">{{form.funcionario_que_montou.label}}</label>
 				    {{ form.funcionario_que_montou }}
-						
+
 					</div>
-					
+
 					<div class="span5">
 				    {{ form.funcionario_que_testou.errors }}
 				    <label for="id_funcionario_que_testou">{{form.funcionario_que_testou.label}}</label>
 				    {{ form.funcionario_que_testou }}
-						
+
 					</div>
-					
+
 					<div class="span2">
 				    {{ form.versao_firmware.errors }}
 				    <label for="id_versao_firmware">{{form.versao_firmware.label}}</label>
 				    {{ form.versao_firmware }}
 					</div>
-					
-					
-					
+
+
+
 				</div>
 		</div>
 		{% endfor %}
-		
+
 		{% endif %}
-		
+
 
 		<button type="submit" class="btn btn-primary">Associar com Serial</button>
 	</form>
 
-	
+
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+
 <style type="text/css">
 #id_observacoes{
 	width: 300px;
 	height: 50px;
 }
-</style> 
+</style>
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
@@ -166,10 +170,10 @@ $(document).ready(function() {
 		   $(this).datepicker({
 			inline: true,
 	        dateFormat: "dd/mm/yy"
-        
+
 				});
 		});
-		
+
 });
 
 $(document).on("click", "#imprimir", function(e){
@@ -179,7 +183,7 @@ $(document).on("click", "#imprimir", function(e){
 	$("#global-top-menu").hide();
 	$("#main-content").css("padding-top", 0);
 	$("#content").removeClass('span9').addClass('span11');
-		
+
 });
 
 $('.nav-tabs').on("click", '.ajaxtab', function(e){
@@ -194,7 +198,7 @@ $('.nav-tabs').on("click", '.ajaxtab', function(e){
 		$(href).load(url);
 		$(href).html("<i class='fa fa-spinner fa fa-spin fa fa-large fa fa-3x'></i>");
 	}
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 var activeTab = $('[href=' + location.hash + ']');
@@ -206,7 +210,7 @@ $('.nav-tabs').on("click", '.nav-tabs li a', function(e){
 	window.location.hash = this.hash;
 	var pane = $(this);
 	// ajax load from data-url
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 $('.tooltip_item').tooltip();

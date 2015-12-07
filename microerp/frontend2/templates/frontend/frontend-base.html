@@ -1,4 +1,5 @@
 {% load sekizai_tags %}
+{% load staticfiles %}
 {% load check_installed %}
 
 <!DOCTYPE html>
@@ -14,12 +15,12 @@
     <title>{% block title %}{{nome_sistema}}{% endblock %}</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="{{STATIC_URL}}frontend/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static "frontend/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="{{STATIC_URL}}frontend/css/navbar-static-top.css" rel="stylesheet">
-	<link href="{{STATIC_URL}}frontend/css/style.css" rel="stylesheet">
-	<link rel="stylesheet" href="{{STATIC_URL}}/frontend/css/font-awesome.min.css">
+    <link href="{% static "frontend/css/navbar-static-top.css" %}" rel="stylesheet">
+	<link href="{% static "frontend/css/style.css" %}" rel="stylesheet">
+	<link rel="stylesheet" href="{% static "frontend/css/font-awesome.min.css" %}">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -42,9 +43,9 @@
           <span class="navbar-brand" ><i class="fa fa-th"></i> {{nome_sistema}}</span>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-			
+
 			{% include "frontend/global-top-menu.html" %}
-			
+
         </div><!--/.nav-collapse -->
       </div>
     </nav>
@@ -57,10 +58,10 @@
             {% if logo_empresa %}
                 <img src="{{logo_empresa}}" width="250px">
             {% endif %}
-						
-						
+
+
             </div>
-            
+
             {% if mostra_menu_principal_lateral and request.user.is_authenticated  %}
             <div class="well sidebar-nav principal">
               <ul class="nav nav-pills nav-stacked">
@@ -69,36 +70,36 @@
                 {% if request.user.funcionario %}
 
                 {% if "solicitacao"|is_installed_app %}
-                
+
                 <li id="main-home-minhas-solicitacoes"><a href="{% url "minhas_solicitacoes" %}"><i class="fa fa-bell {% if request.user.funcionario.solicitacoes_total %}icon-animated-bell{% endif %}"></i> Solicitações {% if request.user.funcionario.solicitacoes_total %}<span class="badge badge-important">{{request.user.funcionario.solicitacoes_total}}</span>{%endif%}</a></li>
                 {% endif %}
-                
+
                 {% endif %}
-              </ul>              
+              </ul>
             </div><!--/.well -->
             {% endif %}
-            
+
             <div class="auxiliar-menu">
             {% block auxiliar-menu %}
-                        
+
             {% endblock %}
-            </div>  
-            
-        
+            </div>
+
+
         </div><!--/span-->
-		
-		
-		
+
+
+
         <div class="col-md-9" id="content">
-				
+
 				{% if ambiente_testes %}
 					<div class="alert alert-danger">
 						<h4> <i class="fa fa-warning"></i> AMBIENTE DE TESES</h4>
 					</div>
 				{% endif %}
-				
-				
-			
+
+
+
     		{% if messages %}
     		<div id="alertas">
     		    {% for message in messages %}
@@ -120,13 +121,13 @@
                       {% if message.tags == "warning" %}
     				  <i class="fa fa-warning"></i>
                       {% endif %}
-                      
+
                        {{ message|safe }}
     				</div>
     		    {% endfor %}
     		</div>
     		{% endif %}
-            
+
             {% block content %}
           <div class="row-fluid">
             <div class="span4">
@@ -169,10 +170,10 @@
 
 
     </div><!--/.fluid-container-->
-    <script src="{{STATIC_URL}}frontend/js/jquery/jquery.js"></script>
-    <script src="{{STATIC_URL}}frontend/bootstrap/js/bootstrap.min.js"></script>
+    <script src="{% static "frontend/js/jquery/jquery.js"%}"></script>
+    <script src="{% static "frontend/bootstrap/js/bootstrap.min.js" %}"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="{{STATIC_URL}}frontend/bootstrap/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="{% static "frontend/bootstrap/js/ie10-viewport-bug-workaround.js" %}"></script>
     {% render_block "js" %}
     <script>
     $(document).ready(function() {
@@ -180,6 +181,6 @@
         $(".select2").select2();
     });
     </script>
-    
+
   </body>
 </html>

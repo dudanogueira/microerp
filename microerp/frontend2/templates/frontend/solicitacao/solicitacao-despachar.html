@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load phonenumber_br %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Solicitação: Despachar{% endblock %}</title>
 
@@ -21,7 +22,7 @@ Correção: {{solicitacao.responsavel_correcao}}
     <form method="post" action="{% url "solicitacao:despachar_solicitacao" solicitacao.id %}">
     {% csrf_token %}
     <input type="hidden" name="solicitacao_id" value="{{solicitacao.id}}">
-        
+
     <div class="well well-small" id="solicitacao-{{solicitacao.id}}">
 
         <h2>Solicitação #{{solicitacao.id}} <span class="badge badge-info">{{solicitacao.tipo}}</h2>
@@ -44,7 +45,7 @@ Correção: {{solicitacao.responsavel_correcao}}
                         {% endfor %}
                     </select>
                 </span>
-            
+
                 <span class="span4">
                     <h5><i class="fa fa-phone"></i>  Responsável por Contato</h5>
                     <select tabindex=2 name="responsavel_contato" class="select2">
@@ -53,42 +54,42 @@ Correção: {{solicitacao.responsavel_correcao}}
                         <option value="{{rc.id}}" {% ifequal rc.id solicitacao.responsavel_contato.id %}selected{%endifequal%}>{{rc}}</option>
                         {% endfor %}
                     </select>
-                
+
                 </span>
-            
+
                 <span class="span4">
                     <h5><i class="fa fa-check"></i>  Responsável por Visto</h5>
                     <select tabindex=3  name="responsavel_visto" class="select2">
                         <option>Escolha um Responsável</option>
                         {% for rc in funcionarios_ativos %}
-                        <option value="{{rc.id}}" 
+                        <option value="{{rc.id}}"
                         {% if solicitacao.responsavel_visto.id %}
-                        
-                        {% ifequal solicitacao.responsavel_visto.id rc.id %}       
+
+                        {% ifequal solicitacao.responsavel_visto.id rc.id %}
                         selected
                         {% endifequal %}
-                        
+
 
                         {%endif%}>{{rc}}</option>
                         {% endfor %}
                     </select>
-                
+
                 </span>
-            
-                
+
+
             </div>
-        
+
             <div id="solicitacao-{{solicitacao.id}}-acoes" class="row-fluid">
                 <hr />
                 <span class="span12">
-        
-                    <p class="btn-group">   
+
+                    <p class="btn-group">
                         <button class="btn btn-success" name="despachar" value="True"><i class="fa fa-bullhorn"></i> Especificar Providência</button>
                         <button class="btn btn-danger" name="improceder" value="True"><i class="fa fa-close"></i> Não Procede</button>
                     </p>
                 </span>
             </div>
-        
+
 
         </div>
 
@@ -100,8 +101,8 @@ Correção: {{solicitacao.responsavel_correcao}}
 
     {% block auxiliar-menu %}
     {% addtoblock "js" %}
-	<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-	<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+    <script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+    <link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
     <script>
     $(document).ready(function() {
         $("#menu-solicitacao-despachar, #top-menu-solicitacao").addClass("active");

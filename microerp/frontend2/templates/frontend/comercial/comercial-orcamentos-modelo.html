@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load check_installed %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial - Gerencia: Modelos de Orçamento{% endblock %}</title>
 
@@ -25,7 +26,7 @@
 			<a href="{% url "comercial:orcamentos_modelo_reajustar" modelo.id %}" class="btn btn-info"><i class="fa fa-refresh"></i> reajustar</a>
 			<a href="{% url "comercial:orcamentos_modelo_gerenciar" modelo.id %}" class="btn btn-primary"><i class="fa fa-gear"></i> gerenciar</a>
 			<a href="{% url "comercial:orcamentos_modelo_apagar" modelo.id %}" class="btn btn-danger"><i class="fa fa-trash-o"></i> desativar</a>
-			
+
 		<hr />
 	{% endfor %}
 
@@ -33,17 +34,17 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
 <script>
 $(document).ready(function() {
     $("#menu-comercial-gerencia-modelo-orcamento, #top-menu-comercial").addClass("active");
-	
+
 	$("#id_produto").select2({
 		placeholder: "",
 		minimumInputLength: 3,
-		ajax: { 
+		ajax: {
 			url: "{% url "ajax_consulta_produto" %}?mostra_preco=sim",
 			type: 'GET',
 			dataType: 'json',
@@ -58,7 +59,7 @@ $(document).ready(function() {
 			},
 		},
 	});
-	
+
 });
 
 </script>

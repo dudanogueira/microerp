@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - RH - Promoções{% endblock %}</title>
 
@@ -10,16 +11,16 @@
 
 
 <div class="row-fluid" id="sub-menu-processo-promocao">
-	
+
 	<div class="span8">
 		<ul class="nav nav-tabs">
 			<li class="active"><a href="#cargo" data-toggle="tab">Cargo</a></li>
 			<li class=""><a href="#salario" data-toggle="tab">Salário</a></li>
 
 		</ul>
-		
+
 	</div>
-	
+
 	<div class="span4">
 	</div>
 </div>
@@ -58,7 +59,7 @@
 				</tbody>
 			</table>
 		</div>
-		
+
 		<div class="tab-pane fade in" id="salario">
 			<table class="table table-condensed table-hover table-rounded">
 				<thead>
@@ -92,9 +93,9 @@
 				</tbody>
 			</table>
 		</div>
-		
 
-	
+
+
 </div>
 
 
@@ -103,35 +104,35 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
     $("#menu-rh-processos-de-promocao, #top-menu-rh").addClass("active");
-		
+
 		var activeTab = $('[href=' + location.hash + ']');
 		activeTab && activeTab.click();
-		
+
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
 		      dateFormat: "dd/mm/yy"
-    
+
 				});
 		});
-		
+
 });
 
 $('#sub-menu-processo-promocao').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = this.hash;
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 

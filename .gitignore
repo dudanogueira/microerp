@@ -5,3 +5,5 @@ local_settings.py
 .idea
 .vagrant
 tags
+media
+settings.py

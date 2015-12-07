@@ -15,33 +15,101 @@ You should have received a copy of the GNU Lesser General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>
 """
 
-THUMBNAIL_DEBUG = True
-
 __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '2.0'
 
-# Django settings for microerp project.
 import os
-INSTANCE = lambda *x:os.path.join(os.path.dirname(__file__), *x)
 
-NOME_SISTEMA = 'MicroERP'
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '4v$amphasr=-+pi-3$3nknm!y-@^+5p1t(r$i1z9b-7^@12345'
+
+# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-TEMPLATE_DEBUG = DEBUG
 
-ALLOWED_HOSTS = ['127.0.0.1',]
+ALLOWED_HOSTS = []
 
-ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
-)
+SITE_ID = 1
 
-MANAGERS = ADMINS
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.humanize',
+    # 3dparty
+    'django_extensions',
+    'sorl.thumbnail',
+    'sekizai',
+    'bootstrapform',
+    # custom
+    'cadastro',
+    'rh',
+    'solicitacao',
+    'financeiro',
+    'estoque',
+    'almoxarifado',
+    'comercial',
+    'programacao',
+    'frontend2',
+]
+
+MIDDLEWARE_CLASSES = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'microerp.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.template.context_processors.media',
+                'django.core.context_processors.static',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+                'sekizai.context_processors.sekizai',
+                'microerp.processsors.logo_empresa',
+            ],
+        },
+    },
+]
+
+WSGI_APPLICATION = 'microerp.wsgi.application'
+
+
+# Database
+# https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.mysql',
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.mysql',
+        #'ENGINE': 'django.db.backends.postgresql_psycopg2',
+	#'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'microerp',
         'USER': 'microerp',
         'PASSWORD': 'microerp',
@@ -50,364 +118,45 @@ DATABASES = {
     }
 }
 
-PN_PREPEND = 'PN' # PART NUMBER PREPEND
-MOSTRAR_MENU_PRINCIPAL_LATERAL = True
-HORAS_TRABALHADAS_POR_DIA = 8.4
+# Password validation
+# https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
 
-EMAIL_HOST = 'smtp.servidor.com'
-EMAIL_HOST_USER = 'usuario@email.com'
-EMAIL_HOST_PASSWORD = 'senha_do_email'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'CONTA DE ENVIO <usuario@email.com>'
+# Internationalization
+# https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-
-# Using default
-#AUTH_USER_MODEL = 'account.User'
-
-LOGIN_REDIRECT_URL = '/'
-
-# APLICATIVO DE FRONTEND
-APP_DE_FRONTEND = 'frontend2'
-
-# ISTO MOSTRA PRO DJANGO ONDE BUSCAR O __unicode__ padrao do Account.User
-USER_UNICODE_ATTRIBUTE = 'funcionario'
-
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-# although not all choices may be available on all operating systems.
-# In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Sao_Paulo'
-
-# Language code for this installation. All choices can be found here:
-# http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'pt-BR'
 
-SITE_ID = 1
+TIME_ZONE = 'America/Sao_Paulo'
 
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
 USE_I18N = True
 
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale.
 USE_L10N = True
 
-# If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = False
+USE_TZ = True
 
-# Absolute filesystem path to the directory that will hold user-uploaded files.
-# Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = INSTANCE('media')
 
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash.
-# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL = '/media/'
-
-# Absolute path to the directory static files should be collected to.
-# Don't put anything in this directory yourself; store your static files
-# in apps' "static/" subdirectories and in STATICFILES_DIRS.
-# Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = INSTANCE('static_local')
-
-# URL prefix for static files.
-# Example: "http://media.lawrence.com/static/"
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/1.9/howto/static-files/
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+    '/var/www/static/',
+]
 
-# Additional locations of static files
-STATICFILES_DIRS = (
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-)
-
-# List of finder classes that know how to find static files in
-# various locations.
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-#    'django.contrib.staticfiles.finders.DefaultStorageFinder',
-)
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = '4v$amphasr=-+pi-3$3nknm!y-@^+5p1t(r$i1z9b-7^@eehk('
-
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
-#     'django.template.loaders.eggs.Loader',
-)
-
-MIDDLEWARE_CLASSES = (
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    # Uncomment the next line for simple clickjacking protection:
-    # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-)
-
-ROOT_URLCONF = 'microerp.urls'
-
-# Python dotted path to the WSGI application used by Django's runserver.
-WSGI_APPLICATION = 'microerp.wsgi.application'
-
-TEMPLATE_DIRS = (
-    # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-)
-
-IMG_SRC_LOGO_EMPRESA = '/static/logo_generica.png'
-
-TEMPLATE_CONTEXT_PROCESSORS = (
-    'django.contrib.auth.context_processors.auth',
-    'django.core.context_processors.debug',
-    'django.core.context_processors.media',
-    'django.core.context_processors.static',
-    'django.contrib.messages.context_processors.messages',
-    'sekizai.context_processors.sekizai',
-    'microerp.processsors.logo_empresa'
-)
-
-INSTALLED_APPS = (
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.sites',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
-    # front end
-    #'frontend_base',
-    'frontend2',
-    # admin
-    'django_admin_bootstrapped',
-    # customizado
-    'django.contrib.admin',
-    'django.contrib.admindocs',
-    # apps terceiros
-    'django_extensions',
-    'sorl.thumbnail',
-    'sekizai',
-    'bootstrapform',
-    # apps do projeto
-    'cadastro',
-    'rh',
-    'almoxarifado',
-    'comercial',
-    'solicitacao',
-    'estoque',
-    'programacao',
-    'financeiro'
-)
-
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
-    'handlers': {
-        'mail_admins': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
-        },
-    }
-}
-
-FORMATOS_ETIQUETA_SUPORTADOS = {
- 1: {'Altura': 4.23,
-     'Codigo': '8098',
-     'Colunas': 2,
-     'Superior': 1.27,
-     'Esquerda': 1.27,
-     'Horizontal': 10.16,
-     'Largura': 8.89,
-     'Linhas': 6,
-     'Papel': 'Carta',
-     'Vertical': 4.23 },
- 2: {'Altura': 2.54,
-     'Codigo': '3080/3180',
-     'Colunas': 3,
-     'Superior': 1.27,
-     'Esquerda': 0.48,
-     'Horizontal': 6.98,
-     'Largura': 6.67,
-     'Linhas': 10,
-     'Papel': 'Carta',
-     'Vertical': 2.54},
- 3: {'Altura': 2.54,
-     'Codigo': '3081/3181',
-     'Colunas': 2,
-     'Superior': 1.27,
-     'Esquerda': 0.4,
-     'Horizontal': 10.68,
-     'Largura': 10.16,
-     'Linhas': 10,
-     'Papel': 'Carta',
-     'Vertical': 2.54},
- 4: {'Altura': 3.39,
-     'Codigo': '3082/3182',
-     'Colunas': 2,
-     'Superior': 2.12,
-     'Esquerda': 0.4,
-     'Horizontal': 10.68,
-     'Largura': 10.16,
-     'Linhas': 7,
-     'Papel': 'Carta',
-     'Vertical': 3.39},
- 5: {'Altura': 2.54,
-     'Codigo': '5580A/5580M/5580V',
-     'Colunas': 3,
-     'Superior': 1.27,
-     'Esquerda': 0.48,
-     'Horizontal': 6.98,
-     'Largura': 6.67,
-     'Linhas': 10,
-     'Papel': 'Carta',
-     'Vertical': 2.54},
- 6: {'Altura': 2.54,
-     'Codigo': '6080/6180/ 6280/62580',
-     'Colunas': 3,
-     'Superior': 1.27,
-     'Esquerda': 0.48,
-     'Horizontal': 6.98,
-     'Largura': 6.67,
-     'Linhas': 10,
-     'Papel': 'Carta',
-     'Vertical': 2.54},
- 7: {'Altura': 2.54,
-     'Codigo': '6081/6181/6281/62581',
-     'Colunas': 2,
-     'Superior': 1.27,
-     'Esquerda': 0.4,
-     'Horizontal': 10.68,
-     'Largura': 10.16,
-     'Linhas': 10,
-     'Papel': 'Carta',
-     'Vertical': 2.54},
- 8: {'Altura': 3.39,
-     'Codigo': '6082/6182/6282/62582',
-     'Colunas': 2,
-     'Superior': 2.12,
-     'Esquerda': 0.4,
-     'Horizontal': 10.68,
-     'Largura': 10.16,
-     'Linhas': 7,
-     'Papel': 'Carta',
-     'Vertical': 3.39},
- 9: {'Altura': 2.54,
-     'Codigo': 'A4054/A4254/A4354/A4054R',
-     'Colunas': 2,
-     'Superior': 0.88,
-     'Esquerda': 0.47,
-     'Horizontal': 10.16,
-     'Largura': 9.9,
-     'Linhas': 11,
-     'Papel': 'A4',
-     'Vertical': 2.54},
- 10: {'Altura': 3.1,
-      'Codigo': 'A4055/A4255/A4355',
-      'Colunas': 3,
-      'Superior': 0.9,
-      'Esquerda': 0.72,
-      'Horizontal': 6.61,
-      'Largura': 6.35,
-      'Linhas': 9,
-      'Papel': 'A4',
-      'Vertical': 3.1},
- 11: {'Altura': 2.54,
-      'Codigo': 'A4056/A4256/A4356/A4056R',
-      'Colunas': 3,
-      'Superior': 0.88,
-      'Esquerda': 0.72,
-      'Horizontal': 6.61,
-      'Largura': 6.35,
-      'Linhas': 11,
-      'Papel': 'A4',
-      'Vertical': 2.54},
- 12: {'Altura': 3.81,
-      'Codigo': 'A4060/A4260/A4360',
-      'Colunas': 3,
-      'Superior': 1.52,
-      'Esquerda': 0.72,
-      'Horizontal': 6.61,
-      'Largura': 6.35,
-      'Linhas': 7,
-      'Papel': 'A4',
-      'Vertical': 3.81},
- 13: {'Altura': 3.39,
-      'Codigo': 'A4062/A4262/A4362',
-      'Colunas': 2,
-      'Superior': 1.29,
-      'Esquerda': 0.47,
-      'Horizontal': 10.16,
-      'Largura': 9.9,
-      'Linhas': 8,
-      'Papel': 'A4',
-      'Vertical': 3.39},
- 14: {'Altura': 3.81,
-      'Codigo': 'A4063/A4263/A4363/A4063R',
-      'Colunas': 2,
-      'Superior': 1.52,
-      'Esquerda': 0.47,
-      'Horizontal': 10.16,
-      'Largura': 9.9,
-      'Linhas': 7,
-      'Papel': 'A4',
-      'Vertical': 3.81},
- 15: {'Altura': 4.65,
-      'Codigo': 'A4261/A4361',
-      'Colunas': 3,
-      'Superior': 0.91,
-      'Esquerda': 0.72,
-      'Horizontal': 6.61,
-      'Largura': 6.35,
-      'Linhas': 6,
-      'Papel': 'A4',
-      'Vertical': 4.65},
- 16: {'Altura': 4.64,
-      'Codigo': 'A4291F',
-      'Colunas': 2,
-      'Superior': 0.93,
-      'Esquerda': 2.75,
-      'Horizontal': 7.87,
-      'Largura': 7.62,
-      'Linhas': 6,
-      'Papel': 'A4',
-      'Vertical': 4.64},
-
- 17: {
-     'Altura': 2.54,
-     'Codigo': 'POLIFIX 2030',
-     'Colunas': 3,
-     'Linhas': 10,
-     'Superior': 3.8,
-     'Esquerda': 0.48,
-     'Horizontal': 6.98,
-     'Largura': 6.67,
-     'Papel': 'Carta',
-     'Vertical': 2.54},
-}
-
-TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = '/media/'

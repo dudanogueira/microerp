@@ -3,6 +3,7 @@
 {% load check_installed %}
 {% load humanize %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -42,7 +43,7 @@
 
                     {% endthumbnail %}
                 {% else %}
-                    <img src="{{ STATIC_URL }}funcionario_generico.png" width="100" height="100">
+                    <img src="{% static "funcionario_generico.png" %}" width="100" height="100">
 
                 {% endif %}
 

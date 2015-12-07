@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Rastreabilidade da Produção - Adicionar Lançamento{% endblock %}</title>
 
@@ -9,31 +10,32 @@
 	<h2> Adicionar</h2>
 	<form action="" method="post" accept-charset="utf-8">
 		{% csrf_token %}
-		{{form_adicionar_lancamento.as_p}}	
+		{{form_adicionar_lancamento.as_p}}
 		<button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
 	</form>
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
     $("#menu-producao-rastreabilidade-de-producao, #top-menu-producao").addClass("active");
-		
-				
+
+
 		$('.datepicker').each(function() {
 		   $(this).datepicker({
 			inline: true,
 	        dateFormat: "dd/mm/yy"
-        
+
 				});
 		});
-		
+
 });
 
 $(document).on("click", "#imprimir", function(e){

@@ -1064,7 +1064,7 @@ class FechamentoDeComissao(models.Model):
         return valor_calculado
 
     comissionado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name=u"Responsável Comissionado", related_name="fechamento_comissao__set")
-    contratos = models.ManyToManyField('ContratoFechado', blank=False, null=False)
+    contratos = models.ManyToManyField('ContratoFechado', blank=False)
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")

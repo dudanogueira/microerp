@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - RH -> Controle de EPI{% endblock %}</title>
 
@@ -9,16 +10,16 @@
 <h2>Atribuição de Responsabilidade: #{{form_atribuicao.instance.id}}</h2>
 <h3>Funcionário: {{form_atribuicao.instance.periodo_trabalhado.funcionario}}</h3>
 <div class="row-fluid">
-	
+
 	<div class="span6">
 		<form method="POST">
 			{% csrf_token %}
 		{{form_atribuicao.as_p}}
 		<button type="submit" class="btn btn-primary"><i class="fa fa-thumbs-up"></i> Confirmar</button>
 		</form>
-		
+
 	</div>
-	
+
 	<div class="span6">
 		{% for subprocedimento in form_atribuicao.instance.subprocedimentos.all %}
 		<h5>{{subprocedimento}}</h5>
@@ -26,7 +27,7 @@
 		{% endfor %}
 
 	</div>
-	
+
 </div>
 
 {% endblock %}
@@ -34,9 +35,8 @@
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
 
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
-
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 
@@ -47,11 +47,11 @@ $(document).ready(function() {
 })
 
 $('#sub-menu-capacitacao-de-procedimentos').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = this.hash;
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 $( ".datepicker" ).datepicker({

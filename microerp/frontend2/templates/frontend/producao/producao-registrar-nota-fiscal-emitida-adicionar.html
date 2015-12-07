@@ -1,6 +1,7 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load thumbnail %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Produção - Registrar Nota Fiscal Emitida - Adicionar{% endblock %}</title>
 
@@ -23,14 +24,14 @@
 				<div class="span6">
 					<h2>Lançamentos Disponíveis</h2>
 				</div>
-			
+
 				<div class="span6">
 					<p class="btn-group">
 					<button form="vender_selecionados" type="submit"  class="btn btn-primary"><i class="fa fa-dollar"></i> Vender Selecionados</button>
 				</p>
 				</div>
 			</div>
-			
+
 			{% regroup lancamentos_disponiveis_valores by produto__part_number as lancamentos_disponiveis_group_list %}
 			<form method="GET" action="{% url "producao:registrar_nota_fiscal_emitida_adicionar" %}" name="vender_selecionados" id="vender_selecionados">
 			{% for lancamento in lancamentos_disponiveis_group_list %}
@@ -57,7 +58,7 @@
 								</td>
 							</tr>
 							{% endfor %}
-					
+
 						</tbody>
 					</table>
 				</div>
@@ -73,10 +74,11 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 <script>
 $(document).ready(function() {
@@ -87,16 +89,16 @@ $('.datepicker').each(function() {
    $(this).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"
-    
+
 		});
 });
 
 //check on div click
 $("input[type='checkbox']").change(function() {
 	if (this.checked){
-		$(this).closest("tr").attr('class', 'alert alert-info'); 
+		$(this).closest("tr").attr('class', 'alert alert-info');
 	}else{
-		$(this).closest("tr").attr('class', ''); 
+		$(this).closest("tr").attr('class', '');
 	}
 });
 

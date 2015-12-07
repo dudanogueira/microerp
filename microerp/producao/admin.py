@@ -57,6 +57,7 @@ class LinhaTesteLancamentoProdProdutoInline(admin.TabularInline):
 class LancamentoProdProdutoForm(forms.ModelForm):
     class Meta:
         model = LancamentoProdProduto
+        fields = '__all__'
 
     def serial_number(self):
         """
@@ -117,12 +118,12 @@ class PosicaoEstoqueInline(admin.StackedInline):
     model = PosicaoEstoque
 
 class NotaFiscalAdmin(admin.ModelAdmin):
-    list_filter = 'status',  'tipo', 'fabricante_fornecedor', 
+    list_filter = 'status',  'tipo', 'fabricante_fornecedor',
     date_hierarchy = 'data_entrada'
     list_display = '__unicode__', 'status', 'fabricante_fornecedor', 'data_entrada', 'total_sem_imposto', 'total_com_imposto'
     inlines = [LancamentoComponenteInline, PosicaoEstoqueInline]
     actions = [calcular_nota, lancar_no_estoque]
-        
+
 
 # SUBPRODUTOS
 
@@ -134,7 +135,7 @@ class LinhaSubProdutoAgregadoInLine(admin.StackedInline):
 class OpcaoLinhaSubProdutoAdmin(admin.StackedInline):
     extra = 0
     model = OpcaoLinhaSubProduto
-    
+
 class LinhaSubProdutoAdmin(admin.ModelAdmin):
     #filter_horizontal = 'componentes_alternativos',
     list_filter = 'subproduto',
@@ -149,7 +150,7 @@ class DocumentoTecnicoSubProdutoInline(admin.StackedInline):
     model = DocumentoTecnicoSubProduto
     extra= 0
 
-    
+
 class SubProdutoAdmin(admin.ModelAdmin):
     inlines = [LinhaSubProdutoAgregadoInLine, LinhaSubProdutoInline, DocumentoTecnicoSubProdutoInline]
     search_fields = 'part_number',
@@ -164,13 +165,13 @@ class DocumentoTecnicoProdutoInline(admin.StackedInline):
     model = DocumentoTecnicoProduto
     extra= 0
 
-    
+
 class ProdutoAdmin(admin.ModelAdmin):
     inlines = [LinhaComponenteAvulsodoProdutoInline, DocumentoTecnicoProdutoInline]
 
 class LinhaFornecedorFabricanteComponenteAdmin(admin.ModelAdmin):
     list_filter = 'fornecedor', 'fabricante', 'componente',
-    
+
 class FabricanteFornecedorAdmin(admin.ModelAdmin):
     list_filter = 'tipo',
 
@@ -183,7 +184,7 @@ class LancamentoComponenteAdmin(admin.ModelAdmin):
 
 class ComponenteTipoAdmin(admin.ModelAdmin):
     list_display = 'nome', 'slug'
-    
+
     def get_readonly_fields(self, request, obj=None):
         if obj and obj.componente_set.count() != 0: # when editing an object
             return ['slug']
@@ -210,7 +211,7 @@ class RegistroSaidaDeTesteSubProdutoAdmin(admin.ModelAdmin):
 
 
 class LinhaLancamentoFalhaDeTesteAdmin(admin.ModelAdmin):
-    list_filter = 'falha__tipo', 'lancamento_teste__subproduto', 'lancamento_teste__data_lancamento', 'lancamento_teste__funcionario_testador' 
+    list_filter = 'falha__tipo', 'lancamento_teste__subproduto', 'lancamento_teste__data_lancamento', 'lancamento_teste__funcionario_testador'
     list_display = 'quantidade', 'falha', 'lancamento_teste',
 
 class PerfilAcessoProducaoAdmin(admin.ModelAdmin):

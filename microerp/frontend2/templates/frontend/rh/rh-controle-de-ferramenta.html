@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - RH -> Controle de Ferramentas{% endblock %}</title>
 
@@ -8,15 +9,15 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-wrench"></i> Controle de Ferramentas</h1>
 
 <div class="row-fluid" id="sub-menu-controle-epi">
-	
+
 	<div class="span8">
 		<ul class="nav nav-tabs" id="navtab-status-controle-ferramentas">
 		    <li class="active"><a href="#pendentes" data-toggle="tab">Pendentes</a></li>
 		    <li class=""><a href="#filtrar" data-toggle="tab">Filtrar</a></li>
 		</ul>
-		
+
 	</div>
-	
+
 	<div class="span4">
 		<a href="{% url "rh:controle_de_ferramenta_adicionar" %}" class="btn btn-primary">Novo Controle</a>
 	</div>
@@ -24,10 +25,10 @@
 </div>
 
 <div id="controle-epi-content" class="tab-content">
-	
+
 	<div class="tab-pane fade in active" id="pendentes">
-		
-		<h2>Sem o Arquivo Impresso e Assinado</h2>	
+
+		<h2>Sem o Arquivo Impresso e Assinado</h2>
 		    <table class="table table-condensed table-hover table-rounded">
 		      <thead>
 		            <tr>
@@ -46,9 +47,9 @@
 								<td>
 									<p class='btn-group'>
 										<a href="{% url "rh:controle_de_ferramenta_imprimir" controle.id %}" class="btn btn-success"><i class="fa fa-print"></i> </a>
-								
+
 										<a href="{% url "rh:controle_de_ferramenta_vincular_arquivo" controle.id %}" class="btn btn-primary"><i class="fa fa-file"></i> </a>
-								
+
 									</p>
 								</td>
 				  </tr>
@@ -62,11 +63,11 @@
 							{% endfor %}
 			  </tbody>
 			</table>
-		
-		
+
+
 			<h2 id="retorno-equipamento-pendente">Retorno de Equipamento Pendente</h2>
 			{% regroup linhas_com_devolucao_vencida by controle as linhas_group_list %}
-		
+
 				{% for linha in linhas_group_list %}
 				<div class="well well-small">
 				<h4>#{{ linha.grouper.id }} - {{ linha.grouper.criado|date:"SHORT_DATETIME_FORMAT" }} - {{linha.grouper.funcionario}}</h4>
@@ -101,16 +102,16 @@
 				{% endfor %}
 				</div>
 	</div>
-	
-	
+
+
 	<div class="tab-pane fade" id="filtrar">
-		
+
 		<form method="POST" action="#tab_filtrar">
 		{% csrf_token %}
 		{{form_filtra_ferramentas}}
 		<button type="submit" class="btn btn-primary" name="filtrar-controleepi-btn">Filtrar</button>
 		</form>
-		
+
 		{% if controles_do_funcionario %}
 			{% for controle in controles_do_funcionario %}
 			<hr />
@@ -132,9 +133,9 @@
 					<br />
 					<a class="btn btn-info" href="{{controle.arquivo_impresso_assinado.url}}">Arquivo Assinado</a>
 				</div>
-			</div>	
+			</div>
 			{% endif %}
-		
+
       <table class="table table-condensed table-hover table-rounded">
         <thead>
 	      	<tr>
@@ -175,19 +176,20 @@
 			</table>
 			{% endfor %}
 		{% endif %}
-		
-		
+
+
 	</div>
 </div>
 {% endblock %}
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
-<link href="{{ STATIC_URL }}frontend/css/jquery-ui.min.css" rel="stylesheet">
-<script src="{{ STATIC_URL }}frontend/js/jquery-ui-datepicker.js"></script>
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
 
 
 <script>
@@ -200,7 +202,7 @@ var hash = document.location.hash;
 var prefix = "tab_";
 if (hash) {
     $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-} 
+}
 
 // Change hash for page-reload
 $('.nav-tabs a').on('shown', function (e) {
@@ -208,11 +210,11 @@ $('.nav-tabs a').on('shown', function (e) {
 });
 
 $('#navtab-status-controle-ferramentas').on("click", 'ul.nav.nav-tabs li a', function(e){
-	e.preventDefault();	
+	e.preventDefault();
 	var href = this.hash;
 	window.location.hash = href.replace("#", "#" + "tab_");
 	var pane = $(this);
-	pane.tab('show');		
+	pane.tab('show');
 })
 
 

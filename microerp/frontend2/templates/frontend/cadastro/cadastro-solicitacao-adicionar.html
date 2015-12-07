@@ -1,14 +1,15 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
 {% load bootstrap %}
+{% load staticfiles %}
 
 <title>{%block title %}{{block.super}} - Recepção{% endblock %}</title>
 
 {% block content %}
 <h1><i class="fa fa-th"></i> <i class="fa fa-bell"></i> Adicionar Solicitação</h1>
 <form method="POST">{% csrf_token %}
-    
-    
+
+
 {{form|bootstrap}}
 <button type="submit" class="btn btn-primary">Adicionar</button>
 </form>
@@ -17,8 +18,9 @@
 
 {% block auxiliar-menu %}
 {% addtoblock "js" %}
-<script type="text/javascript" src="{{STATIC_URL}}js/select2.js"></script>
-<link href="{{STATIC_URL}}css/select2.css" type="text/css" media="screen" rel="stylesheet" />
+<script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+<link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
+
 
 <script>
 $(document).ready(function() {
