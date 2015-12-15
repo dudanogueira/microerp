@@ -902,7 +902,8 @@ class BasearContratoNoModelo(forms.ModelForm):
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter_novo(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
-        # exige cliente na proposta
+    usar_cartao_credito = UsarCartaoCredito()
+    # exige cliente na proposta
     if not proposta.cliente:
         messages.error(request, u'É obrigatório converter um Pré Cliente para Cliente ANTES de converter uma proposta.')
         return redirect(reverse("comercial:precliente_converter", args=[proposta.precliente.id])+"?proposta_referencia=%s" % proposta.id)
@@ -924,7 +925,7 @@ def editar_proposta_converter_novo(request, proposta_id):
 
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
 
-    usar_cartao_credito = UsarCartaoCredito()
+
 
     if request.POST:
         modelo_escolhido = DocumentoGerado.objects.get(pk=request.POST.get('escolhido'))
@@ -2194,15 +2195,15 @@ class DocumentoGeradoPrint:
                 except:
                     pass
 
-                texto_esquerda_final = "Atenciosamente,<br /><b>%s</b>" % responsavel_proposta
+                texto_esquerda_final = u"Atenciosamente,<br /><b>%s</b>" % responsavel_proposta
 
                 if perfil.user.funcionario.sexo == "m":
-                    texto_esquerda_final += "<br />Consultor de Vendas<br />"
+                    texto_esquerda_final += u"<br />Consultor de Vendas<br />"
                 else:
-                    texto_esquerda_final += "<br />Consultora de Vendas<br />"
+                    texto_esquerda_final += u"<br />Consultora de Vendas<br />"
 
                 if perfil.user.funcionario.email or perfil.user.email:
-                    texto_esquerda_final += "Email: %s<br />" % perfil.user.funcionario.email or perfil.user.email
+                    texto_esquerda_final += u"Email: %s<br />" % perfil.user.funcionario.email or perfil.user.email
 
                 if perfil.telefone_celular and perfil.telefone_fixo:
                     texto_esquerda_final += "%s / %s" % (perfil.telefone_celular, perfil.telefone_fixo)
