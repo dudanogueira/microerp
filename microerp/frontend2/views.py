@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader, Context
+from django.contrib.auth import logout
 
 from django.db.models import Q
 
@@ -17,7 +18,7 @@ from django import forms
 # forms
 
 class SolicitacaoResolvidaForm(forms.ModelForm):
-    
+
     class Meta:
         model = Solicitacao
         fields = 'resolucao_final',
@@ -28,8 +29,9 @@ def home(request):
         try:
             funcionario = request.user.funcionario
             return(redirect("interface_home_funcionario"))
-        except Funcionario.DoesNotExist:
-            messages.error(request, 'ERRO! Nenhum funcionário vinculado a esta conta')
+        except:
+            messages.error(request, 'ERRO! Acesso Exclusivo para Funcionários. Nenhum Funcionário Vinculado.')
+            logout(request)
             return(redirect("login"))
         try:
             cliente_perfil = request.user.perfilclientelogin
@@ -37,11 +39,11 @@ def home(request):
         except PerfilClienteLogin.DoesNotExist:
             messages.error(request, 'ERRO! Nenhum cliente ou funcionário Vinculado a esta conta')
             return(redirect("interface_home_funcionario"))
-            
+
     else:
         form = AuthenticationForm()
         return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
-            
+
 
 def funcionario(request):
     if request.user.is_authenticated():
@@ -57,13 +59,13 @@ def funcionario(request):
             else:
                 messages.error(request, 'ERRO! Conta inativa')
                 return(redirect("login"))
-                
+
         except Funcionario.DoesNotExist:
             messages.error(request, 'ERRO! Nenhum funcionário vinculado a esta conta')
             return(redirect("login"))
     else:
         form = AuthenticationForm()
-    
+
     return render_to_response('frontend/funcionario-home.html', locals(), context_instance=RequestContext(request),)
 
 
@@ -82,7 +84,7 @@ def cliente(request):
             pass
     else:
         form = AuthenticationForm()
-    
+
     return render_to_response('frontend/cliente-home.html', locals(), context_instance=RequestContext(request),)
 
 def meus_recados(request):
@@ -111,7 +113,7 @@ def minhas_solicitacoes(request):
         Q(status="contato") |
         Q(status="resolvida", contato_realizado=None)
     )
-    
+
     solicitacoes_visto = funcionario.solicitacao_visto_set.filter(status="visto")
     return render_to_response('frontend/main-minhas-solicitacoes.html', locals(), context_instance=RequestContext(request),)
 

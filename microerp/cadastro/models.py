@@ -2,7 +2,7 @@
 
 """This file is part of the microerp project.
 
-This program is free software: you can redistribute it and/or modify it 
+This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or (at your
 option) any later version.
@@ -48,7 +48,7 @@ RECADO_TIPO_CHOICES = (
 )
 
 class PreClienteSemInteresseOpcao(models.Model):
-    
+
     def __unicode__(self):
         return self.nome
 
@@ -60,20 +60,20 @@ class PreCliente(models.Model):
     '''
     def __unicode__(self):
         return self.nome
-    
+
     class Meta:
         verbose_name = "Pré Cliente"
         verbose_name_plural = "Pré Clientes"
-    
+
     def propostas_abertas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())
-    
+
     def propostas_expiradas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__lt=datetime.date.today())
-    
+
     def propostas_convertidas(self):
         return self.propostacomercial_set.filter(status="convertida")
-    
+
     def propostas_perdidas(self):
         return self.propostacomercial_set.filter(status__in=("perdida", "perdida_aguardando"))
 
@@ -88,12 +88,14 @@ class PreCliente(models.Model):
     designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
     tipo = models.CharField(u"Tipo de Pré Cliente", blank=True, null=True, max_length=10, choices=TIPO_CLIENTE_CHOICES)
     cnpj = models.CharField(u"CNPJ", blank=True, null=True, max_length=255)
+    # TODO: Adicionar inscriçao estadual e RG
     cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
     numero_instalacao = models.CharField(u"Número da Instalação", blank=True, null=True, max_length=300)
     origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # telefones
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)
+    # TODO: Adicionar email
     # endereco
     bairro_texto = models.CharField("Bairro", max_length=100,  blank=True, null=True)
     cidade_texto = models.CharField("Cidade", max_length=100,  blank=True, null=True)
@@ -112,7 +114,7 @@ class PreCliente(models.Model):
     adicionado_por = models.ForeignKey('rh.Funcionario', related_name="precliente_lancado_set")
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
-    
+
 class PerfilClienteLogin(models.Model):
     '''
     Perfil para login do cliente na interface do sistema.
@@ -123,7 +125,7 @@ class PerfilClienteLogin(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
-    
+
 class Cliente(models.Model):
     u'''
     ====
@@ -135,9 +137,9 @@ class Cliente(models.Model):
 
     def __unicode__(self):
         return u"%s: %s" % (self.get_tipo_display(), self.nome)
-        
+
     def clean(self):
-        '''Define as regras de preenchimento e validação da Entidade Cliente.        
+        '''Define as regras de preenchimento e validação da Entidade Cliente.
         e as regras de validação de CPF ou CNPJ
         '''
         if self.telefone_fixo:
@@ -146,13 +148,14 @@ class Cliente(models.Model):
             BRPhoneNumberField().clean(self.telefone_celular)
         if self.cnpj and self.cnpj == '0'*14:
             raise ValidationError({'cnpj': [u'Embora Válido, não é aceito um CNPJ com %s ;' % '000000000000000',]})
-        
+        # TODO: tem que ter fixo ou celular, qualquer um dos dois 
+
     def documento(self):
         if self.tipo == "pj":
             return "CNPJ: %s" % self.cnpj
         else:
             return "CPF: %s" % self.cpf
-    
+
     def nome_curto(self):
         if self.nome:
             nome_parts = self.nome.split(" ")
@@ -161,10 +164,10 @@ class Cliente(models.Model):
             else:
                 nome_curto = u"%s" % self.nome
             return nome_curto
-    
+
     def quantidade_de_solicitacoes(self):
         return self.solicitacaocomercial_set.count()
-    
+
     def logradouro_completo(self):
         if self.enderecocliente_set.all():
             if self.enderecocliente_set.filter(principal=True):
@@ -172,14 +175,14 @@ class Cliente(models.Model):
             else:
                 endereco = self.enderecocliente_set.first()
             string = u"%s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro_texto, endereco.uf_texto, endereco.cep)
-        else: 
+        else:
             string = None
         return string
-    
+
     def logradouro_completo_busca(self):
         string = u"%s+%s+%s+%s+%s" % (self.rua, self.numero, self.cidade.nome, self.cidade.estado, self.cep)
         return string
-        
+
     def buscar_geoponto(self, endereco):
         latlng = google_latlng.LatLng()
         latlng.requestLatLngJSON(endereco)
@@ -202,6 +205,7 @@ class Cliente(models.Model):
                 pass
 
     def sugerir_texto_contratante(self):
+        # TODO: puxar dados do cliente
         if self.tipo == "pj":
             texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, Telefone Fixo: %s, Telefone Fixo: %s, Email: %s''' % (
                 unicode(self.nome),
@@ -249,22 +253,22 @@ class Cliente(models.Model):
 
     def propostas_abertas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())
-    
+
     def propostas_expiradas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__lt=datetime.date.today())
-    
+
     def propostas_convertidas(self):
         return self.propostacomercial_set.filter(status="convertida")
-    
+
     def propostas_perdidas(self):
         return self.propostacomercial_set.filter(status__in=["perdida", "perdida_aguardando"])
-    
+
     def requisicao_proposta_abertas(self):
         return self.requisicaodeproposta_set.filter(atendido=False)
-    
+
     def requisicao_proposta_atendidas(self):
         return self.requisicaodeproposta_set.filter(atendido=True)
-    
+
     def endereco_principal(self):
         if self.enderecocliente_set.filter(principal=True):
             endereco = self.enderecocliente_set.filter(principal=True).first()
@@ -273,7 +277,7 @@ class Cliente(models.Model):
         else:
             endereco = None
         return endereco
-    
+
     def qualquer_telefone(self):
         if self.telefone_fixo:
             return self.telefone_fixo
@@ -305,6 +309,9 @@ class Cliente(models.Model):
     origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # contatos
     contato = models.CharField("Nome do Contato", blank=True, max_length=300)
+    # TODO: Adicionar Representate Legal Nome e CPF
+    # TODO: Adicionar somente para cnpj, na conversao
+    # TODO: Substituir o campo no metodo de sugestao de texto
     email = models.EmailField(blank=True, null=True)
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)
@@ -320,7 +327,7 @@ class Cliente(models.Model):
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
 class EnderecoCliente(models.Model):
-    
+
     def __unicode__(self):
         return u"Endereço ID#%s do Cliente %s" % (self.id, self.cliente.nome)
 
@@ -364,54 +371,54 @@ class Ramo(models.Model):
 
     def __unicode__(self):
         return "Ramo::%s: %s" % (self.get_tipo_display(), self.nome)
-        
+
     '''Profissão ou Ramo do Cliente'''
     nome = models.CharField(blank=False, null=False, max_length=100)
     tipo = models.CharField(u"Tipo de Cliente", blank=False, null=False, max_length=10, choices=TIPO_CLIENTE_CHOICES)
 
 class Cidade(models.Model):
     '''Cidade do Cliente'''
-    
+
     def __unicode__(self):
         return u"%s - %s" % (unicode(self.nome), self.estado)
-    
+
     nome = models.CharField("Nome da Cidade", blank=False, null=False, max_length=100)
     estado = models.CharField(blank=False, null=False, max_length=2, choices=STATE_CHOICES)
 
 class Bairro(models.Model):
     '''Bairro do Cliente'''
-    
+
     def __unicode__(self):
         return u"%s - %s" % (self.nome, self.cidade)
-        
+
     class Meta:
         ordering = ['nome']
-    
+
     nome = models.CharField("Nome do Bairro", blank=False, null=False, max_length=100)
     cidade = models.ForeignKey("Cidade")
 
 class ClienteOrigem(models.Model):
-    
+
     def __unicode__(self):
         return u"%s" % self.nome
-    
+
     class Meta:
         verbose_name = "Origem do Cliente"
         verbose_name_plural = "Origens dos Clientes"
-    
+
     nome = models.CharField(blank=False, null=False, max_length=100)
     observacao = models.TextField(u"Observações Gerais", blank=True, null=True)
 
 class TipoDeConsultaDeCredito(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     codigo = models.CharField(blank=False, max_length=100, help_text="Código de Identificação: cpf, cnpj, cheque, etc")
-    
+
 class ConsultaDeCredito(models.Model):
-    
+
     class Meta:
         verbose_name = u"Consulta de Crédito"
         verbose_name_plural = u"Consultas de Crédito"
-    
+
     realizada = models.BooleanField(default=False)
     cliente = models.ForeignKey(Cliente)
     funcionario_solicitante = models.ForeignKey('rh.Funcionario', related_name="solicitacoes_consulta_credito_set")
@@ -433,12 +440,12 @@ class ConsultaDeCredito(models.Model):
 
 class PerfilAcessoRecepcao(models.Model):
     '''Perfil de Acesso à Recepção'''
-    
+
     class Meta:
         verbose_name = u"Perfil de Acesso à Recepção"
         verbose_name_plural = u"Perfis de Acesso à Recepção"
-    
-    
+
+
     gerente = models.BooleanField(default=False)
     analista = models.BooleanField(default=True)
     user = models.OneToOneField(settings.AUTH_USER_MODEL)
@@ -448,7 +455,7 @@ class PerfilAcessoRecepcao(models.Model):
 
 class EnderecoEmpresa(models.Model):
     '''unidade da empresa (matriz, filial, etc)'''
-    
+
     def __unicode__(self):
         return u"%s" % self.nome
 
@@ -457,4 +464,3 @@ class EnderecoEmpresa(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
-    

@@ -2914,6 +2914,7 @@ class ContratoPrintDocumento:
 
             # Our container for 'Flowable' objects
             elements = []
+            # TODO: Pesquisar esquema de uma imagem pra página inteira
             espaco_assinaturas = 30
             # logo empresa
             if perfil.empresa:
