@@ -1,5 +1,13 @@
 db:
   image: postgres
+  ports:
+    - "15432:5432"
+db_alt:
+  image: mysql
+  environment:
+      - MYSQL_ROOT_PASSWORD=root
+  ports:
+    - "13306:3306"
 web:
   build: .
   command: python manage.py runserver 0.0.0.0:8000
@@ -10,3 +18,4 @@ web:
     - "8000:8000"
   links:
     - db
+    - db_alt
