@@ -8,6 +8,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q, Sum
 from localflavor.br.br_states import STATE_CHOICES
 
+import os
+
 from django.core.mail import EmailMessage
 
 from django.contrib.sites.models import Site
@@ -32,6 +34,7 @@ from comercial.models import PropostaComercial, FollowUpDePropostaComercial, Req
 from comercial.models import DocumentoGerado, ItemGrupoDocumento
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao, CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 from comercial.models import LinhaRecursoMaterial, LinhaRecursoHumano, LinhaRecursoLogistico, Orcamento, GrupoIndicadorDeProdutoProposto
+from comercial.models import DadoVariavel
 from financeiro.models import LancamentoFinanceiroReceber
 from financeiro.models import ContaBancaria
 from estoque.models import Produto
@@ -522,7 +525,7 @@ class FormEditarProposta(forms.ModelForm):
 
     class Meta:
         model = PropostaComercial
-        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo', 'tipos', 'parcelamentos_possiveis'
+        fields = 'valor_proposto', 'nome_do_proposto', 'documento_do_proposto', 'tipo', 'tipos', 'parcelamentos_possiveis', 'substitutivo'
         localized_fields = 'valor_proposto',
 
 class FormSelecionaOrcamentoModelo(forms.Form):
@@ -688,6 +691,9 @@ def editar_proposta(request, proposta_id):
                 novo_orcamento = adicionar_orcamento_form.save(commit=False)
                 novo_orcamento.criado_por = request.user.funcionario
                 novo_orcamento.save()
+                # define se orcamento do tipo substitutivo
+                novo_orcamento.proposta.substitutivo = adicionar_orcamento_form.cleaned_data['substitutivo']
+                novo_orcamento.proposta.save()
                 messages.success(request, u"Sucesso! Novo Orçamento Adicionado.")
                 return redirect(reverse("comercial:editar_proposta_editar_orcamento", args=[proposta.id, novo_orcamento.id]))
         if request.POST.get('alterar-proposta'):
@@ -924,8 +930,6 @@ def editar_proposta_converter_novo(request, proposta_id):
         return render_to_response('frontend/comercial/comercial-proposta-converter_novo.html', locals(), context_instance=RequestContext(request),)
 
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
-
-
 
     if request.POST:
         modelo_escolhido = DocumentoGerado.objects.get(pk=request.POST.get('escolhido'))
@@ -2081,16 +2085,18 @@ class DocumentoGeradoPrint:
         self.width, self.height = self.pagesize
 
     def _header_footer(self, canvas, doc):
-            # Save the state of our canvas so we can draw on it
-            canvas.saveState()
-            styles = getSampleStyleSheet()
+        # Save the state of our canvas so we can draw on it
+        canvas.saveState()
+        if doc.page == 1 and self.documento.capa:
+            canvas.drawImage(self.documento.capa.path, 0, 0, *self.pagesize)
+        styles = getSampleStyleSheet()
 
-            # Footer
-            footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-00%s' % self.documento.versao, styles['Normal'])
-            footer.wrap(doc.width, doc.bottomMargin)
-            footer.drawOn(canvas, 30, 10)
-            # Release the canvas
-            canvas.restoreState()
+        # Footer
+        footer = Paragraph('<Br /><br/>POP CO 001-F01<br />REV-00%s' % self.documento.versao, styles['Normal'])
+        footer.wrap(doc.width, doc.bottomMargin)
+        footer.drawOn(canvas, 30, 10)
+        # Release the canvas
+        canvas.restoreState()
 
     def print_documento(self, documento, perfil=None):
             self.documento = documento
@@ -2117,12 +2123,20 @@ class DocumentoGeradoPrint:
 
             # Our container for 'Flowable' objects
             elements = []
-            # logo empresa
-            if perfil.empresa:
-                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+            # se documento possui dados variaveis, resgatar chave e valor
+            if hasattr(documento, 'grupodadosvariaveis'):
+                dicionario_cv = documento.grupodadosvariaveis.dadovariavel_set.\
+                    values('chave', 'valor')
+
+
+            if os.path.isfile(perfil.empresa.logo.path):
+                if perfil.empresa:
+                    im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+                else:
+                    im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
+                im.hAlign = 'LEFT'
             else:
-                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
-            im.hAlign = 'LEFT'
+                im = None
 
             # id da proposta
             if documento.propostacomercial:
@@ -2131,7 +2145,7 @@ class DocumentoGeradoPrint:
                 id_documento = Paragraph("Nº CONTRATO: %s" % str(documento.contratofechado.id), styles['right'])
 
             imprime_logo = getattr(self.documento, 'imprime_logo', False)
-            if imprime_logo:
+            if imprime_logo and im:
                 data=[(im,id_documento)]
             else:
                 data=[('',id_documento)]
@@ -2157,11 +2171,32 @@ class DocumentoGeradoPrint:
                         #iw, ih = img.getSize()
                         #aspect = ih / float(iw)
                         #im = Image(item.imagem.path,  width=19*cm, height=(19*cm * aspect))
-                        im = Image(item.imagem.path)
-                        elements.append(im)
+                        if os.path.isfile(item.imagem.path):
+                            im = Image(item.imagem.path)
+                            elements.append(im)
                     if item.texto:
-                        texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
-                        elements.append(texto)
+                        texto = item.texto
+                        # substitui #chave# por valor
+                        if hasattr(documento, 'grupodadosvariaveis'):
+                            for cv in dicionario_cv:
+                                texto = texto.replace("#%s#" %cv['chave'], cv['valor'])
+                        # substitui quebra de linhas
+                        texto = texto.replace('\n', '<br />')
+                        elements.append(Paragraph(texto, styles['justify']))
+                    # substitui quando chave identificadora for orcamentos
+                    if item.chave_identificadora == 'orcamentos':
+                        # possui proposta
+                        if item.grupo.documento.propostacomercial:
+                            for orcamento in item.grupo.documento.propostacomercial.orcamentos_ativos():
+                                elements.append(Paragraph(orcamento.descricao, styles['left_h2']))
+                                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                                valor_formatado = locale.currency(orcamento.custo_total, grouping=True)
+                                elements.append(Paragraph(u"Custo Total: R$ %s" % valor_formatado, styles['justify']))
+                                elements.append(Spacer(1, 12))
+
+
+
+
 
                     if item.quebra_pagina:
                         elements.append(PageBreak())
@@ -2184,7 +2219,7 @@ class DocumentoGeradoPrint:
                 else:
                     responsavel_proposta = documento.contratofechado.responsavel
 
-            if perfil and perfil.imagem_assinatura:
+            if perfil and perfil.imagem_assinatura and os.path.isfile(perfil.imagem_assinatura.path):
                 # space
                 elements.append(Spacer(1, 12))
 
@@ -2241,9 +2276,19 @@ class DocumentoGeradoPrint:
             buffer.close()
             return pdf
 
+class DadoVariavelForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(DadoVariavelForm, self).__init__(*args, **kwargs)
+        if self.instance.tipo == 'inteiro':
+            self.fields['valor'] = forms.IntegerField()
+        if self.instance.tipo == 'decimal':
+            self.fields['valor'] = forms.DecimalField()
+        self.fields['valor'].required = False
+        self.fields['valor'].label = "#%s# (%s)" % (self.instance.chave, self.instance.get_tipo_display())
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
+    formset_dados = forms.modelformset_factory(DadoVariavel, fields=('valor',), extra=0, form=DadoVariavelForm)
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
     # mantem propostas antigas no esquema antigo
     if not proposta.documento_gerado:
@@ -2262,12 +2307,41 @@ def proposta_comercial_imprimir(request, proposta_id):
     # instancia formulario de envio por email
     enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
 
+    # gera formulario para dados variaveis
+    if hasattr(proposta.documento_gerado, 'grupodadosvariaveis'):
+        form_dados_variaveis = formset_dados(
+            request.POST or None,
+            queryset=proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.all()
+        )
+        # verifica se possui retscreen
+        if proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.filter(chave__icontains='retscreen'):
+            retscreen = True
+
     if request.POST:
-        form_textos_editaveis = TextosEditaveisForm(request.POST, request.FILES, queryset=itens_editaveis)
-        if form_textos_editaveis.is_valid():
-            form_textos_editaveis.save()
+        # textos editaveis
+        if request.POST.get('alterar-proposta', None):
+            form_textos_editaveis = TextosEditaveisForm(request.POST, request.FILES, queryset=itens_editaveis)
+            if form_textos_editaveis.is_valid():
+                form_textos_editaveis.save()
+            # gera formulario para dados variaveis
+            if hasattr(proposta.documento_gerado, 'grupodadosvariaveis'):
+                form_dados_variaveis = formset_dados(
+                    queryset=proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.all()
+                )
+        if request.POST.get('dadosvariaveis', None):
+
+            # dados variaveis
+            form_dados_variaveis = formset_dados(request.POST, queryset=proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.all())
+
+            if form_dados_variaveis.is_valid():
+                form_dados_variaveis.save()
+                proposta.documento_gerado.grupodadosvariaveis.save()
+                # redireciona pra mesma pagina, pra atualizar o formulario
+                return redirect(reverse("comercial:proposta_comercial_imprimir", args=[proposta.id]))
+            form_textos_editaveis = TextosEditaveisForm(queryset=itens_editaveis)
 
     else:
+        # imprimir
         if request.GET.get('imprimir'):
             messages.info(request, "Documento Impresso Gerado")
             # Create the HttpResponse object with the appropriate PDF headers.
@@ -2547,8 +2621,7 @@ class ContratoPrint:
             canvas.restoreState()
 
     def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
-
-
+            self.contrato = contrato
             buffer = self.buffer
 
             if imprime_logo:
@@ -2842,6 +2915,13 @@ class ContratoPrint:
                 texto = "TESTEMUNHA 2"
             testemunha_texto = Paragraph(unicode(texto), styles['left'])
             elements.append(testemunha_texto)
+
+            # Data de Criação do Contrato e Data atual
+            elements.append(Spacer(1, 10))
+            representante_empresa = u"Contrato Criado no dia %s e impresso no dia %s" % (self.contrato.criado.date().strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
+            representante_p = Paragraph(representante_empresa, styles['left'])
+            elements.append(representante_p)
+
             # build pdf
             doc.build(elements, onFirstPage=self._header_footer, onLaterPages=self._header_footer, canvasmaker=NumberedCanvas)
 
@@ -2917,16 +2997,19 @@ class ContratoPrintDocumento:
             # TODO: Pesquisar esquema de uma imagem pra página inteira
             espaco_assinaturas = 30
             # logo empresa
-            if perfil.empresa:
-                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+            if os.path.isfile(perfil.empresa.logo.path):
+                if perfil.empresa:
+                    im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+                else:
+                    im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
+                im.hAlign = 'LEFT'
             else:
-                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
-            im.hAlign = 'LEFT'
+                im = None
 
             # id do contrato
             id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
 
-            if imprime_logo:
+            if imprime_logo and im:
                 data=[(im,id_contrato)]
                 table = Table(data, colWidths=270, rowHeights=79)
             else:
@@ -3007,6 +3090,12 @@ class ContratoPrintDocumento:
             representante_linha = Paragraph(str("_"*90), styles['justify'])
             elements.append(representante_linha)
             representante_empresa = u"CONTRATANTE: %s" % (self.contrato.cliente.sugerir_texto_contratante())
+            representante_p = Paragraph(representante_empresa, styles['left'])
+            elements.append(representante_p)
+
+            # Data de Criação do Contrato e Data atual
+            elements.append(Spacer(1, 10))
+            representante_empresa = u"Contrato Criado no dia %s e impresso no dia %s" % (self.contrato.criado.date().strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
             representante_p = Paragraph(representante_empresa, styles['left'])
             elements.append(representante_p)
 
@@ -3225,6 +3314,10 @@ class OrcamentoForm(forms.ModelForm):
         self.fields['proposta'].widget = forms.HiddenInput()
         self.fields['descricao'].widget.attrs['class'] = "input-xxlarge"
         self.fields['descricao'].required = True
+        self.fields['substitutivo'] = forms.BooleanField(
+            help_text="Marcar se esta proposta possui orçamentos substitutivos",
+            required=False
+            )
 
     class Meta:
         model = Orcamento

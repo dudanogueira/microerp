@@ -9,8 +9,29 @@
 <h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Converter Proposta  Comercial (#{{proposta.id}}) em Contrato</h1>
 
 {% if modelo_escolhido %}
-<h2>{{modelo_escolhido}}</h2>
+	<h2>{{modelo_escolhido}}</h2>
+
+<p class="btn btn-group">
+	{% if form_configurar_contrato.forms %}
+		<button class="btn btn-success" type="submit" name="converter" value="sim" form="form-converter">
+				<i class="fa fa-magic"></i> Converter
+		</button>
+	{% endif %}
+	<a type="submit" class="btn btn-primary" name="Usar Parcelamento" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Configura Lançamentos</a>
+
+
+	{% if proposta.documento_gerado.grupodadosvariaveis %}
+		<a class="btn btn-info" name="Mostrar Dados" data-toggle="modal" data-target="#ModalDadosVariaveis">
+			<i class="fa fa-share-square"></i>
+			Dados Variáveis
+		</a>
+	{% endif %}
+
+	{% include "frontend/comercial/botao-cliente.html" with cliente=proposta.cliente %}
 {% endif %}
+</p>
+
+
 
 {% if not proposta.contrato_vinculado and modelo_documento_contrato and not modelo_escolhido%}
 	<h2>Modelos de Contrato Disponível: Selecione abaixo</h2>
@@ -25,9 +46,6 @@
 {% if form_contrato %}
 
 <form method="POST" id="form-converter">
-		{% if form_configurar_contrato.forms %}
-		<button class="btn btn-primary" type="submit" name="converter" value="sim">Converter</button>
-	{% endif %}
 	{% csrf_token %}
 	{{form_configurar_contrato.management_form}}
 	{{form_contrato|bootstrap}}
@@ -98,11 +116,14 @@
 	</div>
 	<hr />
 	<input type="hidden" name="escolhido" value="{{modelo_escolhido.pk}}" />
+	<p class="btn btn-group">
+
 	{% if form_configurar_contrato.forms %}
 		<button class="btn btn-primary" type="submit" name="converter" value="sim">Converter</button>
 	{% endif %}
-	<a type="submit" class="btn btn-info" name="Usar Parcelamento" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Configura Lançamentos</a>
+	<a type="submit" class="btn btn-info" name="Usar Parcelamento" data-toggle="modal" data-target="#ModalCredito"><i class="fa fa-credit-card"></i> Configurar Lançamentos</a>
 
+	</p>
 
 {% endif %}
 
@@ -128,6 +149,35 @@
 	  </div><!-- /.modal-dialog -->
 	</div><!-- /.modal -->
 </form>
+
+<!-- Modal -->
+<div class="modal fade" id="ModalDadosVariaveis" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="myModalLabel">Dados Variáveis Disponíveis</h4>
+			</div>
+			<div class="modal-body">
+				<ul>
+				{% for dado in proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.all %}
+					<li><b>{{dado.chave}}</b>: {{dado.valor}}</li>
+				{% empty %}
+					<h2>Nenhuma Variável Disponível</h2>
+				{% endfor %}
+				</ul>
+
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+
+			</div>
+		</div>
+		<!-- /.modal-content -->
+	</div>
+	<!-- /.modal-dialog -->
+</div>
+<!-- /.modal -->
 {% endblock %}
 
 {% block auxiliar-menu %}
@@ -195,6 +245,7 @@ $(".disableall :input").attr("disabled", true);
 
 $(document).ready(function() {
     $('.tooltip-items').tooltip();
+		$('select').select2();
 });
 
 $('.parcela-formset').formset({

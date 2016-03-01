@@ -98,6 +98,11 @@ DOCUMENTO_GERADO_TIPO_CHOICES = (
     ('proposta', u'Proposta'),
 )
 
+DADO_VARIAVEL_CHOICES = (
+    ('texto', 'Texto'),
+    ('inteiro', u'Número  Inteiro'),
+    ('decimal', u'Número Decimal'),
+)
 class PropostaComercial(models.Model):
 
     def __unicode__(self):
@@ -150,8 +155,15 @@ class PropostaComercial(models.Model):
         return self.orcamento_set.filter(ativo=False)
 
     def consolidado(self):
-        '''soma todos os valores de orcamentos ativos presentes'''
-        soma = self.custo_logistica_com_margem() + self.custo_orcamentos_com_margem() + self.custo_tabelados() + self.custo_promocional()
+        '''soma todos os valores de orcamentos ativos presentes
+        se proposta for do tipo substitutivo, considerar logistica + menor valor
+        de orcamentos
+        '''
+        if self.substitutivo:
+            menor_valor = self.orcamento_set.filter(ativo=True).aggregate(m=models.Min('custo_total'))['m'] or 0
+            soma = float(menor_valor) + self.custo_logistica_com_margem()
+        else:
+            soma = self.custo_logistica_com_margem() + self.custo_orcamentos_com_margem() + self.custo_tabelados() + self.custo_promocional()
         return soma or 0
 
     def consolidado_liquido(self):
@@ -228,6 +240,9 @@ class PropostaComercial(models.Model):
             tipo=tipo,
             imprime_logo=modelo.imprime_logo
         )
+        # clona acapa
+        if modelo.capa:
+            documento.capa.save(os.path.basename(documento.capa.url),documento.capa.file,save=True)
         # associa documento gerado com esta proposta
         self.documento_gerado = documento
         self.save()
@@ -250,6 +265,19 @@ class PropostaComercial(models.Model):
                         novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
                     except:
                         pass
+            # clona grupo de variaveis
+            if modelo.grupodadosvariaveis:
+                # cria grupo de dados variaveis pro documento
+                grupo = GrupoDadosVariaveis.objects.create(
+                    documento=documento
+                )
+                # copia os que estão no modelo
+                for dado in modelo.grupodadosvariaveis.dadovariavel_set.all():
+                    documento.grupodadosvariaveis.dadovariavel_set.create(
+                        chave=dado.chave,
+                        valor=dado.valor,
+                        tipo=dado.tipo
+                    )
         return documento
 
     def cria_contrato_pelo_modelo(self, modelo, responsavel, comissionado):
@@ -258,12 +286,14 @@ class PropostaComercial(models.Model):
         # cria o contratofechado
         contrato = ContratoFechado.objects.create()
         # faz vinculacoes
+
     cliente = models.ForeignKey('cadastro.Cliente', blank=True, null=True)
     precliente = models.ForeignKey('cadastro.PreCliente', blank=True, null=True)
     documento_gerado = models.OneToOneField('DocumentoGerado', blank=True, null=True, on_delete=models.SET_NULL)
     status = models.CharField(blank=True, max_length=100, choices=PROPOSTA_COMERCIAL_STATUS_CHOICES, default='aberta')
     tipo = models.ForeignKey('TipoDeProposta', blank=True, null=True)
     tipos = models.ManyToManyField('TipoDeProposta', blank=True, related_name="proposta_por_tipos_set")
+    substitutivo = models.BooleanField(default=False, help_text="Define se Proposta possui orçamentos substitutivos. Nesses casos, o valor mínimo será definido como o valor da menor proposta")
     probabilidade = models.IntegerField("Probabilidade (%)", blank=True, null=True, default=50)
     probabilidade_inicial = models.IntegerField("Probabilidade Inicial (%)", blank=True, null=True, default=50)
     valor_proposto = models.DecimalField(max_digits=10, decimal_places=2)
@@ -493,7 +523,15 @@ class ImagemDocumentoDir(object):
             'documentos_gerados/', str(instance.grupo.documento.uuid), 'imagens/', filename
           )
 
+@deconstructible
+class CapaDocumentoDir(object):
+    def __call__(self, instance, filename):
+        return os.path.join(
+            'documentos_gerados/', str(instance .uuid), 'imagens/capa/', filename
+          )
+
 documento_local_imagem = ImagemDocumentoDir()
+documento_capa = CapaDocumentoDir()
 
 class   DocumentoGerado(models.Model):
     def __unicode__(self):
@@ -505,12 +543,12 @@ class   DocumentoGerado(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4)
     modelo = models.BooleanField(default=False)
     imprime_logo = models.BooleanField(default=True)
+    capa = models.ImageField(upload_to=documento_capa, blank=True, null=True)
     tipo = models.CharField(blank=False, null=False, max_length=15, choices=DOCUMENTO_GERADO_TIPO_CHOICES, default='proposta')
     tipo_proposta = models.ForeignKey('TipoDeProposta', blank=True, null=True)
     nome = models.CharField(blank=True, null=True, max_length=150)
     empresa_vinculada = models.ManyToManyField(EmpresaComercial, blank=True)
     versao = models.IntegerField(default=1)
-
 
 class GrupoDocumento(models.Model):
 
@@ -957,6 +995,9 @@ class ContratoFechado(models.Model):
             tipo=tipo,
             imprime_logo=modelo.imprime_logo
         )
+        # clona acapa
+        if modelo.capa:
+            documento.capa.save(os.path.basename(documento.capa.url),documento.capa.file,save=True)
         # associa documento gerado com esta proposta
         self.documento_gerado = documento
         self.save()
@@ -978,7 +1019,20 @@ class ContratoFechado(models.Model):
                 )
                 if item.imagem:
                     novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
-        return documento
+        # clona grupo de variaveis
+        if (hasattr(self.propostacomercial.documento_gerado, 'grupodadosvariaveis')):
+            # cria grupo de dados variaveis pro documento
+            grupo = GrupoDadosVariaveis.objects.create(
+                documento=documento
+            )
+            # copia os que estão na proposta
+            for dado in self.propostacomercial.documento_gerado.grupodadosvariaveis.dadovariavel_set.all():
+                documento.grupodadosvariaveis.dadovariavel_set.create(
+                    chave=dado.chave,
+                    valor=dado.valor,
+                    tipo=dado.tipo,
+                )
+
 
     def gera_texto_lancamentos(self):
         pass
@@ -1116,6 +1170,28 @@ class SubGrupoIndicadorDeProdutoProposto(models.Model):
     nome = models.CharField(blank=True, max_length=100)
     grupo = models.ForeignKey('GrupoIndicadorDeProdutoProposto')
 
+# grupo de dados variaveis
+
+class GrupoDadosVariaveis(models.Model):
+
+    documento = models.OneToOneField('DocumentoGerado', blank=True, null=True)
+
+class DadoVariavel(models.Model):
+
+    def clean(self):
+        if self.valor and self.tipo == 'inteiro' and not self.valor.isdigit():
+            raise ValidationError(u"Erro! Deve ser um Inteiro válido")
+        if self.valor and self.tipo == 'decimal':
+            try:
+                f = float(self.valor)
+            except:
+                raise ValidationError(u"Erro! Deve ser um Decimal Válido")
+
+    grupo = models.ForeignKey(GrupoDadosVariaveis)
+    chave = models.CharField(blank=False, max_length=100)
+    valor = models.TextField(blank=True, null=True)
+    tipo = models.CharField(blank=True, max_length=100, choices=DADO_VARIAVEL_CHOICES, default="texto ")
+
 # signals
 def proposta_comercial_post_save(signal, instance, sender, **kwargs):
       ''' Atualiza os campos da Proposta Comercial após criacao'''
@@ -1222,6 +1298,44 @@ def orcamento_post_save(signal, instance, sender, **kwargs):
             instance.proposta.valor_proposto = float(instance.proposta.consolidado())
             instance.proposta.save()
 
+def grupo_dados_variaveis_post_save(signal, instance, sender, **kwargs):
+    '''Após atualizar os dados variaveis, ou após algum calculo, chama
+        o que for necessario para realizar calculos automarizados
+    '''
+    # calculo restscreen
+    pass
+    try:
+        # resgata campos
+        media = instance.dadovariavel_set.get(chave='retscreen_media')
+        tamanho_placa = instance.dadovariavel_set.get(chave='retscreen_tamanho_placa')
+        radiacao = instance.dadovariavel_set.get(chave='retscreen_radiacao')
+        media_diaria = instance.dadovariavel_set.get(chave='retscreen_media_diaria')
+        percentual_perda = instance.dadovariavel_set.get(chave='retscreen_percentual_perda')
+        perda = instance.dadovariavel_set.get(chave='retscreen_perda')
+        radiacao_real = instance.dadovariavel_set.get(chave='retscreen_radiacao_real')
+        tamanho_usina = instance.dadovariavel_set.get(chave='retscreen_tamanho_usina')
+        numero_placas_sugerida = instance.dadovariavel_set.get(chave='retscreen_numero_placas_sugerida')
+        area_usina = instance.dadovariavel_set.get(chave='retscreen_area_usina')
+        # calculos
+        media_diaria.valor = float(media.valor) / 30.0
+        media_diaria.save()
+        percentual_perda.valor = (float(radiacao.valor) * 3) / 100
+        percentual_perda.save()
+        perda.valor = float(radiacao.valor) * float(percentual_perda.valor)
+        perda.save()
+        radiacao_real.valor = float(radiacao.valor) - float(perda.valor)
+        radiacao_real.save()
+        tamanho_usina.valor = float(media_diaria.valor) / float(radiacao_real.valor)
+        tamanho_usina.save()
+        numero_placas_sugerida.valor = float(tamanho_usina.valor) / float(tamanho_placa.valor)
+        numero_placas_sugerida.save()
+        area_usina.valor = float(numero_placas_sugerida.valor) * 1.68
+        area_usina.save()
+    #except instance.dadovariavel_set.model.DoesNotExist:
+    except:
+        pass
+
+
 # SIGNALS CONNECTION
 signals.pre_save.connect(proposta_comercial_pre_save, sender=PropostaComercial)
 signals.post_save.connect(proposta_comercial_post_save, sender=PropostaComercial)
@@ -1239,3 +1353,5 @@ signals.post_save.connect(orcamento_post_save, sender=LinhaRecursoLogistico)
 # OUTROS
 signals.pre_save.connect(atualiza_custo_total_orcamento, sender=Orcamento)
 signals.post_save.connect(orcamento_post_save, sender=Orcamento)
+# GRUPO DADO VARIAVEL
+signals.post_save.connect(grupo_dados_variaveis_post_save, sender=GrupoDadosVariaveis)

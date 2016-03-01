@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """This file is part of the microerp project.
 
-This program is free software: you can redistribute it and/or modify it 
+This program is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License as published by the
 Free Software Foundation, either version 3 of the License, or (at your
 option) any later version.
@@ -46,6 +46,8 @@ from financeiro.models import LancamentoFinanceiroReceber
 from comercial.models import DocumentoGerado
 from comercial.models import GrupoDocumento
 from comercial.models import ItemGrupoDocumento
+from comercial.models import GrupoDadosVariaveis
+from comercial.models import DadoVariavel
 
 # ADMIN ACTIONS
 def lancar_contrato(modeladmin, request, queryset):
@@ -85,7 +87,7 @@ class OrcamentoAdmin(admin.ModelAdmin):
     inlines = [LinhaRecursoMaterialInLine, LinhaRecursoHumanoInLine]
     list_filter = 'modelo', 'ativo', 'promocao', 'tabelado'
     list_display = 'descricao', 'ativo', 'modelo', 'promocao', 'tabelado'
-    
+
 class LancamentoFinanceiroReceberInline(admin.TabularInline):
     model = LancamentoFinanceiroReceber
     extra = 0
@@ -127,11 +129,21 @@ class ItemGrupoDocumentoInline(admin.StackedInline):
 
 class DocumentoGeradoAdmin(admin.ModelAdmin):
     inlines = [GrupoDocumentoInline,]
-    list_filter = 'modelo',
+    list_filter = 'modelo', 'tipo'
+    search_fields = 'propostacomercial__id', 'contratofechado__id',
 
 class GrupoDocumentoAdmin(admin.ModelAdmin):
     inlines = [ItemGrupoDocumentoInline,]
-    list_filter = 'documento__modelo',
+    list_filter = 'documento__modelo', 'documento__tipo'
+
+class DadoVariavelInline(admin.StackedInline):
+    model = DadoVariavel
+    extra = 0
+
+class GrupoDadosVariaveisAdmin(admin.ModelAdmin):
+    search_fields = 'documento__contratofechado__id', 'documento__propostacomercial__id'
+    list_filter = 'documento__tipo', 'documento__modelo'
+    inlines = DadoVariavelInline,
 
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
@@ -156,3 +168,5 @@ admin.site.register(EmpresaComercial, EmpresaComercialAdmin)
 admin.site.register(DocumentoGerado, DocumentoGeradoAdmin)
 admin.site.register(GrupoDocumento, GrupoDocumentoAdmin)
 admin.site.register(ItemGrupoDocumento)
+admin.site.register(GrupoDadosVariaveis, GrupoDadosVariaveisAdmin)
+admin.site.register(DadoVariavel)

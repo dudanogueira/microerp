@@ -1,0 +1,136 @@
+{% load staticfiles %}
+{% load bootstrap %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!--<link rel="icon" href="../../favicon.ico"> -->
+
+    <title>{% block title %}{{nome_sistema}}{% endblock %}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static "frontend/bootstrap/css/bootstrap.min.css" %}" rel="stylesheet">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <!-- Custom styles for this template -->
+  	<link href="{% static "frontend/css/style.css" %}" rel="stylesheet">
+	  <link rel="stylesheet" href="{% static "frontend/css/font-awesome.min.css" %}">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+  </head>
+  <body>
+    {% if messages %}
+    <div id="alertas">
+        {% for message in messages %}
+                {% if message.tags == "error" %}
+        <div class="alert alert-danger" role="alert">
+                {% else %}
+                <div class="alert {% if message.tags %} alert-{{ message.tags }}{% endif %}" role="alert">
+                {% endif %}
+          <a class="close" data-dismiss="alert">×</a>
+                  {% if message.tags == "error" %}
+          <i class="fa fa-times-circle-o"></i>
+                  {% endif %}
+                  {% if message.tags == "info" %}
+          <i class="fa fa-comment"></i>
+                  {% endif %}
+                  {% if message.tags == "success" %}
+          <i class="fa fa-check-circle"></i>
+                  {% endif %}
+                  {% if message.tags == "warning" %}
+          <i class="fa fa-warning"></i>
+                  {% endif %}
+
+                   {{ message|safe }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="container">
+
+     <div class="starter-template">
+       <h1>Simulador Retscreen</h1>
+       <form method="POST">
+         {% csrf_token %}
+         {{form|bootstrap}}
+         <button type="submit">Simular</button>
+       </form>
+     </div>
+
+     {% if request.POST %}
+     <div class="row">
+        <div class="col-md-4">
+          <h2>Resultados</h2>
+          <ul>
+            <li>Preço por Watt: R$ {{preco_por_watt|intcomma}}</li>
+            <li>Preço Sugerido: R$ {{preco_sugerido|intcomma}}</li>
+            <li>Área da usina: {{area_usina|floatformat:2}} m2</li>
+            <li>Geração por Mês: {{geracao_kw_mes|floatformat:2}} Kw</li>
+            <li>Geração por Ano: {{geracao_kw_ano|floatformat:2}} Kw</li>
+            <li>Economia Mensal: R$ {{economia_mensal|floatformat:2}}</li>
+          </ul>
+
+        </div>
+        <div class="col-md-8">
+          <div id="columnchart_values"></div>
+
+        </div>
+
+
+     </div>
+
+     {% endif %}
+
+     <script type="text/javascript">
+     dados = [
+         ["Ano", "Retorno", { role: "style" } ],
+         {% for k,v in retorno.items %}
+           {% if v.0 < 0 %}
+             ['Ano {{k}}', {v: {{v.0|floatformat:0}}, f: 'R$ {{v.0|floatformat:2}}'}, 'red'],
+           {% else %}
+             ['Ano {{k}}', {v: {{v.0|floatformat:0}}, f: 'R$ {{v.0|floatformat:2}}'}, 'green'],
+           {% endif %}
+         {% endfor %}
+       ]
+       google.charts.load("current", {packages:['corechart']});
+       google.charts.setOnLoadCallback(drawChart);
+       function drawChart() {
+         var data = google.visualization.arrayToDataTable(dados);
+
+         var view = new google.visualization.DataView(data);
+         view.setColumns([0, 1,
+                          { calc: "stringify",
+                            sourceColumn: 1,
+                            type: "string",
+                            role: "annotation" },
+                          2]);
+
+         var options = {
+           title: "Retorno do Investimento",
+           width: 800,
+           height: 500,
+           bar: {groupWidth: "80%"},
+           legend: { position: "none" },
+         };
+         var chart = new google.visualization.BarChart(document.getElementById("columnchart_values"));
+         chart.draw(view, options);
+     }
+     </script>
+
+
+   </div><!-- /.container -->
+
+
+
+  </body>
+</html>

@@ -6,7 +6,7 @@
 <title>{%block title %}{{block.super}} - Comercial - Editar Orçamento de Proposta{% endblock %}</title>
 
 {% block content %}
-<h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Editar Modelos de Orçamento</h1>
+<h1><i class="fa fa-th"></i> <i class="fa fa-quote-right"></i> Editar Orçamento</h1>
 
 <h2>Orçamento: {{orcamento.descricao}} - Valor Atual R$ {{orcamento.custo_total}}</h2>
 
@@ -16,14 +16,19 @@
 	{{form_editar_linhas_humano.management_form}}
 
 <div class="row row-fluid">
-	<div  class="col-md-8">
+	<div  class="col-md-6">
 		{{form_orcamento.as_p}}
 		{{form.errors}}
 	</div>
 
-	<div  class="col-md-4">
+	<div  class="col-md-6 text-right">
 
       	 <a class="btn btn-default" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-arrow-left"></i> Retornar</a>
+
+		{% if "retscreen"|is_installed_app %}
+		 <a class="btn btn-warning" href="{% url "comercial:editar_proposta" orcamento.proposta.id %}"><i class="fa fa-sun-o"></i> Retscreen</a>
+		 {% endif %}
+
 		 {% if not orcamento.promocao and not orcamento.tabelado %}
  		<button type="submit" for="form-altera-orcamento" name="alterar-orcamento" value="alterar" class="btn btn-danger"><i class="fa fa-save"></i> Atualizar</button>
 		{% endif %}

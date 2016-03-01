@@ -9,7 +9,6 @@
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
 {% block content %}
-
 <div class="row">
 	<div class="col-md-6">
 		<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-o"></i> Editar Proposta</h1>
@@ -92,9 +91,11 @@
 		<div class="row-fluid">
 			<div class="col-md-10">
 				<div class="alert alert-success">
-					{{orcamento_ativo}}<br />
+					{{orcamento_ativo.descricao}} - R$ {{orcamento_ativo.custo_total|intcomma}}<br />
 					{% if orcamento_ativo.promocao %}
-					<small class="label label-info"><i class="fa fa-clock-o"></i> <strong>De</strong> {{orcamento_ativo.inicio_promocao|date:"SHORT_DATE_FORMAT"}} <strong>a</strong> {{orcamento_ativo.fim_promocao|date:"SHORT_DATE_FORMAT"}} </small>
+					<small class="label label-info">
+						<i class="fa fa-clock-o"></i> <strong>De</strong> {{orcamento_ativo.inicio_promocao|date:"SHORT_DATE_FORMAT"}} <strong>a</strong> {{orcamento_ativo.fim_promocao|date:"SHORT_DATE_FORMAT"}}
+					</small>
 					{% endif %}
 
 				</div>
@@ -152,7 +153,7 @@
 <div class="row-fluid">
 	<div class="col-md-8">
 		<div class="alert alert-danger">
-			{{orcamento_inativo}}
+			{{orcamento_inativo.descricao}} - R$ {{orcamento_inativo.custo_total|intcomma}}
 		</div>
 	</div>
 	<div class="col-md-4">

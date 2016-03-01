@@ -42,5 +42,10 @@ urlpatterns = [
 ]
 
 from django.conf import settings
+
+# apps condicionais
+if 'retscreen' in settings.INSTALLED_APPS:
+    urlpatterns.append(url(r'^retscreen/', include('retscreen.urls', namespace="retscreen")))
+
 if settings.DEBUG:
     urlpatterns = urlpatterns + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

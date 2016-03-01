@@ -32,7 +32,7 @@
 		</h3>
 	</div>
 </div>
-
+{% if orcamento.linharecursomaterial_set.all %}
 	<h4>Recurso Material</h4>
 	<table class="table table-condensed table-bordered table-rounded">
 		<thead>
@@ -70,7 +70,8 @@
 		</tr>
 		</tbody>
 	</table>
-
+{% endif %}
+{% if orcamento.linharecursohumano_set.all %}
 	<h4>Recurso Humano</h4>
 	<table class="table table-condensed table-bordered table-rounded">
 		<thead>
@@ -103,7 +104,7 @@
 		</tr>
 		</tbody>
 	</table>
-
+{% endif %}
 </div>
 
 <div class="row-fluid">
