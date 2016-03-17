@@ -2195,15 +2195,12 @@ class DocumentoGeradoPrint:
                                 elements.append(Spacer(1, 12))
 
 
-
-
-
                     if item.quebra_pagina:
                         elements.append(PageBreak())
                     elements.append(Spacer(1, 10))
 
                 elements.append(Spacer(1, 12))
-                            # texto validade
+                # texto validade
                 if documento.propostacomercial:
                     validade = "Essa proposta é válida até %s e foi emitida em %s" % \
                     ( documento.propostacomercial.data_expiracao.strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
@@ -2917,7 +2914,7 @@ class ContratoPrint:
             elements.append(testemunha_texto)
 
             # Data de Criação do Contrato e Data atual
-            elements.append(Spacer(1, 10))
+            elements.append(Spacer(1, 15))
             representante_empresa = u"Contrato Criado no dia %s e impresso no dia %s" % (self.contrato.criado.date().strftime("%d/%m/%Y"), datetime.date.today().strftime("%d/%m/%Y"))
             representante_p = Paragraph(representante_empresa, styles['left'])
             elements.append(representante_p)
@@ -2935,7 +2932,7 @@ class ContratoPrint:
 
 class ContratoPrintDocumento:
     """
-    Imprime o contrato impresso.
+    Gera PDF do contrato impresso à partir do Documento
     """
 
     def __init__(self, buffer, pagesize):
@@ -2959,7 +2956,6 @@ class ContratoPrintDocumento:
             canvas.restoreState()
 
     def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
-
             self.contrato = contrato
             self.documento = contrato.documento_gerado
             self.perfil = perfil
@@ -3047,6 +3043,21 @@ class ContratoPrintDocumento:
 
                 elements.append(Spacer(1, 12))
 
+            # CIDADE E DATA
+            import locale
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            if self.perfil:
+                # usar cidade do perfil
+                cidade = self.perfil.empresa.cidade
+            else:
+                # usar cidade padrao
+                cidade = getattr(settings, u"CIDADE_CONTRATO", u"Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
+            #cidade_texto = u"%s, %s" % (cidade), unicode(datetime.date.today().strftime("%d de %B de %Y")))
+            data = datetime.date.today().strftime(u"%d de %B de %Y".encode('utf-8')).decode('utf-8')
+            cidade_p = Paragraph("%s, %s" % (cidade, data), styles['right'])
+            elements.append(cidade_p)
+
+            elements.append(Spacer(1, 12))
             # TESTEMUNHA 1
             #
             elements.append(Spacer(1, self.espaco_assinaturas))

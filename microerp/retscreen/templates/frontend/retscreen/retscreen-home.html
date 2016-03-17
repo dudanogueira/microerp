@@ -1,6 +1,7 @@
 {% load staticfiles %}
 {% load bootstrap %}
 {% load humanize %}
+{% load l10n %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -73,7 +74,7 @@
           <h2>Resultados</h2>
           <ul>
             <li>Preço por Watt: R$ {{preco_por_watt|intcomma}}</li>
-            <li>Preço Sugerido: R$ {{preco_sugerido|floatformat:2|intcomma}}</li>
+            <li>Preço Sugerido: R$ {{preco_sugerido|intcomma}}</li>
             <li>Área da usina: {{area_usina|floatformat:2}} m2</li>
             <li>Geração por Mês: {{geracao_kw_mes|floatformat:2}} Kw</li>
             <li>Geração por Ano: {{geracao_kw_ano|floatformat:2}} Kw</li>
@@ -96,9 +97,9 @@
          ["Ano", "Retorno", { role: "style" } ],
          {% for k,v in retorno.items %}
            {% if v.0 < 0 %}
-             ['Ano {{k}}', {v: {{v.0|floatformat:0}}, f: 'R$ {{v.0|floatformat:2|intcomma}}'}, 'red'],
+             ['Ano {{k}}', {v: {{v.0|unlocalize}}, f: 'R$ {{v.0|floatformat:2}}'}, 'red'],
            {% else %}
-             ['Ano {{k}}', {v: {{v.0|floatformat:0}}, f: 'R$ {{v.0|floatformat:2|intcomma}}'}, 'green'],
+             ['Ano {{k}}', {v: {{v.0|unlocalize}}, f: 'R$ {{v.0|floatformat:2}}'}, 'green'],
            {% endif %}
          {% endfor %}
        ]
