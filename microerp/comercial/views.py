@@ -2151,7 +2151,7 @@ class DocumentoGeradoPrint:
 
             # id da proposta
             if documento.propostacomercial:
-                id_documento = Paragraph("Nº PROPOSTA: %s" % str(documento.propostacomercial.id), styles['right'])
+                id_documento = Paragraph("Nº %s" % str(documento.propostacomercial.id), styles['right'])
             else:
                 id_documento = Paragraph("Nº CONTRATO: %s" % str(documento.contratofechado.id), styles['right'])
 
