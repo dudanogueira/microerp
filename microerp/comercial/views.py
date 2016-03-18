@@ -2594,7 +2594,7 @@ class NumberedCanvas(canvas.Canvas):
     def draw_page_number(self, page_count):
         self.setFont("Helvetica", 7)
         # Change the position of this to wherever you want the page number to be
-        self.drawRightString(200 * mm, 15 * mm + (0.2 * inch),
+        self.drawRightString(200 * mm, 5 * mm + (0.2 * inch),
                              u"Página %d de %d" % (self._pageNumber, page_count))
 
 class ContratoPrint:
