@@ -2126,6 +2126,12 @@ class DocumentoGeradoPrint:
 
             # se possuir capa, quebrar pra que primeira página fique em branco
             if self.documento.capa:
+                # id da proposta
+                if documento.propostacomercial:
+                    id_documento = Paragraph("Nº PROPOSTA: %s" % str(documento.propostacomercial.id), styles['right'])
+                else:
+                    id_documento = Paragraph("Nº CONTRATO: %s" % str(documento.contratofechado.id), styles['right'])
+                elements.append(id_documento)
                 elements.append(PageBreak())
 
             # se documento possui dados variaveis, resgatar chave e valor

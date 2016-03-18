@@ -242,7 +242,7 @@ class PropostaComercial(models.Model):
         )
         # clona acapa
         if modelo.capa:
-            documento.capa.save(os.path.basename(documento.capa.url),documento.capa.file,save=True)
+            documento.capa.save(os.path.basename(modelo.capa.url),modelo.capa.file,save=True)
         # associa documento gerado com esta proposta
         self.documento_gerado = documento
         self.save()
