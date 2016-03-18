@@ -59,7 +59,14 @@
 
 			{% if proposta.documento_gerado %}
 			<div id="com-documento-gerado">
-
+					{% if proposta.documento_gerado.capa %}
+					<div id="capa" class="well well-sm">
+						<h4>Capa</h4>
+						{% thumbnail proposta.documento_gerado.capa "100x100" format="PNG" as im %}
+						<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+						{% endthumbnail %}
+					</div>
+					{% endif %}
 				{% for grupo in proposta.documento_gerado.grupodocumento_set.all %}
 				<div id="grupo-{{grupo.id}}">
 

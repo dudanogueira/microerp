@@ -2123,6 +2123,11 @@ class DocumentoGeradoPrint:
 
             # Our container for 'Flowable' objects
             elements = []
+
+            # se possuir capa, quebrar pra que primeira página fique em branco
+            if self.documento.capa:
+                elements.append(PageBreak())
+
             # se documento possui dados variaveis, resgatar chave e valor
             if hasattr(documento, 'grupodadosvariaveis'):
                 dicionario_cv = documento.grupodadosvariaveis.dadovariavel_set.\
