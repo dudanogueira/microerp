@@ -14,3 +14,9 @@ class TabelaValores(models.Model):
     quantidade_placas_inicial = models.IntegerField(blank=True, null=True)
     quantidade_placas_final = models.IntegerField(blank=True, null=True)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
+
+class FormaParcelamento(models.Model):
+    nome = models.CharField(blank=False, max_length=100)
+    juros = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
+    parcelas = models.IntegerField(blank=True, null=True)
+    empresas = models.ManyToManyField('comercial.EmpresaComercial')

@@ -9,11 +9,13 @@ from django.contrib import messages
 from models import TabelaValores
 
 class FormConfiguraRetscreen(forms.Form):
+    fator = forms.DecimalField(label=u"Fator Energético", required=True, initial=0,  decimal_places=2)
     media = forms.DecimalField(label=u"Média de Consumo Energético", required=True)
     tamanho_placa = forms.DecimalField(label=u"Tamanho da Placa", required=True, initial=0.265)
     radiacao = forms.DecimalField(label=u"Radiação", required=True, initial=4.81)
     preco_eletricidade = forms.DecimalField(label=u"Preço da Eletricidade", initial=0.50974, required=True)
     quantidade_placa = forms.DecimalField(label=u"Quantidade de Placas", required=False)
+    valor_final = forms.DecimalField(label=u"Valor Final", required=False)
 
 def home(request):
     form = FormConfiguraRetscreen(request.POST or None)
@@ -44,8 +46,12 @@ def home(request):
             quantidade_placas_final__gte=numero_placas_sugerida,
             )
         preco_por_watt = tabela.valor
-        preco_sugerido = float(tamanho_usina) * float(preco_por_watt)
+        preco_sugerido = round(float(tamanho_usina) * float(preco_por_watt))
+        if form.cleaned_data['fator'] != 0:
+            preco_sugerido = preco_sugerido + (float(preco_sugerido) * float(form.cleaned_data['fator'])/100)
         retorno = {}
+        if form.cleaned_data['valor_final']:
+            preco_sugerido = float(form.cleaned_data['valor_final'])
         for i in range(0,26):
             retorno[i] = [preco_sugerido * -1, economia_anual]
             if i != 0:
@@ -58,7 +64,12 @@ def home(request):
                 ]
 
         updated_data = request.POST.copy()
-        updated_data.update({'quantidade_placa': numero_placas_sugerida})
+        updated_data.update(
+            {
+                'quantidade_placa': numero_placas_sugerida,
+                'valor_final': preco_sugerido
+            }
+        )
         form = FormConfiguraRetscreen(data=updated_data)
 
     return render_to_response('frontend/retscreen/retscreen-home.html', locals(), context_instance=RequestContext(request),)

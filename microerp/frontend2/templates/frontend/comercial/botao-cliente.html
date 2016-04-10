@@ -3,7 +3,7 @@
 <a class="btn btn-default popover-items" href="{% url "comercial:cliente_ver" cliente.id %}" data-trigger="hover" data-title="{{cliente.nome}}" data-html="true" data-content='{% if cliente.tipo == "pf" %}
 					<span class="label label-success">{{cliente.get_tipo_display}}</span>
 				{% else %}
-					<span class="label label-success">{{cliente.get_tipo_display}}</span> 
+					<span class="label label-success">{{cliente.get_tipo_display}}</span>
 				{% endif %}
 				{% if cliente.telefone_fixo %}
                     <small class="label label-info"><i class="fa fa-phone"></i> {{cliente.telefone_fixo|phonenumber}}</small>
@@ -12,6 +12,11 @@
 					<small class="label label-info">
 						<i class="fa fa-mobile-phone"></i> 									{{cliente.telefone_celular|phonenumber}}
 					</small>
+				{% endif %}
+				{% if cliente.endereco_principal %}
+				<hr />
+					<i class="fa fa-home"></i> {{cliente.logradouro_completo}}
+				<hr />
 				{% endif %}
 				{% if cliente.contato %}
 				<br />
@@ -23,14 +28,17 @@
 	{% if requisicao.cliente.tipo == "pf" %}
 		<span class="label">{{cliente.tipo|upper}}</span>
 	{% else %}
-		<span class="label label-success">{{cliente.tipo|upper}}</span> 
+		<span class="label label-success">{{cliente.tipo|upper}}</span>
 	{% endif %}
 		{{cliente.nome}}
 </a>
 
+{% if cliente.endereco_principal %}
+	<a href="http://maps.google.com/?q={{cliente.endereco_principal.rua}} {{cliente.endereco_principal.numero}} {{cliente.endereco_principal.cidade_texto}} {{cliente.endereco_principal.uf_texto}}" target="_blank" class="btn btn-primary"><i class="fa fa-map-marker"></i></a>
+{% endif %}
 
-				{% if request.user.perfilacessocomercial.super_gerente %}
-					{% thumbnail proposta_list.grouper.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
-    					<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-					{% endthumbnail %}
-				{% endif %}
+{% if request.user.perfilacessocomercial.super_gerente %}
+	{% thumbnail cliente.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
+			<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+	{% endthumbnail %}
+{% endif %}

@@ -328,6 +328,7 @@ class PropostaComercial(models.Model):
     definido_perdido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Perdido por", related_name="proposta_definida_perdido_set", blank=True, null=True)
     definido_perdido_em = models.DateTimeField(blank=True, null=True)
     definido_perdido_motivo = models.TextField(u"Motivo de Perda da Proposta", blank=True)
+    definido_perdido_motivo_opcao = models.ForeignKey('MotivoFechamentoProposta', blank=True, null=True)
     # definido convertido
     definido_convertido_por = models.ForeignKey('rh.Funcionario', verbose_name=u"Definido Como Convertido por", related_name="proposta_definida_convertida_set", blank=True, null=True)
     definido_convertido_em = models.DateTimeField(blank=True, null=True)
@@ -338,6 +339,12 @@ class PropostaComercial(models.Model):
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
+class MotivoFechamentoProposta(models.Model):
+
+    def __unicode__(self):
+        return self.motivo
+
+    motivo = models.CharField(blank=True, max_length=100)
 
 class ClasseTipoDeProposta(models.Model):
     def __unicode__(self):
@@ -836,7 +843,7 @@ class ContratoFechado(models.Model):
     def lancamentos_abertos(self):
         return self.lancamentofinanceiroreceber_set.filter(situacao='a')
 
-    def sugere_texto_lancamentos_abertos(self):
+    def sugere_texto_lancamentos_abertos(self, adiciona_total=True):
         textos = []
         for lancamento in self.lancamentos_abertos():
             if lancamento.observacao_recebido:
@@ -858,6 +865,8 @@ class ContratoFechado(models.Model):
                              lancamento.get_modo_recebido_display(),
                         )
                     )
+        if adiciona_total:
+            textos.append("Valor Total: %s (%s)" % (self.valor, self.valor_extenso()))
         return "\n".join(textos)
 
     def proposta_id(self):

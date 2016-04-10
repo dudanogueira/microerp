@@ -19,6 +19,10 @@ __author__ = 'Duda Nogueira <dudanogueira@gmail.com>'
 __copyright__ = 'Copyright (c) 2013 Duda Nogueira'
 __version__ = '2.0.0'
 
+
+import csv
+from django.http import HttpResponse
+
 from django.contrib import admin
 
 from comercial.models import PropostaComercial
@@ -48,8 +52,77 @@ from comercial.models import GrupoDocumento
 from comercial.models import ItemGrupoDocumento
 from comercial.models import GrupoDadosVariaveis
 from comercial.models import DadoVariavel
+from comercial.models import MotivoFechamentoProposta
 
 # ADMIN ACTIONS
+
+def export_xls(modeladmin, request, queryset):
+    import xlwt
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=mymodel.xls'
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet("MyModel")
+
+    row_num = 0
+
+    columns = [
+        (u"ID", 2000),
+        (u"Cliente", 6000),
+        (u"Valor", 8000),
+        (u"Tipo", 8000),
+        (u"Criação Proposta", 8000),
+        (u"Criação Contrato", 8000),
+        (u"Vendedor", 8000),
+        (u"Status", 8000),
+        (u"Cidade", 8000),
+        (u"Telefone", 8000),
+        (u"Empresa", 8000),
+        (u"Follow Up", 8000),
+    ]
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    for col_num in xrange(len(columns)):
+        ws.write(row_num, col_num, columns[col_num][0], font_style)
+        # set column width
+        ws.col(col_num).width = columns[col_num][1]
+
+    font_style = xlwt.XFStyle()
+    font_style.alignment.wrap = 1
+
+    for obj in queryset:
+        row_num += 1
+        if obj.cliente.endereco_principal():
+            cidade = obj.cliente.endereco_principal().cidade_texto
+        else:
+            cidade = ''
+        if obj.propostacomercial.tipo:
+            tipo = obj.propostacomercial.tipo.nome
+        else:
+            tipo = ''
+        row = [
+            obj.pk,
+            obj.cliente.nome,
+            obj.valor,
+            tipo,
+            obj.propostacomercial.criado.strftime("%d/%m/%Y"),
+            obj.criado.strftime("%d/%m/%Y"),
+            obj.responsavel.nome,
+            obj.get_status_display(),
+            cidade,
+            "%s - %s" % (obj.cliente.telefone_celular, obj.cliente.telefone_fixo),
+            obj.responsavel.user.perfilacessocomercial.empresa.nome,
+            obj.propostacomercial.followupdepropostacomercial_set.count(),
+        ]
+        for col_num in xrange(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response
+
+export_xls.short_description = u"Export XLS"
+
 def lancar_contrato(modeladmin, request, queryset):
     for contrato in queryset:
         contrato.lancar()
@@ -97,7 +170,7 @@ class ContratoFechadoAdmin(admin.ModelAdmin):
     list_filter = 'tipo', 'status', 'categoria__nome'
     search_fields = 'cliente__nome', 'id'
     inlines = [LancamentoFinanceiroReceberInline]
-    actions = [lancar_contrato,]
+    actions = [lancar_contrato, export_xls]
     date_hierarchy = 'criado'
 
 class TipodeContratoFechadoAdmin(admin.ModelAdmin):
@@ -135,6 +208,7 @@ class DocumentoGeradoAdmin(admin.ModelAdmin):
 class GrupoDocumentoAdmin(admin.ModelAdmin):
     inlines = [ItemGrupoDocumentoInline,]
     list_filter = 'documento__modelo', 'documento__tipo'
+    search_fields = 'documento__propostacomercial__id', 'documento__contratofechado__id'
 
 class DadoVariavelInline(admin.StackedInline):
     model = DadoVariavel
@@ -170,3 +244,4 @@ admin.site.register(GrupoDocumento, GrupoDocumentoAdmin)
 admin.site.register(ItemGrupoDocumento)
 admin.site.register(GrupoDadosVariaveis, GrupoDadosVariaveisAdmin)
 admin.site.register(DadoVariavel)
+admin.site.register(MotivoFechamentoProposta)

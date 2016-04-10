@@ -1,0 +1,45 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load bootstrap %}
+
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+<h1><i class="fa fa-th"></i> <i class="fa fa-briefcase"></i> <i class="fa fa-file-alt"></i> Definir Motivo de Fechamento de Proposta</h1>
+
+<h2>Existem {{propostas_sem_motivo.count}} Propostas Fechadas sem motivo definido</h2>
+<form method="post">
+{% csrf_token %}
+{{ formset.management_form }}
+{% for form in formset %}
+{% if form.instance.cliente %}
+  {% include "frontend/comercial/botao-cliente.html" with cliente=form.instance.cliente %}
+{% endif %}
+{% if form.instance.precliente %}
+  {% include "frontend/comercial/botao-precliente.html" with precliente=form.instance.precliente %}
+{% endif %}
+Proposta: {{form.instance.id}} |
+Motivo: {{form.instance.definido_perdido_motivo}} |
+Fechado em: {{form.instance.definido_perdido_em|date:"SHORT_DATE_FORMAT"}} por {{form.instance.definido_perdido_por}}
+{{form|bootstrap}}
+<hr  />
+{% endfor %}
+<button class="btn btn-primary btn-block" type="submit">Salvar</button>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<script>
+
+
+$(document).ready(function() {
+	$("#menu-comercial-definir-motivos-fechamento, #top-menu-comercial").addClass("active");
+});
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}

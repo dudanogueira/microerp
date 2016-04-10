@@ -752,6 +752,29 @@ def editar_proposta_fechar(request, proposta_id):
         form_fechar = FormFecharProposta()
     return render_to_response('frontend/comercial/comercial-proposta-fechar.html', locals(), context_instance=RequestContext(request),)
 
+@user_passes_test(possui_perfil_acesso_comercial)
+def gerencia_definir_motivos_fechamento(request):
+
+    propostas_da_empresa = PropostaComercial.objects.filter(
+        Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+        Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) 
+    )
+
+    propostas_sem_motivo = propostas_da_empresa.filter(definido_perdido_motivo_opcao=None, status="perdida")
+    propostas_editar = propostas_da_empresa.filter(definido_perdido_motivo_opcao=None, status="perdida").order_by('-criado')[0:100]
+    PropostaFormSet = modelformset_factory(
+        PropostaComercial,
+        fields=('definido_perdido_motivo_opcao',),
+        extra=0
+        )
+
+    formset = PropostaFormSet(request.POST or None, queryset=propostas_editar)
+    if request.POST and formset.is_valid():
+        formset.save()
+        return redirect(reverse("comercial:gerencia_definir_motivos_fechamento"))
+    #contratos
+    return render_to_response('frontend/comercial/comercial-proposta-definir-motivos-fechamento.html', locals(), context_instance=RequestContext(request),)
+
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def gerencia_aprovar_fechamentos(request):
     if request.POST:
@@ -2661,16 +2684,22 @@ class ContratoPrint:
             elements = []
 
             # logo empresa
+
             if perfil.empresa:
-                im = Image(perfil.empresa.logo.path, width=2*inch,height=1*inch,kind='proportional')
+                logo_path = perfil.empresa.logo.path
+
             else:
-                im = Image(getattr(settings, 'IMG_PATH_LOGO_EMPRESA'), width=2*inch,height=1*inch,kind='proportional')
-            im.hAlign = 'LEFT'
+                logo_path = getattr(settings, 'IMG_PATH_LOGO_EMPRESA')
+            if os.path.isfile(logo_path):
+                im = Image(logo_path, width=2*inch,height=1*inch,kind='proportional')
+                im.hAlign = 'LEFT'
+            else:
+                im = None
 
             # id do contrato
             id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
 
-            if imprime_logo:
+            if imprime_logo and im:
                 data=[(im,id_contrato)]
                 table = Table(data, colWidths=270, rowHeights=79)
             else:
@@ -3037,6 +3066,7 @@ class ContratoPrintDocumento:
                             estilo = 'left_h2'
                         desc_itens_titulo = Paragraph(item.titulo, styles[estilo])
                         elements.append(desc_itens_titulo)
+                        elements.append(Spacer(1, 10))
                     if item.texto:
                         texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
                         elements.append(texto)

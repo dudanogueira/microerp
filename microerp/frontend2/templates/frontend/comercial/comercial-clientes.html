@@ -76,11 +76,11 @@
 		                {% for cliente in preclientes %}
 
 		                <tr>
-		                    <td>{{cliente.nome}} </td>
+		                    <td>{% include "frontend/comercial/botao-precliente.html" with precliente=cliente %} </td>
 							<td>{% if cliente.designado %}{{cliente.designado}}{% endif %}</td>
-							<td>{{cliente.dados}}
+							<td>{{cliente.logradouro_completo}}
 								<br />
-								<strong>Contato:</strong> {{cliente.contato}}</td>
+								<strong>Contato:</strong> {{cliente.telefone_fixo}}, {{cliente.telefone_celular}}</td>
 		                    <td>
 								<p class="btn-group">
 
@@ -131,12 +131,7 @@
 						{% for cliente in clientes %}
 
 						<tr>
-		                <td>{% if cliente.tipo == "pf" %}
-		                        <span class="label label-warning">{{cliente.tipo|upper}}</span>
-		                    {% else %}
-		                        <span class="label label-success">{{cliente.tipo|upper}}</span>
-		                    {% endif %}
-							{{cliente.nome}}
+		                <td>{% include "frontend/comercial/botao-cliente.html" with cliente=cliente %}
 		                </td>
 						<td>{% if cliente.designado %}{{cliente.designado}}{% endif %}</td>
 		                <td>
@@ -173,7 +168,6 @@
 		                <caption><h4 class="alert">Pré Clientes Sem Proposta</h4></caption>
 		                <tr>
 		                    <th >Pré Cliente</th>
-												<th style="width:10%">Contato</th>
 												<th style="width:30%">Dados</th>
 												{% if request.user.perfilacessocomercial.gerente %}
 													<th>Responsável</th>
@@ -186,12 +180,19 @@
 
 		                {% for cliente in preclientes_sem_proposta %}
 		                <tr>
-		                    <td>{{cliente.nome}}</td>
+		                    <td>{% include "frontend/comercial/botao-precliente.html" with precliente=cliente %}</td>
 												<td>
-														{{cliente.contato}}. <br />
-														<span class="label label-info"><small><i class='fa fa-plus'></i> há {{cliente.criado|timesince}}</small></span>
+													{{cliente.contato}}<br />
+													<span class="label label-info"><small><i class='fa fa-plus'></i> há {{cliente.criado|timesince}}</small></span>
+													{% if cliente.logradouro_completo %}
+														<i class="fa fa-home"></i>
+														{{cliente.logradouro_completo}}
+													{% endif %}
+													{% if cliente.dados %}
+														<i class="fa fa-comment"></i>
+														{{cliente.dados|truncatechars:100}}
+													{% endif %}
 												</td>
-												<td>{{cliente.dados|truncatechars:100}}</td>
 												{% if request.user.perfilacessocomercial.gerente %}
 													<td>{{cliente.designado.nome_reduzido}}</td>
 												{% endif %}

@@ -65,6 +65,14 @@ class PreCliente(models.Model):
         verbose_name = "Pré Cliente"
         verbose_name_plural = "Pré Clientes"
 
+    def telefones(self):
+        t = []
+        if self.telefone_fixo:
+            t.append(self.telefone_fixo)
+        if self.telefone_celular:
+            t.append(self.telefone_celular)
+        return t
+
     def propostas_abertas(self):
         return self.propostacomercial_set.filter(status="aberta", data_expiracao__gte=datetime.date.today())
 
@@ -78,7 +86,10 @@ class PreCliente(models.Model):
         return self.propostacomercial_set.filter(status__in=("perdida", "perdida_aguardando"))
 
     def logradouro_completo(self):
-        string = u"%s, %s, %s - %s - %s, CEP: %s" % (self.rua, self.numero, self.bairro_texto, self.cidade_texto, self.uf_texto, self.cep)
+        if self.rua:
+            string = u"%s, %s, %s - %s - %s, CEP: %s" % (self.rua, self.numero, self.bairro_texto, self.cidade_texto, self.uf_texto, self.cep)
+        else:
+            string = None
         return string
 
     cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
@@ -148,7 +159,7 @@ class Cliente(models.Model):
             BRPhoneNumberField().clean(self.telefone_celular)
         if self.cnpj and self.cnpj == '0'*14:
             raise ValidationError({'cnpj': [u'Embora Válido, não é aceito um CNPJ com %s ;' % '000000000000000',]})
-        # TODO: tem que ter fixo ou celular, qualquer um dos dois 
+        # TODO: tem que ter fixo ou celular, qualquer um dos dois
 
     def documento(self):
         if self.tipo == "pj":
@@ -169,12 +180,9 @@ class Cliente(models.Model):
         return self.solicitacaocomercial_set.count()
 
     def logradouro_completo(self):
-        if self.enderecocliente_set.all():
-            if self.enderecocliente_set.filter(principal=True):
-                endereco = self.enderecocliente_set.filter(principal=True)[0]
-            else:
-                endereco = self.enderecocliente_set.first()
-            string = u"%s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro_texto, endereco.uf_texto, endereco.cep)
+        if self.endereco_principal():
+            endereco = self.endereco_principal()
+            string = u"%s, %s, %s, %s - %s, CEP: %s" % (endereco.rua, endereco.numero, endereco.bairro_texto, endereco.cidade_texto, endereco.uf_texto, endereco.cep)
         else:
             string = None
         return string

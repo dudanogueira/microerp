@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^proposta/(?P<proposta_id>[0-9]+)/converter/$', views.editar_proposta_converter, name='editar_proposta_converter'),
     url(r'^proposta/(?P<proposta_id>[0-9]+)/converter_novo/$', views.editar_proposta_converter_novo, name='editar_proposta_converter_novo'),
     url(r'^proposta/gerente/aprovar/fechamentos/$', views.gerencia_aprovar_fechamentos, name='gerencia_aprovar_fechamentos'),
+    url(r'^proposta/gerente/definir-motivos-fechamentos/$', views.gerencia_definir_motivos_fechamento, name='gerencia_definir_motivos_fechamento'),
     # propostas pre cliente
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/$', views.propostas_comerciais_precliente, name='propostas_comerciais_precliente'),
     url(r'^propostas/precliente/(?P<precliente_id>[0-9]+)/adicionar/$', views.propostas_comerciais_precliente_adicionar, name='propostas_comerciais_precliente_adicionar'),

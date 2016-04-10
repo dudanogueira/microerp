@@ -2,14 +2,19 @@
 {% load thumbnail %}
 <a class="btn btn-default popover-items" href="{% url "comercial:precliente_ver" precliente.id %}" cliente.id %}" data-trigger="hover" data-title="{{precliente.nome}}" data-html="true" data-content='
 			<span class="label label-warning">Pré Cliente</span>
-			{% if precliente.contato %}
-                <small class="label label-info"><i class="fa fa-phone"></i> {{precliente.contato}}</small>
-            {% endif %}
+			{% for telefone in precliente.telefones %}
+      	<small class="label label-info"><i class="fa fa-phone"></i> {{telefone}}</small>
+			{% endfor %}
 			{% if precliente.dados %}
 				<p>
                 <i class="fa fa-comment"></i> {{precliente.dados}}
 				</p>
-            {% endif %}
+      {% endif %}
+			{% if precliente.logradouro_completo %}
+			<hr />
+				<i class="fa fa-home"></i> {{precliente.logradouro_completo}}
+			<hr />
+			{% endif %}
 			{% if precliente.designado %}
 			<span class="label label-danger"><i class="fa fa-hand-o-right"></i> {{precliente.designado}}</span>
 			{% else %}
@@ -20,6 +25,9 @@
 		<span class="label label-warning">PC</span>
 		{{precliente.nome}}
 </a>
+{% if precliente.logradouro_completo %}
+	<a href="http://maps.google.com/?q={{precliente.rua}} {{precliente.numero}} {{precliente.cidade_texto}} {{precliente.uf_texto}}" target="_blank" class="btn btn-primary"><i class="fa fa-map-marker"></i></a>
+{% endif %}
 
 				{% if request.user.perfilacessocomercial.super_gerente %}
 					{% thumbnail precliente.designado.user.perfilacessocomercial.empresa.logo "100x100" format="PNG" as im %}
