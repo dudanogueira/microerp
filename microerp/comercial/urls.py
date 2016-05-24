@@ -26,6 +26,7 @@ urlpatterns = [
     url(r'^propostas/(?P<proposta_id>[0-9]+)/adicionar-follow-up/$', views.adicionar_follow_up, name='adicionar_follow_up'),
     url(r'^propostas/(?P<proposta_id>[0-9]+)/imprimir2/$', views.proposta_comercial_imprimir2, name='proposta_comercial_imprimir2'),
     url(r'^propostas/(?P<proposta_id>[0-9]+)/imprimir/$', views.proposta_comercial_imprimir, name='proposta_comercial_imprimir'),
+    url(r'^propostas/(?P<proposta_id>[0-9]+)/apagar_item/(?P<item_id>[0-9]+)/$', views.proposta_comercial_apagar_item_documento, name='proposta_comercial_apagar_item_documento'),
     url(r'^propostas/(?P<proposta_id>[0-9]+)/imprimir/gerar_documento/(?P<documento_id>[0-9]+)$', views.proposta_comercial_imprimir_gerar_documento, name='proposta_comercial_imprimir_gerar_documento'),
     url(r'^propostas/(?P<proposta_id>[0-9]+)/reabrir/$', views.proposta_comercial_reabrir, name='proposta_comercial_reabrir'),
     url(r'^proposta/(?P<proposta_id>[0-9]+)/editar/$', views.editar_proposta, name='editar_proposta'),

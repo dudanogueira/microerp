@@ -65,7 +65,22 @@
          {% csrf_token %}
          {{form|bootstrap}}
          <button type="submit">Simular</button>
+         {% if request.POST %}
+         <div class="well well-sm">
+           <select name="proposta_inserir">
+              {% for proposta in  propostas_possiveis %}
+              <option value="{{proposta.id}}" name="proposta_inserir">
+                {{proposta}} {{proposta.cliente}} {{proposta.precliente}}
+              </option>
+              {% endfor %}
+           </select>
+           <button type="submit" name="inserir" value="sim">Inserir na Proposta</button>
+         </div>
+         {% endif %}
+
+
        </form>
+
      </div>
 
      {% if request.POST %}

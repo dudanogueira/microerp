@@ -10,6 +10,9 @@
 
 <h2>Existem {{propostas_sem_motivo.count}} Propostas Fechadas sem motivo definido</h2>
 <form method="post">
+<p>
+  <button class="btn btn-primary btn-block" type="submit">Salvar</button>
+</p>
 {% csrf_token %}
 {{ formset.management_form }}
 {% for form in formset %}

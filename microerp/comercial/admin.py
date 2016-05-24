@@ -61,7 +61,7 @@ def export_xls(modeladmin, request, queryset):
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=mymodel.xls'
     wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet("MyModel")
+    ws = wb.add_sheet("Contrato")
 
     row_num = 0
 
@@ -140,12 +140,89 @@ class LinhaRecursoLogisticoInlineAdmin(admin.StackedInline):
     model = LinhaRecursoLogistico
     extra = 0
 
+
+def export_xls_proposta(modeladmin, request, queryset):
+    import xlwt
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=mymodel.xls'
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet("Contrato")
+
+    row_num = 0
+
+    columns = [
+        (u"ID", 2000),
+        (u"Cliente", 6000),
+        (u"PRE CLIENTE", 6000),
+        (u"Valor", 8000),
+        (u"Tipo", 8000),
+        (u"Criação Proposta", 8000),
+        (u"Criação Contrato", 8000),
+        (u"Data Declínio", 8000),
+        (u"Motivo", 8000),
+        (u"Motivo Opção", 8000),
+        (u"Vendedor", 8000),
+        (u"Status", 8000),
+        (u"Cidade", 8000),
+        (u"Telefone", 8000),
+        (u"Empresa", 8000),
+        (u"Follow Up", 8000),
+    ]
+
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = True
+
+    for col_num in xrange(len(columns)):
+        ws.write(row_num, col_num, columns[col_num][0], font_style)
+        # set column width
+        ws.col(col_num).width = columns[col_num][1]
+
+    font_style = xlwt.XFStyle()
+    font_style.alignment.wrap = 1
+
+    #TODO
+    # para cada proposta
+    for obj in queryset:
+        row_num += 1
+        if obj.cliente:
+            cidade = obj.cliente.endereco_principal().cidade_texto
+        else:
+            cidade = ''
+        if obj.propostacomercial.tipo:
+            tipo = obj.propostacomercial.tipo.nome
+        else:
+            tipo = ''
+        row = [
+            obj.pk,
+            obj.cliente.nome,
+            obj.valor,
+            tipo,
+            obj.propostacomercial.criado.strftime("%d/%m/%Y"),
+            obj.criado.strftime("%d/%m/%Y"),
+            obj.responsavel.nome,
+            obj.get_status_display(),
+            cidade,
+            "%s - %s" % (obj.cliente.telefone_celular, obj.cliente.telefone_fixo),
+            obj.responsavel.user.perfilacessocomercial.empresa.nome,
+            obj.propostacomercial.followupdepropostacomercial_set.count(),
+        ]
+        for col_num in xrange(len(row)):
+            ws.write(row_num, col_num, row[col_num], font_style)
+
+    wb.save(response)
+    return response
+
+export_xls_proposta.short_description = u"Export XLS"
+
+
+
 class PropostaComercialAdmin(admin.ModelAdmin):
     list_display  = 'id', 'cliente', 'precliente', 'valor_proposto','data_expiracao', 'status', 'expirada', 'contrato_id'
     list_filter = 'probabilidade', 'data_expiracao', 'status'
     search_fields = 'cliente__nome', 'precliente__nome'
     list_display_links = list_display
     inlines = [FollowUpPropostaInlineAdmin, LinhaRecursoLogisticoInlineAdmin]
+    actions = [export_xls_proposta]
 
 class LinhaRecursoMaterialInLine(admin.TabularInline):
     raw_id_fields = ("produto",)

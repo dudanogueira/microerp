@@ -3,6 +3,7 @@
 {% load check_installed %}
 {% load l10n %}
 {% load staticfiles %}
+{% load humanize %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -44,9 +45,10 @@
 			{% else %}
 				{% include "frontend/comercial/botao-precliente.html" with precliente=proposta.precliente %}
 			{% endif %}
+      {{proposta.definido_perdido_motivo}} - {{proposta.definido_perdido_motivo_opcao}}
 			</td>
 			<td>
-				R$ {{proposta.valor_proposto}}
+				R$ {{proposta.valor_proposto|intcomma}}
 			</td>
 			<td>
 

@@ -3,8 +3,11 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
 from django import forms
+from django.db.models import Q
 
 from django.contrib import messages
+
+from comercial.models import PropostaComercial, ItemGrupoDocumento
 
 from models import TabelaValores
 
@@ -19,6 +22,14 @@ class FormConfiguraRetscreen(forms.Form):
 
 def home(request):
     form = FormConfiguraRetscreen(request.POST or None)
+    propostas_da_empresa = PropostaComercial.objects.filter(
+        Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
+        Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
+    )
+    propostas_possiveis = propostas_da_empresa.filter(
+        documento_gerado__grupodocumento__itemgrupodocumento__chave_identificadora='retscreen',
+        status='aberta'
+    )
     if request.POST and form.is_valid():
         messages.success(request, u"Sucesso!Form Válido")
         media = float(form.cleaned_data['media'])
@@ -47,11 +58,13 @@ def home(request):
             )
         preco_por_watt = tabela.valor
         preco_sugerido = round(float(tamanho_usina) * float(preco_por_watt))
-        if form.cleaned_data['fator'] != 0:
-            preco_sugerido = preco_sugerido + (float(preco_sugerido) * float(form.cleaned_data['fator'])/100)
         retorno = {}
         if form.cleaned_data['valor_final']:
             preco_sugerido = float(form.cleaned_data['valor_final'])
+        # calcula preco sugerido com fator
+        if form.cleaned_data['fator'] != 0:
+            preco_sugerido = preco_sugerido + (float(preco_sugerido) * float(form.cleaned_data['fator'])/100)
+
         for i in range(0,26):
             retorno[i] = [preco_sugerido * -1, economia_anual]
             if i != 0:
@@ -71,5 +84,19 @@ def home(request):
             }
         )
         form = FormConfiguraRetscreen(data=updated_data)
+        if request.POST.get('inserir'):
+            proposta = PropostaComercial.objects.get(pk=request.POST.get('proposta_inserir'))
+            # pega item de referencia do retscreen
+            quantidade = ItemGrupoDocumento.objects.filter(chave_identificadora__startswith='retscreen_', grupo__documento__propostacomercial=proposta).count()
+            quantidade = quantidade + 1
+            ultimo = ItemGrupoDocumento.objects.filter(chave_identificadora='retscreen', grupo__documento__propostacomercial=proposta).last()
+            novo_item = ultimo
+            novo_item.id = None
+            novo_item.apagavel = True
+            novo_item.imagem_editavel = True
+            novo_item.chave_identificadora = 'retscreen_%s' % quantidade
+            novo_item.save()
+
+            messages.info(request, 'simulação inserida na proposta %s' % proposta)
 
     return render_to_response('frontend/retscreen/retscreen-home.html', locals(), context_instance=RequestContext(request),)

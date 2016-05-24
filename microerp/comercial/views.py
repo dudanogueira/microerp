@@ -721,10 +721,11 @@ class FormFecharProposta(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(FormFecharProposta, self).__init__(*args, **kwargs)
         self.fields['definido_perdido_motivo'].required = True
+        self.fields['definido_perdido_motivo_opcao'].required = True
 
     class Meta:
         model = PropostaComercial
-        fields = 'definido_perdido_motivo',
+        fields = 'definido_perdido_motivo', 'definido_perdido_motivo_opcao'
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_fechar(request, proposta_id):
@@ -757,7 +758,7 @@ def gerencia_definir_motivos_fechamento(request):
 
     propostas_da_empresa = PropostaComercial.objects.filter(
         Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
-        Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) 
+        Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
     )
 
     propostas_sem_motivo = propostas_da_empresa.filter(definido_perdido_motivo_opcao=None, status="perdida")
@@ -2316,6 +2317,16 @@ class DadoVariavelForm(forms.ModelForm):
             self.fields['valor'] = forms.DecimalField()
         self.fields['valor'].required = False
         self.fields['valor'].label = "#%s# (%s)" % (self.instance.chave, self.instance.get_tipo_display())
+
+@user_passes_test(possui_perfil_acesso_comercial)
+def proposta_comercial_apagar_item_documento(request, proposta_id, item_id):
+    item = ItemGrupoDocumento.objects.get(
+        pk=item_id,
+        grupo__documento__propostacomercial__id=proposta_id)
+    messages.success(request, u"Item %s da Proposta %s Apagado!" % (item.chave_identificadora, item.grupo.documento.propostacomercial))
+    item.delete()
+    return redirect(reverse("comercial:proposta_comercial_imprimir", args=[proposta_id]))
+
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):

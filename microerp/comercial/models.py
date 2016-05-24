@@ -600,6 +600,7 @@ class ItemGrupoDocumento(models.Model):
     imagem = models.ImageField(upload_to=documento_local_imagem, blank=True, null=True)
     imagem_editavel = models.BooleanField(default=False)
     quebra_pagina = models.BooleanField(default=False)
+    apagavel = models.BooleanField(default=False)
 
 
     class Meta:

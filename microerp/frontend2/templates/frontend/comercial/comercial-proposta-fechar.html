@@ -1,5 +1,6 @@
 {% extends "frontend/frontend-base.html" %}
 {% load sekizai_tags %}
+{% load bootstrap %}
 {% load check_installed %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
@@ -11,7 +12,7 @@
 
 <form method="POST">
 {% csrf_token %}
-{{form_fechar}}
+{{form_fechar|bootstrap}}
 <button class="btn btn-danger" id="fechar-proposta-btn" type="submit"><i class="fa fa-thumbs-down"></i> Fechar Proposta</button>
 </form>
 
@@ -22,17 +23,9 @@
 
 <script>
 
-$('#id_definido_perdido_motivo').on("keyup change", function(){
-    if( $.trim($(this).val()) ){
-    	$("#fechar-proposta-btn").show();
-    }else{
-    	$("#fechar-proposta-btn").hide();
-    }
-});
 
 $(document).ready(function() {
 	$("#menu-comercial-propostas-minhas, #top-menu-comercial").addClass("active");
-	$("#fechar-proposta-btn").hide();
 });
 
 </script>
