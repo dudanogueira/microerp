@@ -7,8 +7,8 @@ from django.db.models import Q
 from django.core.files.base import ContentFile
 from StringIO import StringIO
 
-import numpy as np
-import matplotlib.pyplot as plt
+# import numpy as np
+# import matplotlib.pyplot as plt
 
 from django.contrib import messages
 
