@@ -241,7 +241,7 @@ class PropostaComercial(models.Model):
             imprime_logo=modelo.imprime_logo
         )
         # clona acapa
-        if modelo.capa:
+        if modelo.capa and os.path.isfile(modelo.capa.path):
             documento.capa.save(os.path.basename(modelo.capa.url),modelo.capa.file,save=True)
         # associa documento gerado com esta proposta
         self.documento_gerado = documento
