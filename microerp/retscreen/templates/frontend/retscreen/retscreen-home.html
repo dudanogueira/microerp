@@ -72,7 +72,7 @@
          <div class="well well-sm">
            <select name="proposta_inserir" id="proposta_inserir">
               {% for proposta_item in  propostas_possiveis %}
-              <option value="{{proposta_item.id}}" name="proposta_inserir"
+              <option value="{{proposta_item.id|unlocalize}}" name="proposta_inserir"
                 {% if proposta_item.id == proposta.id%} selected{%endif%}
               >
                 {{proposta_item}} {{proposta_item.cliente}} {{proposta_item.precliente}}
