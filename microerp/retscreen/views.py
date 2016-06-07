@@ -4,12 +4,17 @@ from django.template import RequestContext, loader, Context
 
 from django import forms
 from django.db.models import Q
+from django.core.files.base import ContentFile
+from StringIO import StringIO
+
+import numpy as np
+import matplotlib.pyplot as plt
 
 from django.contrib import messages
 
 from comercial.models import PropostaComercial, ItemGrupoDocumento
 
-from models import TabelaValores
+from models import TabelaValores, PorteFinanciamento
 
 class FormConfiguraRetscreen(forms.Form):
     fator = forms.DecimalField(label=u"Fator Energético", required=True, initial=0,  decimal_places=2)
@@ -27,7 +32,7 @@ def home(request):
         Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
     )
     propostas_possiveis = propostas_da_empresa.filter(
-        documento_gerado__grupodocumento__itemgrupodocumento__chave_identificadora='retscreen',
+        #documento_gerado__grupodocumento__itemgrupodocumento__chave_identificadora='retscreen',
         status='aberta'
     )
     if request.POST and form.is_valid():
@@ -84,19 +89,72 @@ def home(request):
             }
         )
         form = FormConfiguraRetscreen(data=updated_data)
+        # busca valores de financiamento
+        financiamentos_porte = PorteFinanciamento.objects.filter(
+            valor_inicial__lte=preco_sugerido,
+            valor_final__gte=preco_sugerido,
+        )
         if request.POST.get('inserir'):
             proposta = PropostaComercial.objects.get(pk=request.POST.get('proposta_inserir'))
-            # pega item de referencia do retscreen
-            quantidade = ItemGrupoDocumento.objects.filter(chave_identificadora__startswith='retscreen_', grupo__documento__propostacomercial=proposta).count()
-            quantidade = quantidade + 1
-            ultimo = ItemGrupoDocumento.objects.filter(chave_identificadora='retscreen', grupo__documento__propostacomercial=proposta).last()
-            novo_item = ultimo
-            novo_item.id = None
-            novo_item.apagavel = True
-            novo_item.imagem_editavel = True
-            novo_item.chave_identificadora = 'retscreen_%s' % quantidade
-            novo_item.save()
+            # inserir valores nos dados variaveis
+            valores = []
+            # formata para exibicao
+            import locale
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            preco_por_watt_str = locale.currency(preco_por_watt, grouping=True)
+            economia_mensal_str = locale.currency(economia_mensal, grouping=True)
+            economia_anual_str = locale.currency(economia_anual, grouping=True)
+            preco_sugerido_str = locale.currency(preco_sugerido, grouping=True)
+            # registra chave, valor, tipo
+            valores.append(['retscreen_media_consumo', media, 'decimal'])
+            valores.append(['retscreen_preco_por_watt', preco_por_watt_str, 'texto'])
+            valores.append(['retscreen_area_usina', area_usina, 'decimal'])
+            valores.append(['retscreen_geracao_kw_mes', geracao_kw_mes, 'decimal'])
+            valores.append(['retscreen_geracao_kw_ano', geracao_kw_ano, 'decimal'])
+            valores.append(['retscreen_economia_mensal', economia_mensal_str, 'texto'])
+            valores.append(['retscreen_economia_anual', economia_anual_str, 'texto'])
+            valores.append(['retscreen_preco_sugerido', preco_sugerido_str, 'texto'])
 
+            for item in valores:
+                d,c = proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.get_or_create(
+                    chave=item[0],
+                )
+                d.valor = item[1]
+                d.tipo = item[2]
+                d.save()
+            if request.POST.get('altera_valor_proposta', False):
+                try:
+                    proposta.valor_proposto = preco_sugerido
+                    proposta.save()
+                    messages.success(request, u"Valor da Proposta #%s alterado para %s" % (proposta.pk, preco_sugerido))
+                except:
+                    raise
+                    messages.error(request, u"Erro! Valor da proposta não alterado")
+
+            # pega item de referencia do retscreen
+            # quantidade = ItemGrupoDocumento.objects.filter(chave_identificadora__startswith='retscreen_', grupo__documento__propostacomercial=proposta).count()
+            # quantidade = quantidade + 1
+            # ultimo = ItemGrupoDocumento.objects.filter(chave_identificadora='retscreen', grupo__documento__propostacomercial=proposta).last()
+            # novo_item = ultimo
+            # novo_item.id = None
+            # novo_item.apagavel = True
+            # novo_item.imagem_editavel = True
+            # novo_item.chave_identificadora = 'retscreen_%s' % quantidade
+            # # gera imagem
+            #
+            # anos = [k for k,v in retorno.items()]
+            # valores = [v[0] for k,v in retorno.items()]
+            # y = [3, 10, 7, 5, 3, 4.5, 6, 8.1]
+            # N = len(y)
+            # x = range(N)
+            # width = 1/1.5
+            # plt.bar(x, y, width, color="blue")
+            # # fim do example
+            # f = StringIO()
+            # plt.savefig(f)
+            # content_file = ContentFile(f.getvalue())
+            # novo_item.imagem.save('teste.png', content_file)
+            # novo_item.save()
             messages.info(request, 'simulação inserida na proposta %s' % proposta)
 
     return render_to_response('frontend/retscreen/retscreen-home.html', locals(), context_instance=RequestContext(request),)

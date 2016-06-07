@@ -794,10 +794,10 @@ class TipoRecursoLogistico(models.Model):
 
 class LinhaRecursoLogistico(models.Model):
     proposta = models.ForeignKey('PropostaComercial')
+    # metadata
     tipo = models.ForeignKey(TipoRecursoLogistico)
     custo_total = models.DecimalField(max_digits=10, decimal_places=2, blank=False, null=False, default=0)
     descricao = models.TextField(blank=True)
-    # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
 
@@ -1200,7 +1200,7 @@ class DadoVariavel(models.Model):
     grupo = models.ForeignKey(GrupoDadosVariaveis)
     chave = models.CharField(blank=False, max_length=100)
     valor = models.TextField(blank=True, null=True)
-    tipo = models.CharField(blank=True, max_length=100, choices=DADO_VARIAVEL_CHOICES, default="texto ")
+    tipo = models.CharField(blank=True, max_length=100, choices=DADO_VARIAVEL_CHOICES, default="texto")
 
 # signals
 def proposta_comercial_post_save(signal, instance, sender, **kwargs):

@@ -99,14 +99,12 @@ class PreCliente(models.Model):
     designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
     tipo = models.CharField(u"Tipo de Pré Cliente", blank=True, null=True, max_length=10, choices=TIPO_CLIENTE_CHOICES)
     cnpj = models.CharField(u"CNPJ", blank=True, null=True, max_length=255)
-    # TODO: Adicionar inscriçao estadual e RG
     cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
     numero_instalacao = models.CharField(u"Número da Instalação", blank=True, null=True, max_length=300)
     origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # telefones
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)
-    # TODO: Adicionar email
     # endereco
     bairro_texto = models.CharField("Bairro", max_length=100,  blank=True, null=True)
     cidade_texto = models.CharField("Cidade", max_length=100,  blank=True, null=True)
@@ -159,7 +157,6 @@ class Cliente(models.Model):
             BRPhoneNumberField().clean(self.telefone_celular)
         if self.cnpj and self.cnpj == '0'*14:
             raise ValidationError({'cnpj': [u'Embora Válido, não é aceito um CNPJ com %s ;' % '000000000000000',]})
-        # TODO: tem que ter fixo ou celular, qualquer um dos dois
 
     def documento(self):
         if self.tipo == "pj":
@@ -213,7 +210,6 @@ class Cliente(models.Model):
                 pass
 
     def sugerir_texto_contratante(self):
-        # TODO: puxar dados do cliente
         if self.tipo == "pj":
             texto = u'''%s, CNPJ %s, Representante Legal: %s, Documento do Representante: %s, endereço %s, Telefone Fixo: %s, Telefone Fixo: %s, Email: %s''' % (
                 unicode(self.nome),
@@ -317,9 +313,6 @@ class Cliente(models.Model):
     origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
     # contatos
     contato = models.CharField("Nome do Contato", blank=True, max_length=300)
-    # TODO: Adicionar Representate Legal Nome e CPF
-    # TODO: Adicionar somente para cnpj, na conversao
-    # TODO: Substituir o campo no metodo de sugestao de texto
     email = models.EmailField(blank=True, null=True)
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)

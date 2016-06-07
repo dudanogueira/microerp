@@ -21,6 +21,9 @@
     <!-- Custom styles for this template -->
   	<link href="{% static "frontend/css/style.css" %}" rel="stylesheet">
 	  <link rel="stylesheet" href="{% static "frontend/css/font-awesome.min.css" %}">
+    <script src="{% static "frontend/js/jquery/jquery.js"%}"></script>
+    <script type="text/javascript" src="{% static "js/select2.js" %}"></script>
+    <link href="{% static "css/select2.css" %}" type="text/css" media="screen" rel="stylesheet" />
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -67,14 +70,18 @@
          <button type="submit">Simular</button>
          {% if request.POST %}
          <div class="well well-sm">
-           <select name="proposta_inserir">
-              {% for proposta in  propostas_possiveis %}
-              <option value="{{proposta.id}}" name="proposta_inserir">
-                {{proposta}} {{proposta.cliente}} {{proposta.precliente}}
+           <select name="proposta_inserir" id="proposta_inserir">
+              {% for proposta_item in  propostas_possiveis %}
+              <option value="{{proposta_item.id}}" name="proposta_inserir"
+                {% if proposta_item.id == proposta.id%} selected{%endif%}
+              >
+                {{proposta_item}} {{proposta_item.cliente}} {{proposta_item.precliente}}
               </option>
               {% endfor %}
            </select>
-           <button type="submit" name="inserir" value="sim">Inserir na Proposta</button>
+           <input type="checkbox" name="altera_valor_proposta" id="altera_valor_proposta"/>
+           <label for="altera_valor_proposta">Alterar valor proposto</label><br />
+           <button type="submit" name="inserir" value="sim" class="btn btn-block btn-primary">Atualizar Proposta</button>
          </div>
          {% endif %}
 
@@ -96,6 +103,22 @@
             <li>Economia Mensal: R$ {{economia_mensal|intcomma}}</li>
           </ul>
 
+          <h2>Financiamentos</h2>
+          {% for financiamento in financiamentos_porte %}
+          <div class="well well-sm">
+              <h3>{{financiamento.financiamento}} <br  />
+                <small>R$ {{financiamento.valor_inicial|intcomma}} a R$ {{financiamento.valor_final|intcomma}}</small></h3>
+              <ul>
+                {% for parcela in financiamento.parcelafinanciamento_set.all %}
+                  <li>
+                    Parcelas: {{parcela.quantidade}}, Juros (a.m.): {{parcela.juros}}%
+                  </li>
+                {% endfor %}
+              </ul>
+          </div>
+          {% endfor %}
+
+
         </div>
         <div class="col-md-8">
           <div id="columnchart_values"></div>
@@ -108,6 +131,7 @@
      {% endif %}
 
      <script type="text/javascript">
+     $("#proposta_inserir").select2();
      dados = [
          ["Ano", "Retorno", { role: "style" } ],
          {% for k,v in retorno.items %}

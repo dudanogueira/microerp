@@ -97,7 +97,7 @@
 						{% endif %}
 						{% if item.imagem %}
 						{% thumbnail item.imagem "100x100" format="PNG" as im %}
-						<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+						<a target="_blank" href="{{item.imagem.url}}"><img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"></a>
 						{% endthumbnail %}
 						{% endif %}
 						{% if item.quebra_pagina %}
@@ -122,17 +122,23 @@
 
 			</div>
 			{% endif %}
+			<a class="btn btn-primary btn-block" href="?imprimir=sim"><i class="fa fa-print"></i> Gerar Impressão</a>
 		</div>
 	{% if proposta.documento_gerado.grupodadosvariaveis %}
 		<div role="tabpanel" class="tab-pane" id="dadosvariaveis">
 			<small>id grupo: {{proposta.documento_gerado.grupodadosvariaveis.id}}</small>
 			<form action="" method="post">
 				{% csrf_token %}
-				<button type="submit" name="dadosvariaveis" value="alterar" class="btn btn-success">
+				<button type="submit" name="dadosvariaveis" value="alterar" class="btn btn-success btn-block">
 					<i class="fa fa-save"></i> Salvar
 				</button>
 
 				{{form_dados_variaveis|bootstrap}}
+
+				<button type="submit" name="dadosvariaveis" value="alterar" class="btn btn-success btn-block">
+					<i class="fa fa-save"></i> Salvar
+				</button>
+
 
 			</form>
 		</div>

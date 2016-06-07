@@ -21,6 +21,7 @@ __version__ = '2.0.0'
 
 
 import csv
+import xlwt
 from django.http import HttpResponse
 
 from django.contrib import admin
@@ -57,7 +58,7 @@ from comercial.models import MotivoFechamentoProposta
 # ADMIN ACTIONS
 
 def export_xls(modeladmin, request, queryset):
-    import xlwt
+
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=mymodel.xls'
     wb = xlwt.Workbook(encoding='utf-8')
@@ -142,7 +143,6 @@ class LinhaRecursoLogisticoInlineAdmin(admin.StackedInline):
 
 
 def export_xls_proposta(modeladmin, request, queryset):
-    import xlwt
     response = HttpResponse(content_type='application/ms-excel')
     response['Content-Disposition'] = 'attachment; filename=mymodel.xls'
     wb = xlwt.Workbook(encoding='utf-8')
@@ -161,7 +161,7 @@ def export_xls_proposta(modeladmin, request, queryset):
         (u"Data Declínio", 8000),
         (u"Motivo", 8000),
         (u"Motivo Opção", 8000),
-        (u"Vendedor", 8000),
+        (u"Responsável (Vendedor)", 8000),
         (u"Status", 8000),
         (u"Cidade", 8000),
         (u"Telefone", 8000),
@@ -180,31 +180,55 @@ def export_xls_proposta(modeladmin, request, queryset):
     font_style = xlwt.XFStyle()
     font_style.alignment.wrap = 1
 
-    #TODO
     # para cada proposta
     for obj in queryset:
         row_num += 1
-        if obj.cliente:
+        if obj.cliente and obj.cliente.endereco_principal():
             cidade = obj.cliente.endereco_principal().cidade_texto
         else:
             cidade = ''
-        if obj.propostacomercial.tipo:
-            tipo = obj.propostacomercial.tipo.nome
+        if obj.tipo:
+            tipo = obj.tipo.nome
         else:
             tipo = ''
+        cliente = ''
+        precliente = ''
+        definido_perdido = ''
+        if obj.cliente:
+            cliente = obj.cliente.nome
+        if obj.precliente:
+            precliente = obj.precliente.nome
+        if obj.definido_perdido_em:
+            definido_perdido = obj.definido_perdido_em.strftime("%d/%m/%Y")
+        if cliente:
+            telefones = "%s - %s" % (obj.cliente.telefone_celular, obj.cliente.telefone_fixo)
+        else:
+            telefones = "%s - %s" % (obj.precliente.telefone_celular, obj.precliente.telefone_fixo)
+        nome_designado = ''
+        empresa_designado = ''
+
+        if obj.designado:
+            nome_designado = obj.designado.nome
+            if obj.designado.user.perfilacessocomercial:
+                empresa_designado = obj.designado.user.perfilacessocomercial.empresa.nome
+
         row = [
             obj.pk,
-            obj.cliente.nome,
-            obj.valor,
+            cliente,
+            precliente,
+            obj.valor_proposto,
             tipo,
-            obj.propostacomercial.criado.strftime("%d/%m/%Y"),
             obj.criado.strftime("%d/%m/%Y"),
-            obj.responsavel.nome,
+            obj.criado.strftime("%d/%m/%Y"),
+            definido_perdido,
+            obj.definido_perdido_motivo,
+            getattr(obj.definido_perdido_motivo_opcao, 'nome', ''),
+            nome_designado,
             obj.get_status_display(),
             cidade,
-            "%s - %s" % (obj.cliente.telefone_celular, obj.cliente.telefone_fixo),
-            obj.responsavel.user.perfilacessocomercial.empresa.nome,
-            obj.propostacomercial.followupdepropostacomercial_set.count(),
+            telefones,
+            empresa_designado,
+            obj.followupdepropostacomercial_set.count(),
         ]
         for col_num in xrange(len(row)):
             ws.write(row_num, col_num, row[col_num], font_style)
@@ -212,7 +236,7 @@ def export_xls_proposta(modeladmin, request, queryset):
     wb.save(response)
     return response
 
-export_xls_proposta.short_description = u"Export XLS"
+export_xls_proposta.short_description = u"Exportar para Excel (.xls)"
 
 
 

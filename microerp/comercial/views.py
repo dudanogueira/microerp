@@ -2111,7 +2111,7 @@ class DocumentoGeradoPrint:
     def _header_footer(self, canvas, doc):
         # Save the state of our canvas so we can draw on it
         canvas.saveState()
-        if doc.page == 1 and self.documento.capa:
+        if doc.page == 1 and self.documento.capa and os.path.isfile(self.documento.capa.path):
             canvas.drawImage(self.documento.capa.path, 0, 0, *self.pagesize)
         styles = getSampleStyleSheet()
 
@@ -3041,7 +3041,6 @@ class ContratoPrintDocumento:
 
             # Our container for 'Flowable' objects
             elements = []
-            # TODO: Pesquisar esquema de uma imagem pra página inteira
             espaco_assinaturas = 30
             # logo empresa
             if os.path.isfile(perfil.empresa.logo.path):
@@ -3243,7 +3242,6 @@ class FormRevalidarContrato(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def contratos_meus_definir_assinado(request, contrato_id):
-    # TODO: guardar a data de assinatura do contrato
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id, status="assinatura")
     contrato.status = "emaberto"
     contrato.data_assinatura = datetime.datetime.now()
