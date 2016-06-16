@@ -3,6 +3,8 @@ from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
+from django.contrib.auth.decorators import user_passes_test, login_required
+
 from django import forms
 from django.db.models import Q
 from django.core.files.base import ContentFile
@@ -26,6 +28,7 @@ class FormConfiguraRetscreen(forms.Form):
     quantidade_placa = forms.DecimalField(label=u"Quantidade de Placas", required=False)
     valor_final = forms.DecimalField(label=u"Valor Final", required=False)
 
+@login_required
 def home(request):
     form = FormConfiguraRetscreen(request.POST or None)
     proposta_id = request.GET.get('proposta', request.POST.get('proposta', None))
