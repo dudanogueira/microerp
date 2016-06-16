@@ -60,8 +60,6 @@
 			</form>
 
 
-
-
 			<p class="btn-group">
 				<button data-toggle="tooltip" title="Alterar" data-placement="top" type="submit" class="btn btn-danger btn-large tooltip-items" name="alterar-proposta" value="alterar" form="form-editar-proposta"><i class="fa fa-save"></i></button>
 				{% if proposta.orcamentos_ativos %}
@@ -70,9 +68,12 @@
 				<a data-toggle="modal" data-target="#ModalMemoriaDeCalculo" title="Memória de Cálculo" data-placement="top" href="" class="tooltip-items btn btn-warning btn-large"><i class="fa fa-dollar"></i></a>
 
 				<a title="Configurar Impressão" data-placement="top" href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="tooltip-items btn btn-primary btn-large"><i class="fa fa-file"></i><i class="fa fa-arrow-right"></i><i class="fa fa-print"></i></a>
-
+				<a href="{% url "retscreen:home" %}?proposta={{proposta.id}}" class="btn btn-warning">SIMULAÇÃO ENERGIA SOLAR</a>
 
 			</p>
+
+
+
 		</div>
 
 

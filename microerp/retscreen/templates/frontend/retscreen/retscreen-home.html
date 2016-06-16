@@ -64,26 +64,29 @@
 
      <div class="starter-template">
        <h1>Simulador Retscreen</h1>
+       {% if proposta %}
+       <h2>Proposta #{{proposta.pk}}
+         <small>
+            {% if proposta.cliente %}
+              {{proposta.cliente}}
+            {% else %}
+              {{proposta.precliente}}
+            {% endif %}
+         </small>
+
+       </h2>
+       {% endif %}
        <form method="POST">
          {% csrf_token %}
+
          {{form|bootstrap}}
-         <button type="submit">Simular</button>
-         {% if request.POST %}
-         <div class="well well-sm">
-           <select name="proposta_inserir" id="proposta_inserir">
-              {% for proposta_item in  propostas_possiveis %}
-              <option value="{{proposta_item.id|unlocalize}}" name="proposta_inserir"
-                {% if proposta_item.id == proposta.id%} selected{%endif%}
-              >
-                {{proposta_item}} {{proposta_item.cliente}} {{proposta_item.precliente}}
-              </option>
-              {% endfor %}
-           </select>
-           <input type="checkbox" name="altera_valor_proposta" id="altera_valor_proposta"/>
-           <label for="altera_valor_proposta">Alterar valor proposto</label><br />
-           <button type="submit" name="inserir" value="sim" class="btn btn-block btn-primary">Atualizar Proposta</button>
-         </div>
+         <p class="btn-group">
+         <button type="submit" class="btn btn-primary"><i class="fa fa-refresh"></i> Simular</button>
+         {% if request.POST and proposta %}
+           <button type="submit" name="inserir" value="sim" class="btn btn-warning"><i class="fa fa-save"></i> Atualizar Proposta</button>
+           <input type="hidden" name="proposta_inserir" value="{{proposta.pk}}"/>
          {% endif %}
+        </p>
 
 
        </form>
@@ -95,14 +98,44 @@
         <div class="col-md-4">
           <h2>Resultados</h2>
           <ul>
-            <li>Preço por Watt: R$ {{preco_por_watt|intcomma}}</li>
+            <li>Preço por Watt: R$ {{preco_por_watt_str|intcomma}}</li>
             <li>Preço Sugerido: R$ {{preco_sugerido|intcomma}}</li>
             <li>Área da usina: {{area_usina|floatformat:2}} m2</li>
             <li>Geração por Mês: {{geracao_kw_mes|intcomma}} Kw</li>
             <li>Geração por Ano: {{geracao_kw_ano|intcomma}} Kw</li>
             <li>Economia Mensal: R$ {{economia_mensal|intcomma}}</li>
+            <li>Retorno:{{retorno_exato_str}}</li>
+            <li>
+              Reajuste Energia: {{reajuste_custo_energia}}%
+            </li>
           </ul>
+          <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+            Memória de Cálculo
+          </button>
+          <div class="collapse" id="collapseExample">
+            <div class="well">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>ANO</th>
+                    <th>INVESTIMENTO</th>
+                    <th>ECONOMIA</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for k,v in retorno.items %}
+                  <tr>
+                    <th scope="row">{{k}}</th>
+                    <td>R$ {{v.0|floatformat:2}}</td>
+                    <td>R$ {{v.1|floatformat:2}}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
 
+          {% if financiamentos_porte %}
           <h2>Financiamentos</h2>
           {% for financiamento in financiamentos_porte %}
           <div class="well well-sm">
@@ -117,6 +150,7 @@
               </ul>
           </div>
           {% endfor %}
+          {% endif %}
 
 
         </div>
@@ -129,7 +163,6 @@
      </div>
 
      {% endif %}
-
      <script type="text/javascript">
      $("#proposta_inserir").select2();
      dados = [
@@ -167,6 +200,8 @@
      }
      </script>
 
+     <script src="{% static "frontend/js/jquery/jquery.js"%}"></script>
+     <script src="{% static "frontend/bootstrap/js/bootstrap.min.js" %}"></script>
 
    </div><!-- /.container -->
 

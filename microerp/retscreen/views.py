@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render_to_response, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
+from django.core.urlresolvers import reverse
 
 from django import forms
 from django.db.models import Q
@@ -27,6 +28,7 @@ class FormConfiguraRetscreen(forms.Form):
 
 def home(request):
     form = FormConfiguraRetscreen(request.POST or None)
+    proposta_id = request.GET.get('proposta', request.POST.get('proposta', None))
     propostas_da_empresa = PropostaComercial.objects.filter(
         Q(precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
         Q(cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
@@ -35,7 +37,10 @@ def home(request):
         #documento_gerado__grupodocumento__itemgrupodocumento__chave_identificadora='retscreen',
         status='aberta'
     )
+    if proposta_id:
+        proposta = get_object_or_404(propostas_da_empresa, pk=proposta_id)
     if request.POST and form.is_valid():
+        reajuste_custo_energia = float(0.08)
         messages.success(request, u"Sucesso!Form Válido")
         media = float(form.cleaned_data['media'])
         tamanho_placa = float(form.cleaned_data['tamanho_placa'])
@@ -70,17 +75,26 @@ def home(request):
         if form.cleaned_data['fator'] != 0:
             preco_sugerido = preco_sugerido + (float(preco_sugerido) * float(form.cleaned_data['fator'])/100)
 
-        for i in range(0,26):
-            retorno[i] = [preco_sugerido * -1, economia_anual]
-            if i != 0:
-                economia_no_ano = i * economia_anual
-                reajuste_no_ano_anterior = retorno[i-1][1]
-                reajuste_neste_ano = (reajuste_no_ano_anterior * 0.08) + reajuste_no_ano_anterior
+        retorno_exato = None
+        for i in range(1,26):
+            # primeiro registro: preço sugerido e economia anual
+            retorno[i] = [round(preco_sugerido * -1, 2), round(economia_anual, 2)]
+            if i != 1:
+                # quanto falta pagar
+                saldo_remascente = retorno[i-1][0]
+                # reajuste no ano anterior
+                economia_no_ano_anterior = retorno[i-1][1]
+                # calcula retorno exato, em meses:
+                economia_neste_ano = (economia_no_ano_anterior * reajuste_custo_energia) + economia_no_ano_anterior
+                if not retorno_exato and saldo_remascente > 0:
+                    retorno_exato = i-2
+                    ano_retorno = retorno_exato
+                    meses = saldo_remascente / (economia_neste_ano / 12)
+                    retorno_exato_str = '%d Anos, %d Meses' % (ano_retorno, meses)
                 retorno[i] = [
-                    ((i * reajuste_neste_ano) + reajuste_neste_ano) - preco_sugerido,
-                    reajuste_neste_ano
+                    round(saldo_remascente + economia_neste_ano, 2),
+                    economia_neste_ano
                 ]
-
         updated_data = request.POST.copy()
         updated_data.update(
             {
@@ -105,16 +119,23 @@ def home(request):
             economia_mensal_str = locale.currency(economia_mensal, grouping=True)
             economia_anual_str = locale.currency(economia_anual, grouping=True)
             preco_sugerido_str = locale.currency(preco_sugerido, grouping=True)
+            preco_eletricidade_str = locale.currency(preco_eletricidade, grouping=True)
             # registra chave, valor, tipo
-            valores.append(['retscreen_media_consumo', media, 'decimal'])
-            valores.append(['retscreen_preco_por_watt', preco_por_watt_str, 'texto'])
-            valores.append(['retscreen_area_usina', area_usina, 'decimal'])
-            valores.append(['retscreen_geracao_kw_mes', geracao_kw_mes, 'decimal'])
-            valores.append(['retscreen_geracao_kw_ano', geracao_kw_ano, 'decimal'])
-            valores.append(['retscreen_economia_mensal', economia_mensal_str, 'texto'])
-            valores.append(['retscreen_economia_anual', economia_anual_str, 'texto'])
-            valores.append(['retscreen_preco_sugerido', preco_sugerido_str, 'texto'])
-
+            valores = \
+            [
+            ['seltec_preco_sugerido', preco_sugerido_str, 'texto'],
+            ['seltec_tamanho_usina', tamanho_usina, 'decimal'],
+            ['seltec_quantidade_placa', numero_placas_sugerida, 'numero'],
+            ['seltec_tamanho_usina_m2', area_usina, 'decimal'],
+            ['seltec_preco_eletricidade', preco_eletricidade_str, 'decimal'],
+            ['seltec_reajuste_energia', reajuste_custo_energia, 'decimal'],
+            ['seltec_geracao_kw_mes', geracao_kw_mes, 'decimal'],
+            ['seltec_geracao_kw_ano', geracao_kw_ano, 'decimal'],
+            ['seltec_economia_mensal', economia_mensal_str, 'decimal'],
+            ['seltec_economia_anual', economia_anual_str, 'decimal'],
+            ['seltec_retorno_investimento', retorno_exato_str, 'texto'],
+            ]
+            # insere dados variaveis
             for item in valores:
                 d,c = proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.get_or_create(
                     chave=item[0],
@@ -122,14 +143,14 @@ def home(request):
                 d.valor = item[1]
                 d.tipo = item[2]
                 d.save()
-            if request.POST.get('altera_valor_proposta', False):
-                try:
-                    proposta.valor_proposto = preco_sugerido
-                    proposta.save()
-                    messages.success(request, u"Valor da Proposta #%s alterado para %s" % (proposta.pk, preco_sugerido))
-                except:
-                    raise
-                    messages.error(request, u"Erro! Valor da proposta não alterado")
+            # salva valor de proposta
+            try:
+                proposta.valor_proposto = preco_sugerido
+                proposta.save()
+                messages.success(request, u"Valor da Proposta #%s alterado para %s" % (proposta.pk, preco_sugerido))
+            except:
+                raise
+                messages.error(request, u"Erro! Valor da proposta não alterado")
 
             # pega item de referencia do retscreen
             # quantidade = ItemGrupoDocumento.objects.filter(chave_identificadora__startswith='retscreen_', grupo__documento__propostacomercial=proposta).count()
@@ -156,5 +177,7 @@ def home(request):
             # novo_item.imagem.save('teste.png', content_file)
             # novo_item.save()
             messages.info(request, 'simulação inserida na proposta %s' % proposta)
+            #  redireciona pra tela de editar proposta
+            return redirect(reverse("comercial:editar_proposta", args=[proposta.pk]))
 
     return render_to_response('frontend/retscreen/retscreen-home.html', locals(), context_instance=RequestContext(request),)
