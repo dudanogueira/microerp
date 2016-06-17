@@ -22,7 +22,7 @@ from models import TabelaValores, PorteFinanciamento
 class FormConfiguraRetscreen(forms.Form):
     fator = forms.DecimalField(label=u"Fator Energético", required=True, initial=0,  decimal_places=2)
     media = forms.DecimalField(label=u"Média de Consumo Energético", required=True)
-    tamanho_placa = forms.DecimalField(label=u"Tamanho da Placa", required=True, initial=0.265)
+    potencia_placa = forms.DecimalField(label=u"Potência da Placa", required=True, initial=0.265)
     radiacao = forms.DecimalField(label=u"Radiação", required=True, initial=4.81)
     preco_eletricidade = forms.DecimalField(label=u"Preço da Eletricidade", initial=0.50974, required=True)
     quantidade_placa = forms.DecimalField(label=u"Quantidade de Placas", required=False)
@@ -46,22 +46,22 @@ def home(request):
         reajuste_custo_energia = float(0.08)
         messages.success(request, u"Sucesso!Form Válido")
         media = float(form.cleaned_data['media'])
-        tamanho_placa = float(form.cleaned_data['tamanho_placa'])
+        potencia_placa = float(form.cleaned_data['potencia_placa'])
         radiacao = float(form.cleaned_data['radiacao'])
         preco_eletricidade = float(form.cleaned_data['preco_eletricidade'])
         media_diaria = media / 30.00
         percentual_perda = (radiacao * 3) / 100
         perda = radiacao * percentual_perda
         radiacao_real = radiacao - perda
-        tamanho_usina = (media_diaria / radiacao_real)
+        potencia_usina = (media_diaria / radiacao_real)
         if not form.cleaned_data['quantidade_placa']:
-            numero_placas_sugerida = tamanho_usina / tamanho_placa
+            numero_placas_sugerida = potencia_usina / potencia_placa
         else:
             numero_placas_sugerida = form.cleaned_data['quantidade_placa']
         # recacula tamanho da usina com quantidade de placas definida
-        tamanho_usina = float(tamanho_placa) * float(numero_placas_sugerida)
+        potencia_usina = float(potencia_placa) * float(numero_placas_sugerida)
         area_usina = float(numero_placas_sugerida) * 1.68
-        geracao_kw_mes = tamanho_usina * 30 * radiacao_real
+        geracao_kw_mes = potencia_usina * 30 * radiacao_real
         geracao_kw_ano = geracao_kw_mes * 12
         economia_mensal = geracao_kw_mes * preco_eletricidade
         economia_anual = economia_mensal * 12
@@ -70,7 +70,7 @@ def home(request):
             quantidade_placas_final__gte=numero_placas_sugerida,
             )
         preco_por_watt = tabela.valor
-        preco_sugerido = round(float(tamanho_usina) * float(preco_por_watt))
+        preco_sugerido = round(float(potencia_usina) * float(preco_por_watt))
         retorno = {}
         if form.cleaned_data['valor_final']:
             preco_sugerido = float(form.cleaned_data['valor_final'])
@@ -123,15 +123,16 @@ def home(request):
             economia_anual_str = locale.currency(economia_anual, grouping=True)
             preco_sugerido_str = locale.currency(preco_sugerido, grouping=True)
             preco_eletricidade_str = locale.currency(preco_eletricidade, grouping=True)
+            potencia_usina_str = '%s kwp' % locale.format('%0.2f', potencia_usina)
             # registra chave, valor, tipo
             valores = \
             [
             ['seltec_preco_sugerido', preco_sugerido_str, 'texto'],
-            ['seltec_tamanho_usina', round(tamanho_usina, 2), 'decimal'],
-            ['seltec_quantidade_placa', round(numero_placas_sugerida, 2), 'numero'],
-            ['seltec_tamanho_usina_m2', round(area_usina, 2), 'decimal'],
+            ['seltec_potencia_usina', potencia_usina_str, 'texto'],
+            ['seltec_quantidade_placa', locale.format('%0.2f', numero_placas_sugerida), 'numero'],
+            ['seltec_tamanho_usina_m2', '%s m2' % locale.format('%0.2f', area_usina), 'texto'],
             ['seltec_preco_eletricidade', preco_eletricidade_str, 'texto'],
-            ['seltec_reajuste_energia', reajuste_custo_energia, 'decimal'],
+            ['seltec_reajuste_energia', "%s %%" % locale.format('%0.2f', reajuste_custo_energia), 'texto'],
             ['seltec_geracao_kw_mes', geracao_kw_mes, 'decimal'],
             ['seltec_geracao_kw_ano', geracao_kw_ano, 'decimal'],
             ['seltec_economia_mensal', economia_mensal_str, 'texto'],
