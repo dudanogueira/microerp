@@ -127,15 +127,15 @@ def home(request):
             valores = \
             [
             ['seltec_preco_sugerido', preco_sugerido_str, 'texto'],
-            ['seltec_tamanho_usina', tamanho_usina, 'decimal'],
-            ['seltec_quantidade_placa', numero_placas_sugerida, 'numero'],
-            ['seltec_tamanho_usina_m2', area_usina, 'decimal'],
-            ['seltec_preco_eletricidade', preco_eletricidade_str, 'decimal'],
+            ['seltec_tamanho_usina', round(tamanho_usina, 2), 'decimal'],
+            ['seltec_quantidade_placa', round(numero_placas_sugerida, 2), 'numero'],
+            ['seltec_tamanho_usina_m2', round(area_usina, 2), 'decimal'],
+            ['seltec_preco_eletricidade', preco_eletricidade_str, 'texto'],
             ['seltec_reajuste_energia', reajuste_custo_energia, 'decimal'],
             ['seltec_geracao_kw_mes', geracao_kw_mes, 'decimal'],
             ['seltec_geracao_kw_ano', geracao_kw_ano, 'decimal'],
-            ['seltec_economia_mensal', economia_mensal_str, 'decimal'],
-            ['seltec_economia_anual', economia_anual_str, 'decimal'],
+            ['seltec_economia_mensal', economia_mensal_str, 'texto'],
+            ['seltec_economia_anual', economia_anual_str, 'texto'],
             ['seltec_retorno_investimento', retorno_exato_str, 'texto'],
             ]
             # insere dados variaveis
