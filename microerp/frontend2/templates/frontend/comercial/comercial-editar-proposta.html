@@ -5,6 +5,7 @@
 {% load humanize %}
 {% load bootstrap %}
 {% load staticfiles %}
+{% load l10n %}
 
 <title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
 
@@ -68,7 +69,7 @@
 				<a data-toggle="modal" data-target="#ModalMemoriaDeCalculo" title="Memória de Cálculo" data-placement="top" href="" class="tooltip-items btn btn-warning btn-large"><i class="fa fa-dollar"></i></a>
 
 				<a title="Configurar Impressão" data-placement="top" href="{% url "comercial:proposta_comercial_imprimir" proposta.id %}" class="tooltip-items btn btn-primary btn-large"><i class="fa fa-file"></i><i class="fa fa-arrow-right"></i><i class="fa fa-print"></i></a>
-				<a href="{% url "retscreen:home" %}?proposta={{proposta.id}}" class="btn btn-warning">SIMULAÇÃO ENERGIA SOLAR</a>
+				<a href="{% url "retscreen:home" %}?proposta={{proposta.id|unlocalize}}" class="btn btn-warning">SIMULAÇÃO ENERGIA SOLAR</a>
 
 			</p>
 
