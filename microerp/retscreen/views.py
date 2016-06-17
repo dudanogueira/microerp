@@ -4,7 +4,7 @@ from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
 from django.contrib.auth.decorators import user_passes_test, login_required
-
+from math import ceil
 from django import forms
 from django.db.models import Q
 from django.core.files.base import ContentFile
@@ -78,11 +78,21 @@ def home(request):
         if form.cleaned_data['fator'] != 0:
             preco_sugerido = preco_sugerido + (float(preco_sugerido) * float(form.cleaned_data['fator'])/100)
 
+
+        # calculo de retorno ecologico
+        litros_de_agua_ano = geracao_kw_ano * 3600
+        piscinas_olimpicas = round(litros_de_agua_ano / 2500000, 2)
+        litros_combustivel_ano = geracao_kw_ano * 0.0425
+        co2_1 = geracao_kw_ano * 87
+        co2_2 = co2_1/1000000
+        co2_naoemitido_25anos = co2_2 * 25
+        arvores_co2_naoemitido = 8*co2_naoemitido_25anos
+
         retorno_exato = None
-        for i in range(1,26):
+        for i in range(0,26):
             # primeiro registro: preço sugerido e economia anual
             retorno[i] = [round(preco_sugerido * -1, 2), round(economia_anual, 2)]
-            if i != 1:
+            if i != 0:
                 # quanto falta pagar
                 saldo_remascente = retorno[i-1][0]
                 # reajuste no ano anterior
@@ -92,8 +102,8 @@ def home(request):
                 if not retorno_exato and saldo_remascente > 0:
                     retorno_exato = i-2
                     ano_retorno = retorno_exato
-                    meses = saldo_remascente / (economia_neste_ano / 12)
-                    retorno_exato_str = '%d Anos, %d Meses' % (ano_retorno, meses)
+                    meses = ceil((retorno[ano_retorno][0]*-1) / (economia_neste_ano / 12))
+                    retorno_exato_str = '%d Anos, %d Mes(es)' % (ano_retorno, meses)
                 retorno[i] = [
                     round(saldo_remascente + economia_neste_ano, 2),
                     economia_neste_ano
@@ -124,6 +134,7 @@ def home(request):
             preco_sugerido_str = locale.currency(preco_sugerido, grouping=True)
             preco_eletricidade_str = locale.currency(preco_eletricidade, grouping=True)
             potencia_usina_str = '%s kwp' % locale.format('%0.2f', potencia_usina)
+
             # registra chave, valor, tipo
             valores = \
             [
@@ -138,6 +149,12 @@ def home(request):
             ['seltec_economia_mensal', economia_mensal_str, 'texto'],
             ['seltec_economia_anual', economia_anual_str, 'texto'],
             ['seltec_retorno_investimento', retorno_exato_str, 'texto'],
+            # retorno ecologico
+            ['seltec_retorno_investimento', round(litros_combustivel_ano, 2), 'texto'],
+            ['seltec_piscinas_olimpicas', piscinas_olimpicas, 'texto'],
+            ['seltec_litros_combustivel_ano', round(litros_combustivel_ano, 2), 'texto'],
+            ['seltec_co2_naoemitido_25anos', '%s Toneladas' % round(co2_naoemitido_25anos, 2), 'texto'],
+            ['seltec_arvores_co2_naoemitido_25anos', round(arvores_co2_naoemitido, 2), 'texto'],
             ]
             # insere dados variaveis
             for item in valores:

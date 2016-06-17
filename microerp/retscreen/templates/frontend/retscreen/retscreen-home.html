@@ -98,17 +98,25 @@
         <div class="col-md-4">
           <h2>Resultados</h2>
           <ul>
-            <li>Preço por Watt: R$ {{preco_por_watt_str|intcomma}}</li>
+            <li>Preço por Watt: R$ {{preco_por_watt|intcomma}}</li>
             <li>Preço Sugerido: R$ {{preco_sugerido|intcomma}}</li>
+            <li>
+              Reajuste Energia: {{reajuste_custo_energia}}%
+            </li>
             <li>Área da usina: {{area_usina|floatformat:2}} m2</li>
             <li>Potência da Usina: {{potencia_usina|floatformat:2}} kwp</li>
             <li>Geração por Mês: {{geracao_kw_mes|intcomma}} Kw</li>
             <li>Geração por Ano: {{geracao_kw_ano|intcomma}} Kw</li>
             <li>Economia Mensal: R$ {{economia_mensal|intcomma}}</li>
-            <li>Retorno:{{retorno_exato_str}}</li>
+            <li>Litros De Agua/Ano: {{litros_de_agua_ano|intcomma}}</li>
+            <li>Piscinas Olímpicas: {{piscinas_olimpicas|floatformat:2}}</li>
+            <li>Litros Combustível / ano: {{litros_combustivel_ano|floatformat:2}}</li>
+            <li>CO2 não emitido em 25 anos: {{co2_naoemitido_25anos|floatformat:2}}/ton</li>
             <li>
-              Reajuste Energia: {{reajuste_custo_energia}}%
+              Árvores correspondentes ao CO2: {{arvores_co2_naoemitido|floatformat:2}}
             </li>
+            <li>Retorno:{{retorno_exato_str}}</li>
+
           </ul>
           <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
             Memória de Cálculo
