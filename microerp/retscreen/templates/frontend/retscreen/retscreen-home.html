@@ -84,7 +84,7 @@
          <button type="submit" class="btn btn-primary"><i class="fa fa-refresh"></i> Simular</button>
          {% if request.POST and proposta %}
            <button type="submit" name="inserir" value="sim" class="btn btn-warning"><i class="fa fa-save"></i> Atualizar Proposta</button>
-           <input type="hidden" name="proposta_inserir" value="{{proposta.pk}}"/>
+           <input type="hidden" name="proposta_inserir" value="{{proposta.pk|unlocalize}}"/>
          {% endif %}
         </p>
 
