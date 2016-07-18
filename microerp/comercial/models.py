@@ -266,7 +266,8 @@ class PropostaComercial(models.Model):
                     except:
                         pass
             # clona grupo de variaveis
-            if modelo.grupodadosvariaveis:
+            try:
+                grupo = modelo.grupodadosvariaveis
                 # cria grupo de dados variaveis pro documento
                 grupo = GrupoDadosVariaveis.objects.create(
                     documento=documento
@@ -278,6 +279,8 @@ class PropostaComercial(models.Model):
                         valor=dado.valor,
                         tipo=dado.tipo
                     )
+            except:
+                pass
         return documento
 
     def cria_contrato_pelo_modelo(self, modelo, responsavel, comissionado):

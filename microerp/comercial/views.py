@@ -481,7 +481,13 @@ def clientes(request):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_ver(request, cliente_id):
-    cliente = get_object_or_404(Cliente, pk=cliente_id, ativo=True)
+    # confere se tem acesso ao acesso
+    cliente = get_object_or_404(
+        Cliente,
+        pk=cliente_id,
+        ativo=True,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     if request.POST.get('form-adicionar-endereco', None):
         form_adicionar_endereco = AdicionarEnderecoClienteForm(request.POST, cliente=cliente)
         if form_adicionar_endereco.is_valid():
@@ -632,7 +638,11 @@ class LinhaRecursoLogisticoForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta(request, proposta_id):
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    proposta = get_object_or_404(
+        PropostaComercial, pk=proposta_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
+
     seleciona_modelos_proposta = FormSelecionaOrcamentoModelo()
     form_editar_proposta = FormEditarProposta(instance=proposta)
     LinhaRecursoLogisticoFormSet = forms.models.inlineformset_factory(PropostaComercial, LinhaRecursoLogistico, extra=1, can_delete=True, form=LinhaRecursoLogisticoForm)
@@ -1067,7 +1077,9 @@ def editar_proposta_converter_novo(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def editar_proposta_converter(request, proposta_id):
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id, status="aberta")
+    proposta = get_object_or_404(
+        PropostaComercial, pk=proposta_id, status="aberta"
+    )
     # mantendo compatbilidade com sistema antigo
     if proposta.documento_gerado:
         return redirect(reverse("comercial:editar_proposta_converter_novo", args=[proposta.pk]))
@@ -1276,7 +1288,11 @@ class VincularPreClienteParaPreClienteForm(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def precliente_ver(request, pre_cliente_id):
-    precliente = get_object_or_404(PreCliente, pk=pre_cliente_id)
+    precliente = get_object_or_404(
+        PreCliente,
+        pk=pre_cliente_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
     if request.POST:
@@ -1339,7 +1355,11 @@ def precliente_adicionar(request):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def precliente_converter(request, pre_cliente_id):
-    precliente = get_object_or_404(PreCliente, id=pre_cliente_id)
+    precliente = get_object_or_404(
+        PreCliente,
+        id=pre_cliente_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     if request.GET.get('proposta_referencia', None):
         proposta_referencia = PropostaComercial.objects.get(pk=request.GET.get('proposta_referencia', None))
     else:
@@ -1417,7 +1437,11 @@ def precliente_converter(request, pre_cliente_id):
 # propostas comerciais
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_ver(request, proposta_id):
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    proposta = get_object_or_404(
+        PropostaComercial,
+        pk=proposta_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     return render_to_response('frontend/comercial/comercial-propostas-ver.html', locals(), context_instance=RequestContext(request),)
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -2331,7 +2355,10 @@ def proposta_comercial_apagar_item_documento(request, proposta_id, item_id):
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
     formset_dados = forms.modelformset_factory(DadoVariavel, fields=('valor',), extra=0, form=DadoVariavelForm)
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    proposta = get_object_or_404(
+        PropostaComercial, pk=proposta_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     # mantem propostas antigas no esquema antigo
     if not proposta.documento_gerado:
         # redireciona pra view antiga
@@ -2416,7 +2443,10 @@ def proposta_comercial_imprimir(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir_gerar_documento(request, proposta_id, documento_id):
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    proposta = get_object_or_404(
+        PropostaComercial, pk=proposta_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     modelo_documento = get_object_or_404(DocumentoGerado, pk=documento_id)
     if proposta.documento_gerado:
         proposta.documento_gerado.delete()
@@ -2427,7 +2457,10 @@ def proposta_comercial_imprimir_gerar_documento(request, proposta_id, documento_
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir2(request, proposta_id):
-    proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    proposta = get_object_or_404(
+        PropostaComercial, pk=proposta_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+    )
     if proposta.cliente:
         email_inicial = proposta.cliente.email
     if proposta.email_proposto:
@@ -2572,7 +2605,9 @@ def proposta_comercial_imprimir2(request, proposta_id):
 @user_passes_test(possui_perfil_acesso_comercial)
 def adicionar_follow_up(request, proposta_id):
     follow_up = False
-    proposta = get_object_or_404(PropostaComercial, status="aberta", pk=proposta_id)
+    proposta = get_object_or_404(
+        PropostaComercial, status="aberta", pk=proposta_id,
+        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
     if request.POST:
         form_adicionar_follow_up = FormAdicionarFollowUp(request.POST, perfil=request.user.perfilacessocomercial)
         if form_adicionar_follow_up.is_valid():
