@@ -8,7 +8,6 @@
 <title>{%block title %}{{block.super}} - Comercial - Configurar Impressão de Proposta{% endblock %}</title>
 
 {% block content %}
-
 <div>
 
 
@@ -56,61 +55,68 @@
 
 
 			{% if proposta.documento_gerado %}
-			<div id="com-documento-gerado">
-					{% if proposta.documento_gerado.capa %}
-					<div id="capa" class="well well-sm">
-						<h4>Capa</h4>
-						{% thumbnail proposta.documento_gerado.capa "100x100" format="PNG" as im %}
-						<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
-						{% endthumbnail %}
+				{% if not proposta.documento_gerado.arquivo_modelo %}
+					<div id="com-documento-gerado">
+							{% if proposta.documento_gerado.capa %}
+							<div id="capa" class="well well-sm">
+								<h4>Capa</h4>
+								{% thumbnail proposta.documento_gerado.capa "100x100" format="PNG" as im %}
+								<img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}">
+								{% endthumbnail %}
+							</div>
+							{% endif %}
+						{% for grupo in proposta.documento_gerado.grupodocumento_set.all %}
+						<div id="grupo-{{grupo.id}}">
+
+							{% for item in grupo.itemgrupodocumento_set.all %}
+							<div id="itemgrupo-{{item.chave_identificadora}}" class="well well-sm">
+								<p>
+									<span class="label label-info">{{item.titulo_label}}</span>
+									{% if item.texto_editavel %}
+										<span class="label label-danger"><i class="fa fa-file-text"></i> texto editável</span>
+									{% endif %}
+									{% if item.possui_variavel %}
+									<span class="label label-warning"><i class="fa fa-asterisk"></i> Este Item Possui Variável que deve ser alterada</span>
+									{% endif %}
+									{% if item.imagem_editavel %}
+										<span class="label label-warning"><i class="fa fa-file-image-o"></i> imagem editável</span>
+									{% endif %}
+									{% if item.apagavel %}
+										<a href="{% url "comercial:proposta_comercial_apagar_item_documento" proposta.pk item.pk %}" class="btn btn-danger btn-large"><i class="fa fa-erase"></i> Apagar este Item</a>
+									{% endif %}
+
+
+								</p>
+
+
+								{% if item.titulo %}
+								<h2 {% if item.titulo_centralizado %}class="text-center"{% endif %}>{{item.titulo_label}}</h2>
+								{% endif %}
+								{% if item.texto %}
+								<p>{{item.texto|safe|linebreaks}}</p>
+								{% endif %}
+								{% if item.imagem %}
+								{% thumbnail item.imagem "100x100" format="PNG" as im %}
+								<a target="_blank" href="{{item.imagem.url}}"><img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"></a>
+								{% endthumbnail %}
+								{% endif %}
+								{% if item.quebra_pagina %}
+								<hr />
+								<small>Quebra de página</small>
+								{% endif %}
+							</div>
+							{% endfor %}
+
+						</div>
+						{% endfor %}
+
 					</div>
-					{% endif %}
-				{% for grupo in proposta.documento_gerado.grupodocumento_set.all %}
-				<div id="grupo-{{grupo.id}}">
-
-					{% for item in grupo.itemgrupodocumento_set.all %}
-					<div id="itemgrupo-{{item.chave_identificadora}}" class="well well-sm">
-						<p>
-							<span class="label label-info">{{item.titulo_label}}</span>
-							{% if item.texto_editavel %}
-								<span class="label label-danger"><i class="fa fa-file-text"></i> texto editável</span>
-							{% endif %}
-							{% if item.possui_variavel %}
-							<span class="label label-warning"><i class="fa fa-asterisk"></i> Este Item Possui Variável que deve ser alterada</span>
-							{% endif %}
-							{% if item.imagem_editavel %}
-								<span class="label label-warning"><i class="fa fa-file-image-o"></i> imagem editável</span>
-							{% endif %}
-							{% if item.apagavel %}
-								<a href="{% url "comercial:proposta_comercial_apagar_item_documento" proposta.pk item.pk %}" class="btn btn-danger btn-large"><i class="fa fa-erase"></i> Apagar este Item</a>
-							{% endif %}
-
-
-						</p>
-
-
-						{% if item.titulo %}
-						<h2 {% if item.titulo_centralizado %}class="text-center"{% endif %}>{{item.titulo_label}}</h2>
-						{% endif %}
-						{% if item.texto %}
-						<p>{{item.texto|safe|linebreaks}}</p>
-						{% endif %}
-						{% if item.imagem %}
-						{% thumbnail item.imagem "100x100" format="PNG" as im %}
-						<a target="_blank" href="{{item.imagem.url}}"><img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"></a>
-						{% endthumbnail %}
-						{% endif %}
-						{% if item.quebra_pagina %}
-						<hr />
-						<small>Quebra de página</small>
-						{% endif %}
-					</div>
-					{% endfor %}
-
+				{% else %}
+				<div id="com-arquivo-modelo">
+					Arquivo Modelo: <a href="{{proposta.documento_gerado.arquivo_modelo.url}}">{{proposta.documento_gerado.arquivo_modelo}}</a>
 				</div>
-				{% endfor %}
+				{% endif %}
 
-			</div>
 			{% else %}
 			<div id="sem-documento-gerado">
 				<h2>Escolha um Modelo de Proposta</h2>

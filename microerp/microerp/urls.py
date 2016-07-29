@@ -4,12 +4,14 @@ from django.contrib import admin
 from django.contrib.auth.views import login, logout
 from frontend2.views import home, funcionario, minhas_solicitacoes, \
 minhas_solicitacoes_resolvido, minhas_solicitacoes_abrir_correcao, \
-minhas_solicitacoes_fechar_contato, minhas_solicitacoes_fechar_visto
+minhas_solicitacoes_fechar_contato, minhas_solicitacoes_fechar_visto, \
+teste
 
 from estoque.views import ajax_consulta_produto
 from rh.views import ajax_consulta_cargo
 
 urlpatterns = [
+    url(r'^teste/$', teste ),
     url(r'^admin/', admin.site.urls),
     url(r'^sair/$', logout, name='logout'),
     url(r'^accounts/login/$', login, name='login'),

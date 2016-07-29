@@ -41,7 +41,10 @@ def home(request):
         status='aberta'
     )
     if proposta_id:
-        proposta = get_object_or_404(propostas_da_empresa, pk=proposta_id)
+        if request.user.perfilacessocomercial.super_gerente:
+            proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+        else:
+            proposta = get_object_or_404(propostas_da_empresa, pk=proposta_id)
     if request.POST and form.is_valid():
         reajuste_custo_energia = float(0.08)
         messages.success(request, u"Sucesso!Form Válido")

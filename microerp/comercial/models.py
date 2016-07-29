@@ -243,6 +243,9 @@ class PropostaComercial(models.Model):
         # clona acapa
         if modelo.capa and os.path.isfile(modelo.capa.path):
             documento.capa.save(os.path.basename(modelo.capa.url),modelo.capa.file,save=True)
+        # clona documento modelo
+        if modelo.arquivo_modelo:
+            documento.arquivo_modelo.save(os.path.basename(modelo.arquivo_modelo.url),modelo.arquivo_modelo.file,save=True)
         # associa documento gerado com esta proposta
         self.documento_gerado = documento
         self.save()
@@ -540,8 +543,17 @@ class CapaDocumentoDir(object):
             'documentos_gerados/', str(instance .uuid), 'imagens/capa/', filename
           )
 
+@deconstructible
+class ArquivoModeloDir(object):
+    def __call__(self, instance, filename):
+        return os.path.join(
+            'documentos_gerados/', str(instance .uuid), 'modelo/', filename
+          )
+
+
 documento_local_imagem = ImagemDocumentoDir()
 documento_capa = CapaDocumentoDir()
+arquivo_modelo_local = ArquivoModeloDir()
 
 class   DocumentoGerado(models.Model):
     def __unicode__(self):
@@ -552,6 +564,7 @@ class   DocumentoGerado(models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4)
     modelo = models.BooleanField(default=False)
+    arquivo_modelo = models.FileField(upload_to=arquivo_modelo_local, blank=True)
     imprime_logo = models.BooleanField(default=True)
     capa = models.ImageField(upload_to=documento_capa, blank=True, null=True)
     tipo = models.CharField(blank=False, null=False, max_length=15, choices=DOCUMENTO_GERADO_TIPO_CHOICES, default='proposta')
@@ -1011,6 +1024,9 @@ class ContratoFechado(models.Model):
         # clona acapa
         if modelo.capa:
             documento.capa.save(os.path.basename(documento.capa.url),documento.capa.file,save=True)
+        # clona documento modelo
+        if modelo.arquivo_modelo:
+            documento.arquivo_modelo.save(os.path.basename(modelo.arquivo_modelo.url),modelo.arquivo_modelo.file,save=True)
         # associa documento gerado com esta proposta
         self.documento_gerado = documento
         self.save()

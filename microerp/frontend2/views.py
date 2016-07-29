@@ -93,13 +93,13 @@ def meus_recados(request):
     lidos = Recado.objects.filter(destinatario=funcionario, lido=True)
     enviados = Recado.objects.filter(remetente=funcionario)
     return render_to_response('frontend/main-meus-recados.html', locals(), context_instance=RequestContext(request),)
-
 def meus_recados_marcar_lido(request, recado_id):
     funcionario = get_object_or_404(Funcionario, user=request.user)
     recado = get_object_or_404(Recado, destinatario=funcionario, pk=recado_id)
     recado.lido = True
     recado.lido_em = datetime.now()
     recado.save()
+
     messages.success(request, "Mensagem ID#%d marcado como lido!" % recado.id)
     return redirect(reverse('meus_recados'))
 
@@ -158,3 +158,21 @@ def minhas_solicitacoes_fechar_visto(request, solicitacao_id):
         solicitacao.status = 'resolvida'
         solicitacao.save()
     return redirect(reverse('minhas_solicitacoes'))
+
+def teste(request):
+    from templated_docs import fill_template
+    from templated_docs.http import FileResponse
+    context = {
+        'teste': 'okgo',
+        'uai': 10.23,
+        'v1': 56789,
+        'v2': 2,
+        'v3': 3,
+        'v4': 4,
+        'v5': 5,
+        'v6': 6,
+    }
+
+    filename = fill_template('/code/teste.odt', context, output_format='docx')
+    visible_filename = 'greeting.pdf'
+    return FileResponse(filename, visible_filename)

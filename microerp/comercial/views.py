@@ -61,6 +61,10 @@ from reportlab.lib.pagesizes import letter, A4
 from reportlab.pdfgen import canvas
 from io import BytesIO
 
+from templated_docs import fill_template
+from templated_docs.http import FileResponse
+
+
 #
 # FORMULARIOS
 #
@@ -638,10 +642,16 @@ class LinhaRecursoLogisticoForm(forms.ModelForm):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta(request, proposta_id):
-    proposta = get_object_or_404(
-        PropostaComercial, pk=proposta_id,
-        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-        )
+    if request.user.perfilacessocomercial.super_gerente:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id
+            )
+    else:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+            )
+
 
     seleciona_modelos_proposta = FormSelecionaOrcamentoModelo()
     form_editar_proposta = FormEditarProposta(instance=proposta)
@@ -1288,11 +1298,17 @@ class VincularPreClienteParaPreClienteForm(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def precliente_ver(request, pre_cliente_id):
-    precliente = get_object_or_404(
-        PreCliente,
-        pk=pre_cliente_id,
-        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-    )
+    if request.user.perfilacessocomercial.super_gerente:
+        precliente = get_object_or_404(
+            PreCliente,
+            pk=pre_cliente_id
+        )
+    else:
+        precliente = get_object_or_404(
+            PreCliente,
+            pk=pre_cliente_id,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
     form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
     if request.POST:
@@ -1873,9 +1889,9 @@ class OrcamentoPrint:
                     elements.append(Spacer(1, 12))
                     texto = u"<b>Endereço da Obra</b>: %s<br />" % proposta.endereco_obra_proposto
                     endereco_obra_texto = Paragraph(texto, styles['justify'])
+                # space
                     elements.append(endereco_obra_texto)
 
-                # space
                 elements.append(Spacer(1, 24))
 
                 texto_introducao_proposta = getattr(settings, 'TEXTO_INTRODUCAO_PROPOSTA_COMERCIAL', 'TEXTO INTRODUÇÃO PROPOSTA COMERCIAL')
@@ -2355,19 +2371,23 @@ def proposta_comercial_apagar_item_documento(request, proposta_id, item_id):
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir(request, proposta_id):
     formset_dados = forms.modelformset_factory(DadoVariavel, fields=('valor',), extra=0, form=DadoVariavelForm)
-    proposta = get_object_or_404(
-        PropostaComercial, pk=proposta_id,
-        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-    )
+    if request.user.perfilacessocomercial.super_gerente:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id
+        )
+    else:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
     # mantem propostas antigas no esquema antigo
     if not proposta.documento_gerado:
         # redireciona pra view antiga
         return redirect(reverse("comercial:proposta_comercial_imprimir2", args=[proposta.id]))
-
+        Q(grupo__documento__propostacomercial=proposta)
     # puxa todos os itens dessa proposta que sao editaveis
     itens_editaveis = ItemGrupoDocumento.objects.filter(
-        (Q(texto_editavel=True)| Q(imagem_editavel=True)) & \
-        Q(grupo__documento__propostacomercial=proposta)
+        (Q(texto_editavel=True)| Q(imagem_editavel=True)) \
     ).order_by('grupo__peso', 'peso').distinct()
     if proposta.cliente:
          email_inicial = proposta.cliente.email
@@ -2413,6 +2433,24 @@ def proposta_comercial_imprimir(request, proposta_id):
         # imprimir
         if request.GET.get('imprimir'):
             messages.info(request, "Documento Impresso Gerado")
+            nome_arquivo_gerado = "proposta-%s.pdf" % proposta.id
+            # se possui arquivo_modelo, disprara processo
+            if proposta.documento_gerado.arquivo_modelo:
+                contexto = {}
+                # gera contexto
+                #para todos os grupos de dados variaveis:
+                for dado in proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.all():
+                    contexto[dado.chave] = dado.valor
+                # adiciona a proposta
+                contexto['proposta'] = proposta
+                if proposta.cliente:
+                    contexto['cliente'] = proposta.cliente
+                else:
+                    contexto['cliente'] = proposta.precliente
+
+                filename = fill_template(proposta.documento_gerado.arquivo_modelo.path, contexto, output_format='pdf')
+                return FileResponse(filename, nome_arquivo_gerado)
+
             # Create the HttpResponse object with the appropriate PDF headers.
             response = HttpResponse(content_type='application/pdf')
             nome_arquivo_gerado = "proposta-%s.pdf" % proposta.id
@@ -2443,10 +2481,16 @@ def proposta_comercial_imprimir(request, proposta_id):
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir_gerar_documento(request, proposta_id, documento_id):
-    proposta = get_object_or_404(
-        PropostaComercial, pk=proposta_id,
-        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-    )
+    if request.user.perfilacessocomercial.super_gerente:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id
+        )
+    else:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
+
     modelo_documento = get_object_or_404(DocumentoGerado, pk=documento_id)
     if proposta.documento_gerado:
         proposta.documento_gerado.delete()
@@ -2457,10 +2501,15 @@ def proposta_comercial_imprimir_gerar_documento(request, proposta_id, documento_
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir2(request, proposta_id):
-    proposta = get_object_or_404(
-        PropostaComercial, pk=proposta_id,
-        designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
-    )
+    if request.user.perfilacessocomercial.super_gerente:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id
+        )
+    else:
+        proposta = get_object_or_404(
+            PropostaComercial, pk=proposta_id,
+            designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
+        )
     if proposta.cliente:
         email_inicial = proposta.cliente.email
     if proposta.email_proposto:
