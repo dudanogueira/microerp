@@ -11,7 +11,8 @@ db_alt:
 web:
   build: .
   command: python manage.py runserver 0.0.0.0:8000
-#  restart: always
+  #command: sleep 999999
+  restart: always
   volumes:
     - ./microerp/:/code
   ports:

@@ -22,7 +22,9 @@
 		{% if proposta.documento_gerado.grupodadosvariaveis %}
 			<li role="presentation"><a href="#dadosvariaveis" aria-controls="dadosvariaveis" role="tab" data-toggle="tab"><i class="fa fa-exchange"></i> Dados Variáveis </a></li>
 		{% endif %}
-		<li role="presentation"><a href="#alterar" aria-controls="alterar" role="tab" data-toggle="tab"><i class="fa fa-pencil"></i> Alterar </a></li>
+		{% if not proposta.documento_gerado.arquivo_modelo %}
+			<li role="presentation"><a href="#alterar" aria-controls="alterar" role="tab" data-toggle="tab"><i class="fa fa-pencil"></i> Alterar </a></li>
+		{% endif %}
 	</ul>
 
 	<!-- Tab panes -->
@@ -149,7 +151,7 @@
 			</form>
 		</div>
 	{% endif %}
-
+	{% if not proposta.documento_gerado.arquivo_modelo %}
 		<div role="tabpanel" class="tab-pane" id="alterar">
 			<form method="post" id="form_textos_editaveis" enctype="multipart/form-data">
 				{{ form_textos_editaveis.management_form }}
@@ -171,8 +173,8 @@
 				<p><button type="submit" class="btn btn-success btn-block" form="form_textos_editaveis" name="alterar-proposta" value="sim"><i class="fa fa-save"></i> Salvar</button> </p>
 				{% csrf_token %}
 			</form>
-
 		</div>
+	{% endif %}
 	</div>
 
 </div>

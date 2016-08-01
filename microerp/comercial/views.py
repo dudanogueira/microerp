@@ -448,7 +448,7 @@ def clientes(request):
         preclientes_sem_proposta = PreCliente.objects.filter(
                 propostacomercial=None, cliente_convertido=None,
                 sem_interesse=False,
-        ).order_by('criado')
+        ).select_related('adicionado_por', 'designado').order_by('criado')
         # mostra todas as requsicoes
         requisicoes_propostas = RequisicaoDeProposta.objects.filter(atendido=False).order_by('cliente__nome')
     elif not request.user.perfilacessocomercial.super_gerente and request.user.perfilacessocomercial.gerente:
@@ -1598,8 +1598,12 @@ def propostas_comerciais_minhas(request):
             ).count()
     else:
         if request.user.perfilacessocomercial.super_gerente:
-            propostas_abertas_validas = PropostaComercial.objects.filter(status='aberta', data_expiracao__gte=datetime.date.today()).order_by('precliente', 'cliente')
-            propostas_abertas_expiradas_count = PropostaComercial.objects.filter(status='aberta', data_expiracao__lt=datetime.date.today()).count()
+            propostas_abertas_validas = PropostaComercial.objects.filter(
+                status='aberta', data_expiracao__gte=datetime.date.today()
+            ).select_related('precliente', 'cliente').order_by('precliente', 'cliente')
+            propostas_abertas_expiradas_count = PropostaComercial.objects.filter(
+                status='aberta', data_expiracao__lt=datetime.date.today()
+            ).count()
         else:
             propostas_abertas_validas = PropostaComercial.objects.filter(
                 status='aberta',
@@ -2387,7 +2391,8 @@ def proposta_comercial_imprimir(request, proposta_id):
         Q(grupo__documento__propostacomercial=proposta)
     # puxa todos os itens dessa proposta que sao editaveis
     itens_editaveis = ItemGrupoDocumento.objects.filter(
-        (Q(texto_editavel=True)| Q(imagem_editavel=True)) \
+        (Q(texto_editavel=True)| Q(imagem_editavel=True)),
+        grupo__documento__propostacomercial=proposta
     ).order_by('grupo__peso', 'peso').distinct()
     if proposta.cliente:
          email_inicial = proposta.cliente.email
@@ -2510,13 +2515,8 @@ def proposta_comercial_imprimir2(request, proposta_id):
             PropostaComercial, pk=proposta_id,
             designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
         )
-    if proposta.cliente:
-        email_inicial = proposta.cliente.email
-    if proposta.email_proposto:
-        email_inicial = proposta.email_proposto
-    else:
-        email_inicial = None
-    enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
+
+    #enviar_proposta_email = FormEnviarPropostaEmail(initial={'email': email_inicial})
 
     # tenta ao máximo auto completar os dados
     # nome

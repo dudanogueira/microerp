@@ -42,9 +42,9 @@ def home(request):
     )
     if proposta_id:
         if request.user.perfilacessocomercial.super_gerente:
-            proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+            proposta = get_object_or_404(PropostaComercial.objects.select_related(), pk=proposta_id)
         else:
-            proposta = get_object_or_404(propostas_da_empresa, pk=proposta_id)
+            proposta = get_object_or_404(propostas_da_empresa.objects.select_related(), pk=proposta_id)
     if request.POST and form.is_valid():
         reajuste_custo_energia = float(0.08)
         messages.success(request, u"Sucesso!Form Válido")
@@ -141,6 +141,7 @@ def home(request):
             # registra chave, valor, tipo
             valores = \
             [
+            ['seltec_demanda', media, 'numero'],
             ['seltec_preco_sugerido', preco_sugerido_str, 'texto'],
             ['seltec_potencia_usina', potencia_usina_str, 'texto'],
             ['seltec_quantidade_placa', locale.format('%0.2f', numero_placas_sugerida), 'numero'],
@@ -158,7 +159,10 @@ def home(request):
             ['seltec_litros_combustivel_ano', round(litros_combustivel_ano, 2), 'texto'],
             ['seltec_co2_naoemitido_25anos', '%s Toneladas' % round(co2_naoemitido_25anos, 2), 'texto'],
             ['seltec_arvores_co2_naoemitido_25anos', round(arvores_co2_naoemitido, 2), 'texto'],
+            # anos do retorno do investimento
             ]
+            for ano,val in retorno.items():
+                valores.append(['ano%s' % ano, val[0], 'numero'])
             # insere dados variaveis
             for item in valores:
                 d,c = proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.get_or_create(
