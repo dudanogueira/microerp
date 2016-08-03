@@ -2452,8 +2452,8 @@ def proposta_comercial_imprimir(request, proposta_id):
                     contexto['cliente'] = proposta.cliente
                 else:
                     contexto['cliente'] = proposta.precliente
-
-                filename = fill_template(proposta.documento_gerado.arquivo_modelo.path, contexto, output_format='pdf')
+                formato = request.GET.get('formato', 'pdf')
+                filename = fill_template(proposta.documento_gerado.arquivo_modelo.path, contexto, output_format=formato)
                 return FileResponse(filename, nome_arquivo_gerado)
 
             # Create the HttpResponse object with the appropriate PDF headers.
