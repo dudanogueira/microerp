@@ -11,8 +11,8 @@ class TabelaValores(models.Model):
             self.valor
         )
 
-    quantidade_placas_inicial = models.IntegerField(blank=True, null=True)
-    quantidade_placas_final = models.IntegerField(blank=True, null=True)
+    quantidade_placas_inicial = models.FloatField(blank=True, null=True)
+    quantidade_placas_final = models.FloatField(blank=True, null=True)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
