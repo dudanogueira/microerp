@@ -69,8 +69,8 @@ def home(request):
         economia_mensal = geracao_kw_mes * preco_eletricidade
         economia_anual = economia_mensal * 12
         tabela = TabelaValores.objects.get(
-            quantidade_placas_inicial__lte=numero_placas_sugerida,
-            quantidade_placas_final__gte=numero_placas_sugerida,
+            quantidade_placas_inicial__lte=int(numero_placas_sugerida),
+            quantidade_placas_final__gte=int(numero_placas_sugerida),
             )
         preco_por_watt = tabela.valor
         preco_sugerido = round(float(potencia_usina) * float(preco_por_watt))
