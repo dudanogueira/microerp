@@ -1564,8 +1564,9 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
                 proposta.cria_documento_gerado(modelo=modelos_proposta[0])
                 # Auto Preenche Endereco da Obra
                 item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
-                item.texto = precliente.logradouro_completo()
-                item.save()
+                if item:
+                    item.texto = precliente.logradouro_completo()
+                    item.save()
                 # auto preenche Prezado
                 item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='prezado').first()
                 if proposta.precliente and item:
