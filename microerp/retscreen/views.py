@@ -156,6 +156,7 @@ def home(request):
             # retorno ecologico
             ['seltec_retorno_investimento', round(litros_combustivel_ano, 2), 'texto'],
             ['seltec_piscinas_olimpicas', piscinas_olimpicas, 'texto'],
+            ['seltec_litros_agua_ano', litros_de_agua_ano, 'numero']
             ['seltec_litros_combustivel_ano', round(litros_combustivel_ano, 2), 'texto'],
             ['seltec_co2_naoemitido_25anos', '%s Toneladas' % round(co2_naoemitido_25anos, 2), 'texto'],
             ['seltec_arvores_co2_naoemitido_25anos', round(arvores_co2_naoemitido, 2), 'texto'],

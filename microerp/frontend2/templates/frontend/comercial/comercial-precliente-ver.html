@@ -46,6 +46,7 @@
 				<strong>Nome:</strong> {{precliente.nome}}<br />
 				<strong>Dados:</strong> {{precliente.dados}}<br />
 				<strong>Contato:</strong> {{precliente.contato}}<br />
+				<strong>Telefones:</strong> {% for telefone in precliente.telefones %}<span class="label label-info">{{telefone}}</span> {% endfor %}<br />
 				<strong>Designado:</strong> {{precliente.designado}}<br />
 				<strong>Tipo:</strong> {{precliente.get_tipo_display}}: {% if precliente.tipo == 'pf' %}{{precliente.cpf}}{% else %}{{precliente.cnpj}}{% endif %}<br />
 				<strong>Origem:</strong> {{precliente.origem}}<br />
