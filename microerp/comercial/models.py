@@ -144,9 +144,9 @@ class PropostaComercial(models.Model):
 
     def sugere_data_reagendamento_expiracao(self):
         if self.data_expiracao > datetime.date.today():
-            return self.data_expiracao + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
+            return self.data_expiracao + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 30))
         else:
-            return datetime.date.today() + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 7))
+            return datetime.date.today() + datetime.timedelta(days=getattr(settings, 'EXPIRACAO_FOLLOWUP_PADRAO', 30))
 
     def orcamentos_ativos(self):
         return self.orcamento_set.filter(ativo=True)

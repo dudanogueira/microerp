@@ -160,6 +160,7 @@ def home(request):
             ['seltec_litros_combustivel_ano', round(litros_combustivel_ano, 2), 'texto'],
             ['seltec_co2_naoemitido_25anos', '%s Toneladas' % round(co2_naoemitido_25anos, 2), 'texto'],
             ['seltec_arvores_co2_naoemitido_25anos', round(arvores_co2_naoemitido, 2), 'texto'],
+            ['seltec_retorno_investimento', retorno_exato_str, 'texto'],
             # anos do retorno do investimento
             ]
             for ano,val in retorno.items():
