@@ -307,9 +307,10 @@
         <small>{{proposta.data_expiracao|timeuntil}}</small></td>
 				<td>R$ {{proposta.valor_proposto|floatformat:2}}</td>
 				<td>
+
 					<div class="progress progress-striped active" style="width:100%px;">
-						<div class="bar" style="width: {{proposta.probabilidade}}%;">
-							<strong>{{proposta.probabilidade}}%</strong>
+						<div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="{{proposta.probabilidade}}" aria-valuemin="0" aria-valuemax="100" style="width: {{proposta.probabilidade}}%">
+							<span class="">{{proposta.probabilidade}}%</span>
 						</div>
 					</div>
 				</td>

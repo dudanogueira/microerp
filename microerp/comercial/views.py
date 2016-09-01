@@ -2087,11 +2087,17 @@ class FormEnviarPropostaEmail(forms.Form):
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def proposta_comercial_reabrir(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
+    # desvincula documento gerado
+    documento = proposta.documento_gerado
+    proposta.save()
+    #
     id_original = proposta.id
     orcamentos = proposta.orcamento_set.all()
     # clona a proposta atual para uma nova, aberta
     proposta.id = None
+    proposta.documento_gerado = None
     proposta.save()
+    proposta.cria_documento_gerado(modelo=documento)
     proposta.status = "aberta"
     # marca como reaberta
     proposta.reaberta = True
