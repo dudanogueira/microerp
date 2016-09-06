@@ -51,3 +51,12 @@ class ParcelaFinanciamento(models.Model):
     # metadata
     criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
     atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")
+
+class ReajusteEnergiaAno(models.Model):
+    def __unicode__(self):
+        return "Reajuste de %s%% no ano %s" % (str(self.percentual), str(self.ano))
+    ano = models.IntegerField(blank=True, null=True, unique=True)
+    percentual = models.DecimalField(max_digits=5, decimal_places=2)
+    # metadata
+    criado = models.DateTimeField(blank=True, auto_now_add=True, verbose_name="Criado")
+    atualizado = models.DateTimeField(blank=True, auto_now=True, verbose_name="Atualizado")

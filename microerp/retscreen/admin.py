@@ -4,6 +4,7 @@ from models import TabelaValores
 from models import Financiamento
 from models import PorteFinanciamento
 from models import ParcelaFinanciamento
+from models import ReajusteEnergiaAno
 
 class ParcelaFinanciamentoInlineAdmin(admin.StackedInline):
     extra = 0
@@ -17,3 +18,4 @@ admin.site.register(TabelaValores)
 admin.site.register(Financiamento)
 admin.site.register(PorteFinanciamento, PorteFinanciamentoAdmin)
 admin.site.register(ParcelaFinanciamento)
+admin.site.register(ReajusteEnergiaAno)

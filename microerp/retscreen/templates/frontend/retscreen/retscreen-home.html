@@ -129,6 +129,7 @@
                     <th>ANO</th>
                     <th>INVESTIMENTO</th>
                     <th>ECONOMIA</th>
+                    <th>REAJUSTE</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,6 +138,7 @@
                     <th scope="row">{{k}}</th>
                     <td>R$ {{v.0|floatformat:2}}</td>
                     <td>R$ {{v.1|floatformat:2}}</td>
+                    <td>{{v.2}} %</td>
                   </tr>
                   {% endfor %}
                 </tbody>

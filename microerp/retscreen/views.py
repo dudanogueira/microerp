@@ -17,7 +17,7 @@ from django.contrib import messages
 
 from comercial.models import PropostaComercial, ItemGrupoDocumento
 
-from models import TabelaValores, PorteFinanciamento
+from models import TabelaValores, PorteFinanciamento, ReajusteEnergiaAno
 
 class FormConfiguraRetscreen(forms.Form):
     fator = forms.DecimalField(label=u"Fator Energético", required=True, initial=0,  decimal_places=2)
@@ -53,7 +53,7 @@ def home(request):
         radiacao = float(form.cleaned_data['radiacao'])
         preco_eletricidade = float(form.cleaned_data['preco_eletricidade'])
         media_diaria = media / 30.00
-        percentual_perda = (radiacao * 3) / 100
+        percentual_perda = (radiacao * 3.3) / 100
         perda = radiacao * percentual_perda
         radiacao_real = radiacao - perda
         potencia_usina = (media_diaria / radiacao_real)
@@ -90,16 +90,35 @@ def home(request):
         co2_2 = co2_1/1000000
         co2_naoemitido_25anos = co2_2 * 25
         arvores_co2_naoemitido = 8*co2_naoemitido_25anos
-
+        # reajustes variáveis
+        reajustes = ReajusteEnergiaAno.objects.all()
+        reajustes_dict = {}
+        for reajuste in reajustes:
+            reajustes_dict[int(reajuste.ano)] = float(reajuste.percentual)
+        print "MA OI", reajustes_dict
         retorno_exato = None
         for i in range(0,26):
             # primeiro registro: preço sugerido e economia anual
-            retorno[i] = [round(preco_sugerido * -1, 2), round(economia_anual, 2)]
+            retorno[i] = [round(preco_sugerido * -1, 2), round(economia_anual, 2), 0]
             if i != 0:
                 # quanto falta pagar
                 saldo_remascente = retorno[i-1][0]
                 # reajuste no ano anterior
                 economia_no_ano_anterior = retorno[i-1][1]
+                # busca reajuste no ano corrente
+                try:
+                    reajuste_custo_energia = reajustes_dict[i]
+                    print "PRIMEIRO", reajuste_custo_energia, i
+                except:
+                    # nao encontrado, busca do ano 0
+                    try:
+                        reajuste_custo_energia = reajustes_dict[0]
+                        print "SEGUNDO", reajuste_custo_energia, i
+                    except:
+                        # nao encontrado, volta pro default
+                        reajuste_custo_energia = float(0.08)
+                        print "TERCEIRO", reajuste_custo_energia, i
+
                 # calcula retorno exato, em meses:
                 economia_neste_ano = (economia_no_ano_anterior * reajuste_custo_energia) + economia_no_ano_anterior
                 if not retorno_exato and saldo_remascente > 0:
@@ -109,7 +128,8 @@ def home(request):
                     retorno_exato_str = '%d Anos, %d Mes(es)' % (ano_retorno, meses)
                 retorno[i] = [
                     round(saldo_remascente + economia_neste_ano, 2),
-                    economia_neste_ano
+                    economia_neste_ano,
+                    reajuste_custo_energia
                 ]
         updated_data = request.POST.copy()
         updated_data.update(

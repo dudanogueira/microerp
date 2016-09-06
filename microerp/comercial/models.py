@@ -268,22 +268,24 @@ class PropostaComercial(models.Model):
                         novo_item.imagem.save(os.path.basename(item.imagem.url),item.imagem.file,save=True)
                     except:
                         pass
-            # clona grupo de variaveis
-            try:
-                grupo = modelo.grupodadosvariaveis
-                # cria grupo de dados variaveis pro documento
-                grupo = GrupoDadosVariaveis.objects.create(
-                    documento=documento
+        # clona grupo de variaveis, se houver
+        if getattr(modelo, 'grupodadosvariaveis', None):
+            grupo = modelo.grupodadosvariaveis
+            # cria grupo de dados variaveis pro documento
+            grupo = GrupoDadosVariaveis.objects.create(
+                documento=documento
+            )
+            # copia os que estão no modelo
+            for dado in modelo.grupodadosvariaveis.dadovariavel_set.all():
+                documento.grupodadosvariaveis.dadovariavel_set.create(
+                    chave=dado.chave,
+                    valor=dado.valor,
+                    tipo=dado.tipo
                 )
-                # copia os que estão no modelo
-                for dado in modelo.grupodadosvariaveis.dadovariavel_set.all():
-                    documento.grupodadosvariaveis.dadovariavel_set.create(
-                        chave=dado.chave,
-                        valor=dado.valor,
-                        tipo=dado.tipo
-                    )
-            except:
-                pass
+        else:
+            grupo = GrupoDadosVariaveis.objects.create(
+                documento=documento
+            )
         return documento
 
     def cria_contrato_pelo_modelo(self, modelo, responsavel, comissionado):
