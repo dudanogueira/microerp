@@ -24,7 +24,11 @@
 <form method="post">
     {% csrf_token %}
 {{form|bootstrap}}
+<div id="form_complementar">
+
+</div>
 <button type="submit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
+
 </form>
 
 {% endblock %}
@@ -36,8 +40,18 @@
 
 <script>
 $(document).ready(function() {
-$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+	$("#menu-comercial-home, #top-menu-comercial").addClass("active");
+	$("#id_tipo").val(null);
+	$("#id_tipo").on('change', function(){
+		if(this.value){
+			$("#form_complementar").load('{% url "comercial:adicionar_proposta_form_complementar" %}'+'?tipo='+this.value);
+		}else{
+			$("#form_complementar").html('');
+		}
+	})
 });
+
+
 $( ".datepicker" ).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"

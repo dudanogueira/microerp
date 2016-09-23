@@ -95,6 +95,7 @@ class PreCliente(models.Model):
     cliente_convertido = models.OneToOneField('Cliente', blank=True, null=True)
     nome = models.CharField(blank=False, max_length=300)
     contato = models.CharField(blank=False, max_length=100)
+    responsavel = models.CharField(blank=True, max_length=100)
     dados = models.TextField(blank=True)
     designado = models.ForeignKey('rh.Funcionario', blank=True, null=True, verbose_name="Funcionário Designado", related_name="precliente_designado_set")
     tipo = models.CharField(u"Tipo de Pré Cliente", blank=True, null=True, max_length=10, choices=TIPO_CLIENTE_CHOICES)
@@ -102,6 +103,8 @@ class PreCliente(models.Model):
     cpf = models.CharField(u"CPF", blank=True, null=True, max_length=255)
     numero_instalacao = models.CharField(u"Número da Instalação", blank=True, null=True, max_length=300)
     origem = models.ForeignKey("ClienteOrigem", blank=True, null=True, verbose_name="Origem do Cliente")
+    # Email
+    email = models.EmailField(blank=True)
     # telefones
     telefone_fixo = models.CharField(blank=True, null=True, max_length=100, help_text="Formato: XX-XXXX-XXXX")
     telefone_celular = models.CharField(blank=True, null=True, max_length=100)

@@ -43,7 +43,7 @@ from comercial.models import SubGrupoIndicadorDeProdutoProposto
 from comercial.models import FechamentoDeComissao
 from comercial.models import LancamentoDeFechamentoComissao
 from comercial.models import TabelaDeComissao
-from comercial.models import TipoDeProposta
+from comercial.models import TipoDeProposta, TipoDePropostaDadoVariavel
 from comercial.models import TabelaDeParcelamento
 from comercial.models import ClasseTipoDeProposta
 from comercial.models import EmpresaComercial
@@ -320,6 +320,16 @@ class GrupoDadosVariaveisAdmin(admin.ModelAdmin):
     list_filter = 'documento__tipo', 'documento__modelo'
     inlines = DadoVariavelInline,
 
+
+class TipoDePropostaDadoVariavelInline(admin.StackedInline):
+    model = TipoDePropostaDadoVariavel
+    extra = 0
+
+class TipoPropostaAdmin(admin.ModelAdmin):
+    inlines = [TipoDePropostaDadoVariavelInline,]
+    pass
+
+
 admin.site.register(PropostaComercial, PropostaComercialAdmin)
 admin.site.register(Orcamento, OrcamentoAdmin)
 admin.site.register(PerfilAcessoComercial, PerfilAcessoComercialAdmin)
@@ -333,7 +343,8 @@ admin.site.register(SubGrupoIndicadorDeProdutoProposto)
 admin.site.register(FechamentoDeComissao, FechamentoDeComissaoAdmin)
 admin.site.register(LancamentoDeFechamentoComissao, LancamentoDeFechamentoComissaoAdmin)
 admin.site.register(TabelaDeComissao, TabelaDeComissaoAdmin)
-admin.site.register(TipoDeProposta)
+admin.site.register(TipoDeProposta, TipoPropostaAdmin)
+admin.site.register(TipoDePropostaDadoVariavel)
 admin.site.register(TipoRecursoLogistico)
 admin.site.register(LinhaRecursoLogistico)
 admin.site.register(LinhaRecursoHumano)

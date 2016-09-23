@@ -373,6 +373,17 @@ class TipoDeProposta(models.Model):
     classe = models.ForeignKey(ClasseTipoDeProposta, blank=True, null=True)
     tipo_contrato_mapeado = models.ForeignKey('CategoriaContratoFechado', blank=True, null=True)
 
+class TipoDePropostaDadoVariavel(models.Model):
+
+    def clean(self):
+        if ' ' in self.chave:
+            raise ValidationError(u"Erro! Chave não deve possuir espaços")
+
+    tipo_proposta = models.ForeignKey(TipoDeProposta)
+    chave = models.CharField(blank=False, max_length=100)
+    label = models.CharField(blank=True, max_length=100)
+    tipo = models.CharField(blank=True, max_length=100, choices=DADO_VARIAVEL_CHOICES, default="texto")
+
 class FollowUpDePropostaComercial(models.Model):
 
     def __unicode__(self):
@@ -885,7 +896,7 @@ class ContratoFechado(models.Model):
                         )
                     )
         if adiciona_total:
-            textos.append("Valor Total: %s (%s)" % (self.valor, self.valor_extenso()))
+            textos.append(u"Valor Total: %s (%s)" % (self.valor, self.valor_extenso()))
         return "\n".join(textos)
 
     def proposta_id(self):

@@ -78,7 +78,7 @@ def home(request):
         if form.cleaned_data['valor_final']:
             preco_sugerido = float(form.cleaned_data['valor_final'])
         # calcula preco sugerido com fator
-        if form.cleaned_data['fator'] != 0:
+        if form.cleaned_data['fator'] != 0 and not request.POST.get('inserir'):
             preco_sugerido = preco_sugerido + (float(preco_sugerido) * float(form.cleaned_data['fator'])/100)
 
 
@@ -146,6 +146,9 @@ def home(request):
         )
         if request.POST.get('inserir'):
             proposta = PropostaComercial.objects.get(pk=request.POST.get('proposta_inserir'))
+            if not proposta.documento_gerado:
+                messages.info(request, u"Proposta Não possui documento gerado")
+                return redirect(reverse("comercial:editar_proposta", args=[proposta.pk]))
             # inserir valores nos dados variaveis
             valores = []
             # formata para exibicao

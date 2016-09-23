@@ -1,0 +1,8 @@
+{% for dado in tipo.tipodepropostadadovariavel_set.all %}
+<div class="form-group">
+        <label for="id_chave_{{dado.chave}}" class="control-label  ">{{dado.label}}</label>
+        <div class=" ">
+            <input type="text" name="chave_{{dado.chave}}" id="chave_{{dado.chave}}" class=" form-control">
+        </div>
+</div>
+{% endfor  %}

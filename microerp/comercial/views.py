@@ -31,7 +31,7 @@ from rh.models import Departamento, Funcionario
 from cadastro.models import Cliente, PreCliente, Bairro
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
-from comercial.models import DocumentoGerado, ItemGrupoDocumento
+from comercial.models import DocumentoGerado, ItemGrupoDocumento, TipoDeProposta
 from comercial.models import PerfilAcessoComercial, FechamentoDeComissao, CONTRATO_FORMA_DE_PAGAMENTO_CHOICES
 from comercial.models import LinhaRecursoMaterial, LinhaRecursoHumano, LinhaRecursoLogistico, Orcamento, GrupoIndicadorDeProdutoProposto
 from comercial.models import DadoVariavel
@@ -64,6 +64,7 @@ from io import BytesIO
 from templated_docs import fill_template
 from templated_docs.http import FileResponse
 
+from django.template import Context, Template
 
 #
 # FORMULARIOS
@@ -155,7 +156,7 @@ class PreClienteAdicionarForm(forms.ModelForm):
 
     class Meta:
         model = PreCliente
-        fields = 'nome', 'tipo', 'cpf', 'cnpj', 'numero_instalacao', 'telefone_fixo', 'telefone_celular', 'cep', 'rua', 'numero', 'bairro_texto', 'cidade_texto', 'uf_texto', 'complemento', 'dados', 'origem', 'designado'
+        fields = 'nome', 'tipo', 'cpf', 'cnpj', 'responsavel', 'numero_instalacao', 'email', 'telefone_fixo', 'telefone_celular', 'cep', 'rua', 'numero', 'bairro_texto', 'cidade_texto', 'uf_texto', 'complemento', 'dados', 'origem', 'designado'
 
 class AdicionarPropostaForm(forms.ModelForm):
 
@@ -258,6 +259,8 @@ class AdicionarCliente(forms.ModelForm):
         if precliente:
             self.fields['nome'].initial = precliente.nome
             self.fields['observacao'].initial = precliente.dados
+            self.fields['email'].initial = precliente.email
+            self.fields['contato'].initial = precliente.responsavel
         if com_endereco:
             #self.fields['bairro'] = forms.ModelChoiceField(queryset=Bairro.objects.all())
             #self.fields['bairro'].widget.attrs['class'] = 'select2'
@@ -1493,6 +1496,9 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
                 )
             if modelos_proposta:
                 proposta.cria_documento_gerado(modelo=modelos_proposta[0])
+                for k,v in request.POST.items():
+                    if 'chave_' in k:
+                        proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.create(chave=k.replace('chave_', ''), valor=v)
                 # Auto Preenche Endereco da Obra
                 item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
                 if proposta.precliente and item:
@@ -1523,6 +1529,12 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
         form = AdicionarPropostaForm()
     return render_to_response('frontend/comercial/comercial-propostas-cliente-adicionar.html', locals(), context_instance=RequestContext(request),)
 
+
+@user_passes_test(possui_perfil_acesso_comercial, login_url="/")
+def adicionar_proposta_form_complementar(request):
+    tipo = TipoDeProposta.objects.get(pk=request.GET.get('tipo'))
+    return render_to_response('frontend/comercial/comercial-propostas-form-complementar.html', locals(), context_instance=RequestContext(request),)
+
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_precliente(request, precliente_id):
     precliente = PreCliente.objects.get(pk=precliente_id)
@@ -1535,6 +1547,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
     if request.POST:
         form = AdicionarPropostaForm(request.POST)
         if form.is_valid():
+            # auto gera os dados variaveis presentes no form
             proposta = form.save(commit=False)
             # primeira expiracao, pega sugestão padrao
             proposta.data_expiracao = proposta.sugere_data_reagendamento_expiracao()
@@ -1562,6 +1575,10 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
                 )
             if modelos_proposta:
                 proposta.cria_documento_gerado(modelo=modelos_proposta[0])
+                # auto gera dados preenchidos por conta do tipo
+                for k,v in request.POST.items():
+                    if 'chave_' in k:
+                        proposta.documento_gerado.grupodadosvariaveis.dadovariavel_set.create(chave=k.replace('chave_', ''), valor=v)
                 # Auto Preenche Endereco da Obra
                 item = ItemGrupoDocumento.objects.filter(grupo__documento__propostacomercial=proposta, chave_identificadora='endereco_obra').first()
                 if item:
@@ -3102,6 +3119,12 @@ class ContratoPrintDocumento:
             self.documento = contrato.documento_gerado
             self.perfil = perfil
             self.espaco_assinaturas = 30
+            self.contexto_variaveis = {}
+            if self.contrato.documento_gerado:
+                for dado in self.contrato.documento_gerado.grupodadosvariaveis.dadovariavel_set.all():
+                    self.contexto_variaveis[dado.chave] = dado.valor
+            self.contexto_variaveis = Context(self.contexto_variaveis)
+
             espaco_assinaturas = self.espaco_assinaturas
             buffer = self.buffer
 
@@ -3165,11 +3188,17 @@ class ContratoPrintDocumento:
                             estilo = 'centered_h2'
                         else:
                             estilo = 'left_h2'
-                        desc_itens_titulo = Paragraph(item.titulo, styles[estilo])
+                        texto_titulo = Template(item.titulo)
+                        # aplica dados variaveis
+                        texto = texto_titulo.render(self.contexto_variaveis)
+                        desc_itens_titulo = Paragraph(texto, styles[estilo])
                         elements.append(desc_itens_titulo)
                         elements.append(Spacer(1, 10))
                     if item.texto:
-                        texto = Paragraph(item.texto.replace('\n', '<br />'), styles['justify'])
+                        # aplica dados variaveis
+                        texto = Template(item.texto.replace('\n', '<br />'))
+                        texto = texto.render(self.contexto_variaveis)
+                        texto = Paragraph(texto, styles['justify'])
                         elements.append(texto)
                     if item.imagem:
                         elements.append(Spacer(1, 10))
