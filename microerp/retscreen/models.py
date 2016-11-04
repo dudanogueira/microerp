@@ -10,7 +10,8 @@ class TabelaValores(models.Model):
             self.quantidade_placas_final,
             self.valor
         )
-
+    
+    empresa = models.ForeignKey('comercial.EmpresaComercial', related_name='tabelas_retscreen', on_delete=models.CASCADE, blank=True, null=True)
     quantidade_placas_inicial = models.FloatField(blank=True, null=True)
     quantidade_placas_final = models.FloatField(blank=True, null=True)
     valor = models.DecimalField("Valor do Contrato", max_digits=10, decimal_places=2)

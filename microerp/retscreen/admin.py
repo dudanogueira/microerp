@@ -14,7 +14,10 @@ class PorteFinanciamentoAdmin(admin.ModelAdmin):
     list_filter = 'financiamento',
     inlines = [ParcelaFinanciamentoInlineAdmin,]
 
-admin.site.register(TabelaValores)
+class TabelaValoresAdmin(admin.ModelAdmin):
+    list_filter = 'empresa',
+
+admin.site.register(TabelaValores, TabelaValoresAdmin)
 admin.site.register(Financiamento)
 admin.site.register(PorteFinanciamento, PorteFinanciamentoAdmin)
 admin.site.register(ParcelaFinanciamento)

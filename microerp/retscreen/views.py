@@ -22,6 +22,7 @@ from models import TabelaValores, PorteFinanciamento, ReajusteEnergiaAno
 class FormConfiguraRetscreen(forms.Form):
     fator = forms.DecimalField(label=u"Fator Energético", required=True, initial=0,  decimal_places=2)
     media = forms.DecimalField(label=u"Média de Consumo Energético", required=True)
+    custo_logistica = forms.DecimalField(label=u"Custo da Logística", required=False, initial=0)
     potencia_placa = forms.DecimalField(label=u"Potência da Placa", required=True, initial=0.265)
     radiacao = forms.DecimalField(label=u"Radiação", required=True, initial=4.81)
     preco_eletricidade = forms.DecimalField(label=u"Preço da Eletricidade", initial=0.50974, required=True)
@@ -49,6 +50,7 @@ def home(request):
         reajuste_custo_energia = float(0.08)
         messages.success(request, u"Sucesso!Form Válido")
         media = float(form.cleaned_data['media'])
+        logistica = float(form.cleaned_data['custo_logistica']) or 0
         potencia_placa = float(form.cleaned_data['potencia_placa'])
         radiacao = float(form.cleaned_data['radiacao'])
         preco_eletricidade = float(form.cleaned_data['preco_eletricidade'])
@@ -68,12 +70,26 @@ def home(request):
         geracao_kw_ano = geracao_kw_mes * 12
         economia_mensal = geracao_kw_mes * preco_eletricidade
         economia_anual = economia_mensal * 12
-        tabela = TabelaValores.objects.get(
-            quantidade_placas_inicial__lte=int(numero_placas_sugerida),
-            quantidade_placas_final__gte=int(numero_placas_sugerida),
-            )
+        try:
+            tabela = TabelaValores.objects.get(
+                quantidade_placas_inicial__lte=int(numero_placas_sugerida),
+                quantidade_placas_final__gte=int(numero_placas_sugerida),
+                empresa=request.user.perfilacessocomercial.empresa
+                )
+        except TabelaValores.DoesNotExist:
+            try:
+                tabela = TabelaValores.objects.get(
+                quantidade_placas_inicial__lte=int(numero_placas_sugerida),
+                quantidade_placas_final__gte=int(numero_placas_sugerida),
+                empresa=request.user.perfilacessocomercial.empresa
+                )
+            except:
+                messages.warning(request, u"Configuração de Preço por Placa não encontrado!")
+                return redirect(reverse("retscreen:home"))
+
         preco_por_watt = tabela.valor
-        preco_sugerido = round(float(potencia_usina) * float(preco_por_watt))
+        preco_sugerido_sem_logistica = (round(float(potencia_usina) * float(preco_por_watt)))
+        preco_sugerido = (round(float(potencia_usina) * float(preco_por_watt))) + logistica
         retorno = {}
         if form.cleaned_data['valor_final']:
             preco_sugerido = float(form.cleaned_data['valor_final'])
@@ -158,6 +174,7 @@ def home(request):
             economia_mensal_str = locale.currency(economia_mensal, grouping=True)
             economia_anual_str = locale.currency(economia_anual, grouping=True)
             preco_sugerido_str = locale.currency(preco_sugerido, grouping=True)
+            preco_sugerido_sem_logistica_str = locale.currency(preco_sugerido_sem_logistica, grouping=True)
             preco_eletricidade_str = locale.currency(preco_eletricidade, grouping=True)
             potencia_usina_str = '%s kwp' % locale.format('%0.2f', potencia_usina)
 
@@ -166,6 +183,7 @@ def home(request):
             [
             ['seltec_demanda', media, 'numero'],
             ['seltec_preco_sugerido', preco_sugerido_str, 'texto'],
+            ['preco_sugerido_sem_logistica', preco_sugerido_sem_logistica_str, 'texto'],
             ['seltec_potencia_usina', potencia_usina_str, 'texto'],
             ['seltec_quantidade_placa', locale.format('%0.2f', numero_placas_sugerida), 'numero'],
             ['seltec_tamanho_usina_m2', '%s m2' % locale.format('%0.2f', area_usina), 'texto'],
@@ -173,6 +191,7 @@ def home(request):
             ['seltec_reajuste_energia', "%s %%" % locale.format('%0.2f', reajuste_custo_energia), 'texto'],
             ['seltec_geracao_kw_mes', geracao_kw_mes, 'decimal'],
             ['seltec_geracao_kw_ano', geracao_kw_ano, 'decimal'],
+            ['seltec_custo_logistica', logistica, 'decimal'],
             ['seltec_economia_mensal', economia_mensal_str, 'texto'],
             ['seltec_economia_anual', economia_anual_str, 'texto'],
             ['seltec_retorno_investimento', retorno_exato_str, 'texto'],

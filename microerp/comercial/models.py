@@ -568,7 +568,7 @@ documento_local_imagem = ImagemDocumentoDir()
 documento_capa = CapaDocumentoDir()
 arquivo_modelo_local = ArquivoModeloDir()
 
-class   DocumentoGerado(models.Model):
+class DocumentoGerado(models.Model):
     def __unicode__(self):
         if self.modelo:
             return u"Modelo (%s): %s" % (self.get_tipo_display(), self.nome)
@@ -874,29 +874,40 @@ class ContratoFechado(models.Model):
         return self.lancamentofinanceiroreceber_set.filter(situacao='a')
 
     def sugere_texto_lancamentos_abertos(self, adiciona_total=True):
-        textos = []
+        textos = ['\n']
         for lancamento in self.lancamentos_abertos():
+            try:
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                valor_cobrado = locale.currency(lancamento.valor_cobrado, grouping=True)
+            except:
+                valor_cobrado = lancamento.valor_cobrado
+
             if lancamento.observacao_recebido:
-                textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s. Observação: %s" % \
+                textos.append(u"Parcela %s, no Valor de <b>%s</b>, na Data de %s do Tipo: %s. <br />Observação: %s" % \
                              (
                                  lancamento.peso,
-                                 lancamento.valor_cobrado,
-                                 lancamento.data_cobranca,
+                                 valor_cobrado,
+                                 lancamento.data_cobranca.strftime(locale.nl_langinfo(locale.D_FMT)),
                                  lancamento.get_modo_recebido_display(),
                                  lancamento.observacao_recebido
                             )
                         )
             else:
-                textos.append(u"Parcela %s, no Valor de %s, na Data de %s do Tipo: %s." % \
+                textos.append(u"Parcela %s, no Valor de <b>%s</b>, na Data de %s do Tipo: %s." % \
                          (
                              lancamento.peso,
-                             lancamento.valor_cobrado,
-                             lancamento.data_cobranca,
+                             valor_cobrado,
+                             lancamento.data_cobranca.strftime(locale.nl_langinfo(locale.D_FMT)),
                              lancamento.get_modo_recebido_display(),
                         )
                     )
         if adiciona_total:
-            textos.append(u"Valor Total: %s (%s)" % (self.valor, self.valor_extenso()))
+            try:
+                locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+                valor = locale.currency(self.valor, grouping=True)
+            except:
+                valor = self.valor
+            textos.append(u"Valor Total: %s (%s)" % (valor, self.valor_extenso()))
         return "\n".join(textos)
 
     def proposta_id(self):
