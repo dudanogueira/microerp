@@ -165,12 +165,11 @@
 		</div>
 
 
-
 		<div id="enderecos">
 			{% for endereco in cliente.enderecocliente_set.all %}
 				<div class="well well-small {% if endereco.principal %}alert alert-success{%endif%}">
 					{% if request.user.perfilacessocomercial.gerente %}
-						<a href="?apagar_endereco={{endereco.id}}" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+						<a href="?apagar_endereco={{endereco.id|unlocalize}}" class="btn btn-danger"><i class="fa fa-trash"></i></a>
 					{% endif %}
 			<strong>#{{endereco.id}}</strong>
 		{% if endereco.principal %}<span class="badge badge-info"><i class="fa fa-check fa-1x"></i> Principal</span>{%endif%} {{endereco.rua}}, {{endereco.numero}}, {{endereco.bairro_texto}}, {{endereco.cidade_texto}} - {{endereco.uf_texto}}  - {{endereco.complemento}} - CEP: {{endereco.cep}}
