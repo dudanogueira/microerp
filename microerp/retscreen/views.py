@@ -77,15 +77,8 @@ def home(request):
                 empresa=request.user.perfilacessocomercial.empresa
                 )
         except TabelaValores.DoesNotExist:
-            try:
-                tabela = TabelaValores.objects.get(
-                quantidade_placas_inicial__lte=int(numero_placas_sugerida),
-                quantidade_placas_final__gte=int(numero_placas_sugerida),
-                empresa=request.user.perfilacessocomercial.empresa
-                )
-            except:
-                messages.warning(request, u"Configuração de Preço por Placa não encontrado!")
-                return redirect(reverse("retscreen:home"))
+            messages.warning(request, u"Configuração de Preço por Placa não encontrado!")
+            return redirect(reverse("retscreen:home"))
 
         preco_por_watt = tabela.valor
         preco_sugerido_sem_logistica = (round(float(potencia_usina) * float(preco_por_watt)))

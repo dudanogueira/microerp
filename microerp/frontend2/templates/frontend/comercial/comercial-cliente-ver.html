@@ -51,9 +51,34 @@
 		{% if request.user.perfilacessocomercial.gerente or cliente.designado == request.user.funcionario or cliente.designado == None %}
 
 		<a href="{% url "comercial:propostas_comerciais_cliente_adicionar" cliente.id %}" class="btn btn-primary"><i class="fa fa-plus"></i> Nova Proposta</a>
-		{% if not cliente.id_referencia %}
-			<a href=""><i class="fa fa-pencil"></i></a>
-		{% endif %}
+		<button class="btn btn-primary" data-toggle="modal" data-target="#ModalEditarCliente" id="botao-editar-cliente">
+		  <i class="fa fa-pencil"></i>
+		</button>
+		<!-- Button trigger modal -->
+		
+
+		<!-- Modal Adicionar Endereco -->
+		<div class="modal fade" id="ModalEditarCliente" tabindex="-1" role="dialog" aria-labelledby="EditarCliente" aria-hidden="true">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		        <h4 class="modal-title" id="myModalLabel">Editar Cliente</h4>
+		      </div>
+		      <div class="modal-body">
+				  <form method="POST" id="form-editar-cliente">
+					{% csrf_token %}
+				  	{{form_editar_cliente|bootstrap}}
+				  </form>
+		      </div>
+		      <div class="modal-footer">
+		        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+		        <button type="submit" class="btn btn-primary" form="form-editar-cliente" name="form-editar-cliente" value="editar">Editar Cliente</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+
 
 		{% else %}
 		<small>Sem Permissão para Gerar Proposta</small>
@@ -117,7 +142,7 @@
 		  <i class="fa fa-plus"></i> Adicionar Endereço
 		</button>
 
-		<!-- Modal -->
+		<!-- Modal Adicionar Endereco -->
 		<div class="modal fade" id="ModalAdicionarEndereco" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
 		  <div class="modal-dialog">
 		    <div class="modal-content">
@@ -144,6 +169,9 @@
 		<div id="enderecos">
 			{% for endereco in cliente.enderecocliente_set.all %}
 				<div class="well well-small {% if endereco.principal %}alert alert-success{%endif%}">
+					{% if request.user.perfilacessocomercial.gerente %}
+						<a href="?apagar_endereco={{endereco.id}}" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+					{% endif %}
 			<strong>#{{endereco.id}}</strong>
 		{% if endereco.principal %}<span class="badge badge-info"><i class="fa fa-check fa-1x"></i> Principal</span>{%endif%} {{endereco.rua}}, {{endereco.numero}}, {{endereco.bairro_texto}}, {{endereco.cidade_texto}} - {{endereco.uf_texto}}  - {{endereco.complemento}} - CEP: {{endereco.cep}}
 				</div>
@@ -501,12 +529,53 @@
 
 <script>
 
+var SPMaskBehavior = function (val) {
+  return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+},
+spOptions = {
+  onKeyPress: function(val, e, field, options) {
+	  field.mask(SPMaskBehavior.apply({}, arguments), options);
+	}
+};
+
 $( ".datepicker" ).datepicker({
 	inline: true,
       dateFormat: "dd/mm/yy"
 });
 
-$('#id_telefone').mask('(00) 0000-0000');
+$('#id_telefone_fixo').mask(SPMaskBehavior, spOptions);
+$('#id_telefone_celular').mask(SPMaskBehavior, spOptions);
+$('#id_cep').mask('00.000-000');
+
+var grupo_pj = ['id_fantasia', 'id_cnpj', 'id_inscricao_estadual',]
+var grupo_pf = ['id_cpf', 'id_rg']
+
+function esconde_lista(lista){
+	lista.forEach(function(entry){
+		$('label[for='+entry+'], #'+entry+'').hide();
+	});
+}
+function mostra_lista(lista){
+	lista.forEach(function(entry){
+		$('label[for='+entry+'], #'+entry+'').show();
+	})
+}
+
+function checa_exibicao_por_tipo(valor){
+	if (valor == "pf"){
+		esconde_lista(grupo_pj);
+		mostra_lista(grupo_pf);
+
+	}else if(valor == "pj"){
+		esconde_lista(grupo_pf);
+		mostra_lista(grupo_pj);
+
+	}else{
+		esconde_lista(grupo_pj);
+		esconde_lista(grupo_pf);
+	}
+
+}
 
 
 
@@ -529,8 +598,18 @@ $(document).ready(function() {
 		placement: 'top'
 	});
 
+	esconde_lista(grupo_pj);
+	esconde_lista(grupo_pf);
+
+	checa_exibicao_por_tipo($("#id_tipo").val());
 
 });
+
+$("#id_tipo").on("change", function(){
+	alert();
+	checa_exibicao_por_tipo($(this).val());
+});
+
 
 $("#ModalAdicionarEndereco").on("shown.bs.modal", function () {
 	$("#buscar-cep").remove();

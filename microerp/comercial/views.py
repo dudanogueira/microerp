@@ -28,7 +28,7 @@ from django.db.models import Count
 
 # APPS MODELS
 from rh.models import Departamento, Funcionario
-from cadastro.models import Cliente, PreCliente, Bairro
+from cadastro.models import Cliente, PreCliente, Bairro, EnderecoCliente
 from solicitacao.models import Solicitacao
 from comercial.models import PropostaComercial, FollowUpDePropostaComercial, RequisicaoDeProposta, ContratoFechado
 from comercial.models import DocumentoGerado, ItemGrupoDocumento, TipoDeProposta
@@ -38,6 +38,7 @@ from comercial.models import DadoVariavel
 from financeiro.models import LancamentoFinanceiroReceber
 from financeiro.models import ContaBancaria
 from estoque.models import Produto
+from retscreen.models import TabelaValores
 
 from django.conf import settings
 
@@ -281,6 +282,13 @@ class AdicionarCliente(forms.ModelForm):
         'cpf', 'rg', 'nascimento', 'ramo', 'observacao', 'origem',\
         'contato', 'email', 'telefone_fixo', 'telefone_celular', 'fax',
 
+class EditarClienteForm(forms.ModelForm):
+    class Meta:
+        model = Cliente
+        fields = 'nome', 'cpf', 'rg', 'nascimento', 'ramo', 'observacao', 'origem', \
+            'contato'
+
+
 class FormAdicionarFollowUp(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
@@ -486,6 +494,7 @@ def clientes(request):
                 preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
     return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
 
+
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def cliente_ver(request, cliente_id):
     # confere se tem acesso ao acesso
@@ -495,6 +504,7 @@ def cliente_ver(request, cliente_id):
         ativo=True,
         designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
     )
+    form_editar_cliente = AdicionarCliente(instance=cliente, precliente=None)
     if request.POST.get('form-adicionar-endereco', None):
         form_adicionar_endereco = AdicionarEnderecoClienteForm(request.POST, cliente=cliente)
         if form_adicionar_endereco.is_valid():
@@ -505,8 +515,21 @@ def cliente_ver(request, cliente_id):
                 endereco.principal = True
             endereco.save()
             messages.success(request, 'Endereço Adicionado!')
-    else:
-        form_adicionar_endereco = AdicionarEnderecoClienteForm(cliente=cliente)
+            return redirect(reverse("comercial:cliente_ver", args=[cliente_id]))
+    elif request.GET.get('apagar_endereco', None):
+        endereco = EnderecoCliente.objects.get(pk=request.GET.get('apagar_endereco'), cliente=cliente)
+        endereco.delete()
+        messages.success(request, 'Endereço removido com sucesso!')
+        return redirect(reverse("comercial:cliente_ver", args=[cliente_id]))
+    elif request.POST.get('form-editar-cliente', None):
+        form_editar_cliente = AdicionarCliente(request.POST, instance=cliente, precliente=None)
+        if form_editar_cliente.is_valid():
+            form_editar_cliente.save()
+            messages.success(request, u"Sucesso! Cliente Editado!")
+        
+    
+    form_adicionar_endereco = AdicionarEnderecoClienteForm(cliente=cliente)
+    
     cliente_q = request.GET.get('cliente', None)
     form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
@@ -870,11 +893,11 @@ class ConfigurarContratoBaseadoEmProposta(forms.Form):
     prazos_execucao = forms.CharField(widget = forms.Textarea, label=u"Prazos de Execução", required=True)
     rescisao = forms.CharField(widget = forms.Textarea, label=u"Rescisão", required=True)
     garantia = forms.CharField(widget = forms.Textarea, label="Garantia", required=True)
-    foro = forms.CharField(widget = forms.Textarea, label=u"Foro", required=True)
     endereco_obra = forms.CharField(widget = forms.Textarea, label=u"Endereço da Obra", required=True)
 
     #observacoes = forms.CharField(widget = forms.Textarea, label=u"Observações", required=False)
     nome_do_proposto_legal = forms.CharField()
+    foro = forms.CharField(widget = forms.Textarea, label=u"Foro", required=True)
     documento_do_proposto_legal = BRCPFField(label="Documento Legal do Proposto (CPF)")
     apoio_tecnico = forms.ModelChoiceField(
         queryset=Funcionario.objects.exclude(periodo_trabalhado_corrente=None),
@@ -3115,6 +3138,11 @@ class ContratoPrintDocumento:
             canvas.restoreState()
 
     def print_contrato(self, contrato, testemunha1=None, testemunha2=None, imprime_logo=False, perfil=None):
+            import locale
+            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
+            assinatura_element = []
+            #cidade_texto = u"%s, %s" % (cidade), unicode(datetime.date.today().strftime("%d de %B de %Y")))
+            data = datetime.date.today().strftime(u"%d de %B de %Y".encode('utf-8')).decode('utf-8')
             self.contrato = contrato
             self.documento = contrato.documento_gerado
             self.perfil = perfil
@@ -3123,6 +3151,11 @@ class ContratoPrintDocumento:
             if self.contrato.documento_gerado:
                 for dado in self.contrato.documento_gerado.grupodadosvariaveis.dadovariavel_set.all():
                     self.contexto_variaveis[dado.chave] = dado.valor
+            # adiciona cliente e contrato às variaveis
+            self.contexto_variaveis['cliente'] = contrato.cliente
+            self.contexto_variaveis['contrato'] = contrato
+            self.contexto_variaveis['testemunha1'] = testemunha1
+            self.contexto_variaveis['testemunha2'] = testemunha2
             self.contexto_variaveis = Context(self.contexto_variaveis)
 
             espaco_assinaturas = self.espaco_assinaturas
@@ -3166,6 +3199,83 @@ class ContratoPrintDocumento:
             else:
                 im = None
 
+            # cidade e data
+            if self.perfil:
+                # usar cidade do perfil
+                cidade = self.perfil.empresa.cidade
+            else:
+                # usar cidade padrao
+                cidade = getattr(settings, u"CIDADE_CONTRATO", u"Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
+            
+            # bloco de assinaturas
+            cidade_p = Paragraph("%s, %s" % (cidade, data), styles['right'])
+            assinatura_element.append(cidade_p)
+            #elements.append(cidade_p)
+
+            assinatura_element.append(Spacer(1, 12))
+            #elements.append(Spacer(1, 12))
+            # TESTEMUNHA 1
+            #
+            assinatura_element.append(Spacer(1, self.espaco_assinaturas))
+            #elements.append(Spacer(1, self.espaco_assinaturas))
+            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
+            assinatura_element.append(testemunha_linha)
+            #elements.append(testemunha_linha)
+            if testemunha1:
+                texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
+            else:
+                if contrato.responsavel_comissionado:
+                    texto = u"TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
+                else:
+                    texto = u"TESTEMUNHA 1"
+            testemunha_texto = Paragraph(unicode(texto), styles['left'])
+            assinatura_element.append(testemunha_texto)
+            #elements.append(testemunha_texto)
+
+            # TESTEMUNHA 2
+            #
+            assinatura_element.append(Spacer(1, espaco_assinaturas))
+            #elements.append(Spacer(1, espaco_assinaturas))
+            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
+            assinatura_element.append(testemunha_linha)
+            #elements.append(testemunha_linha)
+            if testemunha2:
+                texto = u"TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
+            else:
+                texto = u"TESTEMUNHA 2"
+            testemunha_texto = Paragraph(unicode(texto), styles['left'])
+            assinatura_element.append(testemunha_texto)
+            #elements.append(testemunha_texto)
+
+            # REPRESENTANTE LEGAL EMPRESA
+            #
+
+            assinatura_element.append(Spacer(1, espaco_assinaturas))
+            #elements.append(Spacer(1, espaco_assinaturas))
+            
+            representante_linha = Paragraph(str("_"*90), styles['justify'])
+            assinatura_element.append(representante_linha)
+            #elements.append(representante_linha)
+
+            empresa = self.contrato.responsavel.user.perfilacessocomercial.empresa
+            representante_empresa = u"REPRESENTANTE LEGAL DA EMPRESA: %s - CPF: %s" % (empresa.responsavel_legal, empresa.responsavel_legal_cpf)
+            representante_p = Paragraph(representante_empresa, styles['left'])
+            assinatura_element.append(representante_p)
+            #elements.append(representante_p)
+            # CONTRATANTE
+            #
+            assinatura_element.append(Spacer(1, espaco_assinaturas))
+            #elements.append(Spacer(1, espaco_assinaturas))
+            representante_linha = Paragraph(str("_"*90), styles['justify'])
+            assinatura_element.append(representante_linha)
+            #elements.append(representante_linha)
+
+            representante_empresa = u"CONTRATANTE: %s" % (self.contrato.cliente.sugerir_texto_contratante())
+            representante_p = Paragraph(representante_empresa, styles['left'])
+            assinatura_element.append(representante_p)
+            #elements.append(representante_p)
+            
+
             # id do contrato
             id_contrato = Paragraph("Nº CONTRATO: %s" % str(contrato.id), styles['right'])
 
@@ -3177,7 +3287,8 @@ class ContratoPrintDocumento:
                 table = Table(data, colWidths=270, rowHeights=20)
             table.setStyle(TableStyle([('VALIGN',(-1,-1),(-1,-1),'BOTTOM')]))
             elements.append(table)
-
+            # verifica se contrato possui item chamado assinatura(s)
+            assinatura = contrato.documento_gerado.grupodocumento_set.filter(itemgrupodocumento__chave_identificadora__in=('assinaturas', 'assinatura'))
             # para cada grupo
             for grupo in self.documento.grupodocumento_set.all():
                 # para cada item de cada grupo
@@ -3199,7 +3310,12 @@ class ContratoPrintDocumento:
                         texto = Template(item.texto.replace('\n', '<br />'))
                         texto = texto.render(self.contexto_variaveis)
                         texto = Paragraph(texto, styles['justify'])
-                        elements.append(texto)
+                        if assinatura and item.chave_identificadora in ('assinaturas', 'assinatura'):
+                            # adiciona campo de assinaturas
+                            for item_assinatura in assinatura_element:
+                                elements.append(item_assinatura)
+                        else:
+                            elements.append(texto)
                     if item.imagem:
                         elements.append(Spacer(1, 10))
                         #img = utils.ImageReader(item.imagem.path)
@@ -3213,67 +3329,9 @@ class ContratoPrintDocumento:
                     elements.append(Spacer(1, 10))
 
                 elements.append(Spacer(1, 12))
-
-            # CIDADE E DATA
-            import locale
-            locale.setlocale(locale.LC_ALL,"pt_BR.UTF-8")
-            if self.perfil:
-                # usar cidade do perfil
-                cidade = self.perfil.empresa.cidade
-            else:
-                # usar cidade padrao
-                cidade = getattr(settings, u"CIDADE_CONTRATO", u"Settings: CIDADE_CONTRATO - Texto descrevendo A Cidade do Contrato")
-            #cidade_texto = u"%s, %s" % (cidade), unicode(datetime.date.today().strftime("%d de %B de %Y")))
-            data = datetime.date.today().strftime(u"%d de %B de %Y".encode('utf-8')).decode('utf-8')
-            cidade_p = Paragraph("%s, %s" % (cidade, data), styles['right'])
-            elements.append(cidade_p)
-
-            elements.append(Spacer(1, 12))
-            # TESTEMUNHA 1
-            #
-            elements.append(Spacer(1, self.espaco_assinaturas))
-            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
-            elements.append(testemunha_linha)
-            if testemunha1:
-                texto = "TESTEMUNHA 1, Nome: %s, CPF: %s" % (testemunha1, testemunha1.cpf)
-            else:
-                if contrato.responsavel_comissionado:
-                    texto = u"TESTEMUNHA 1, Nome: %s, CPF: %s" % (contrato.responsavel_comissionado, contrato.responsavel_comissionado.cpf)
-                else:
-                    texto = u"TESTEMUNHA 1"
-            testemunha_texto = Paragraph(unicode(texto), styles['left'])
-            elements.append(testemunha_texto)
-
-            # TESTEMUNHA 2
-            #
-            elements.append(Spacer(1, espaco_assinaturas))
-            testemunha_linha = Paragraph(str("_"*90), styles['justify'])
-            elements.append(testemunha_linha)
-            if testemunha2:
-                texto = u"TESTEMUNHA 2, Nome: %s, CPF: %s" % (testemunha2, testemunha2.cpf)
-            else:
-                texto = u"TESTEMUNHA 2"
-            testemunha_texto = Paragraph(unicode(texto), styles['left'])
-            elements.append(testemunha_texto)
-
-            # REPRESENTANTE LEGAL EMPRESA
-            #
-
-            elements.append(Spacer(1, espaco_assinaturas))
-            representante_linha = Paragraph(str("_"*90), styles['justify'])
-            elements.append(representante_linha)
-            empresa = self.contrato.responsavel.user.perfilacessocomercial.empresa
-            representante_empresa = u"REPRESENTANTE LEGAL DA EMPRESA: %s - CPF: %s" % (empresa.responsavel_legal, empresa.responsavel_legal_cpf)
-            representante_p = Paragraph(representante_empresa, styles['left'])
-            elements.append(representante_p)
-            # CONTRATANTE
-            #
-            elements.append(Spacer(1, espaco_assinaturas))
-            representante_linha = Paragraph(str("_"*90), styles['justify'])
-            elements.append(representante_linha)
-            representante_empresa = u"CONTRATANTE: %s" % (self.contrato.cliente.sugerir_texto_contratante())
-            representante_p = Paragraph(representante_empresa, styles['left'])
-            elements.append(representante_p)
+            if not assinatura:
+                for item in assinatura_element:
+                    elements.append(item)
 
             # Data de Criação do Contrato e Data atual
             elements.append(Spacer(1, 10))
@@ -4179,3 +4237,33 @@ def gerencia_comissoes_novo_fechamento(request):
         novo_fechamento.save()
     contratos_abertos = ContratoFechado.objects.filter(fechamentodecomissao=None).exclude(responsavel_comissionado=None)
     return render_to_response('frontend/comercial/comercial-gerencia-comissoes-novo-fechamento.html', locals(), context_instance=RequestContext(request),)
+
+class GestaoTabelasForm(forms.ModelForm):
+    class Meta:
+        model = TabelaValores
+        fields = 'quantidade_placas_inicial', 'quantidade_placas_final', 'valor'
+
+@user_passes_test(possui_perfil_acesso_comercial_gerente)
+def gerencia_tabela_valores_fotovoltaico(request):
+    tabelas = TabelaValores.objects.filter(empresa=request.user.perfilacessocomercial.empresa).order_by('quantidade_placas_inicial')
+    form = GestaoTabelasForm(request.POST or None)
+    if form.is_valid():
+        tabela = form.save(commit=False)
+        tabela.empresa = request.user.perfilacessocomercial.empresa
+        tabela.save()
+        messages.success(request, u"Tabela Adiciona com sucesso!")
+        form = GestaoTabelasForm()
+    if request.GET.get('apagar'):
+        try:
+            tabela = TabelaValores.objects.get(empresa=request.user.perfilacessocomercial.empresa, pk=int(request.GET.get('apagar')))
+        except TabelaValores.DoesNotExist:
+            messages.error(request, u"Tabela Não Encontrada!")
+            return redirect(reverse("comercial:gerencia_tabela_valores_fotovoltaico"))
+        except:
+            messages.error(request, u"Erro de processamento")
+            return redirect(reverse("comercial:gerencia_tabela_valores_fotovoltaico"))
+
+        tabela.delete()
+        messages.success(request, u"Tabela Apagada com sucesso!")
+    
+    return render_to_response('frontend/comercial/comercial-gerencia-tabela-valores-fotovoltaico.html', locals(), context_instance=RequestContext(request),)

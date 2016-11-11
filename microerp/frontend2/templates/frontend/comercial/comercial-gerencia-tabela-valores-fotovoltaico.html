@@ -1,0 +1,71 @@
+{% extends "frontend/frontend-base.html" %}
+{% load sekizai_tags %}
+{% load check_installed %}
+{% load l10n %}
+{% load staticfiles %}
+{% load humanize %}
+{% load bootstrap %}
+<title>{%block title %}{{block.super}} - Comercial{% endblock %}</title>
+
+{% block content %}
+
+
+<h1><i class="fa fa-th"></i> <i class="fa fa-table"></i> <i class="fa fa-file-alt"></i> Gestão de Tabela de Valores Fotovoltaico</h1>
+<h2>Tabelas Existentes</h2>
+<table class="table">
+	<thead>
+		<tr>
+			<th>#</th>
+			<th>Qtd Placas Inicial</th>
+			<th>Qtd Placas Final</th>
+			<th>Valor</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for tabela in tabelas %}
+		<tr>
+			<th scope="row" id="tabela-{{tabela.id}}" class="tabelas">
+				#{{tabela.id}}
+				<a href="?apagar={{tabela.id}}" class="btn btn-danger"><i class="fa fa-trash"></i></a>
+			</th>
+			<td>{{tabela.quantidade_placas_inicial}}</td>
+			<td>{{tabela.quantidade_placas_final}}</td>
+			<td>R$ {{tabela.valor|intcomma}}</td>
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
+<h2>Adicionar</h2>
+<form method="POST">
+    {% csrf_token %}
+    {{form|bootstrap}}
+    <button type="sybmit" class="btn btn-primary"><i class="fa fa-plus"></i> Adicionar</button>
+</form>
+{% endblock %}
+
+{% block auxiliar-menu %}
+{% addtoblock "js" %}
+
+<link href="{% static "frontend/css/jquery-ui.min.css" %}" rel="stylesheet">
+<script src="{% static "frontend/js/jquery-ui-datepicker.js" %}"></script>
+
+
+<script>
+
+$(document).ready(function() {
+	$("#menu-comercial-gerenciar-tabela-valores-retscreen, #top-menu-comercial").addClass("active");
+	$("#checkAll").change(function () {
+		$("input:checkbox").prop('checked', $(this).prop("checked"));
+	});
+
+});
+
+$('.popover-items').popover()
+
+
+
+
+</script>
+{% endaddtoblock %}
+{% include "frontend/comercial/comercial-menu.html" %}
+{% endblock%}
