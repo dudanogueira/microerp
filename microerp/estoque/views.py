@@ -36,7 +36,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
 from django.conf import settings
@@ -77,7 +77,7 @@ class SelecionaProdutos(forms.Form):
 
 @user_passes_test(possui_perfil_acesso_estoque, login_url='/')
 def home(request):
-    return render_to_response('frontend/estoque/estoque-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/estoque/estoque-home.html', locals())
 
 
 # ETIQUETAS
@@ -95,13 +95,13 @@ def etiquetas(request):
         produtos_selecionados = Produto.objects.filter(id__in=produtos_adicionar)
 
     form = SelecionaProdutos()
-    return render_to_response('frontend/estoque/estoque-etiquetas.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/estoque/estoque-etiquetas.html', locals())
 
 @user_passes_test(possui_perfil_acesso_estoque, login_url='/')
 def etiquetas_configurar(request):
     if request.GET.get('todos', None):
         todos = True
-    return render_to_response('frontend/estoque/estoque-etiquetas-configurar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/estoque/estoque-etiquetas-configurar.html', locals())
 
 
 def geraPagina(formato, numeros, c, pagesize, SHOW_BORDER=True, pular=0):
@@ -172,7 +172,7 @@ def importacao_ver(request):
     disponiveis = ArquivoImportacaoProdutos.objects.filter(importado=False)
     importados = ArquivoImportacaoProdutos.objects.filter(importado=True).order_by('importado_em')
     
-    return render_to_response('frontend/estoque/estoque-importacao.html', locals(), context_instance=RequestContext(request),) 
+    return render(request, 'frontend/estoque/estoque-importacao.html', locals()) 
 
 @user_passes_test(possui_perfil_acesso_estoque, login_url='/')
 def importacao_apagar_arquivo(request, arquivo_id):
@@ -270,7 +270,7 @@ except:
 @user_passes_test(possui_perfil_acesso_estoque, login_url='/')
 def listas_materiais_ver(request):
     listas = ListaMaterialDoContrato.objects.filter(ativa=True)
-    return render_to_response('frontend/estoque/estoque-listas-materiais-ver.html', locals(), context_instance=RequestContext(request),) 
+    return render(request, 'frontend/estoque/estoque-listas-materiais-ver.html', locals()) 
 
 class FormLinhaMaterial(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -299,7 +299,7 @@ def listas_materiais_alterar(request, lista_id):
                 form_editar_linhas_materiais[i].instance.save()
     else:
         form_editar_linhas_materiais = ListaMaterialDoContratoFormSet(instance=lista, prefix="lista-material")
-    return render_to_response('frontend/estoque/estoque-listas-materiais-alterar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/estoque/estoque-listas-materiais-alterar.html', locals())
 
 @csrf_exempt
 @login_required

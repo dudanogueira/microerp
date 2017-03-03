@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.core.urlresolvers import reverse
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
 from models import FollowUpDeOrdemDeServico, TarefaDeProgramacao
@@ -93,7 +93,7 @@ def home(request):
     else:
         form_add_followup_contrato = FormAdicionaFollowUpContrato(initial={'criado_por': request.user.funcionario})
     ordens_de_servico = OrdemDeServico.objects.order_by('status')
-    return render_to_response('frontend/programacao/programacao-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/programacao/programacao-home.html', locals())
 
 @user_passes_test(possui_perfil_acesso_programacao, login_url='/')
 def marcar_contrato_iniciado(request, contrato_id):
@@ -141,7 +141,7 @@ def editar_programacao_contrato(request, contrato_id):
             return redirect(reverse("programacao:home"))
     else:
         form_editar_contrato = FormEditarProgramacaoDeContrato(instance=contrato)
-    return render_to_response('frontend/programacao/programacao-editar-programacao-contrato.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/programacao/programacao-editar-programacao-contrato.html', locals())
 
 @user_passes_test(possui_perfil_acesso_programacao, login_url='/')
 def editar_programacao_contrato_adicionar_tarefa(request, contrato_id):
@@ -161,7 +161,7 @@ def editar_programacao_contrato_adicionar_tarefa(request, contrato_id):
         form = FormAdicionarTarefa(initial={'contrato': contrato.id})
     
     
-    return render_to_response('frontend/programacao/programacao-editar-programacao-contrato-adicionar-tarefa.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/programacao/programacao-editar-programacao-contrato-adicionar-tarefa.html', locals())
 
 
     

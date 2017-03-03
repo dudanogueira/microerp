@@ -22,7 +22,7 @@ __version__ = '2.0.0'
 #
 # VIEWS
 #
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
@@ -77,7 +77,7 @@ def home(request):
     # total
     total_lancamentos_a_receber = lancamentos_pendentes.count() + lancamentos_abertos_atencipados.count() + lancamentos_a_receber.count()
     total_valor_lancamentos_a_receber = lancamentos_pendentes_total_valor + lancamentos_a_receber_total_valor
-    return render_to_response('frontend/financeiro/financeiro-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-home.html', locals())
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def contratos_a_lancar(request):
@@ -85,12 +85,12 @@ def contratos_a_lancar(request):
     contratos_fechados_receber_apos_conclusao = ContratoFechado.objects.filter(status="emaberto", tipo="fechado", receber_apos_conclusao=True)
     contratos_abertos = ContratoFechado.objects.filter(status="emaberto", tipo="aberto")
     contratos_mensais = ContratoFechado.objects.filter(status="emaberto", tipo="mensal")
-    return render_to_response('frontend/financeiro/financeiro-contratos-a-lancar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-contratos-a-lancar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def ver_contrato(request, contrato_id):
     contrato = get_object_or_404(ContratoFechado, pk=contrato_id)
-    return render_to_response('frontend/financeiro/financeiro-ver-contrato.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-ver-contrato.html', locals())
 
 # Adicionar Lancamento em Contrato
 class AdicionarLancamentoForm(forms.ModelForm):
@@ -143,7 +143,7 @@ def contrato_adicionar_lancamento(request, contrato_id):
         
     else:
         messages.error(request, u'Erro! Contrato não está em Aberto')
-    return render_to_response('frontend/financeiro/financeiro-contrato-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-contrato-adicionar-lancamento.html', locals())
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def contrato_fechar(request, contrato_id):
@@ -157,7 +157,7 @@ def contrato_fechar(request, contrato_id):
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos(request):
-    return render_to_response('frontend/financeiro/financeiro-lancamentos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-lancamentos.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
@@ -188,7 +188,7 @@ def lancamentos_a_receber_receber(request, lancamento_id):
             
             })
         
-    return render_to_response('frontend/financeiro/financeiro-lancamentos-identificar-recebimento.html', locals(), context_instance=RequestContext(request),)  
+    return render(request, 'frontend/financeiro/financeiro-lancamentos-identificar-recebimento.html', locals())  
 
 class FormIdentificarRecebido(forms.ModelForm):
     
@@ -215,13 +215,13 @@ def ajax_lancamento_informacao_pagamento(request, lancamento_id):
         messages.success(request, "Sucesso! Informação sobre pagamento aleterado.")
         return redirect(reverse("financeiro:lancamentos"))
     else:
-        return render_to_response('frontend/financeiro/financeiro-include-informacoes-pagamento-lancamento.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/financeiro/financeiro-include-informacoes-pagamento-lancamento.html', locals())
     
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def ajax_lancamento_comentarios(request, lancamento_id):
     lancamento = get_object_or_404(LancamentoFinanceiroReceber, pk=lancamento_id)
-    return render_to_response('frontend/financeiro/financeiro-include-comentarios-modal.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-include-comentarios-modal.html', locals())
 
 class SelecionarClienteForm(forms.Form):
     cliente = forms.ModelChoiceField(queryset=Cliente.objects.all())
@@ -256,7 +256,7 @@ def ajax_lancamento_buscar(request):
                 
                 
         
-    return render_to_response('frontend/financeiro/financeiro-include-lancamentos-buscar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-include-lancamentos-buscar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def ajax_lancamentos_receber(request, busca_tipo, offset):
@@ -281,7 +281,7 @@ def ajax_lancamentos_receber(request, busca_tipo, offset):
     soma_lancamentos_futuro = lancamentos_exibir.aggregate(Sum('valor_cobrado'))['valor_cobrado__sum'] or 0
     soma_lancamentos_antecipados = lancamentos_exibir.filter(antecipado=True).aggregate(Sum('valor_recebido'))['valor_recebido__sum'] or 0
     
-    return render_to_response('frontend/financeiro/financeiro-include-linha-lancamento-futuro.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-include-linha-lancamento-futuro.html', locals())
 
 
 
@@ -304,7 +304,7 @@ def lancamentos_a_receber(request):
     lancamentos_futuros = LancamentoFinanceiroReceber.objects.filter(data_recebido=None, data_cobranca__range=(inicio_semana, fim_semana))
     soma_lancamentos_futuro = lancamentos_futuros.aggregate(Sum('valor_cobrado'))
     soma_lancamentos_antecipados = lancamentos_futuros.filter(antecipado=True).aggregate(Sum('valor_recebido'))
-    return render_to_response('frontend/financeiro/financeiro-lancamentos-a-receber.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-lancamentos-a-receber.html', locals())
 
 
 class AnteciparLancamentoForm(forms.ModelForm):
@@ -385,7 +385,7 @@ def lancamentos_a_receber_antecipar(request):
             # exibe os processos de antecipacao
             processos = ProcessoAntecipacao.objects.all()
                 
-    return render_to_response('frontend/financeiro/financeiro-lancamentos-antecipar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/financeiro/financeiro-lancamentos-antecipar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_financeiro, login_url='/')
 def lancamentos_a_receber_comentar(request, lancamento_id):

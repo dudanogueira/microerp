@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from django.contrib import messages
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, render
 from django.core.urlresolvers import reverse
 from django.template import RequestContext, loader, Context
 from django.contrib.auth import logout
@@ -42,7 +42,10 @@ def home(request):
 
     else:
         form = AuthenticationForm()
-        return render_to_response('registration/login.html', locals(), context_instance=RequestContext(request),)
+        context = {
+            'form': form
+        }
+        return render(request, 'registration/login.html', context)
 
 
 def funcionario(request):
@@ -66,7 +69,7 @@ def funcionario(request):
     else:
         form = AuthenticationForm()
 
-    return render_to_response('frontend/funcionario-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/funcionario-home.html', locals())
 
 
 def cliente(request):
@@ -85,14 +88,14 @@ def cliente(request):
     else:
         form = AuthenticationForm()
 
-    return render_to_response('frontend/cliente-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cliente-home.html', locals())
 
 def meus_recados(request):
     funcionario = get_object_or_404(Funcionario, user=request.user)
     nao_lidos = Recado.objects.filter(destinatario=funcionario, lido=False)
     lidos = Recado.objects.filter(destinatario=funcionario, lido=True)
     enviados = Recado.objects.filter(remetente=funcionario)
-    return render_to_response('frontend/main-meus-recados.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/main-meus-recados.html', locals())
 def meus_recados_marcar_lido(request, recado_id):
     funcionario = get_object_or_404(Funcionario, user=request.user)
     recado = get_object_or_404(Recado, destinatario=funcionario, pk=recado_id)
@@ -115,7 +118,7 @@ def minhas_solicitacoes(request):
     )
 
     solicitacoes_visto = funcionario.solicitacao_visto_set.filter(status="visto")
-    return render_to_response('frontend/main-minhas-solicitacoes.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/main-minhas-solicitacoes.html', locals())
 
 def minhas_solicitacoes_resolvido(request, solicitacao_id):
     funcionario = get_object_or_404(Funcionario, user=request.user)
@@ -130,7 +133,7 @@ def minhas_solicitacoes_resolvido(request, solicitacao_id):
             return redirect(reverse('minhas_solicitacoes'))
     else:
         form = SolicitacaoResolvidaForm(instance=solicitacao)
-    return render_to_response('frontend/main-minhas-solicitacoes-resolvido.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/main-minhas-solicitacoes-resolvido.html', locals())
 
 def minhas_solicitacoes_abrir_correcao(request, solicitacao_id):
     funcionario = get_object_or_404(Funcionario, user=request.user)

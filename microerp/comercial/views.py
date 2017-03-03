@@ -21,7 +21,7 @@ from django import forms
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 
 from django.db.models import Count
@@ -343,8 +343,7 @@ def possui_perfil_acesso_comercial_gerente(user, login_url="/"):
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def home_angular(request):
-    return render_to_response('frontend/comercial/comercial-angular_home.html', locals(),
-                              context_instance=RequestContext(request), )
+    return render(request, 'frontend/comercial/comercial-angular_home.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def home(request):
@@ -355,7 +354,7 @@ def home(request):
     preclientes_sem_proposta = request.user.perfilacessocomercial.preclientes_sem_proposta().count()
 
     requisicoes_propostas = request.user.perfilacessocomercial.requisicao_de_proposta().count()
-    return render_to_response('frontend/comercial/comercial-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-home.html', locals())
 
 
 class DefinePreClienteSemInteresseForm(forms.ModelForm):
@@ -385,7 +384,7 @@ def clientes_precliente_sem_interesse(request, precliente_id):
             return redirect(reverse("comercial:clientes"))
     else:
         form = DefinePreClienteSemInteresseForm(instance=precliente)
-    return render_to_response('frontend/comercial/comercial-cliente-precliente-sem-interesse.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-cliente-precliente-sem-interesse.html', locals())
 
 class FiltrarPreClientesERequisicoesForm(forms.Form):
 
@@ -492,7 +491,7 @@ def clientes(request):
                 clientes = clientes.filter(designado=funcionario_escolhido)
                 preclientes = preclientes.filter(designado=funcionario_escolhido)
                 preclientes_sem_proposta = preclientes_sem_proposta.filter(designado=funcionario_escolhido)
-    return render_to_response('frontend/comercial/comercial-clientes.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-clientes.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -533,7 +532,7 @@ def cliente_ver(request, cliente_id):
     cliente_q = request.GET.get('cliente', None)
     form_adicionar_follow_up = FormAdicionarFollowUp(perfil=request.user.perfilacessocomercial)
 
-    return render_to_response('frontend/comercial/comercial-cliente-ver.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-cliente-ver.html', locals())
 
 class FormEditarProposta(forms.ModelForm):
 
@@ -612,7 +611,7 @@ def editar_proposta_editar_orcamento(request, proposta_id, orcamento_id):
         form_editar_linhas_material = OrcamentoMaterialFormSet(instance=orcamento, prefix="orcamento-material")
         form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
         form_orcamento = OrcamentoForm(instance=orcamento)
-    return render_to_response('frontend/comercial/comercial-editar-proposta-editar-orcamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-editar-proposta-editar-orcamento.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_reajustar_orcamento(request, proposta_id, orcamento_id):
@@ -628,12 +627,12 @@ def editar_proposta_reajustar_orcamento(request, proposta_id, orcamento_id):
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_imprimir_orcamento(request, proposta_id, orcamento_id):
     orcamento = get_object_or_404(Orcamento, proposta__id=proposta_id, pk=orcamento_id)
-    return render_to_response('frontend/comercial/comercial-editar-proposta-imprimir-orcamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-editar-proposta-imprimir-orcamento.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def editar_proposta_imprimir_orcamentos_da_proposta(request, proposta_id):
     proposta = get_object_or_404(PropostaComercial, pk=proposta_id)
-    return render_to_response('frontend/comercial/comercial-editar-proposta-imprimir-orcamentos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-editar-proposta-imprimir-orcamentos.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -760,7 +759,7 @@ def editar_proposta(request, proposta_id):
             if seleciona_modelos_proposta.is_valid():
                 pass
 
-    return render_to_response('frontend/comercial/comercial-editar-proposta.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-editar-proposta.html', locals())
 
 class FormFecharProposta(forms.ModelForm):
 
@@ -797,7 +796,7 @@ def editar_proposta_fechar(request, proposta_id):
 
     else:
         form_fechar = FormFecharProposta()
-    return render_to_response('frontend/comercial/comercial-proposta-fechar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-proposta-fechar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def gerencia_definir_motivos_fechamento(request):
@@ -820,7 +819,7 @@ def gerencia_definir_motivos_fechamento(request):
         formset.save()
         return redirect(reverse("comercial:gerencia_definir_motivos_fechamento"))
     #contratos
-    return render_to_response('frontend/comercial/comercial-proposta-definir-motivos-fechamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-proposta-definir-motivos-fechamento.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def gerencia_aprovar_fechamentos(request):
@@ -851,7 +850,7 @@ def gerencia_aprovar_fechamentos(request):
             cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa,
             status="perdida_aguardando"
         )
-    return render_to_response('frontend/comercial/comercial-gerenciar-aprovar-perdidas.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-gerenciar-aprovar-perdidas.html', locals())
 
 
 class LancamentoFinanceiroReceberComercialForm(forms.ModelForm):
@@ -997,7 +996,7 @@ def editar_proposta_converter_novo(request, proposta_id):
         if not modelo_documento_contrato:
             messages.error(request, u"Erro de Parametrização. Não existe um modelo de Contrato para este tipo de Proposta: %s" % proposta.tipo)
             return redirect(reverse("comercial:propostas_comerciais_minhas"))
-        return render_to_response('frontend/comercial/comercial-proposta-converter_novo.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/comercial/comercial-proposta-converter_novo.html', locals())
 
     ConfigurarConversaoPropostaFormset = forms.models.inlineformset_factory(ContratoFechado, LancamentoFinanceiroReceber, extra=0, form=LancamentoFinanceiroReceberComercialForm)
 
@@ -1108,7 +1107,7 @@ def editar_proposta_converter_novo(request, proposta_id):
         messages.info(request, u"Modelo Escolhido: %s" % modelo_escolhido)
         form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="configurar_contrato")
         usar_cartao_credito = UsarCartaoCredito()
-    return render_to_response('frontend/comercial/comercial-proposta-converter_novo.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-proposta-converter_novo.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -1278,7 +1277,7 @@ def editar_proposta_converter(request, proposta_id):
                         else:
                             messages.error(request, u"Erro! Valor das parcelas (R$ %s) NÃO CONFERE com valor proposto: R$ %s" % (total_lancamentos, proposta.valor_proposto))
 
-        return render_to_response('frontend/comercial/comercial-proposta-converter.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/comercial/comercial-proposta-converter.html', locals())
     else:
         # converter pre cliente em cliente
         # manter referencia da proposta
@@ -1370,7 +1369,7 @@ def precliente_ver(request, pre_cliente_id):
     else:
         form_vincular_a_cliente = VincularPreClienteParaClienteForm(perfil=request.user.perfilacessocomercial)
         form_vincular_a_precliente = VincularPreClienteParaPreClienteForm(precliente=precliente, perfil=request.user.perfilacessocomercial)
-    return render_to_response('frontend/comercial/comercial-precliente-ver.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-precliente-ver.html', locals())
 
 # Pre Cliente
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -1393,7 +1392,7 @@ def precliente_adicionar(request):
     else:
         sugestao = request.GET.get('sugestao', None)
         form_add_precliente = PreClienteAdicionarForm(sugestao=sugestao, perfil=request.user.perfilacessocomercial)
-    return render_to_response('frontend/comercial/comercial-preclientes-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-preclientes-adicionar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def precliente_converter(request, pre_cliente_id):
@@ -1474,7 +1473,7 @@ def precliente_converter(request, pre_cliente_id):
             #a
 
         form = AdicionarCliente(precliente=precliente, com_endereco=True, initial=initial )
-    return render_to_response('frontend/comercial/comercial-precliente-converter.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-precliente-converter.html', locals())
 
 # propostas comerciais
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
@@ -1484,7 +1483,7 @@ def propostas_comerciais_ver(request, proposta_id):
         pk=proposta_id,
         designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
     )
-    return render_to_response('frontend/comercial/comercial-propostas-ver.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-ver.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_cliente_adicionar(request, cliente_id):
@@ -1550,19 +1549,19 @@ def propostas_comerciais_cliente_adicionar(request, cliente_id):
             return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
     else:
         form = AdicionarPropostaForm()
-    return render_to_response('frontend/comercial/comercial-propostas-cliente-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-cliente-adicionar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url="/")
 def adicionar_proposta_form_complementar(request):
     tipo = TipoDeProposta.objects.get(pk=request.GET.get('tipo'))
-    return render_to_response('frontend/comercial/comercial-propostas-form-complementar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-form-complementar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_precliente(request, precliente_id):
     precliente = PreCliente.objects.get(pk=precliente_id)
     propostas_abertas = PropostaComercial.objects.filter(precliente=precliente, status='aberta')
-    return render_to_response('frontend/comercial/comercial-propostas-precliente.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-precliente.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_precliente_adicionar(request, precliente_id):
@@ -1621,7 +1620,7 @@ def propostas_comerciais_precliente_adicionar(request, precliente_id):
             return redirect(reverse('comercial:editar_proposta', args=[proposta.id]))
     else:
         form = AdicionarPropostaForm()
-    return render_to_response('frontend/comercial/comercial-propostas-precliente-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-precliente-adicionar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas(request):
@@ -1659,7 +1658,7 @@ def propostas_comerciais_minhas(request):
 
     designados_propostas_validas = propostas_abertas_validas.values('designado__nome', 'designado__id').annotate(Count('designado__nome')).order_by('designado__nome')
 
-    return render_to_response('frontend/comercial/comercial-propostas-minhas.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-minhas.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial, login_url='/')
 def propostas_comerciais_minhas_expiradas_ajax(request):
@@ -1681,7 +1680,7 @@ def propostas_comerciais_minhas_expiradas_ajax(request):
 
 
     designados_propostas_expiradas = propostas_abertas_expiradas.values('designado__nome', 'designado__id').annotate(Count('designado__nome'))
-    return render_to_response('frontend/comercial/comercial-propostas-minhas-expiradas-ajax.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-propostas-minhas-expiradas-ajax.html', locals())
 
 #
 # VIEWS EXTERNAS / MODULOS
@@ -1702,7 +1701,7 @@ def solicitacao_adicionar(request):
             return redirect(reverse('comercial:home'))
     else:
         form = AdicionarSolicitacaoForm(cliente=cliente_id, precliente=precliente_id)
-    return render_to_response('frontend/comercial/comercial-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-solicitacao-adicionar.html', locals())
 
 class FiltraTabelaDePrecos(forms.Form):
 
@@ -1722,7 +1721,7 @@ def tabela_de_precos(request):
             produtos = Produto.objects.filter(qset1).order_by('-preco_consumo').distinct()
     else:
         form_filtra_tabela = FiltraTabelaDePrecos()
-    return render_to_response('frontend/comercial/comercial-consultar-tabela-precos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-consultar-tabela-precos.html', locals())
 
 class FormEscolherClientesEPreClientes(forms.Form):
 
@@ -1743,7 +1742,7 @@ def designacoes(request):
     precliente_sem_designacao = PreCliente.objects.filter(designado=None, cliente_convertido=None)
     cliente_designacao_invalida = Cliente.objects.exclude(designado=None).filter(designado__periodo_trabalhado_corrente=None, ativo=True)
     precliente_designacao_invalida = PreCliente.objects.exclude(designado=None).filter(designado__periodo_trabalhado_corrente=None, cliente_convertido=None)
-    return render_to_response('frontend/comercial/comercial-designacoes.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-designacoes.html', locals())
 
 class ConfirmarDesignacao(forms.Form):
 
@@ -1792,7 +1791,7 @@ def designacoes_confirmar(request):
                 form.cleaned_data['clientes'].update(designado=designado)
                 messages.success(request, u"Nova Designação para Clientes Selecionados -> %s" % designado)
                 return redirect(reverse('comercial:home'))
-        return render_to_response('frontend/comercial/comercial-designacoes-confirmar.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/comercial/comercial-designacoes-confirmar.html', locals())
     else:
         messages.warning(request, u"Não pode ser acessado diretamente")
         return redirect(reverse("comercial:designacoes"))
@@ -2500,7 +2499,9 @@ def proposta_comercial_imprimir(request, proposta_id):
                 else:
                     contexto['cliente'] = proposta.precliente
                 formato = request.GET.get('formato', 'pdf')
-                filename = fill_template(proposta.documento_gerado.arquivo_modelo.path, contexto, output_format=formato)
+                # pega o arquivo
+                modelo = os.path.join(*(proposta.documento_gerado.arquivo_modelo.name.split(os.path.sep)[1:]))
+                filename = fill_template(modelo, contexto, output_format=formato)
                 return FileResponse(filename, nome_arquivo_gerado)
 
             # Create the HttpResponse object with the appropriate PDF headers.
@@ -2529,7 +2530,7 @@ def proposta_comercial_imprimir(request, proposta_id):
             tipo='proposta',
             empresa_vinculada=None
         )
-    return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-configurar-proposta-para-imprimir.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial)
 def proposta_comercial_imprimir_gerar_documento(request, proposta_id, documento_id):
@@ -2694,8 +2695,8 @@ def proposta_comercial_imprimir2(request, proposta_id):
             else:
                 return response
             # descobre o template
-            return render_to_response(template_escolhido, locals(), context_instance=RequestContext(request),)
-    return render_to_response('frontend/comercial/comercial-configurar-proposta-para-imprimir2.html', locals(), context_instance=RequestContext(request),)
+            return render(request, template_escolhido, locals())
+    return render(request, 'frontend/comercial/comercial-configurar-proposta-para-imprimir2.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial)
@@ -2741,7 +2742,7 @@ def contratos_meus(request):
             )
         else:
             meus_contratos = ContratoFechado.objects.filter(responsavel=request.user.funcionario).order_by('status').exclude(status="arquivado")
-    return render_to_response('frontend/comercial/comercial-contratos-meus.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-contratos-meus.html', locals())
 
 
 class NumberedCanvas(canvas.Canvas):
@@ -3394,7 +3395,7 @@ def contratos_gerar_impressao(request, contrato_id):
     texto_contrato_foro = getattr(settings, "TEXTO_HTML_FORO", "Texto descrevendo as informações sobre o Foro")
     nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
 
-    return render_to_response('frontend/comercial/comercial-contratos-gerar-impressao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-contratos-gerar-impressao.html', locals())
 
 class FormRevalidarContrato(forms.ModelForm):
 
@@ -3505,7 +3506,7 @@ def contratos_meus_revalidar(request, contrato_id):
         form_contrato = FormRevalidarContrato(instance=contrato,  esconde_textos=esconde_textos)
         form_configurar_contrato = ConfigurarConversaoPropostaFormset(prefix="revalidar_contrato", instance=contrato)
 
-    return render_to_response('frontend/comercial/comercial-contratos-meus-revalidar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-contratos-meus-revalidar.html', locals())
 
 
 class FormAdicionaModelo(forms.ModelForm):
@@ -3529,7 +3530,7 @@ def orcamentos_modelo_novo(request):
             return redirect(reverse("comercial:orcamentos_modelo_editar", args=[novo_modelo.id]))
     else:
         form_adicionar_modelo = FormAdicionaModelo()
-    return render_to_response('frontend/comercial/comercial-orcamentos-modelo-novo.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-orcamentos-modelo-novo.html', locals())
 
 
 class ListaProduto(forms.Form):
@@ -3544,7 +3545,7 @@ def orcamentos_modelo(request):
         modelos = Orcamento.objects.filter(ativo=True, modelo=True, linharecursomaterial__produto__id=request.GET.get('produto', None))
     else:
         modelos = Orcamento.objects.filter(ativo=True, modelo=True)
-    return render_to_response('frontend/comercial/comercial-orcamentos-modelo.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-orcamentos-modelo.html', locals())
 
 class OrcamentoForm(forms.ModelForm):
 
@@ -3707,13 +3708,13 @@ def orcamentos_modelo_editar(request, modelo_id):
         form_editar_linhas_humano = OrcamentoRecursoHumanoFormSet(instance=orcamento, prefix="orcamento-humano")
         form_orcamento = ModeloOrcamentoForm(instance=orcamento)
 
-    return render_to_response('frontend/comercial/comercial-orcamentos-modelo-editar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-orcamentos-modelo-editar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def orcamentos_modelo_gerenciar(request, modelo_id):
     modelo = get_object_or_404(Orcamento, pk=modelo_id)
-    return render_to_response('frontend/comercial/comercial-orcamentos-modelo-gerenciar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-orcamentos-modelo-gerenciar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -3977,11 +3978,11 @@ def indicadores_do_comercial(request):
     total_propostas_gerados_promocionais_fechadas = OrderedDict(sorted(total_propostas_gerados_promocionais_fechadas.items(), key=lambda t: t[0]))
 
 
-    return render_to_response('frontend/comercial/comercial-indicadores.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/comercial/comercial-indicadores.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial(request):
-    return render_to_response('frontend/comercial/comercial-relatorios.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-relatorios.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -4024,7 +4025,7 @@ def relatorios_comercial_propostas_por_periodo_e_vendedor(request):
     except:
         pass
 
-    return render_to_response('frontend/comercial/comercial-relatorios-propostas-por-dia.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-relatorios-propostas-por-dia.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_visitas(request):
@@ -4056,7 +4057,7 @@ def relatorios_comercial_propostas_visitas(request):
             ate = datetime.datetime.combine(ate, datetime.time(23, 59))
             fups = fups.filter(criado__lte=ate, visita=True)
 
-    return render_to_response('frontend/comercial/comercial-relatorios-followups-visita.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-relatorios-followups-visita.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -4076,7 +4077,7 @@ def relatorios_comercial_probabilidade(request):
     elif agrupador == "funcionario":
         propostas = propostas.order_by('designado')
 
-    return render_to_response('frontend/comercial/comercial-relatorios-probabilidade.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-relatorios-probabilidade.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_e_followups(request):
@@ -4096,7 +4097,7 @@ def relatorios_comercial_propostas_e_followups(request):
     elif agrupador == "funcionario":
         propostas = propostas.order_by('designado')
 
-    return render_to_response('frontend/comercial/comercial-relatorios-propostas-followups.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-relatorios-propostas-followups.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def relatorios_comercial_propostas_declinadas(request):
@@ -4145,7 +4146,7 @@ def relatorios_comercial_propostas_declinadas(request):
 
 
 
-    return render_to_response('frontend/comercial/comercial-relatorios-propostas-declinadas.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-relatorios-propostas-declinadas.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
@@ -4159,7 +4160,7 @@ def analise_de_contratos(request):
             status="emanalise",
             cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa
         )
-    return render_to_response('frontend/comercial/comercial-analise-de-contratos.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-analise-de-contratos.html', locals())
 
 class FormAnalisarContrato(forms.ModelForm):
 
@@ -4214,13 +4215,13 @@ def analise_de_contratos_analisar(request, contrato_id):
             return redirect(reverse("comercial:analise_de_contratos"))
     else:
         form_analisar_contrato = FormAnalisarContrato(instance=contrato, perfil=request.user.perfilacessocomercial)
-    return render_to_response('frontend/comercial/comercial-analise-de-contratos-analisar.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-analise-de-contratos-analisar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def gerencia_comissoes(request):
     fechamentos_com_lancamentos_abertos = FechamentoDeComissao.objects.filter(lancamentodefechamentocomissao__pago=False)
     fechamentos_sem_lancamentos = FechamentoDeComissao.objects.filter(lancamentodefechamentocomissao=None)
-    return render_to_response('frontend/comercial/comercial-gerencia-comissoes.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-gerencia-comissoes.html', locals())
 
 @user_passes_test(possui_perfil_acesso_comercial_gerente)
 def gerencia_comissoes_novo_fechamento(request):
@@ -4236,7 +4237,7 @@ def gerencia_comissoes_novo_fechamento(request):
         novo_fechamento.contratos.add(*contratos_selecionados)
         novo_fechamento.save()
     contratos_abertos = ContratoFechado.objects.filter(fechamentodecomissao=None).exclude(responsavel_comissionado=None)
-    return render_to_response('frontend/comercial/comercial-gerencia-comissoes-novo-fechamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-gerencia-comissoes-novo-fechamento.html', locals())
 
 class GestaoTabelasForm(forms.ModelForm):
     class Meta:
@@ -4266,4 +4267,4 @@ def gerencia_tabela_valores_fotovoltaico(request):
         tabela.delete()
         messages.success(request, u"Tabela Apagada com sucesso!")
     
-    return render_to_response('frontend/comercial/comercial-gerencia-tabela-valores-fotovoltaico.html', locals(), context_instance=RequestContext(request),)
+    return render(request,'frontend/comercial/comercial-gerencia-tabela-valores-fotovoltaico.html', locals())

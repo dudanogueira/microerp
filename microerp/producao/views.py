@@ -3,7 +3,7 @@ import datetime, urllib, calendar, operator
 from xml.dom import minidom
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
@@ -93,7 +93,7 @@ def home(request):
     notas_abertas = NotaFiscal.objects.filter(status="a").count()
     notas_lancadas = NotaFiscal.objects.filter(status="l").count()
     estoques = EstoqueFisico.objects.all()
-    return render_to_response('frontend/producao/producao-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-home.html', locals())
     
 # lancamento de nota
 # FORMULARIO DA NOTA
@@ -253,7 +253,7 @@ def nota_fiscal_dados(request):
         from django.db import connections
         total_notas_por_mes = notas_exibir.extra(select={'month': connections[NotaFiscal.objects.db].ops.date_trunc_sql('month', 'data_entrada')}).values('month').annotate(soma=Sum('total_sem_imposto'))
         
-    return render_to_response('frontend/producao/producao-lancar-nota-dados2.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-lancar-nota-dados2.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def lancar_nota(request):
@@ -310,7 +310,7 @@ def lancar_nota(request):
             except:
                 raise
     
-    return render_to_response('frontend/producao/producao-lancar-nota.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-lancar-nota.html', locals())
 
 
 # MODEL FORM NOTA FISCAL
@@ -380,7 +380,7 @@ def adicionar_nota(request):
             
     else:
         form_adicionar_notafiscal = NotaFiscalForm()
-    return render_to_response('frontend/producao/producao-adicionar-nota.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-adicionar-nota.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -413,7 +413,7 @@ def editar_nota(request, notafiscal_id):
             
     else:
         form_notafiscal = NotaFiscalForm(instance=notafiscal)
-    return render_to_response('frontend/producao/producao-editar-nota.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-editar-nota.html', locals())
 
 
 
@@ -434,7 +434,7 @@ def calcular_nota(request, notafiscal_id):
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_nota(request, notafiscal_id):
     notafiscal = get_object_or_404(NotaFiscal, id=notafiscal_id)
-    return render_to_response('frontend/producao/producao-ver-nota.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ver-nota.html', locals())
 
 
 
@@ -459,7 +459,7 @@ def editar_lancamento(request, notafiscal_id, lancamento_id):
     else:
         lancamento_form = LancamentoNotaFiscalForm(instance=lancamento, nota=lancamento.nota)
         
-    return render_to_response('frontend/producao/producao-editar-lancamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-editar-lancamento.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -483,7 +483,7 @@ def adicionar_lancamento(request, notafiscal_id):
                 return redirect(reverse('producao:ver_nota', args=[notafiscal.id,]))
     else:
         lancamento_form = LancamentoNotaFiscalForm(nota=notafiscal)
-    return render_to_response('frontend/producao/producao-adicionar-lancamento.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-adicionar-lancamento.html', locals())
 
 
 
@@ -584,7 +584,7 @@ def listar_componentes(request):
                 messages.success(request, u'Tipo de Componente %s Adicionado com  Sucesso!' % tipo)
                 return redirect(reverse('producao:listar_componentes'))
             else:
-                return render_to_response('frontend/producao/producao-listar-componentes.html', locals(), context_instance=RequestContext(request),)
+                return render(request, 'frontend/producao/producao-listar-componentes.html', locals())
     
     elif request.GET:
         q_componente = request.GET.get('q_componente', True)
@@ -602,7 +602,7 @@ def listar_componentes(request):
         
     componente_form = ComponenteFormPreAdd()
     tipo_componente_form = TipoComponenteAdd()
-    return render_to_response('frontend/producao/producao-listar-componentes.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-listar-componentes.html', locals())
 
 
 
@@ -619,7 +619,7 @@ def adicionar_componentes(request):
             return redirect(reverse('producao:listar_componentes'))
         else:
             messages.error(request, u"Erro! Componente NÃO Adicionado!")
-            return render_to_response('frontend/producao/producao-adicionar-componentes.html', locals(), context_instance=RequestContext(request),)    
+            return render(request, 'frontend/producao/producao-adicionar-componentes.html', locals())    
             
     
     if request.POST.get('pre-adicionar-componente', None):        
@@ -643,7 +643,7 @@ def adicionar_componentes(request):
         
         pn_prepend = getattr(settings, 'PN_PREPEND', 'PN')
         part_number = u"%s-%s%s" % (pn_prepend, tipo.slug.upper(), "%04d" % identificador)
-        return render_to_response('frontend/producao/producao-adicionar-componentes.html', locals(), context_instance=RequestContext(request),)    
+        return render(request, 'frontend/producao/producao-adicionar-componentes.html', locals())    
     else:
         # retorna à listagem
         messages.warning(request, u"Nenhuma ação tomada. É preciso escolher o tipo de Componente para adicionar")
@@ -665,7 +665,7 @@ def editar_componente(request, componente_id):
             return redirect(reverse("producao:ver_componente", args=[componente.id]))
     else:
         editar_componente_form = FormEditarComponente(instance=componente)
-    return render_to_response('frontend/producao/producao-editar-componente.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-editar-componente.html', locals())    
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -680,7 +680,7 @@ def inativar_componente(request, componente_id):
         messages.success(request, "Sucesso! Componente Inativado")
         return redirect(reverse("producao:ver_componente", args=[componente.id]))
     # verifica se possui no estoque
-    return render_to_response('frontend/producao/producao-inativar-componente.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-inativar-componente.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ativar_componente(request, componente_id):
@@ -694,12 +694,12 @@ def ativar_componente(request, componente_id):
         messages.success(request, "Sucesso! Componente Ativado")
         return redirect(reverse("producao:ver_componente", args=[componente.id]))
     # verifica se possui no estoque
-    return render_to_response('frontend/producao/producao-ativar-componente.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ativar-componente.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def matriz_componente_padrao_por_subproduto(request, componente_id):
     componente = get_object_or_404(Componente, pk=componente_id)
-    return render_to_response('frontend/producao/producao-ver-componente-matriz-componente-padrao-por-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-componente-matriz-componente-padrao-por-subproduto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ver_componente(request, componente_id):
@@ -745,7 +745,7 @@ def ver_componente(request, componente_id):
     else:
         form_anexos = ArquivoAnexoComponenteForm(componente=componente)
         form_imagem = ImagemComponenteForm(instance=componente)
-    return render_to_response('frontend/producao/producao-ver-componente.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-componente.html', locals())    
     
     
 
@@ -790,7 +790,7 @@ def adicionar_memoria_componente(request, componente_id):
             return(redirect(reverse('producao:ver_componente', args=[componente.id,]) + "#memoria"))
     else:
         form = AdicionarMemoriaComponenteForm(componente=componente)
-    return render_to_response('frontend/producao/producao-componente-adicionar-memoria.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-componente-adicionar-memoria.html', locals())    
 
 
 
@@ -834,7 +834,7 @@ def listar_fabricantes_fornecedores(request):
             else:
                 fab_for_encontrados = fab_for_encontrados.filter(tipo='')
                 
-    return render_to_response('frontend/producao/producao-listar-fabricantes-fornecedores.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-listar-fabricantes-fornecedores.html', locals())    
 
 
 
@@ -844,7 +844,7 @@ def ver_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     linhas_de_nota_do_fornecedor = LancamentoComponente.objects.filter(nota__fabricante_fornecedor=fabricante_fornecedor).order_by('componente__part_number')
     linhas_de_nota_do_fabricante = LancamentoComponente.objects.filter(fabricante=fabricante_fornecedor).order_by('componente__part_number')
     memorias = LinhaFornecedorFabricanteComponente.objects.filter(fornecedor=fabricante_fornecedor)
-    return render_to_response('frontend/producao/producao-ver-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-fabricante-fornecedor.html', locals())    
     
 
 
@@ -859,7 +859,7 @@ def adicionar_fabricantes_fornecedores(request):
     else:
         form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor()
         
-    return render_to_response('frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-adicionar-fabricante-fornecedor.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -874,7 +874,7 @@ def editar_fabricantes_fornecedores(request, fabricante_fornecedor_id):
     else:
         form_add_fabricante_fornecedor = AdicionarFabricanteFornecedor(instance=fabricante_fornecedor)
         
-    return render_to_response('frontend/producao/producao-editar-fabricante-fornecedor.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-editar-fabricante-fornecedor.html', locals())    
 
 # ESTOQUES
 class ConsultaEstoque(forms.Form):
@@ -1168,7 +1168,7 @@ def listar_estoque(request):
         form_consulta_estoque = ConsultaEstoque()
         form_mover_estoque = MoverEstoque()
         form_alterar_estoque = AlterarEstoque()
-    return render_to_response('frontend/producao/producao-listar-estoques.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-listar-estoques.html', locals())    
 
 # SUB PRODUTOS
 
@@ -1245,7 +1245,7 @@ def listar_subprodutos(request):
                 subprodutos_encontrados = subprodutos_encontrados.filter(qset1)
                 subprodutos_inativos = subprodutos_inativos.filter(qset1)
                 
-    return render_to_response('frontend/producao/producao-listar-subprodutos.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-listar-subprodutos.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_subproduto(request):
@@ -1257,7 +1257,7 @@ def adicionar_subproduto(request):
             return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
     else:
         form = SubProdutoForm()
-    return render_to_response('frontend/producao/producao-adicionar-subproduto.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-adicionar-subproduto.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def editar_subproduto(request, subproduto_id):
@@ -1270,7 +1270,7 @@ def editar_subproduto(request, subproduto_id):
         return redirect(reverse("producao:ver_subproduto", args=[subproduto.id,]))
     else:
         form = SubProdutoForm(instance=subproduto)
-    return render_to_response('frontend/producao/producao-editar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-editar-subproduto.html', locals())    
 
 class FormEnviarSubProdutoParaTeste(forms.Form):
 
@@ -1325,7 +1325,7 @@ def inativar_subproduto(request, subproduto_id):
         messages.success(request, "Sucesso! Sub Produto Inativado!")
         return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
     # verifica se possui no estoque
-    return render_to_response('frontend/producao/producao-inativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-inativar-subproduto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ativar_subproduto(request, subproduto_id):
@@ -1336,7 +1336,7 @@ def ativar_subproduto(request, subproduto_id):
         messages.success(request, "Sucesso! Sub Produto Ativado!")
         return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]))
     # verifica se possui no estoque
-    return render_to_response('frontend/producao/producao-ativar-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ativar-subproduto.html', locals())    
 
 class FormMovimentoSubProduto(forms.ModelForm):
     
@@ -1622,7 +1622,7 @@ def ver_subproduto(request, subproduto_id):
 
     # definir o total do somatório de componentes
     total_linha_componentes = linha_componentes_padrao.aggregate(Sum('linha__valor_custo_da_linha'))['linha__valor_custo_da_linha__sum']
-    return render_to_response('frontend/producao/producao-ver-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-subproduto.html', locals())    
 
 
 
@@ -1698,7 +1698,7 @@ def editar_linha_subproduto(request, subproduto_id, linha_subproduto_id):
             
     else:
         form = LinhaSubProdutoForm(instance=linha)
-    return render_to_response('frontend/producao/producao-editar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-editar-linha-subproduto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_linha_subproduto(request, subproduto_id):
@@ -1720,7 +1720,7 @@ def adicionar_linha_subproduto(request, subproduto_id):
             return redirect(reverse("producao:ver_subproduto", args=[subproduto.id]) + "#linhas-componente")
     else:
         form = AdicionarLinhaSubProdutoForm(subproduto=subproduto)
-    return render_to_response('frontend/producao/producao-adicionar-linha-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-adicionar-linha-subproduto.html', locals())    
 
 class OpcaoLinhaSubProdutoForm(forms.ModelForm):
     
@@ -1766,7 +1766,7 @@ def editar_linha_subproduto_adicionar_opcao(request, subproduto_id, linha_subpro
             #return redirect(reverse("producao:editar_linha_subproduto", args=[subproduto.id, linha.id]))
     else:
         form = OpcaoLinhaSubProdutoForm(linha=linha)
-    return render_to_response('frontend/producao/producao-editar-linha-subproduto-adicionar-opcao.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-editar-linha-subproduto-adicionar-opcao.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def tornar_padrao_opcao_linha_subproduto(request, subproduto_id, linha_subproduto_id, opcao_linha_subproduto_id):
@@ -1828,7 +1828,7 @@ def ver_subproduto_relatorios_composicao(request, subproduto_id):
     subprodutos_abaixo = subproduto.subprodutos_agregados(lista=subprodutos_abaixo, retorna_objeto=True)
     # os subprodutos deste produto
     subprodutos_abaixo = set(subprodutos_abaixo)
-    return render_to_response('frontend/producao/producao-ver-subproduto-relatorios-composicao.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-subproduto-relatorios-composicao.html', locals())    
 
 
 #
@@ -1930,7 +1930,7 @@ def listar_produtos(request):
                 produtos_encontrados = produtos_encontrados.filter(qset1)
                 produtos_inativos = produtos_inativos.filter(qset1)
                 
-    return render_to_response('frontend/producao/producao-listar-produtos.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-listar-produtos.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def adicionar_produto(request):
@@ -1942,7 +1942,7 @@ def adicionar_produto(request):
             return redirect(reverse("producao:ver_produto", args=[produto.id],))
     else:
         form = ProdutoFinalForm()
-    return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-adicionar-produto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def inativar_produto(request, produto_id):
@@ -1952,7 +1952,7 @@ def inativar_produto(request, produto_id):
         produto.save()
         messages.success(request, u"Sucesso! Produto Inativado!")
         return redirect(reverse("producao:ver_produto", args=[produto.id]))
-    return render_to_response('frontend/producao/producao-inativar-produto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-inativar-produto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ativar_produto(request, produto_id):
@@ -1962,7 +1962,7 @@ def ativar_produto(request, produto_id):
         produto.save()
         messages.success(request, u"Sucesso! Produto Ativado!")
         return redirect(reverse("producao:ver_produto", args=[produto.id]))
-    return render_to_response('frontend/producao/producao-ativar-produto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ativar-produto.html', locals())    
 
 
 
@@ -1977,7 +1977,7 @@ def editar_produto(request, produto_id):
             return redirect(reverse("producao:ver_produto", args=[produto.id],))
     else:
         form = ProdutoFinalForm(instance=produto)
-    return render_to_response('frontend/producao/producao-adicionar-produto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-adicionar-produto.html', locals())    
 
 
 class FormMovimentoProduto(forms.ModelForm):
@@ -2102,7 +2102,7 @@ def ver_produto(request, produto_id):
     
         
 
-    return render_to_response('frontend/producao/producao-ver-produto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-produto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)    
 def apagar_linha_subproduto_de_produto(request, produto_id, linha_id):
@@ -2136,7 +2136,7 @@ def ver_produto_relatorios_composicao(request, produto_id):
     # os subprodutos deste produto
     subprodutos_abaixo = produto.subprodutos_agregados(lista=subprodutos_abaixo, retorna_objeto=True)
     subprodutos_abaixo = set(subprodutos_abaixo)
-    return render_to_response('frontend/producao/producao-ver-produto-relatorios-composicao.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ver-produto-relatorios-composicao.html', locals())    
  
  #
  # ORDEM DE PRODUCAO
@@ -2217,7 +2217,7 @@ def ordem_de_producao(request):
             )
             
         
-    return render_to_response('frontend/producao/producao-ordem-de-producao.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ordem-de-producao.html', locals())    
 
 class FormConfiguradorSubProduto(forms.Form):
     
@@ -2332,7 +2332,7 @@ def ordem_de_producao_subproduto_confirmar(request, subproduto_id, quantidade_so
         url_retorno = "%s%s" % (reverse("producao:ordem_de_producao"), "#produzir")
         return redirect(url_retorno)
 
-    return render_to_response('frontend/producao/producao-ordem-de-producao-confirmado.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-confirmado.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -2433,7 +2433,7 @@ def ordem_de_producao_subproduto_converter(request, quantidade, subproduto_origi
             messages.success(request, u"Nova posição em Estoque de Produção para %s: %s - %s = %s" % (nova_posicao.componente, posicao_atual, float(item[1]), nova_posicao.quantidade))
             return redirect(reverse("producao:ordem_de_producao"))
         
-    return render_to_response('frontend/producao/producao-ordem-de-producao-converter-subproduto.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-converter-subproduto.html', locals())
 
 class FormConfiguradorProducaoSubProduto(forms.Form):
     
@@ -2547,7 +2547,7 @@ def ordem_de_producao_subproduto(request, subproduto_id, quantidade_solicitada):
             if linha.opcaolinhasubproduto_set.all().count() == 1:
                 linhas_sem_alternativo.append(linha)
 
-    return render_to_response('frontend/producao/producao-ordem-de-producao-subproduto.html', locals(), context_instance=RequestContext(request),)    
+    return render(request, 'frontend/producao/producao-ordem-de-producao-subproduto.html', locals())    
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_producao_produto_confirmar(request, produto_id, quantidade_solicitada):
@@ -2701,7 +2701,7 @@ def ordem_de_producao_produto(request, produto_id, quantidade_solicitada):
             
             calculado = True
     # contabilizar todos os componentes deste produto
-    return render_to_response('frontend/producao/producao-ordem-de-producao-produto.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-produto.html', locals())
 
 class SelecionarProdutoUnicoForm(forms.Form):
     produto = forms.ModelChoiceField(queryset=ProdutoFinal.objects.filter(ativo=True), empty_label=None)
@@ -2718,29 +2718,29 @@ def arvore_de_produto(request):
             produtos = ProdutoFinal.objects.filter(pk=seleciona_produto.cleaned_data['produto'].id)
     else:
         produtos = ProdutoFinal.objects.filter(ativo=True)
-    return render_to_response('frontend/producao/producao-arvore-de-produto.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-arvore-de-produto.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def arvore_de_produto_ajax_subproduto(request, subproduto_id, parente):
     parent = request.GET.get('parent')
     subproduto = get_object_or_404(SubProduto, pk=subproduto_id)
-    return render_to_response('frontend/producao/producao-arvore-de-produto-ajax-subproduto.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-arvore-de-produto-ajax-subproduto.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def registro_de_testes(request):
-    return render_to_response('frontend/producao/producao-registro-de-testes.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-registro-de-testes.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def totalizador_de_producao(request):
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('part_number')
     subprodutos = SubProduto.objects.filter(ativo=True).order_by('part_number')
-    return render_to_response('frontend/producao/producao-ordem-de-producao-ajax-totalizador-producao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-ajax-totalizador-producao.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def producao_combinada(request):
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.filter(ativo=True).order_by('-total_funcional')
-    return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-producao-combinada.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def producao_combinada_calcular(request):
@@ -2842,7 +2842,7 @@ def producao_combinada_calcular(request):
                     link = reverse("producao:ver_subproduto", args=[subproduto_id])
                     relatorio_producao.append((subproduto_usado, subproduto_usado.descricao, qtd_subproduto, quantidade_disponivel, faltou, pode, valor_item, link))
              
-    return render_to_response('frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-producao-combinada-calcular.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def relatorio_compras_automatico(request):
@@ -2917,14 +2917,14 @@ def relatorio_compras_automatico(request):
             
             tabela_items.append((componente, posicao_em_estoque_produtor, quantidade_lead_time, diferenca, ok, link, valor_item))
             
-    return render_to_response('frontend/producao/producao-relatorio-compras-automatico.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-relatorio-compras-automatico.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def relatorio_compras(request):
     nome_empresa = getattr(settings, 'NOME_EMPRESA', 'Mestria')
     produtos = ProdutoFinal.objects.filter(ativo=True).order_by('-total_produzido')
     subprodutos = SubProduto.objects.filter(ativo=True).order_by('-total_funcional')
-    return render_to_response('frontend/producao/producao-ordem-de-producao-relatorio-de-compras.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-relatorio-de-compras.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def relatorio_compras_calcular(request):
@@ -3007,7 +3007,7 @@ def relatorio_compras_calcular(request):
                     relatorio_producao.append((componente, componente.descricao, qtd_componente, posicao_em_estoque, 0, 0, valor_item, link))
 
              
-    return render_to_response('frontend/producao/producao-ordem-de-producao-relatorio-de-compras-calcular.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-producao-relatorio-de-compras-calcular.html', locals())
 
 
 
@@ -3085,10 +3085,10 @@ def ordem_de_compra_atividade_reagendar(request, ordem_de_compra_id, atividade_i
             atividade = form.save()
             messages.success(request, "Sucesso! Atividade Reagendada!")
         else:
-            return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
+            return render(request, 'frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals())
     else:
         form = FormReagendarAtividadeDeCompra(instance=atividade)
-        return render_to_response('frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/producao/producao-reagendar-atividade-ordem-producao-ajax.html', locals())
         
     return redirect(reverse('producao:ordem_de_compra'))
         
@@ -3172,7 +3172,7 @@ def ordem_de_compra(request):
         form_filtro = FormOrdemDeCompraFiltro()
         form_adicionar_ordem_de_compra = FormAdicionarOrdemDeCompra()
     
-    return render_to_response('frontend/producao/producao-ordem-de-compra.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-compra.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def ordem_de_compra_fechar(request, ordem_de_compra_id):
@@ -3207,7 +3207,7 @@ def ordem_de_compra_editar(request, ordem_de_compra_id):
             return redirect(reverse("producao:ordem_de_compra"))
     else:
         form_ordem = FormEditarControleDeCompra(instance=controle)
-    return render_to_response('frontend/producao/producao-ordem-de-compra-editar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-ordem-de-compra-editar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_producao)
@@ -3355,7 +3355,7 @@ def requisicao_de_compra(request):
                 except:
                     messages.error(request, u"Erro! Email não enviado.")
                 
-    return render_to_response('frontend/producao/producao-requisicao-de-compra.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-requisicao-de-compra.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def requisicao_de_compra_atendido(request, requisicao_id):
@@ -3496,7 +3496,7 @@ def movimento_de_producao(request):
     total_movimento_estoque_produto = movimento_estoque_produto.aggregate(Sum('quantidade_movimentada'))
     total_ordem_conversao_subproduto = ordens_conversao_subproduto.aggregate(Sum('quantidade'))
     
-    return render_to_response('frontend/producao/producao-movimento-de-producao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-movimento-de-producao.html', locals())
 
 class FormRemoverLancamentoProdProduto(forms.Form):
     id_lancamentos = forms.CharField(required=True, help_text="Formato: 12,34,56,67,..", label="ID Lançamentos")
@@ -3681,7 +3681,7 @@ def rastreabilidade_de_producao(request):
         'nota_fiscal__notafiscal',   
         'observacoes',     
         ).order_by('produto__part_number', '-data_apagado')
-    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-rastreabilidade-de-producao.html', locals())
 
 class FormConfigurarSubProdutosTestaveisDoProduto(forms.ModelForm):
     
@@ -3711,7 +3711,7 @@ def rastreabilidade_de_producao_configurar(request, produto_id):
             return redirect(reverse("producao:rastreabilidade_de_producao") + "#configurar")
     else:
         form_configurar = FormConfigurarSubProdutosTestaveisDoProduto(instance=produto)
-    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-configurar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-rastreabilidade-de-producao-configurar.html', locals())
 
 
 class FormAssociarLancamentoProdProduto(forms.ModelForm):
@@ -3788,7 +3788,7 @@ def rastreabilidade_de_producao_associar_lancamento(request, lancamento_id):
         else:
             messages.error(request, u"Erro! Formulário Inválido.")
 
-    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-associar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-rastreabilidade-de-producao-associar.html', locals())
     
 class FormAdicionarLancamentoProdProduto(forms.ModelForm):
     
@@ -3824,7 +3824,7 @@ def rastreabilidade_de_producao_adicionar(request):
             return redirect(reverse("producao:rastreabilidade_de_producao"))
     else:
         form_adicionar_lancamento = FormAdicionarLancamentoProdProduto()
-    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-rastreabilidade-de-producao-adicionar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def rastreabilidade_de_producao_checar_quantitativos(request):
@@ -3833,7 +3833,7 @@ def rastreabilidade_de_producao_checar_quantitativos(request):
         #lancamentos = LancamentoProdProduto.objects.filter(produto=produto, vendido=False, apagado=False)
         lancamentos = produto.lancamentoprodproduto_set.filter(vendido=False, apagado=False).exclude(serial_number=None).exclude(serial_number='')
         tabela_produtos.append((produto, lancamentos.count()))
-    return render_to_response('frontend/producao/producao-rastreabilidade-de-producao-checar-quantitativos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-rastreabilidade-de-producao-checar-quantitativos.html', locals())
 
 
 class FormFiltrarFalhas(forms.Form):
@@ -3958,7 +3958,7 @@ def controle_de_testes_producao(request):
                                     'indicador_reparo': indicador_reparo,
                                 }
                         lista_dicionario_retorno.append(dicionario)
-    return render_to_response('frontend/producao/producao-controle-de-testes-producao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-controle-de-testes-producao.html', locals())
 
 class FormLancaFalhaDeTeste(forms.ModelForm):
     
@@ -4081,7 +4081,7 @@ def controle_de_testes_producao_lancar_falha(request):
                 
                 
                 return redirect(reverse("producao:controle_de_testes_producao"))
-    return render_to_response('frontend/producao/producao-controle-de-testes-lancar-falha.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-controle-de-testes-lancar-falha.html', locals())
 
 class FormAdicionaFalhaDeTeste(forms.ModelForm):
     
@@ -4106,7 +4106,7 @@ def controle_de_testes_producao_adicionar_falha(request):
             falha.criado_por = request.user
             messages.success(request, u"Sucesso! Falha adicionada.")
             return redirect(reverse('producao:controle_de_testes_producao')+ "#falha-tipo-%s" % falha.tipo)
-    return render_to_response('frontend/producao/producao-controle-de-testes-adicionar-falha.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-controle-de-testes-adicionar-falha.html', locals())
 
 @user_passes_test(possui_perfil_acesso_producao)
 def registrar_nota_fiscal_emitida(request):
@@ -4121,7 +4121,7 @@ def registrar_nota_fiscal_emitida(request):
         'produto__nome',
     ).order_by('-nota_fiscal__notafiscal')
 
-    return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-registrar-nota-fiscal-emitida.html', locals())
 
 class FormAdicionarNotaFiscalLancamentosProducao(forms.ModelForm):
 
@@ -4247,5 +4247,5 @@ def registrar_nota_fiscal_emitida_adicionar(request):
         else:
             messages.warning(request, u"Erro! Estoque Inconsistente. Cheque os Quantitativos em Rastreabilidade de Produção")
             
-    return render_to_response('frontend/producao/producao-registrar-nota-fiscal-emitida-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/producao/producao-registrar-nota-fiscal-emitida-adicionar.html', locals())
     

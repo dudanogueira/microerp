@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
@@ -245,4 +245,4 @@ def home(request):
             #  redireciona pra tela de editar proposta
             return redirect(reverse("comercial:editar_proposta", args=[proposta.pk]))
 
-    return render_to_response('frontend/retscreen/retscreen-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/retscreen/retscreen-home.html', locals())

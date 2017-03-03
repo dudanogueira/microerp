@@ -3,7 +3,7 @@ import datetime, operator
 from collections import OrderedDict
 from dateutil.relativedelta import relativedelta
 from django.contrib import messages
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.http import HttpResponse
 from django.core.urlresolvers import reverse
@@ -111,7 +111,7 @@ def home(request):
         select={'birthmonth': 'MONTH(nascimento)'}, order_by=['birthmonth']
         )
     aniversarios_hoje = Funcionario.objects.filter(nascimento__month=today.month, nascimento__day=today.day)
-    return render_to_response('frontend/rh/rh-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-home.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -125,13 +125,13 @@ def funcionarios(request):
         'id',
         )
     funcionarios_inativos = Funcionario.objects.filter(periodo_trabalhado_corrente=None)
-    return render_to_response('frontend/rh/rh-funcionarios.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-funcionarios.html', locals())
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def funcionarios_relatorios_listar_ativos(request):
     relatorio = True
     funcionarios_ativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
-    return render_to_response('frontend/rh/rh-funcionarios-listar-ativos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-funcionarios-listar-ativos.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -157,7 +157,7 @@ def funcionarios_relatorios_listar_ativos_aniversarios(request):
         if funcionarios_ativos:
             lista.append((datetime.date(datetime.date.today().year, mes_query, 1), funcionarios_ativos,))
         relatorio = True
-    return render_to_response('frontend/rh/rh-funcionarios-listar-aniversarios.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-funcionarios-listar-aniversarios.html', locals())
         
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -184,14 +184,14 @@ def ver_funcionario(request, funcionario_id):
         adicionar_folhaponto_form = AdicionarFolhaDePontoForm()
         adicionar_solicitacaolicenca_form = AdicionarSolicitacaoLicencaForm()
         
-    return render_to_response('frontend/rh/rh-funcionarios-ver.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-funcionarios-ver.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def solicitacao_licencas(request,):
     solicitacoes_abertas = SolicitacaoDeLicenca.objects.filter(status="aberta")
     solicitacoes_autorizada = SolicitacaoDeLicenca.objects.filter(status="autorizada")
-    return render_to_response('frontend/rh/rh-solicitacao-licencas.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-solicitacao-licencas.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -252,7 +252,7 @@ def exames_medicos_relatorios_custos(request):
             total_geral = float(total_rotinas) + float(total_mensal_exame)
     else:
         form_mes_referencia = SelecionaMesReferencia()
-    return render_to_response('frontend/rh/rh-exames-medicos-relatorios-custos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-exames-medicos-relatorios-custos.html', locals())
     
 
 @user_passes_test(possui_perfil_acesso_rh)
@@ -261,7 +261,7 @@ def exames_medicos(request):
     exames_remarcacao = RotinaExameMedico.objects.filter(data__lt=datetime.date.today(), realizado=False)
     exames_agendados = RotinaExameMedico.objects.filter(data__gt=datetime.date.today(), realizado=False)
     exames_realizados = RotinaExameMedico.objects.filter(realizado=True)
-    return render_to_response('frontend/rh/rh-exames-medicos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-exames-medicos.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -276,7 +276,7 @@ def exames_medicos_ver(request, exame_id):
         form_agendar = AgendarExameMedicoForm(instance=exame)
     exame_arquivo_form = AdicionarArquivoRotinaExameForm(instance=exame)
     
-    return render_to_response('frontend/rh/rh-exames-medicos-ver.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-exames-medicos-ver.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -322,7 +322,7 @@ def exames_medicos_exame_realizado_hoje(request, exame_id):
 def processos_admissao(request):
     processos_admissao_ativos = PeriodoTrabalhado.objects.filter(fim=None)
     processos_admissao_inativos = PeriodoTrabalhado.objects.exclude(fim=None)
-    return render_to_response('frontend/rh/rh-processos-admissao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-processos-admissao.html', locals())
 # FORM ADMITIR FUNCIONARIO
 #
 class FormAdmitirFuncionario(forms.ModelForm):
@@ -384,13 +384,13 @@ def processos_admissao_admitir(request):
             novo_funcionario.save()
             messages.success(request, u"Sucesso! Novo funcionário (%s) criado/admitido." % novo_funcionario)
         
-    return render_to_response('frontend/rh/rh-processos-admissao-admitir.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-processos-admissao-admitir.html', locals())
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao(request):
     processos_abertos = Demissao.objects.filter(status="andamento")
     processos_fechados = Demissao.objects.filter(status="finalizado")
-    return render_to_response('frontend/rh/rh-processos-demissao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-processos-demissao.html', locals())
 
 @user_passes_test(possui_perfil_acesso_rh)
 def processos_demissao_finalizar(request, processo_id):
@@ -458,7 +458,7 @@ def demitir_funcionario(request, funcionario_id):
             
     else:
         form = DemitirFuncionarioForm()
-    return render_to_response('frontend/rh/rh-funcionarios-demitir.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-funcionarios-demitir.html', locals())
 
 
 #
@@ -591,14 +591,14 @@ def promover_funcionario(request, funcionario_id):
 
     else:
         message.error(request, u"Erro. Funcionário não possui perído ativo corrente!")
-    return render_to_response('frontend/rh/rh-funcionarios-promover.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-funcionarios-promover.html', locals())
 
 # lista promocoes
 @user_passes_test(possui_perfil_acesso_rh)
 def processos_promocao(request):
     processos_cargo = PromocaoCargo.objects.all()
     processos_salarial = PromocaoSalario.objects.all()    
-    return render_to_response('frontend/rh/rh-processos-promocao.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-processos-promocao.html', locals())
 
 #
 # CAPACITACAO DE PROCEDIMENTOS
@@ -614,7 +614,7 @@ def capacitacao_de_procedimentos(request):
         'nome',
         'id',
         )
-    return render_to_response('frontend/rh/rh-capacitacao-de-procedimentos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-capacitacao-de-procedimentos.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -638,7 +638,7 @@ def capacitacao_de_procedimentos_gerar_ar(request, funcionario_id):
         )
         ar.subprocedimentos = subprocedimentos
         ar.save()
-        return render_to_response('frontend/rh/rh-capacitacao-gerar-atribuicao-de-responsabilidade-imprimir.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/rh/rh-capacitacao-gerar-atribuicao-de-responsabilidade-imprimir.html', locals())
     else:
         messages.info(request, 'Nenhum Procedimento escolhido para %s' % funcionario)
         return redirect(reverse("rh:capacitacao_de_procedimentos"))
@@ -657,7 +657,7 @@ def capacitacao_de_procedimentos_ver_ar(request, funcionario_id):
     if not tipo or not atribuicoes:
         messages.info(request, 'Nenhuma Atribuição de Responsabilidade para %s. É Preciso gerar uma nova.' % funcionario)
         return redirect(reverse("rh:capacitacao_de_procedimentos"))
-    return render_to_response('frontend/rh/rh-capacitacao-ver-atribuicao-de-responsabilidade.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-capacitacao-ver-atribuicao-de-responsabilidade.html', locals())
 
 @user_passes_test(possui_perfil_acesso_rh)
 def capacitacao_de_procedimentos_remover_ar(request, funcionario_id, atribuicao_responsabilidade_id):
@@ -713,7 +713,7 @@ def capacitacao_de_procedimentos_confirmar(request, funcionario_id, atribuicao_r
                 atribuicao.save()
                 messages.success(request, u'Atribuição de Responsabilidade Salva')
                 return redirect(reverse("rh:capacitacao_de_procedimentos"))
-    return render_to_response('frontend/rh/rh-capacitacao-atribuicao-de-responsabilidade-confirmar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-capacitacao-atribuicao-de-responsabilidade-confirmar.html', locals())
 
 #
 #CONTROLES DO FUNCIONARIO
@@ -722,7 +722,7 @@ def capacitacao_de_procedimentos_confirmar(request, funcionario_id, atribuicao_r
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferias(request):
     funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
-    return render_to_response('frontend/rh/rh-controle-de-ferias.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-ferias.html', locals())
 
 # controle_de_banco_de_horas
 @user_passes_test(possui_perfil_acesso_rh)
@@ -732,7 +732,7 @@ def controle_de_banco_de_horas(request):
         data_execucao__month=datetime.date.today().month,
         data_execucao__year=datetime.date.today().year,
     )
-    return render_to_response('frontend/rh/rh-controle-de-banco-de-horas.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-banco-de-horas.html', locals())
 
 # controle_banco_de_horas_do_funcionario
 @user_passes_test(possui_perfil_acesso_rh)
@@ -756,7 +756,7 @@ def controle_banco_de_horas_do_funcionario(request, funcionario_id):
             
     else:
         form_add_entrada_folha_ponto = AdicionarEntradaFolhaDePontoForm()
-    return render_to_response('frontend/rh/rh-banco-de-horas-funcionario.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-banco-de-horas-funcionario.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -770,7 +770,7 @@ def controle_banco_de_horas_do_funcionario_gerenciar(request, funcionario_id, fo
 @user_passes_test(possui_perfil_acesso_rh)
 def matriz_de_competencias(request):
     competencias = Competencia.objects.all()
-    return render_to_response('frontend/rh/rh-matriz-de-competencias.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-matriz-de-competencias.html', locals())
 
 
 # HORA EXTRA FORM
@@ -804,7 +804,7 @@ def adicionar_hora_extra(request, funcionario_id):
             autorizacao.save()
             messages.success(request, u"Sucesso! Autorização de Hora Extra de %s horas (R$ %s) para %s criado" % (autorizacao.quantidade, autorizacao.valor_total, autorizacao.periodo_trabalhado.funcionario))
             form = AdicionarHoraExtraForm(periodo_trabalhado=funcionario.periodo_trabalhado_corrente)
-    return render_to_response('frontend/rh/rh-hora-extra-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-hora-extra-adicionar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_rh)
@@ -814,7 +814,7 @@ def imprimir_hora_extra(request, funcionario_id, autorizacao_hora_extra_id):
         id=autorizacao_hora_extra_id,
         periodo_trabalhado__funcionario__id=funcionario_id
     )
-    return render_to_response('frontend/rh/rh-hora-extra-imprimir.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-hora-extra-imprimir.html', locals())
 
 
 
@@ -902,7 +902,7 @@ def controle_de_ferramenta(request):
             data_devolvido=None,
             data_previsao_devolucao__lt=datetime.date.today()
     ).order_by('controle__criado', 'data_previsao_devolucao')
-    return render_to_response('frontend/rh/rh-controle-de-ferramenta.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-ferramenta.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -952,7 +952,7 @@ def controle_de_ferramenta_adicionar(request):
                             pass
                 messages.success(request, "Sucesso! Novo Controle #%s criado" % controle.id)
                 return redirect(reverse("rh:controle_de_ferramenta"))
-    return render_to_response('frontend/rh/rh-controle-de-ferramenta-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-ferramenta-adicionar.html', locals())
 
 
 
@@ -965,7 +965,7 @@ def controle_de_ferramenta_imprimir(request, controle_id):
     total_do_controle = 0
     for linha in controle.linhacontroleequipamento_set.all():
         total_do_controle += (linha.quantidade * linha.produto.preco_consumo)
-    return render_to_response('frontend/rh/rh-controle-de-ferramenta-imprimir.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-ferramenta-imprimir.html', locals())
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferramenta_vincular_arquivo(request, controle_id):
@@ -980,7 +980,7 @@ def controle_de_ferramenta_vincular_arquivo(request, controle_id):
             controle.save()
             messages.success(request, "Arquivo de Controle de Ferramenta #%s salvo com sucesso!" % controle.id)
             return redirect(reverse("rh:controle_de_ferramenta"))
-    return render_to_response('frontend/rh/rh-controle-de-ferramenta-vincular-arquivo.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-ferramenta-vincular-arquivo.html', locals())
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_ferramenta_retornar(request, controle_id, linha_id):
@@ -1008,7 +1008,7 @@ def controle_de_epi(request):
             data_devolvido=None,
             data_previsao_devolucao__lt=datetime.date.today()
     ).order_by('controle__criado', 'data_previsao_devolucao')
-    return render_to_response('frontend/rh/rh-controle-de-epi.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-epi.html', locals())
 
 #
 @user_passes_test(possui_perfil_acesso_rh)
@@ -1057,7 +1057,7 @@ def controle_de_epi_adicionar(request):
                             pass
                 messages.success(request, "Sucesso! Novo Controle #%s criado" % controle.id)
                 return redirect(reverse("rh:controle_de_epi"))
-    return render_to_response('frontend/rh/rh-controle-de-epi-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-epi-adicionar.html', locals())
 
 
 
@@ -1066,7 +1066,7 @@ def controle_de_epi_adicionar(request):
 def controle_de_epi_imprimir(request, controle_id):
     controle = get_object_or_404(ControleDeEquipamento, pk=controle_id)
     local_padrao = getattr(settings, 'LOCAL_PADRAO_DOCUMENTOS', u'Teófilo Otoni, Minas Gerais')
-    return render_to_response('frontend/rh/rh-controle-de-epi-imprimir.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-epi-imprimir.html', locals())
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_epi_vincular_arquivo(request, controle_id):
@@ -1081,7 +1081,7 @@ def controle_de_epi_vincular_arquivo(request, controle_id):
             controle.save()
             messages.success(request, "Arquivo de Controle de EPI #%s salvo com sucesso!" % controle.id)
             return redirect(reverse("rh:controle_de_epi"))
-    return render_to_response('frontend/rh/rh-controle-de-epi-vincular-arquivo.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-controle-de-epi-vincular-arquivo.html', locals())
 #
 @user_passes_test(possui_perfil_acesso_rh)
 def controle_de_epi_retornar(request, controle_id, linha_id):
@@ -1310,7 +1310,7 @@ def indicadores_do_rh(request):
         resultados = True
         
 
-    return render_to_response('frontend/rh/rh-indicadores.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/rh/rh-indicadores.html', locals())
 
 
 from django.views.decorators.csrf import csrf_exempt    

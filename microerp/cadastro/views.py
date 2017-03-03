@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
@@ -115,18 +115,18 @@ def home(request):
             Q(cpf__icontains=cliente_q)
         )
         preclientes = PreCliente.objects.filter(nome__icontains=cliente_q, cliente_convertido=None) 
-    return render_to_response('frontend/cadastro/cadastro-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-home.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def funcionarios_contatos_ver(request, funcionario_id):
-    return render_to_response('frontend/cadastro/cadastro-funcionario-ver-contatos.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-funcionario-ver-contatos.html', locals())
     
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def funcionarios_listar(request):
     funcionarios = Funcionario.objects.exclude(periodo_trabalhado_corrente=None)
-    return render_to_response('frontend/cadastro/cadastro-funcionario-listar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-funcionario-listar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)
@@ -134,7 +134,7 @@ def funcionarios_recados_listar(request, funcionario_id):
     funcionario = get_object_or_404(Funcionario, pk=funcionario_id)
     nao_lidos = Recado.objects.filter(destinatario=funcionario, lido=False)
     lidos = Recado.objects.filter(destinatario=funcionario, lido=True)
-    return render_to_response('frontend/cadastro/cadastro-funcionario-recados.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-funcionario-recados.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)   
@@ -197,13 +197,13 @@ def funcionarios_recados_adicionar(request, funcionario_id):
 
     else:    
         form = AdicionarRecadoForm(destinatario=funcionario.id, remetente=remetente_id)
-    return render_to_response('frontend/cadastro/cadastro-funcionario-recados-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-funcionario-recados-adicionar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def recados_gerenciar(request):
     nao_lidos = Recado.objects.filter(lido=False)
-    return render_to_response('frontend/cadastro/cadastro-gerenciar-recados.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-gerenciar-recados.html', locals())
 
 
 #
@@ -227,7 +227,7 @@ def preclientes_adicionar(request):
     else:
         sugestao = request.GET.get('sugestao', None)
         form_add_precliente = PreClienteAdicionarForm(sugestao=sugestao)
-    return render_to_response('frontend/cadastro/cadastro-preclientes-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-preclientes-adicionar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)
@@ -245,12 +245,12 @@ def solicitacao_adicionar(request):
             return redirect(reverse('cadastro:home'))
     else:
         form = AdicionarSolicitacaoForm(cliente=cliente_id, precliente=precliente_id)
-    return render_to_response('frontend/cadastro/cadastro-solicitacao-adicionar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-solicitacao-adicionar.html', locals())
 
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def preclientes_listar(request):
-    return render_to_response('frontend/cadastro/cadastro-preclientes-listar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/cadastro/cadastro-preclientes-listar.html', locals())
 
 @user_passes_test(possui_perfil_acesso_recepcao)
 def requisicao_proposta_cliente(request):

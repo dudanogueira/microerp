@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render_to_response, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.template import RequestContext, loader, Context
 from django.core.urlresolvers import reverse
 
@@ -56,7 +56,7 @@ def home(request):
     solicitacoes_visto = Solicitacao.objects.filter(status="visto")
     solicitacoes_fechada_procede_count = Solicitacao.objects.filter(status="resolvida", procede=True).count()
     solicitacoes_fechada_nao_procede_count = Solicitacao.objects.filter(status="resolvida", procede=False).count()
-    return render_to_response('frontend/solicitacao/solicitacao-home.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/solicitacao/solicitacao-home.html', locals())
 
 
 
@@ -65,7 +65,7 @@ def home(request):
 def despachar(request):
     funcionarios_ativos = Funcionario.objects.exclude(periodo_trabalhado_corrente=None).order_by('periodo_trabalhado_corrente__inicio')
     solicitacoes_abertas = Solicitacao.objects.filter(status="aberta")
-    return render_to_response('frontend/solicitacao/solicitacao-despachar.html', locals(), context_instance=RequestContext(request),)
+    return render(request, 'frontend/solicitacao/solicitacao-despachar.html', locals())
 
 
 
@@ -99,7 +99,7 @@ def despachar_solicitacao(request, solicitacao_id):
             messages.success(request, u"Solicitação marcada como Procedente. Informe uma providência Abaixo.")
             solicitacao_form = DespacharSolicitacaoForm(instance=solicitacao)
 
-        return render_to_response('frontend/solicitacao/solicitacao-despachar-solicitacao.html', locals(), context_instance=RequestContext(request),)
+        return render(request, 'frontend/solicitacao/solicitacao-despachar-solicitacao.html', locals())
     if request.POST.get('confirmar'):
         if request.POST.get('providencia', None) and request.POST.get('departamento_direto', None):
             if not solicitacao.responsavel_contato or not solicitacao.responsavel_correcao:
