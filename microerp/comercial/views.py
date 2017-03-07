@@ -4047,7 +4047,7 @@ def relatorios_comercial_propostas_visitas(request):
         fups = FollowUpDePropostaComercial.objects.filter(
                 Q(proposta__cliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa) | \
                 Q(proposta__precliente__designado__user__perfilacessocomercial__empresa=request.user.perfilacessocomercial.empresa)
-        )
+        ).order_by('visita_por')
         if de and ate:
             fups = fups.filter(criado__range=(de,ate), visita=True)
         elif de and not ate:
