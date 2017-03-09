@@ -1,7 +1,7 @@
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.contrib.auth.views import login, logout
+from django.contrib.auth.views import login, logout, password_reset, password_reset_done, password_reset_confirm, password_reset_complete
 from frontend2.views import home, funcionario, minhas_solicitacoes, \
 minhas_solicitacoes_resolvido, minhas_solicitacoes_abrir_correcao, \
 minhas_solicitacoes_fechar_contato, minhas_solicitacoes_fechar_visto, \
@@ -10,10 +10,17 @@ teste
 from estoque.views import ajax_consulta_produto
 from rh.views import ajax_consulta_cargo
 
+from rest_framework_jwt.views import obtain_jwt_token
+
+
 urlpatterns = [
     url(r'^teste/$', teste ),
     url(r'^admin/', admin.site.urls),
     url(r'^sair/$', logout, name='logout'),
+    url(r'^esqueci-senha/$', password_reset, name='password_reset'),
+    url(r'^esqueci-senha-feito/$', password_reset_done, name='password_reset_done'),
+    url(r'^esqueci-senha-completo/$', password_reset_complete, name='password_reset_complete'),
+    url(r'^reiniciar/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$', password_reset_confirm, name='password_reset_confirm'),
     url(r'^accounts/login/$', login, name='login'),
     # PAGINA INICIAL
     url(r'^$', home, name='home'),
@@ -55,3 +62,20 @@ if settings.DEBUG:
     urlpatterns += [
         url(r'^__debug__/', include(debug_toolbar.urls)),
     ]
+
+
+# API ROUTERS
+from rest_framework import routers
+router = routers.DefaultRouter()
+
+from comercial import api as comercial_api
+
+router.register(r'comercial/contrato', comercial_api.ContratoViewSet)
+router.register(r'cadastro/cliente', comercial_api.ClienteViewSet)
+router.register(r'rh/funcionario', comercial_api.FuncionarioViewSet)
+
+urlpatterns += [
+    url(r'^api/', include(router.urls)),
+    url(r'^api-token-auth/', obtain_jwt_token),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+]

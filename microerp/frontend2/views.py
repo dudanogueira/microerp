@@ -179,3 +179,7 @@ def teste(request):
     filename = fill_template('/code/teste.odt', context, output_format='docx')
     visible_filename = 'greeting.pdf'
     return FileResponse(filename, visible_filename)
+
+
+class PasswordResetRequestForm(forms.Form):
+    email_or_username = forms.CharField(label=("Usuário"), max_length=254)

@@ -9,7 +9,8 @@
 {% else %}
 <form action="{% url "login" %}" method="post">{% csrf_token %}
 {{form|bootstrap}}
-<input type="submit" class="btn btn-success" value="Login">
+<button type="submit" class="btn btn-success btn-block">Acessar</button>
+<a href="{% url "password_reset" %}">esqueci minha senha</a>
 <input type="hidden" name="next" value="{% if next %}{{ next }}{% else %}{% url "home" %}{%endif%}">
 </form>
 
